@@ -4,14 +4,14 @@ import java.io.InputStream
 
 import ammonite.ops
 import ammonite.ops._
-
+import org.denigma.kappa.messages.KappaMessages
 import scala.io.Source
 
 trait KappaAgent
 
-case class KappaResult(command: CommandResult, series: List[String])
+case class KappaResult(command: CommandResult, series: Seq[String])
 {
-  lazy val ouput: Stream[String] = command.output
+  lazy val output = command.out.lines
 }
 
 
@@ -21,16 +21,24 @@ object Kappa {
 
   lazy val file = folder+"KaSim"
 
-  var outPutFolder = folder
+  //var outPutFolder = folder
 
   lazy val abc = {
     val stream : InputStream = getClass.getResourceAsStream("/examples/abc.ka")
     scala.io.Source.fromInputStream( stream ).getLines.toList
   }
 
+  def tempFolder(project: String = "kappa-notebook"):Path = {
+    val dir = java.nio.file.Files.createTempDirectory(
+      java.nio.file.Paths.get(System.getProperty("java.io.tmpdir")), project
+    )
+    Path(dir)
+  }
+
   implicit var wd = ops.Path(new java.io.File(folder))
 
-  def writeFile(name: String, strings: Seq[String]) = {
+
+  def writeFile(where: Path, name: String, strings: Seq[String]) = {
     val path = wd/ name
     rm! path
     write( path, strings)
@@ -38,26 +46,19 @@ object Kappa {
   }
 
 
-  /**
-    * With the signature of A defined in the previous section, the line
-'A dimerization'
-A(x),A(y ̃p) → A(x!1),A(y ̃p!1) @ γ
-denotes a dimerization rule between two instances of agent A provided the second is phos-
-phorylated (say that is here the meaning of p) on site y. Note that the bond between both
-As is denoted by the identifier !1 which uses an arbitrary integer (!0 would denote the same
-bond). In Kappa, a bond may connect exactly 2 sites so any occurrence of a bond identifier
-!n has to be paired with exactly one other sibling in the expression.
-    */
-  def run(name: String, strings: Seq[String], events: Int = 1000000, points: Int = 1000): KappaResult= {
-    val kaname = if(name.endsWith(".ka")) name else name+".ka"
-    val chart = kaname.replace(".ka", ".out")
-    writeFile(kaname, strings)
-    //%%KaSim(s"-i $kaname -e $points -o ${kaname.replace(".ka",".out")}")
-    val command = %%KaSim("-i", kaname, "-e",events,"-p", points, "-o", chart, "-d",outPutFolder)
-    val ch: List[String] = Source.fromFile(folder + chart).getLines().toList
-    KappaResult(command, ch)
- }
 
-  def run(strings: Seq[String]): KappaResult = run("tmp.ka", strings)
+  def run(code: KappaMessages.Code, parameters: KappaMessages.RunParameters) = {
+    val kaname = parameters.kaname
+    val chart = kaname.replace(".ka", ".out")
+    val folder: Path = tempFolder()
+    val outPutFolder = folder
+    writeFile(folder, kaname, code.lines)
+    import parameters._
+    val command: CommandResult = %%KaSim("-i", kaname, "-e", maxEvents,"-p", points, "-o", chart, "-d", outPutFolder)
+    //val ch: List[String] = Source.fromFile(folder + chart).getLines().toList
+    val ch: Vector[String] = read.lines ! folder / chart
+    KappaResult(command, ch)
+  }
+
 
 }

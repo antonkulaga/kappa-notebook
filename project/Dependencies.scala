@@ -21,15 +21,6 @@ object Dependencies {
 		"com.typesafe.akka" %% "akka-http-testkit-experimental" % Versions.akkaHttp
 	))
 
-	lazy val meta = CrossDep(
-		shared = Def.setting(Seq(			"com.lihaoyi" %%% "scalarx" % Versions.scalaRx)),
-
-		jvm = Def.setting(Seq.empty),
-
-		js = Def.setting(Seq.empty)
-	)
-
-
 	//scalajs libs
 	lazy val sjsLibs= Def.setting(Seq(
 		"org.scala-js" %%% "scalajs-dom" % Versions.dom,
@@ -63,10 +54,7 @@ object Dependencies {
 		"org.denigma" %%% "binding-controls" % Versions.bindingControls,
 
 		"com.lihaoyi" %% "fastparse" % Versions.fastparse
-
 	))
-
-
 
 	val otherJvm = Def.setting(Seq(
 		"me.lessis" %% "retry" % Versions.retry,

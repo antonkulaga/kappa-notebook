@@ -10,16 +10,17 @@ import scala.concurrent.Future
 
 
 class WebSockets(
-                loginByName: (String,String)=>Future[LoginResult],
-                loginByEmail: (String,String)=>Future[LoginResult],
+                loginByName: (String,String) => Future[LoginResult],
+                loginByEmail: (String,String) => Future[LoginResult],
                 makeChannel: (String,String) => Flow[Message, Message, Unit]
                 ) extends  AuthDirectives with Directives with WithLoginRejections with WithRegistrationRejections
 {
   def routes: Route =
-    pathPrefix("channel") {
-      pathPrefix("notebook") {
+    pathPrefix("channel"){
+      pathPrefix("notebook"){
         parameter("username"){
           username=>
+            println(s"username = $username")
             handleWebsocketMessages(makeChannel("notebook", username))
         }
       }

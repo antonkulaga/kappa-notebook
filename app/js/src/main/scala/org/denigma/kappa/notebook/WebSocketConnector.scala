@@ -11,41 +11,45 @@ import org.scalajs.dom
 import rx.core.Var
 
 import scala.collection.immutable._
+object KappaHub{
+  def empty = KappaHub(Var(None), Var(None), Var(None))
+}
+case class KappaHub(
+  console: Var[Option[KappaMessages.Console]],
+  chart: Var[Option[KappaMessages.Chart]],
+  code: Var[Option[KappaMessages.Code]]
+)
 
-case class WebSocketConnector(subscriber: WebSocketSubscriber) extends KappaPicklers with BinaryWebSocket
+case class WebSocketConnector(subscriber: WebSocketSubscriber, kappaHub: KappaHub) extends KappaPicklers with BinaryWebSocket
 {
   subscriber.onOpen.handler{
-    dom.console.log("IT OPENS!")
+    dom.console.log("WebSocket has been opened")
     //send(disc)
   }
 
-  def send(message: KappaMessages.Message) = {
+  def send(message: KappaMessages.Message): Unit = {
     val mes = bytes2message(Pickle.intoBytes(message))
     subscriber.send(mes)
   }
 
   subscriber.onClose.handler(
-    dom.alert("CLOSED")
+    dom.console.log("WebSocked has been closed")
   )
   subscriber.onMessage.onChange("OnMessage",uniqueValue = false)(onMessage)
   //chosen.onChange("chosenChange")(onChosenChange)
 
 
-  override protected def updateFromMessage(bytes: ByteBuffer): Unit = Unpickle[KappaMessages.Message].fromBytes(bytes) match
-  {
-      /*case KappaMessages.Discovered(devs,_,_)=>
-        this.devices() = devs.map(Var(_))
-        val d = chosen.now
-        if(d.isEmpty || !devs.contains(d.get)){
-          if(devs.nonEmpty) chosen() = Some(devs.head)
-        }
+  override protected def updateFromMessage(bytes: ByteBuffer): Unit = receive(Unpickle[KappaMessages.Message].fromBytes(bytes))
 
-      case KappaMessages.LastMeasurements(vals,channel,date)=>
-        //println("VALUES RECEIVED "+vals)
-        this.data() = vals
-*/
-        //if(chosen.now.contains())
+  def receive: PartialFunction[KappaMessages.Message, Unit] = {
+    case message: KappaMessages.Console => kappaHub.console() = Some(message)
+    case message: KappaMessages.Chart => kappaHub.chart() = Some(message)
+    case message: KappaMessages.Code => kappaHub.code() = Some(message)
+    case message: KappaMessages.Container => message.messages.foreach(receive)
+    case other => dom.console.log(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)
 
-      case other => dom.alert(s"MESSAGE RECEIVED! "+other)
   }
+
+
+
 }

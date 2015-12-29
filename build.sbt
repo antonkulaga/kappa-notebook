@@ -52,31 +52,6 @@ lazy val root = Project("root",file("."),settings = commonSettings)
     (fullClasspath in Runtime) += (packageBin in appJVM in Assets).value
   ) dependsOn appJVM aggregate(appJVM, appJS)
 
-
-lazy val metaKappa = crossProject
-  .crossType(CrossType.Full)
-  .in(file("meta"))
-  .settings(commonSettings ++ publishSettings: _*)
-  .settings(
-    version := Versions.metaKappa,
-    name := "meta-kappa",
-    scalaVersion:=Versions.scala,
-    libraryDependencies ++= Dependencies.meta.shared.value,
-    libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
-    libraryDependencies += compilerPlugin("org.scalamacros" % "paradise" % Versions.macroParadise cross CrossVersion.full)
-  )
-  .jvmSettings(
-    libraryDependencies ++= Dependencies.meta.jvm.value
-  )
-  .jsSettings(
-    libraryDependencies ++= Dependencies.meta.js.value,
-    jsDependencies += RuntimeDOM % "test"
-  )
-
-val metaJS = metaKappa.js
-val metaJVM = metaKappa.jvm
-
-
 lazy val app = crossProject
   .crossType(CrossType.Full)
   .in(file("app"))
@@ -84,7 +59,7 @@ lazy val app = crossProject
   .settings(
     name := "kappa-notebook",
     version := Versions.kappaNotebook
-  ).dependsOn(metaKappa)
+  )
   .jsSettings(
     libraryDependencies ++= Dependencies.sjsLibs.value,
     persistLauncher in Compile := true,
@@ -104,10 +79,11 @@ lazy val app = crossProject
     pipelineStages in Assets := Seq(scalaJSDevStage, gzip), //for run configuration
     (fullClasspath in Runtime) += (packageBin in Assets).value, //to package production deps
     libraryDependencies += "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
+    libraryDependencies += "com.lihaoyi" %% "ammonite-shell" % Versions.ammonite,
     libraryDependencies += "com.lihaoyi" % "ammonite-repl" % Versions.ammonite % "test" cross CrossVersion.full,
     initialCommands in (Test, console) := """ammonite.repl.Repl.run("")"""
   )
-  .jvmConfigure(p=>p.enablePlugins(SbtTwirl, SbtWeb, PlayScalaJS))
+  .jvmConfigure(p => p.enablePlugins(SbtTwirl, SbtWeb, PlayScalaJS))
 
 lazy val appJS = app.js
 lazy val appJVM = app.jvm settings (scalaJSProjects := Seq(appJS))

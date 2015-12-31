@@ -35,28 +35,21 @@ lazy val noPublishSettings = Seq(
 lazy val commonSettings = Seq(
   scalaVersion := Versions.scala,
   organization := "org.denigma",
+  scalacOptions ++= Seq( "-feature", "-language:_" ),
+  // Enable JAR export for staging
+  exportJars := true,
   resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"), //for scala-js-binding
+  unmanagedClasspath in Compile <++= unmanagedResources in Compile,
   libraryDependencies ++= Dependencies.commonShared.value++Dependencies.testing.value,
   updateOptions := updateOptions.value.withCachedResolution(true) //to speed up dependency resolution
-)
+) ++ eclipseSettings
+
 
 val scalaJSDevStage  = Def.taskKey[Pipeline.Stage]("Apply fastOptJS on all Scala.js projects")
 
 def scalaJSDevTaskStage: Def.Initialize[Task[Pipeline.Stage]] = Def.task { mappings: Seq[PathMapping] =>
   mappings ++ PlayScalaJS.devFiles(Compile).value ++ PlayScalaJS.sourcemapScalaFiles(fastOptJS).value
 }
-
-
-lazy val root = Project("root",file("."),settings = commonSettings)
-  .settings(
-    name := "kappa-notebook",
-    version := Versions.kappaNotebook,
-    mainClass in Compile := (mainClass in appJVM in Compile).value,
-    (managedClasspath in Runtime) += (packageBin in appJVM in Assets).value,
-    maintainer := "Anton Kulaga <antonkulaga@gmail.com>",
-    packageSummary := "kappa-notebook",
-    packageDescription := """Kappa notebook runs kappa from the browser"""
-  ) dependsOn appJVM aggregate(appJVM, appJS) enablePlugins JavaServerAppPackaging
 
 lazy val app = crossProject
   .crossType(CrossType.Full)
@@ -76,7 +69,7 @@ lazy val app = crossProject
   .jsConfigure(p=>p.enablePlugins(ScalaJSPlay))
   .jvmSettings(
     libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value,
-    mainClass in Compile :=Some("org.denigma.kappa.notebook.Main"),
+    mainClass in Compile := Some("org.denigma.kappa.notebook.Main"),
     mainClass in Revolver.reStart := Some("org.denigma.kappa.notebook.Main"),
     libraryDependencies ++= Dependencies.compilers.value ++ Dependencies.otherJvm.value,
     scalaJSDevStage := scalaJSDevTaskStage.value,
@@ -94,3 +87,14 @@ lazy val app = crossProject
 lazy val appJS = app.js
 lazy val appJVM = app.jvm settings (scalaJSProjects := Seq(appJS))
 
+lazy val root = Project("root",file("."),settings = commonSettings)
+  .settings(
+    name := "kappa-notebook",
+    version := Versions.kappaNotebook,
+    mainClass in Compile := (mainClass in appJVM in Compile).value,
+    (managedClasspath in Runtime) += (packageBin in appJVM in Assets).value,
+    maintainer := "Anton Kulaga <antonkulaga@gmail.com>",
+    packageSummary := "kappa-notebook",
+    packageDescription := """Kappa notebook runs kappa from the browser""",
+    javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
+  ) dependsOn appJVM aggregate(appJVM, appJS) enablePlugins JavaServerAppPackaging

@@ -9,7 +9,7 @@ import akka.util.ByteString
 import boopickle.Default._
 import org.denigma.kappa.messages._
 import org.denigma.kappa.syntax.Kappa
-
+import fastparse.all._
 
 class SocketTransport extends KappaPicklers {
 
@@ -28,11 +28,6 @@ class SocketTransport extends KappaPicklers {
           super.onUpstreamFailure(cause, ctx)
         }
       })
-
-  def parseKappaOut() = {
-    //read
-    //# time 'tx activity' 'bound A fraction' 'conc A'
-  }
 
   def readResource(path: String): Iterator[String] = {
     val stream : InputStream = getClass.getResourceAsStream(path)

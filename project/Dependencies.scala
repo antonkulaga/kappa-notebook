@@ -57,8 +57,6 @@ object Dependencies {
 	))
 
 	val otherJvm = Def.setting(Seq(
-		"me.lessis" %% "retry" % Versions.retry,
-
     "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite
 	))
 

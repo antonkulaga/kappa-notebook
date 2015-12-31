@@ -13,14 +13,20 @@
                         <caption>Run parameters</caption>
                         <tr>
                             <td>Model name</td>
+                            <td><input class="ui small input" data-bind="fileName"></td>
+                            <td>Events</td>
                             <td><input class="ui small input" data-bind="events"></td>
+                        </tr>
+                        <tr>
                             <td>Max. time</td>
                             <td><input class="ui small input" data-bind="time"></td>
                             <td>Points</td>
                             <td><input class="ui small input" data-bind="points"></td>
                         </tr>
                     </table>
-                    <button class="ui button" data-event-click="send">Run model</button>
+                    <button class="ui button" data-event-click="run">Run model</button>
+                    <button class="ui button" data-event-click="save">Save model</button>
+                    <input id="the-file-input" type="file"  data-event-change="onUpload">
                 </section>
             </column>
         </row>

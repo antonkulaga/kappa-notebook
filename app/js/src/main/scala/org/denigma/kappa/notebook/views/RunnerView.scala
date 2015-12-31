@@ -15,13 +15,15 @@ class RunnerView(val elem: Element, val parameters: Var[KappaMessages.RunParamet
   val events: Var[Int] = Var(10000)
   var time: Var[Int] = Var(0)
   val points: Var[Int] = Var(250)
+  val fileName = Var("model.ka")
 
   val output = Rx{
+    val fn= fileName()
     val ev = self.events()
     val t = self.time()
     val p = self.points()
     val params = parameters.now
-    parameters.set(params.copy(events = opt(ev), time = opt(t), points = p))
+    parameters.set(params.copy(fileName = fn, events = opt(ev), time = opt(t), points = p))
   }
 
 }

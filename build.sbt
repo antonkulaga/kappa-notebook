@@ -1,3 +1,4 @@
+import com.typesafe.sbt.SbtNativePackager.autoImport._
 import com.typesafe.sbt.gzip.Import.gzip
 import com.typesafe.sbt.web.SbtWeb.autoImport._
 import com.typesafe.sbt.web.pipeline.Pipeline
@@ -48,9 +49,14 @@ def scalaJSDevTaskStage: Def.Initialize[Task[Pipeline.Stage]] = Def.task { mappi
 
 lazy val root = Project("root",file("."),settings = commonSettings)
   .settings(
+    name := "kappa-notebook",
+    version := Versions.kappaNotebook,
     mainClass in Compile := (mainClass in appJVM in Compile).value,
-    (fullClasspath in Runtime) += (packageBin in appJVM in Assets).value
-  ) dependsOn appJVM aggregate(appJVM, appJS)
+    (managedClasspath in Runtime) += (packageBin in appJVM in Assets).value,
+    maintainer := "Anton Kulaga <antonkulaga@gmail.com>",
+    packageSummary := "kappa-notebook",
+    packageDescription := """Kappa notebook runs kappa from the browser"""
+  ) dependsOn appJVM aggregate(appJVM, appJS) enablePlugins JavaServerAppPackaging
 
 lazy val app = crossProject
   .crossType(CrossType.Full)

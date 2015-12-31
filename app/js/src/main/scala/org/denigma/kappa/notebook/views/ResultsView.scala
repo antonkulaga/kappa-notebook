@@ -1,18 +1,13 @@
 package org.denigma.kappa.notebook.views
 
-import org.denigma.binding.binders.{Events, GeneralBinder, ReactiveBinder}
+import org.denigma.binding.binders.{GeneralBinder, ReactiveBinder}
 import org.denigma.binding.views._
-import org.denigma.controls.charts.{Series, Point, StaticSeries, LineStyles}
+import org.denigma.controls.charts.Series
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.tabs._
-import org.denigma.kappa.messages.KappaMessages
 import org.denigma.kappa.notebook.KappaHub
 import org.scalajs.dom.raw.Element
 import rx.core._
-
-import scala.collection.immutable._
-
-
 import rx.ops._
 
 /**

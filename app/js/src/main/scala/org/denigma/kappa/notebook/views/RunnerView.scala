@@ -14,7 +14,7 @@ class RunnerView(val elem: Element, val parameters: Var[KappaMessages.RunParamet
 
   val events: Var[Int] = Var(10000)
   var time: Var[Int] = Var(0)
-  val points: Var[Int] = Var(1000)
+  val points: Var[Int] = Var(250)
 
   val output = Rx{
     val ev = self.events()

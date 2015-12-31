@@ -52,8 +52,7 @@ class SocketTransport extends KappaPicklers {
               BinaryMessage(ByteString(data))
 
             case KappaMessages.Load(modelName) =>
-              val code = KappaMessages.Code(readResource("/examples/abc.ka").toSeq)
-              //println("CODE TO SEND "+res)
+              val code = KappaMessages.Code(readResource("/examples/abc.ka").toList)
               val d = Pickle.intoBytes[KappaMessages.Message](code)
               BinaryMessage(ByteString(d))
 

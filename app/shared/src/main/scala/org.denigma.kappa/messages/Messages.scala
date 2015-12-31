@@ -9,22 +9,22 @@ object KappaMessages {
   class Message
 
   object Container {
-    def apply(message: Message): Container = Container(Seq(message))
+    def apply(message: Message): Container = Container(List(message))
   }
-  case class Container(messages: Seq[Message]) extends Message
+  case class Container(messages: List[Message]) extends Message
   {
-    lazy val run: Seq[RunParameters] = messages.collect{ case message: RunParameters => message}
-    lazy val load = messages.collect{ case message: Load => message}
-    lazy val console = messages.collect{ case message: Console => message}
-    lazy val code = messages.collect{ case message: Code => message}
-    lazy val charts = messages.collect{ case message:Chart => message}
+    lazy val run: List[RunParameters] = messages.collect{ case message: RunParameters => message}
+    lazy val load: List[Load] = messages.collect{ case message: Load => message}
+    lazy val console: List[Console] = messages.collect{ case message: Console => message}
+    lazy val code: List[Code] = messages.collect{ case message: Code => message}
+    lazy val charts: List[Chart] = messages.collect{ case message:Chart => message}
   }
 
   case class Load(name: String = "abc") extends Message
 
   object Code
   {
-    def apply(lines: scala.Seq[String]): Code = Code(lines.foldLeft("")( (acc, el) => acc + (if(el.endsWith("\n")) el else el + "\n")))
+    def apply(lines: List[String]): Code = Code(lines.foldLeft("")( (acc, el) => acc + (if(el.endsWith("\n")) el else el + "\n")))
     lazy val empty: Code = Code("")
   }
   case class Code(text: String) extends Message{
@@ -33,21 +33,21 @@ object KappaMessages {
   }
 
   object Console{
-    def apply(text: String): Console = Console(text.split("\n"))
-    lazy val empty = Console(Seq.empty)
+    def apply(text: String): Console = Console(text.split("\n").toList)
+    lazy val empty = Console(List.empty)
   }
 
-  case class Console(lines: scala.Seq[String]) extends Message
+  case class Console(lines: List[String]) extends Message
   {
     val text: String = lines.fold("")((a, b)=> a + "\n" + b)
     def isEmpty: Boolean = lines.isEmpty
   }
 
   object Chart {
-    lazy val empty = Chart(Seq.empty)
+    lazy val empty = Chart(List.empty)
   }
 
-  case class Chart(series: Seq[KappaSeries]) extends Message
+  case class Chart(series: List[KappaSeries]) extends Message
   {
     def isEmpty: Boolean = series.isEmpty
   }
@@ -56,7 +56,7 @@ object KappaMessages {
                             fileName: String = "model.ka",
                             events: Option[Int] = Some(10000),
                             time: Option[Int] = None,
-                            points: Int = 1000,
+                            points: Int = 250,
                             chart: Option[String] = Some(""), //"" means same as file name
                             flow: Option[String] = None,
                             causality: Option[String] = None,
@@ -83,13 +83,16 @@ object KappaMessages {
 
   object KappaSeries {
 
-    val colors = Vector("green", "red", "pink", "blue", "lightblue", "violet", "cyan", "navy", "black")
+    //val colors = Vector("green", "red", "pink", "blue", "lightblue", "violet", "cyan", "navy", "black", "rose")
     import org.denigma.binding.extensions._
-    def default = LineStyles(colors(scala.util.Random.nextInt(colors.size)), 4 ,"none" , 1.0)
+    import scala.util.Random
+    def randomColor() = s"rgb(${Random.nextInt(255)},${Random.nextInt(255)},${Random.nextInt(255)})"
+
+    def randomLineStyle() = LineStyles(randomColor(), 4 ,"none" , 1.0)
 
   }
 
-  case class KappaSeries(title: String, points: List[Point], style: LineStyles = LineStyles.default) extends Series
+  case class KappaSeries(title: String, points: List[Point], style: LineStyles = KappaSeries.randomLineStyle()) extends Series
 
 
   // %%KaSim("-i", kaname, "-e",events,"-p", points, "-o", chart, "-d", outPutFolder)

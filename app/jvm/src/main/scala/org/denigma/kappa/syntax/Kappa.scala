@@ -27,7 +27,6 @@ object Kappa extends KappaPicklers{
 
   implicit var wd = ops.Path(new java.io.File(folder))
 
-
   def writeFile(where: Path, name: String, strings: scala.Seq[String]) = {
     val path = wd/ name
     rm! path
@@ -38,29 +37,37 @@ object Kappa extends KappaPicklers{
 
   def loadChart(path: Path): KappaMessages.Chart = {
     val lines: Vector[String] = read.lines ! path
-    val (headers, data) = (lines.head.split(" "), lines.tail)
+    if(lines.isEmpty) throw new Exception("chart is empty")
+    val (headers, data) = (lines.head.replace("# time", "time").split(" "), lines.tail)
     val titles = headers.tail
-    val dataSize = headers.size -1
-    if(dataSize < 0) throw new Exception("Too small chart file")
-    val arr: Array[Array[Point]] = new Array[Array[Point]](data.length)
+    val cols = headers.size -1
+    if(cols < 0) throw new Exception("Too small chart file")
+    val arr: Array[Array[Point]] = new Array[Array[Point]](cols)
+    for(i <- arr.indices) arr(i) = new Array[Point](data.size)
     for(row <- data.indices)
     {
-      val values: Array[Double] = data(row).split(" ").map(str => str.toDouble)
+      val r = data(row).trim
+      val values: Array[Double] = r.split(" ").map{str =>
+        try str.toDouble catch {
+          case exception: Throwable =>
+            println(s"Cannot parse to Double following string:\n${str}\nwhole row is: \n${r}")
+            throw exception
+        }
+      }
       val time = values(0)
-      arr(row) = new Array[Point](headers.size)
-      for(column <- 1 to dataSize){
-        arr(column)(row) = Point(time, values(column))
+      for(c <- arr.indices){
+        arr(c)(row) = Point(time, values(c+1))
       }
     }
-    val series = arr.zipWithIndex.map{case (col, i)=> KappaSeries(titles(i), col.toList) }
-    KappaMessages.Chart(Seq(series:_*))
+    val series = arr.zipWithIndex.map{case (col, i)=> KappaSeries(titles(i), col.toList) }.toList
+    KappaMessages.Chart(series)
   }
 
 
   /**
     * Runs kappa with some parameters
-    * @param code
-    * @param parameters
+    * @param code Code to Run
+    * @param parameters Parameters to run with
     * @return
     */
   def run(code: KappaMessages.Code, parameters: KappaMessages.RunParameters): KappaMessages.Container = {
@@ -68,7 +75,6 @@ object Kappa extends KappaPicklers{
     val folder: Path = tempFolder()
     val outPutFolder = folder
     writeFile(folder, kaname, code.lines)
-    //import parameters._
     val chartName = kaname.replace(".ka", ".out")
     val result: Try[CommandResult] = Try(
       (parameters.events, parameters.time) match { //bad code
@@ -79,9 +85,9 @@ object Kappa extends KappaPicklers{
     })
     result match {
       case Success(command)=>
-        val console = KappaMessages.Console(command.out.lines)
+        val console = KappaMessages.Console(command.out.lines.toList)
         val chart = loadChart(outPutFolder / chartName)
-        KappaMessages.Container(Seq(console, chart))
+        KappaMessages.Container(List(console, chart))
       case Failure(message) =>
         KappaMessages.Container(KappaMessages.Console(message.getMessage))
     }

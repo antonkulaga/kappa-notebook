@@ -25,7 +25,7 @@ case class KappaHub(
   console: Var[KappaMessages.Console],
   chart: Var[KappaMessages.Chart]
 ){
-  def packContainer(): Container = KappaMessages.Container(Seq(code.now, runParameters.now))
+  def packContainer(): Container = KappaMessages.Container(List(code.now, runParameters.now))
 }
 
 case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHub) extends KappaPicklers with BinaryWebSocket

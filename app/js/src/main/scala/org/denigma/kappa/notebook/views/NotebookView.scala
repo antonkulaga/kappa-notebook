@@ -15,9 +15,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
   self =>
 
-
   lazy val subscriber = WebSocketSubscriber("notebook", "guest")
-
 
   val hub: KappaHub = KappaHub.empty
 
@@ -49,7 +47,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   }
 
   hub.code.onChange("hub changes"){case value =>
-    if(value.text!=code.now) { if(value.isEmpty) code() = defaultCode else value.text }
+    if(value.isEmpty) code.set(defaultCode) else code.set(value.text)
   }
 
   val send = Var(org.denigma.binding.binders.Events.createMouseEvent)

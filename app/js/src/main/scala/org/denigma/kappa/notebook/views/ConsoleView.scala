@@ -11,4 +11,6 @@ import rx.ops._
 class ConsoleView(val elem: Element, kappaConsole: Rx[KappaMessages.Console], val selected: Var[String]) extends BindableView{
   val console: Rx[String] = kappaConsole.map(_.text)
   val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
+
+  //println(s"CONSOLE IS "+console.now)
 }

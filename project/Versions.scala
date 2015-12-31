@@ -12,9 +12,9 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val akkaHttpExtensions = "0.0.9-M2"
 
-	val bindingControls = "0.0.9-M2"
+	val bindingControls = "0.0.9-M3"
 
-	val kappaNotebook = "0.0.2"
+	val kappaNotebook = "0.0.3"
 
 	val retry = "0.2.1"
 
@@ -30,11 +30,11 @@ trait ScalaJSVersions {
 
 	val semanticUIFacade = "0.0.1"
 
-	val dom = "0.8.1"
+	val dom = "0.8.2"
 
 	val codemirrorFacade = "5.4-0.5"
 
-	val binding = "0.8.1-M2"
+	val binding = "0.8.1-M3"
 
 }
 
@@ -45,7 +45,7 @@ trait SharedVersions
 
 	val scalaTags = "0.5.2"
 
-	val scalaCSS = "0.3.1"
+	val scalaCSS = "0.3.2"
 
 	val productCollections = "1.4.2"
 

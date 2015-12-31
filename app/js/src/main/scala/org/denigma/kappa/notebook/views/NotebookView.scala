@@ -1,7 +1,9 @@
 package org.denigma.kappa.notebook.views
 
+import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
+import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.Session
 import org.denigma.controls.sockets.WebSocketSubscriber
 import org.denigma.kappa.messages.KappaMessages
@@ -57,6 +59,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   }
 
    override lazy val injector = defaultInjector
-    .register("parameters")((el, args) => new RunnerView(el, hub.runParameters).withBinder(n => new AdvancedBinder(n)))
-    .register("results")((el, args) => new ResultsView(el, hub).withBinder(n => new AdvancedBinder(n)))
+    .register("parameters")((el, args) => new RunnerView(el, hub.runParameters).withBinder(n => new GeneralBinder(n)))
+    .register("results")((el, args) => new ResultsView(el, hub).withBinder(n => new CodeBinder(n)))
 }

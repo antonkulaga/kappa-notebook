@@ -16,31 +16,32 @@ class ChartView(val elem: Element,
                   ) extends LinesPlot {
 
   val flexible = Var(true)
-  val shrinkMult = Var(2)
+  val shrinkMult = Var(1.0)
+  val stretchMult = Var(1.0)
 
   val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
-  val scaleX = Var(FlexibleLinearScale("Time", 0.0, 10, 2, 400))
-  val scaleY = Var(FlexibleLinearScale("Concentration", 0.0, 10, 2, 600, inverted = true))
+  val scaleX = Var(LinearScale("Time", 0.0, 10, 2, 400))
+  val scaleY = Var(LinearScale("Concentration", 0.0, 10, 2, 600, inverted = true))
 
   val empty: rx.Rx[Boolean] = items.map(_.isEmpty)
 
   def max(series: Series)(fun: Point=>Double): Point = series.points.maxBy(fun)
 
   val max = items.map{case its=>
-    val x = its.foldLeft(0.0){ case (acc, series)=> series.now.points.maxBy(_.x).x}
-    val y = its.foldLeft(0.0){ case (acc, series)=> series.now.points.maxBy(_.y).y}
+    val x = its.foldLeft(0.0){ case (acc, series)=> Math.max(acc, series.now.points.maxBy(_.x).x)}
+    val y = its.foldLeft(0.0){ case (acc, series)=> Math.max(acc, series.now.points.maxBy(_.y).y)}
     Point(x, y)
   }
   max.foreach{
-    case value=>
+    case Point(x, y) =>
       if(flexible()) {
         val (sX, sY) = (scaleX.now, scaleY.now)
         val sh = shrinkMult()
-        val updScaleX = sX.stretched(value.x, shrinkMult = sh)
+        val st = stretchMult()
+        val updScaleX = sX.stretched(x, stretchMult = st, shrinkMult = sh)
         scaleX.set(updScaleX)
-        val updScaleY = sY.stretched(value.y, shrinkMult = sh)
+        val updScaleY = sY.stretched(y,  stretchMult = st, shrinkMult = sh)
         scaleY.set(updScaleY)
-        println(s"UPD SCALEX =$updScaleX")
       }
   }
 
@@ -49,15 +50,15 @@ class ChartView(val elem: Element,
   }
 }
 
+/*
 
 case class FlexibleLinearScale(title: String, start: Double, end: Double, stepSize: Double, length: Double, inverted: Boolean = false, precision:Int = 3) extends WithLinearScale
 {
   def truncateAt(n: Double, p: Int): Double = if(p>0) { val s = math pow (10, p); (math floor n * s) / s } else n
 
-  override def step(value: Double): Double = truncateAt(value + stepSize, precision)
-
   override def points(current: Double, end: Double, dots: List[Double] = List.empty): List[Double]  = {
-    if (current<end) points(truncateAt(step(current), precision), end, current::dots) else (truncateAt(end, precision)::dots).reverse
+    val tick = step(current)
+    if (current<end) points(truncateAt(tick, precision), end, current::dots) else (truncateAt(end, precision)::dots.tail).reverse
   }
 
 
@@ -70,7 +71,7 @@ case class FlexibleLinearScale(title: String, start: Double, end: Double, stepSi
     * @param shrinkMult shrinks the scale if maximum is much larger then end
     * @return
     */
-  def stretched(max: Double, stretchMult: Double = 1.2, shrinkMult: Int = -1): FlexibleLinearScale = if(max > end) {
+  def stretched(max: Double, stretchMult: Double = 1.0, shrinkMult: Double = -1): FlexibleLinearScale = if(max > end) {
     val newEnd = max * stretchMult
     //println(s"maximizing from ${scale.end} to ${newEnd}")
     this.copy(end = newEnd, stepSize = newEnd / ticks.size)
@@ -96,4 +97,4 @@ trait WithLinearScale extends Scale {
 
   //real coord to chart coord (it implies that 0 is the same
   override def chartCoord(coord: Double): Double = if(inverted) inverse(coord / scale) else coord / scale + start
-}
+}*/

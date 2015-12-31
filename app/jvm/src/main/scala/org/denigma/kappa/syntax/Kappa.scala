@@ -59,7 +59,11 @@ object Kappa extends KappaPicklers{
         arr(c)(row) = Point(time, values(c+1))
       }
     }
-    val series = arr.zipWithIndex.map{case (col, i)=> KappaSeries(titles(i), col.toList) }.toList
+    val series = arr.zipWithIndex.map{case (col, i) =>
+      val points = col.toList
+      //println(s"COL $i is: \n${points.mkString("\n")}")
+      KappaSeries(titles(i), points)
+    }.toList
     KappaMessages.Chart(series)
   }
 

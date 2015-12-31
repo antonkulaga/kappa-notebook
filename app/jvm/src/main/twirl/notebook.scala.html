@@ -4,15 +4,30 @@
   <section class="ui blue segment">
     <section class="ui equal width grid">
         <row class="ui equal width row">
-            <column>
+            <column class="column">
                 <img src="/resources/kappa.svg">
+            </column>
+            <column class="column">
+                <section>
+                    <table data-view="parameters">
+                        <caption>Run parameters</caption>
+                        <tr>
+                            <td>Model name</td>
+                            <td><input class="ui small input" data-bind="events"></td>
+                            <td>Max. time</td>
+                            <td><input class="ui small input" data-bind="time"></td>
+                            <td>Points</td>
+                            <td><input class="ui small input" data-bind="points"></td>
+                        </tr>
+                    </table>
+                    <button class="ui button" data-event-click="send">Run model</button>
+                </section>
             </column>
         </row>
         <row class="ui equal width row">
             <column class="ui column">
                 <div class="ui top attached label">Code</div>
                 <textarea data-code-r="code"></textarea>
-                <button class="ui button" data-event-click="send">Execute</button>
             </column>
             <column class="ui column">
                 @html.results()

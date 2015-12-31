@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views
 
 import org.denigma.binding.binders.{Events, GeneralBinder, ReactiveBinder}
 import org.denigma.binding.views._
-import org.denigma.controls.charts.{Point, StaticSeries, LineStyles}
+import org.denigma.controls.charts.{Series, Point, StaticSeries, LineStyles}
 import org.denigma.controls.tabs._
 import org.denigma.kappa.messages.KappaMessages
 import org.denigma.kappa.notebook.KappaHub
@@ -34,17 +34,8 @@ class ResultsView(val elem: Element, hub: KappaHub) extends BindableView {
   override lazy val injector = defaultInjector
     .register("Chart") {
       case (el, params) =>
-        val justSomeLines =
-          Var(
-            Seq(Var
-            (new StaticSeries("Points: [1, 1] , [2, 3], [3 ,1], [4, 3]", List(
-              Point(1.0, 1.0),
-              Point(2.0, 3.0),
-              Point(3.0, 1.0),
-              Point(4.0, 3.0)),
-              LineStyles.default.copy(strokeColor = "blue")
-            ))))
-        new Charts(el, justSomeLines, selected).withBinder(new AdvancedBinder(_, self.binders.collectFirst { case r: ReactiveBinder => r }))
+        val items: rx.Rx[scala.collection.immutable.Seq[Rx[Series]]] =  hub.chart.map(chart=>chart.series.map(s=>Var(s)))
+        new ChartView(el, items, selected).withBinder(new AdvancedBinder(_, self.binders.collectFirst { case r: ReactiveBinder => r }))
     }
     .register("Console") {
       case (el, params) =>
@@ -54,7 +45,4 @@ class ResultsView(val elem: Element, hub: KappaHub) extends BindableView {
 
 
 
-class ConsoleView(val elem: Element, kappaConsole: Rx[Option[KappaMessages.Console]], val selected: Var[String]) extends BindableView{
-  val console: Rx[String] = kappaConsole.map(_.map(c=>c.text).getOrElse(""))
-  val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
-}
+

@@ -1,16 +1,14 @@
 package org.denigma.kappa.notebook
 
+import java.io.InputStream
+
 import akka.http.scaladsl.model.ws._
 import akka.stream.scaladsl._
 import akka.stream.stage._
 import akka.util.ByteString
 import boopickle.Default._
-import org.denigma.kappa.messages.KappaMessages.Console
 import org.denigma.kappa.messages._
-import org.denigma.kappa.syntax.{Kappa, KappaResult}
-
-import ammonite.ops
-import ammonite.ops._
+import org.denigma.kappa.syntax.Kappa
 
 
 class SocketTransport extends KappaPicklers {
@@ -31,36 +29,39 @@ class SocketTransport extends KappaPicklers {
         }
       })
 
+  def parseKappaOut() = {
+    //read
+    //# time 'tx activity' 'bound A fraction' 'conc A'
+  }
+
+  def readResource(path: String): Iterator[String] = {
+    val stream : InputStream = getClass.getResourceAsStream(path)
+    scala.io.Source.fromInputStream( stream ).getLines
+  }
 
   def openChannel(channel: String, username: String = "guest"): Flow[Message, Message, Unit] = (channel, username) match {
     case (_, _) =>
       Flow[Message].collect {
         case BinaryMessage.Strict(data) =>
           Unpickle[KappaMessages.Message].fromBytes(data.toByteBuffer) match {
-
             case cont: KappaMessages.Container =>
-              val KappaResult(command, lines) = Kappa.run(cont.code.head, cont.run.headOption.getOrElse(KappaMessages.RunParameters()))
-              val series = command.out.lines
-              val disc: Console = KappaMessages.Console(series)
-              val d = Pickle.intoBytes[KappaMessages.Message](disc)
-              println(s"RESULTS WITH CONTAINER: \n ${disc.lines.mkString("\n")}")
-              BinaryMessage(ByteString(d))
+              val code = cont.code.head
+              val params = cont.run.headOption.getOrElse(KappaMessages.RunParameters())
+              val result = Kappa.run(code, params)
+              val data = Pickle.intoBytes[KappaMessages.Message](result)
+              BinaryMessage(ByteString(data))
 
             case KappaMessages.Load(modelName) =>
-              val res: String = read.resource ! Path("examples") / modelName
-              val code = KappaMessages.Code(res)
-              println("CODE TO SEND "+res)
+              val code = KappaMessages.Code(readResource("/examples/abc.ka").toSeq)
+              //println("CODE TO SEND "+res)
               val d = Pickle.intoBytes[KappaMessages.Message](code)
               BinaryMessage(ByteString(d))
 
             case code: KappaMessages.Code =>
-              println(s"code received $code")
-              val KappaResult(command, lines) = Kappa.run(code, KappaMessages.RunParameters())
-              val series = command.out.lines
-              val disc: Console = KappaMessages.Console(series)
-              val d = Pickle.intoBytes[KappaMessages.Message](disc)
-              println(s"RESULTS: \n ${disc.lines.mkString("\n")}")
-              BinaryMessage(ByteString(d))
+              val params = KappaMessages.RunParameters()
+              val result = Kappa.run(code, params)
+              val data = Pickle.intoBytes[KappaMessages.Message](result)
+              BinaryMessage(ByteString(data))
           }
       }.via(reportErrorsFlow(channel, username)) // ... then log any processing errors on stdin
   }

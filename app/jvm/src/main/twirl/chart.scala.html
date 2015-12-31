@@ -1,8 +1,6 @@
-@(plotView: String, title: String)
-<div data-view="@{plotView}">
-  <h1 class="ui orange header">@title</h1>
+@()
+<div class="ui bottom attached tab segment" data-view="Chart" id="Chart"  data-class-active-if="active">
   <svg data-bind-height="height" data-bind-width="width">
-    <text font-size="18pt">@title</text>
     <svg class="lines" data-bind-x="left" data-bind-y="top">
       <svg data-template="true">
         <path
@@ -18,5 +16,4 @@
     @org.denigma.controls.charts.html.scaleY()
   </svg>
   @org.denigma.controls.charts.html.legend()
-  <div class="ui button" data-event-click="solve">Solve</div>
 </div>

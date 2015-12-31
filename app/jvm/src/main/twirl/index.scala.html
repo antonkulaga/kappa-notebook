@@ -1,16 +1,10 @@
 @(content:Option[Html] = None)
 <html>
-  <head title="Plasmids bank">
+  <head title="Kappa notebook">
     @html.libs()
     @html.runner()
   </head>
   <body>
-@*
-      @html.sidebar()
-      <div class="pusher"> <!--it will be pushed by a sidebar-->
-          @html.main(content)
-      </div>
-*@
       @html.main(content)
 
   </body>

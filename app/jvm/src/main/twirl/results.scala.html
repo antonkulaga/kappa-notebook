@@ -7,25 +7,7 @@
   <div class="ui bottom attached tab segment"  data-class-active-if="active" id="Console" data-view="Console">
     <textarea data-code-r="console"></textarea>
   </div>
-  <div class="ui bottom attached tab segment" data-view="Chart" id="Chart"  data-class-active-if="active">
-    <svg data-bind-height="height" data-bind-width="width">
-      <svg class="lines" data-bind-x="left" data-bind-y="top">
-        <svg data-template="true">
-          <path
-          data-bind-d="path"
-          data-bind-stroke="strokeColor"
-          data-bind-stroke-opacity="strokeOpacity"
-          data-bind-stroke-width="strokeWidth"
-          data-up-bind-fill="fill"
-          ></path>
-        </svg>
-      </svg>
-      @org.denigma.controls.charts.html.scaleX()
-      @org.denigma.controls.charts.html.scaleY()
-    </svg>
-    @org.denigma.controls.charts.html.legend()
-    <div class="ui button" data-event-click="solve">Solve</div>
-  </div>
+  @html.chart()
   @*           <div class="ui bottom attached tab segment" data-view="Flow">
 
   </div>*@

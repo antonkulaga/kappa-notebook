@@ -22,6 +22,10 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val macroParadise = "2.1.0-M5"
 
+	val logback = "1.1.3"
+
+	val akka = "2.4.1"
+
 }
 
 trait ScalaJSVersions {

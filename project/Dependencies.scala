@@ -18,7 +18,11 @@ object Dependencies {
 
 		"org.denigma" %%% "akka-http-extensions" % Versions.akkaHttpExtensions,
 
-		"com.typesafe.akka" %% "akka-http-testkit-experimental" % Versions.akkaHttp
+		"com.typesafe.akka" %% "akka-http-testkit-experimental" % Versions.akkaHttp,
+
+		"ch.qos.logback" % "logback-classic" % Versions.logback,
+
+		"com.typesafe.akka" % "akka-slf4j_2.11" % Versions.akka
 	))
 
 	//scalajs libs

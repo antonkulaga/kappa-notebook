@@ -17,8 +17,6 @@ class MainActor  extends Actor with ActorLogging
   implicit val system = context.system
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
-
-
   val server: HttpExt = Http(context.system)
   var serverSource: Source[IncomingConnection, Future[ServerBinding]] = null
   val router = new Router()

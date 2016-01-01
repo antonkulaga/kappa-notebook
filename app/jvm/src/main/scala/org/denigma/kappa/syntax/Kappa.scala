@@ -9,15 +9,11 @@ import scala.io.Source
 import scala.util._
 import scala.util.Try
 import scala.collection.immutable._
+import ammonite.ops.ImplicitWd._
 
 trait KappaAgent
 
 object Kappa extends KappaPicklers{
-
-  lazy val folder = "/home/antonkulaga/CRI/compbio2/"
-
-  lazy val file = folder+"KaSim"
-
 
   def tempFolder(project: String = "kappa-notebook"):Path = {
     val dir = java.nio.file.Files.createTempDirectory(
@@ -26,10 +22,8 @@ object Kappa extends KappaPicklers{
     Path(dir)
   }
 
-  implicit var wd = ops.Path(new java.io.File(folder))
-
   def writeFile(where: Path, name: String, strings: scala.Seq[String]) = {
-    val path = wd/ name
+    val path = where / name
     rm! path
     write( path, strings)
     path.toString()
@@ -86,14 +80,15 @@ object Kappa extends KappaPicklers{
     val kaname = parameters.kaname
     val folder: Path = tempFolder()
     val outPutFolder = folder
-    writeFile(folder, kaname, code.lines)
+    val modelPath = writeFile(folder, kaname, code.lines)
+    //println(modelPath)
     val chartName = kaname.replace(".ka", ".out")
     val result: Try[CommandResult] = Try(
       (parameters.events, parameters.time) match { // TODO: fix this ugly code
-      case (Some(ev), Some(t)) => %%KaSim("-i", kaname, "-e", ev,"-t",t,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
-      case (Some(ev), None) =>  %%KaSim("-i", kaname, "-e", ev,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
-      case (None, Some(t)) => %%KaSim("-i", kaname, "-t",t ,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
-      case other => %%KaSim("-i", kaname,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
+      case (Some(ev), Some(t)) => %%KaSim("-i", modelPath, "-e", ev,"-t",t,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
+      case (Some(ev), None) =>  %%KaSim("-i", modelPath, "-e", ev,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
+      case (None, Some(t)) => %%KaSim("-i", modelPath, "-t",t ,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
+      case other => %%KaSim("-i", modelPath,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
     })
     result match {
       case Success(command)=>

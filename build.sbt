@@ -40,7 +40,7 @@ lazy val commonSettings = Seq(
   exportJars := true,
   resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"), //for scala-js-binding
   unmanagedClasspath in Compile <++= unmanagedResources in Compile,
-  libraryDependencies ++= Dependencies.commonShared.value++Dependencies.testing.value,
+  libraryDependencies ++= Dependencies.commonShared.value ++ Dependencies.testing.value,
   updateOptions := updateOptions.value.withCachedResolution(true) //to speed up dependency resolution
 ) ++ eclipseSettings
 

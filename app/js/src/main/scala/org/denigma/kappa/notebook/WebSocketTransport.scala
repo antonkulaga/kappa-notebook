@@ -9,6 +9,7 @@ import org.denigma.kappa.messages.{KappaPicklers, KappaMessages}
 import org.denigma.kappa.messages.KappaMessages.{Container, Message}
 import org.scalajs.dom
 import rx.core.Var
+import rx.ops._
 
 import scala.collection.immutable._
 object KappaHub{
@@ -16,16 +17,18 @@ object KappaHub{
     Var(KappaMessages.Code.empty),
     Var(KappaMessages.RunParameters()),
     Var(KappaMessages.Console.empty),
-    Var(KappaMessages.Chart.empty)
+    Var(KappaMessages.Output.empty)
   )
 }
 case class KappaHub(
   code: Var[KappaMessages.Code],
   runParameters: Var[KappaMessages.RunParameters],
   console: Var[KappaMessages.Console],
-  chart: Var[KappaMessages.Chart]
+  output: Var[KappaMessages.Output]
 ){
   def packContainer(): Container = KappaMessages.Container(List(code.now, runParameters.now))
+
+  val chart = output.map(o => KappaMessages.Chart.parse(o))
 }
 
 case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHub) extends KappaPicklers with BinaryWebSocket
@@ -51,10 +54,10 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
 
   def receive: PartialFunction[KappaMessages.Message, Unit] = {
     case message: KappaMessages.Console => kappaHub.console() = message
-    case message: KappaMessages.Chart => kappaHub.chart() = message
+    case message: KappaMessages.Output=> kappaHub.output() = message
     case message: KappaMessages.Code => kappaHub.code() = message
     case message: KappaMessages.Container => message.messages.foreach(receive)
-    case other => dom.console.log(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)
+    case other => dom.console.error(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)
 
   }
 

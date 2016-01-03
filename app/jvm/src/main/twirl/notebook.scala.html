@@ -11,7 +11,7 @@
                     @html.parameters()
                     <button class="ui button" data-event-click="run">Run model</button>
                     <button class="ui button" data-event-click="save">Save model</button>
-                    <input id="the-file-input" type="file"  data-event-change="onUpload">
+                    <input id="the-file-input" type="file" title="Upload model"  data-event-change="onUpload">
                 </column>
             </row>
             <row class="ui equal width row">
@@ -20,7 +20,7 @@
                     <textarea data-code-r="code"></textarea>
                 </column>
                 <column class="ui column">
-                    @html.results()
+                    @output.html.results()
                 </column>
             </row>
         </section>

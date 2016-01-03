@@ -10,11 +10,11 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val apacheCodec = "1.10"
 
-	val akkaHttpExtensions = "0.0.9-M2"
+	val akkaHttpExtensions = "0.0.9"
 
-	val bindingControls = "0.0.9-M3"
+	val bindingControls = "0.0.9-M4"
 
-	val kappaNotebook = "0.0.3"
+	val kappaNotebook = "0.0.4"
 
 	val retry = "0.2.1"
 
@@ -38,7 +38,7 @@ trait ScalaJSVersions {
 
 	val codemirrorFacade = "5.4-0.5"
 
-	val binding = "0.8.1-M3"
+	val binding = "0.8.1-M4"
 
 }
 

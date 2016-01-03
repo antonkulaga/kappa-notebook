@@ -2,13 +2,10 @@
 <section data-view="results">
   <div class="ui top attached tabular menu">
     <a class="item" data-set-selected-on-click="Console" data-class-active-if="Console.active">Console</a>
-    <a class="item" data-set-selected-on-click="Chart" data-class-active-if="Chart.active">Chart</a>
+    <a class="item" data-set-selected-on-click="Plots" data-class-active-if="Plots.active">Plots</a>
   </div>
   <div class="ui bottom attached tab segment"  data-class-active-if="active" id="Console" data-view="Console">
     <textarea data-code-r="console"></textarea>
   </div>
-  @html.chart()
-  @*           <div class="ui bottom attached tab segment" data-view="Flow">
-
-  </div>*@
+  @plots()
 </section>

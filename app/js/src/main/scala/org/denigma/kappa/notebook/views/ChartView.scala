@@ -1,87 +1,100 @@
 package org.denigma.kappa.notebook.views
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
+import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
+import org.denigma.binding.views.BindableView
 import org.denigma.controls.charts._
-import org.denigma.controls.tabs.{TabItemView, TabItem}
+import org.denigma.kappa.notebook.KappaHub
 import org.scalajs.dom
-import org.scalajs.dom.raw.Element
-import rx.core.{Var, Rx}
+import org.scalajs.dom.MouseEvent
+import org.scalajs.dom.ext._
+import org.scalajs.dom.raw.{Element, Event, SVGElement}
+import rx.core.{Rx, Var}
 import rx.ops._
+
 import scala.collection.immutable._
+import scala.util._
+
+
+class PlotsView(val elem: Element, val selected: Var[String], hub: KappaHub) extends BindableView with Uploader with TabItem
+{
+  self=>
+
+  val chartActive = Var(true)
+  val outputActive = Var(true)
+
+  val output = Var("")
+
+  val applyOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
+  applyOutput.handler{
+    val text = output.now
+    val lines = output.now.split("\n").toVector
+    hub.output() = hub.output.now.copy(lines = lines)
+  }
+
+  hub.output.foreach{case h=>
+    output.set(h.text)
+  }
+
+  val saveOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
+  saveOutput.handler{
+    saveAs(hub.runParameters.now.outputName, output.now)
+  }
+
+  val activateChart: Var[MouseEvent] = Var(Events.createMouseEvent())
+  activateChart.handler{
+    chartActive() = !chartActive.now
+  }
+
+  val activateOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
+  activateOutput.handler{
+    outputActive() = !outputActive.now
+  }
+
+  val onUpload: Var[Event] = Var(Events.createEvent())
+  onUpload.onChange("onUpload", uniqueValue = true, skipInitial = true)(ev =>
+    this.uploadHandler(ev){
+      case Success((file, text))=> output.set(text)
+      case Failure(th) => dom.console.error(s"File upload failure: ${th.toString}")
+    })
+
+  val title = hub.runParameters.map(_.outputName.replace(".out",""))
+
+  override lazy val injector = defaultInjector
+    .register("Chart") {
+      case (el, params) =>
+        val items: rx.Rx[scala.collection.immutable.Seq[Rx[Series]]] =  hub.chart.map(chart=>chart.series.map(s=>Var(s)))
+        new ChartView(el, title, items).withBinder(new GeneralBinder(_))
+    }
+
+}
+
 
 class ChartView(val elem: Element,
-                val items: Rx[Seq[Rx[Series]]],
-                val selected: Var[String]
-                  ) extends LinesPlot {
+                val title: Rx[String],
+                val items: Rx[Seq[Rx[Series]]]
+               ) extends FlexibleLinearPlot {
 
-  val flexible = Var(true)
-  val shrinkMult = Var(1.05)
-  val stretchMult = Var(1.05)
+   val scaleX: Var[LinearScale] = Var(LinearScale("Time", 0.0, 10, 2, 400))
+   val scaleY: Var[LinearScale] = Var(LinearScale("Concentration", 0.0, 10, 2, 500, inverted = true))
 
-  val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
-  val scaleX = Var(FlexibleLinearScale("Time", 0.0, 10, 2, 400))
-  val scaleY = Var(FlexibleLinearScale("Concentration", 0.0, 10, 2, 500, inverted = true))
-
-  val empty: rx.Rx[Boolean] = items.map(_.isEmpty)
-
-  def max(series: Series)(fun: Point=>Double): Point = series.points.maxBy(fun)
-
-  val max = items.map{case its=>
-    val x = its.foldLeft(0.0){ case (acc, series)=> Math.max(acc, series.now.points.maxBy(_.x).x)}
-    val y = its.foldLeft(0.0){ case (acc, series)=> Math.max(acc, series.now.points.maxBy(_.y).y)}
-    Point(x, y)
-  }
-  max.foreach{
-    case Point(x, y) =>
-      if(flexible()) {
-        val (sX, sY) = (scaleX.now, scaleY.now)
-        val sh = shrinkMult()
-        val st = stretchMult()
-        val updScaleX = sX.stretched(x, stretchMult = st, shrinkMult = sh)
-        scaleX.set(updScaleX)
-        val updScaleY = sY.stretched(y,  stretchMult = st, shrinkMult = sh)
-        scaleY.set(updScaleY)
-        //println("TICK LEN = "+scaleX.now.ticks.length)
-      }
-  }
+  val halfWidth = Rx{ width() / 2.0 }
 
   override def newItemView(item: Item): SeriesView = constructItemView(item){
     case (el, mp) => new SeriesView(el, item, transform).withBinder(new GeneralBinder(_))
   }
-}
 
-case class FlexibleLinearScale(title: String, start: Double, end: Double, stepSize: Double, length: Double, inverted: Boolean = false, precision:Int = 3) extends WithLinearScale
-{
+  def getFirst[T](pf: PartialFunction[Element,T]): Option[T] = pf.lift(elem).orElse(elem.children.collectFirst(pf))
 
-  lazy val span =  Math.abs(end - start)
-
-  override lazy val scale = length / span
-
-  if(stepSize > Math.abs(start - end)) dom.console.error(s"stepSize is larger than length of the axis")
-
-  override def points(current: Double, end: Double, dots: List[Double] = List.empty): List[Double]  = {
-    val tick = step(current)
-    if (current<end) points(truncateAt(tick, precision), end, current::dots) else (truncateAt(end, precision)::dots).reverse
+  import org.denigma.binding.extensions._
+  val saveChart = Var(Events.createMouseEvent())
+  saveChart.handler{
+    getFirst[String]{ case svg: SVGElement => svg.outerHTML} match {
+      case Some(html)=>  saveAs(title.now+".svg", html)
+      case None=> dom.console.error("cannot find svg element among childrens") //note: buggy
+    }
   }
 
-
-  /**
-    *
-    * @param max maximum value of the point coordinate
-    * @param stretchMult makes end strechMult times more then maximum value
-    * @param shrinkMult shrinks the scale if maximum is much larger then end
-    * @return
-    */
-  def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): FlexibleLinearScale = if(max > end) {
-    val newEnd = max * stretchMult
-    val st = Math.abs(newEnd - start) / (ticks.length - 2)
-    this.copy(end = newEnd, stepSize = st)
-  } else if( shrinkMult > 0 && Math.abs(max - start) > 0.0 && end > max * shrinkMult){
-    val newEnd = max
-    val st = Math.abs(newEnd - start) / (ticks.length - 2)
-    this.copy(end = newEnd, stepSize = st)
-  } else this //does not change anything
-
-
 }
+

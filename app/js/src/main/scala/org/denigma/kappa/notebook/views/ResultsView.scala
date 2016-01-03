@@ -25,10 +25,9 @@ class ResultsView(val elem: Element, hub: KappaHub) extends BindableView {
   val selected: Var[String] = Var("Console")
 
   override lazy val injector = defaultInjector
-    .register("Chart") {
+    .register("Plots") {
       case (el, params) =>
-        val items: rx.Rx[scala.collection.immutable.Seq[Rx[Series]]] =  hub.chart.map(chart=>chart.series.map(s=>Var(s)))
-        new ChartView(el, items, selected).withBinder(new GeneralBinder(_, self.binders.collectFirst { case r: ReactiveBinder => r }))
+        new PlotsView(el, selected, hub).withBinder(new CodeBinder(_))
     }
     .register("Console") {
       case (el, params) =>

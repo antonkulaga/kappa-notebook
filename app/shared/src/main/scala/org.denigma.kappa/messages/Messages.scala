@@ -2,6 +2,7 @@ package org.denigma.kappa.messages
 
 import boopickle.Default._
 import org.denigma.controls.charts.{LineStyles, Point, Series}
+import org.denigma.kappa.notebook.ChartParser
 import scala.collection.immutable._
 
 object KappaMessages {
@@ -39,12 +40,14 @@ object KappaMessages {
 
   case class Console(lines: List[String]) extends Message
   {
-    val text: String = lines.fold("")((a, b)=> a + "\n" + b)
+    val text: String = lines.fold("")((acc, b)=> acc + b + "\n")
     def isEmpty: Boolean = lines.isEmpty
   }
 
   object Chart {
     lazy val empty = Chart(List.empty)
+    def parse(output: Output): Chart = this.parse(output.lines)
+    def parse(lines: Vector[String]): Chart = new ChartParser(lines).chart
   }
 
   case class Chart(series: List[KappaSeries]) extends Message
@@ -52,40 +55,41 @@ object KappaMessages {
     def isEmpty: Boolean = series.isEmpty
   }
 
+  object Output {
+    lazy val empty = Output(Vector.empty)
+  }
+  case class Output(lines: Vector[String]) extends Message {
+    val text: String = lines.fold("")((acc, b)=> acc + b + "\n")
+    def isEmpty: Boolean = lines.isEmpty
+  }
+
   case class RunParameters(
                             fileName: String = "model.ka",
                             events: Option[Int] = Some(10000),
                             time: Option[Int] = None,
                             points: Int = 250,
-                            chart: Option[String] = Some(""), //"" means same as file name
+                            output: Option[String] = None, //"" means same as file name
                             flow: Option[String] = None,
                             causality: Option[String] = None,
                             gluttony: Boolean = false,
-                            deduceSignatures: Boolean = false
+                            implicitSignature: Boolean = false
                           ) extends Message {
 
     lazy val kaname: String = if (fileName.endsWith(".ka")) fileName else fileName+".ka"
-    lazy val chartName: String =  chart.getOrElse(kaname.replace(".ka", ".out"))
 
-/*    def maxEvents: String = events.map(ev =>s"-e $ev").getOrElse("")
-    def maxTime: String = time.map(t=> "-t $t").getOrElse("")*/
+    lazy val outputName: String =  output.getOrElse(kaname.replace(".ka", ".out"))
 
-    def hasGluttony: String = if(gluttony) "--gluttony" else ""
+    protected def optSeq( couples: (Boolean, String) *): scala.Seq[String] = couples.collect{ case (true, value) => value}
 
-    def implicitSignature = if(deduceSignatures) "--implicit-signature" else ""
+    def optional: scala.Seq[String] = optSeq( (gluttony,"--gluttony"), (implicitSignature, "--implicit-signature"))
 
-    def flags = s"$hasGluttony $implicitSignature"
-
-//    def parameters(KaSim: String) = s"$KaSim -i $kaname $maxEvents $maxTime $points -o $chartName $flags"
 
   }
-  //lazy val defaultRunParameters = RunParameters(Some(10000), Time(, 1000))
 
   object KappaSeries {
 
-    //val colors = Vector("green", "red", "pink", "blue", "lightblue", "violet", "cyan", "navy", "black", "rose")
-    import org.denigma.binding.extensions._
     import scala.util.Random
+
     def randomColor() = s"rgb(${Random.nextInt(255)},${Random.nextInt(255)},${Random.nextInt(255)})"
 
     def randomLineStyle() = LineStyles(randomColor(), 4 ,"none" , 1.0)
@@ -94,8 +98,6 @@ object KappaMessages {
 
   case class KappaSeries(title: String, points: List[Point], style: LineStyles = KappaSeries.randomLineStyle()) extends Series
 
-
-  // %%KaSim("-i", kaname, "-e",events,"-p", points, "-o", chart, "-d", outPutFolder)
 }
 
 class KappaPicklers {
@@ -113,6 +115,7 @@ class KappaPicklers {
       .addConcreteType[Console]
       .addConcreteType[Chart]
       .addConcreteType[RunParameters]
+      .addConcreteType[Output]
       .addConcreteType[Load]
   }
   import Single._
@@ -123,6 +126,7 @@ class KappaPicklers {
     .addConcreteType[Chart]
     .addConcreteType[RunParameters]
     .addConcreteType[Load]
+    .addConcreteType[Output]
     .addConcreteType[Container]
 
 

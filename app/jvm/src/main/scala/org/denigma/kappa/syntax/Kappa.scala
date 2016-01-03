@@ -13,6 +13,7 @@ import ammonite.ops.ImplicitWd._
 
 trait KappaAgent
 
+
 object Kappa extends KappaPicklers{
 
   def tempFolder(project: String = "kappa-notebook"):Path = {
@@ -29,7 +30,6 @@ object Kappa extends KappaPicklers{
     path.toString()
   }
 
-
   val quoted = P("'" ~ (!("'")~AnyChar).rep(1).! ~ "'")
 
   val spaced = P((" ").rep(0) ~ (!" " ~ AnyChar).rep(1).! ~ (" ").rep(0))
@@ -38,37 +38,8 @@ object Kappa extends KappaPicklers{
 
   def loadChart(path: Path): KappaMessages.Chart = {
     val lines: Vector[String] = read.lines ! path
-    if(lines.isEmpty) throw new Exception("chart is empty")
-    val headerString = lines.head.replace("# time", "time").trim()
-    val headers =  headerParser.parse(headerString).get.value.toList
-    val data = lines.tail
-    val titles = headers.tail
-    val cols = headers.size
-    if(cols < 0) throw new Exception("Too small chart file")
-    val arr: Array[Array[Point]] = new Array[Array[Point]](cols-1) //does not include time
-    for(i <- arr.indices) arr(i) = new Array[Point](data.size)
-    for(row <- data.indices)
-    {
-      val r = data(row).trim
-      val values: Array[Double] = r.split(" ").map{str =>
-        try str.toDouble catch {
-          case exception: Throwable =>
-            println(s"Cannot parse to Double following string:\n${str}\nwhole row is: \n${r}")
-            throw exception
-        }
-      }
-      val time = values(0)
-      for(c <- arr.indices){
-        arr(c)(row) = Point(time, values(c+1))
-      }
-    }
-    val series = arr.zipWithIndex.map{case (col, i) =>
-      val points = col.toList
-      KappaSeries(titles(i), points)
-    }.toList
-    KappaMessages.Chart(series)
+    KappaMessages.Chart.parse(lines)
   }
-
 
   /**
     * Runs kappa with some parameters
@@ -76,25 +47,30 @@ object Kappa extends KappaPicklers{
     * @param parameters Parameters to run with
     * @return
     */
-  def run(code: KappaMessages.Code, parameters: KappaMessages.RunParameters): KappaMessages.Container = {
+  def run(code: KappaMessages.Code, parameters: KappaMessages.RunParameters) = {
     val kaname = parameters.kaname
     val folder: Path = tempFolder()
     val outPutFolder = folder
     val modelPath = writeFile(folder, kaname, code.lines)
     //println(modelPath)
     val chartName = kaname.replace(".ka", ".out")
-    val result: Try[CommandResult] = Try(
-      (parameters.events, parameters.time) match { // TODO: fix this ugly code
-      case (Some(ev), Some(t)) => %%KaSim("-i", modelPath, "-e", ev,"-t",t,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
-      case (Some(ev), None) =>  %%KaSim("-i", modelPath, "-e", ev,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
-      case (None, Some(t)) => %%KaSim("-i", modelPath, "-t",t ,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
-      case other => %%KaSim("-i", modelPath,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
-    })
+    //val res = parameters.events.map(Seq[Shellable]("e", _)).flatMap{value=>value++parameters.time.map(Seq[Shellable]("e", _))}
+    //%%KaSim("-i", modelPath, "-e", ev,"-t",t,"-p", parameters.points, "-o", chartName, "-d", outPutFolder)
+    val params: Seq[Shellable] = Seq[Shellable]("-i", modelPath)++
+      Seq(parameters.events.map(e=>Seq[Shellable]("-e", e)), parameters.time.map(t=>Seq[Shellable]("-t", t))).flatten.flatten ++
+      Seq[Shellable]("-p", parameters.points, "-o", chartName, "-d", outPutFolder) ++
+      parameters.optional.map(value=>value:Shellable)
+    //println(s"Params are ${params}")
+    //println(s"Params are ${params.mkString(" | ")}")
+    val result = Try( %%.applyDynamic("KaSim")(params:_*) )
     result match {
       case Success(command)=>
         val console = KappaMessages.Console(command.out.lines.toList)
-        val chart = loadChart(outPutFolder / chartName)
-        KappaMessages.Container(List(console, chart))
+        //val chart = loadChart(outPutFolder / chartName)
+        val out = outPutFolder / chartName
+        val lines = read.lines ! out
+        val output = KappaMessages.Output(lines)
+        KappaMessages.Container(List(console, output))
       case Failure(message) =>
         KappaMessages.Container(KappaMessages.Console(message.getMessage))
     }

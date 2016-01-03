@@ -10,7 +10,7 @@ object Dependencies {
 
 	//libs for testing
   lazy val testing = Def.setting(Seq(
-		"org.scalatest" %%% "scalatest" % Versions.scalaTest
+		"org.scalatest" %%% "scalatest" % Versions.scalaTest % "test"
   ))
 
 	//akka-related libs
@@ -57,7 +57,7 @@ object Dependencies {
 
 		"org.denigma" %%% "binding-controls" % Versions.bindingControls,
 
-		"com.lihaoyi" %% "fastparse" % Versions.fastparse
+		"com.lihaoyi" %%% "fastparse" % Versions.fastparse
 	))
 
 	val otherJvm = Def.setting(Seq(

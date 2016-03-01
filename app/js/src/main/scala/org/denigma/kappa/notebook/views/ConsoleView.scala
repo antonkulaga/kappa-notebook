@@ -2,8 +2,9 @@ package org.denigma.kappa.notebook.views
 import org.denigma.binding.views._
 import org.denigma.kappa.messages.KappaMessages
 import org.scalajs.dom.raw.Element
-import rx.core._
-import rx.ops._
+import rx._
+import rx.Ctx.Owner.Unsafe.Unsafe
+
 
 /**
   * Created by antonkulaga on 12/31/15.

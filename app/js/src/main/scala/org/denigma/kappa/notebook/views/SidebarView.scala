@@ -5,6 +5,7 @@ import org.scalajs.dom.raw.Element
 import rx._
 import org.querki.jquery._
 import org.denigma.binding.extensions._
+import rx.Ctx.Owner.Unsafe.Unsafe
 /**
  * View for the sitebar
  */

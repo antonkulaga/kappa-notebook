@@ -7,9 +7,10 @@ import org.denigma.kappa.messages.KappaMessages
 import org.denigma.kappa.messages.KappaMessages.RunParameters
 import org.scalajs.dom.Event
 import org.scalajs.dom.raw.{HTMLTextAreaElement, HTMLInputElement, Element}
-import rx.core._
+import rx._
 import org.denigma.binding.binders.{Events, ReactiveBinder}
 import org.denigma.binding.macroses._
+import rx.Ctx.Owner.Unsafe.Unsafe
 
 class RunnerView(val elem: Element, val parameters: Var[KappaMessages.RunParameters]) extends BindableView
 {
@@ -40,7 +41,7 @@ class RunnerView(val elem: Element, val parameters: Var[KappaMessages.RunParamet
 
 
 import org.scalajs.dom.ext._
-import rx.ops._
+
 
 class AdvancedBinder[View <: BindableView](view: View, recover: Option[ReactiveBinder] = None)
                     (implicit

@@ -1,6 +1,6 @@
 package org.denigma.kappa.notebook.views
 
-import org.denigma.binding.binders.{GeneralBinder, _}
+import org.denigma.binding.binders._
 import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
@@ -11,14 +11,11 @@ import org.denigma.kappa.messages.KappaMessages
 import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
 import org.scalajs.dom
 import org.scalajs.dom._
-import org.scalajs.dom.html.Input
-import org.scalajs.dom.raw.{Element, FileReader}
-import rx.core._
-import org.denigma.binding.extensions._
-import scala.annotation.tailrec
-import scala.concurrent.{Future, Promise}
+import org.scalajs.dom.raw.Element
+import rx._
+import rx.Ctx.Owner.Unsafe.Unsafe
+
 import scala.util._
-import scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView with Uploader
 {
@@ -46,32 +43,32 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     """.stripMargin
 
   val connector: WebSocketTransport = WebSocketTransport(subscriber, hub)
-  subscriber.onOpen.handler{
+  subscriber.onOpen.triggerLater{
     connector.send(KappaMessages.Load())
   }
 
   val code = Var(initialCode)
-  code.onChange("code change"){ case txt=>
+  code.onChange{ case txt=>
     hub.code() = hub.code.now.copy(text = txt)
   }
 
-  hub.code.onChange("hub changes"){case value =>
+  hub.code.onChange{case value =>
     if(value.isEmpty) code.set("") else code.set(value.text)
   }
 
   val run = Var(org.denigma.binding.binders.Events.createMouseEvent)
-  run.handler{
+  run.triggerLater{
     //dom.console.log("sending the code...")
     connector.send(hub.packContainer())
   }
 
   val save = Var(Events.createMouseEvent())
-  save.handler{
+  save.triggerLater{
     saveAs(hub.runParameters.now.fileName, code.now)
   }
 
   val onUpload: Var[Event] = Var(Events.createEvent())
-  onUpload.onChange("onUpload", uniqueValue = true, skipInitial = true)(ev =>
+  onUpload.onChange(ev =>
     this.uploadHandler(ev){
       case Success((file, text))=>
         hub.runParameters.set(hub.runParameters.now.copy(fileName = file.name))

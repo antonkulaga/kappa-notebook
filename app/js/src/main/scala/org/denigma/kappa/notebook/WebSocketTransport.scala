@@ -8,8 +8,8 @@ import org.denigma.controls.sockets.{BinaryWebSocket, WebSocketSubscriber}
 import org.denigma.kappa.messages.{KappaPicklers, KappaMessages}
 import org.denigma.kappa.messages.KappaMessages.{Container, Message}
 import org.scalajs.dom
-import rx.core.Var
-import rx.ops._
+import rx.Var
+import rx.Ctx.Owner.Unsafe.Unsafe
 
 import scala.collection.immutable._
 object KappaHub{
@@ -33,7 +33,7 @@ case class KappaHub(
 
 case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHub) extends KappaPicklers with BinaryWebSocket
 {
-  subscriber.onOpen.handler{
+  subscriber.onOpen.triggerLater{
     dom.console.log("WebSocket has been opened")
     //send(disc)
   }
@@ -43,10 +43,10 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
     subscriber.send(mes)
   }
 
-  subscriber.onClose.handler(
+  subscriber.onClose.triggerLater(
     dom.console.log("WebSocked has been closed")
   )
-  subscriber.onMessage.onChange("OnMessage",uniqueValue = false)(onMessage)
+  subscriber.onMessage.onChange(onMessage)
   //chosen.onChange("chosenChange")(onChosenChange)
 
 

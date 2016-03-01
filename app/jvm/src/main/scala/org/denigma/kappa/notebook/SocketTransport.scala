@@ -2,6 +2,8 @@ package org.denigma.kappa.notebook
 
 import java.io.InputStream
 
+import akka.NotUsed
+import akka.http.scaladsl.model.ws.BinaryMessage.Strict
 import akka.http.scaladsl.model.ws._
 import akka.stream.scaladsl._
 import akka.stream.stage._
@@ -18,7 +20,7 @@ class SocketTransport extends KappaPicklers {
   }
 
 
-  def reportErrorsFlow[T](channel: String, username: String): Flow[T, T, Unit] =
+  def reportErrorsFlow[T](channel: String, username: String): Flow[T, T, NotUsed] =
     Flow[T]
       .transform(() ⇒ new PushStage[T, T] {
         def onPush(elem: T, ctx: Context[T]): SyncDirective = ctx.push(elem)
@@ -34,7 +36,7 @@ class SocketTransport extends KappaPicklers {
     scala.io.Source.fromInputStream( stream ).getLines
   }
 
-  def openChannel(channel: String, username: String = "guest"): Flow[Message, Message, Unit] = (channel, username) match {
+  def openChannel(channel: String, username: String = "guest"): Flow[Message, Strict, NotUsed] = (channel, username) match {
     case (_, _) =>
       Flow[Message].collect {
         case BinaryMessage.Strict(data) =>

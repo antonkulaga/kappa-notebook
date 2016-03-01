@@ -10,8 +10,9 @@ import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.ext._
 import org.scalajs.dom.raw.{Element, Event, SVGElement}
-import rx.core.{Rx, Var}
-import rx.ops._
+import rx.{Rx, Var}
+import rx.Ctx.Owner.Unsafe.Unsafe
+
 
 import scala.collection.immutable._
 import scala.util._
@@ -27,7 +28,7 @@ class PlotsView(val elem: Element, val selected: Var[String], hub: KappaHub) ext
   val output = Var("")
 
   val applyOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
-  applyOutput.handler{
+  applyOutput.triggerLater{
     val text = output.now
     val lines = output.now.split("\n").toVector
     hub.output() = hub.output.now.copy(lines = lines)
@@ -38,22 +39,22 @@ class PlotsView(val elem: Element, val selected: Var[String], hub: KappaHub) ext
   }
 
   val saveOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
-  saveOutput.handler{
+  saveOutput.triggerLater{
     saveAs(hub.runParameters.now.outputName, output.now)
   }
 
   val activateChart: Var[MouseEvent] = Var(Events.createMouseEvent())
-  activateChart.handler{
+  activateChart.triggerLater{
     chartActive() = !chartActive.now
   }
 
   val activateOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
-  activateOutput.handler{
+  activateOutput.triggerLater{
     outputActive() = !outputActive.now
   }
 
   val onUpload: Var[Event] = Var(Events.createEvent())
-  onUpload.onChange("onUpload", uniqueValue = true, skipInitial = true)(ev =>
+  onUpload.onChange(ev =>
     this.uploadHandler(ev){
       case Success((file, text))=> output.set(text)
       case Failure(th) => dom.console.error(s"File upload failure: ${th.toString}")
@@ -89,7 +90,7 @@ class ChartView(val elem: Element,
 
   import org.denigma.binding.extensions._
   val saveChart = Var(Events.createMouseEvent())
-  saveChart.handler{
+  saveChart.triggerLater{
     getFirst[String]{ case svg: SVGElement => svg.outerHTML} match {
       case Some(html)=>  saveAs(title.now+".svg", html)
       case None=> dom.console.error("cannot find svg element among childrens") //note: buggy

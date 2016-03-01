@@ -70,6 +70,7 @@ lazy val app = crossProject
   .jvmSettings(
     libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value,
     mainClass in Compile := Some("org.denigma.kappa.notebook.Main"),
+    mainClass in Revolver.reStart := Some("org.denigma.kappa.notebook.Main"),
     libraryDependencies ++= Dependencies.compilers.value ++ Dependencies.otherJvm.value,
     scalaJSDevStage := scalaJSDevTaskStage.value,
     //pipelineStages := Seq(scalaJSProd,gzip),

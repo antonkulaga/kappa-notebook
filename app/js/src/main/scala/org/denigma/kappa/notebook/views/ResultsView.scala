@@ -7,8 +7,9 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.tabs._
 import org.denigma.kappa.notebook.KappaHub
 import org.scalajs.dom.raw.Element
-import rx.core._
-import rx.ops._
+import rx._
+import rx.Ctx.Owner.Unsafe.Unsafe
+
 
 /**
   * Created by antonkulaga on 12/5/15.

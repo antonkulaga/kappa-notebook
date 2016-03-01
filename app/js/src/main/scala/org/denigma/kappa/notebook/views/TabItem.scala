@@ -2,7 +2,8 @@ package org.denigma.kappa.notebook.views
 
 import org.denigma.binding.views.BindableView
 import rx.Rx
-import rx.ops._
+import rx.Ctx.Owner.Unsafe.Unsafe
+
 /**
   * Created by antonkulaga on 1/2/16.
   */

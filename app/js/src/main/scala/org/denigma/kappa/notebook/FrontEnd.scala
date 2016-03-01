@@ -8,7 +8,7 @@ import org.denigma.controls.login.{AjaxSession, LoginView}
 import org.denigma.kappa.notebook.views._
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
-
+import rx.Ctx.Owner.Unsafe.Unsafe
 import scala.scalajs.js.annotation.JSExport
 
 /**

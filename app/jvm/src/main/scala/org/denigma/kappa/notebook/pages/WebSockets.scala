@@ -1,5 +1,6 @@
 package org.denigma.kappa.notebook.pages
 
+import akka.NotUsed
 import akka.http.extensions.security._
 import akka.http.scaladsl.model.ws.{TextMessage, Message}
 import akka.http.scaladsl.server._
@@ -12,7 +13,7 @@ import scala.concurrent.Future
 class WebSockets(
                 loginByName: (String,String) => Future[LoginResult],
                 loginByEmail: (String,String) => Future[LoginResult],
-                makeChannel: (String,String) => Flow[Message, Message, Unit]
+                makeChannel: (String,String) => Flow[Message, Message, NotUsed]
                 ) extends  AuthDirectives with Directives with WithLoginRejections with WithRegistrationRejections
 {
   def routes: Route =
@@ -21,7 +22,7 @@ class WebSockets(
         parameter("username"){
           username=>
             println(s"username = $username")
-            handleWebsocketMessages(makeChannel("notebook", username))
+            handleWebSocketMessages(makeChannel("notebook", username))
         }
       }
     }

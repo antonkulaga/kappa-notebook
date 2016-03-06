@@ -14,7 +14,7 @@ import scala.concurrent.duration._
 
 class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Futures {
 
-  implicit val duration: FiniteDuration = 500 millis
+  implicit val duration: FiniteDuration = 800 millis
 
   implicit val timeout:Timeout = Timeout(duration)
   /*
@@ -51,7 +51,7 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
 
       val probe = TestProbe()
       server.getVersion().pipeTo(probe.ref)
-           probe.expectMsgPF(duration) {
+           probe.expectMsgPF(duration * 2) {
         case WebSim.VersionInfo(build, "v1") if build.contains("Kappa Simulator") =>
       }
     }
@@ -67,7 +67,7 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
       val abc = read("/abc.ka").reduce(_ + "\n" + _)
       //server.getVersion().pipeTo(probe.ref)
       val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
-      val tokenFut =  server.runSimulation(params).pipeTo(probeToken.ref)
+      val tokenFut =  server.run(params).pipeTo(probeToken.ref)
 
       probeToken.expectMsgPF(duration * 2) {
         case token: Int =>
@@ -90,8 +90,8 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
       val abc = read("/abc.ka").reduce(_ + "\n" + _)
       //server.getVersion().pipeTo(probe.ref)
       val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
-      server.runSimulation(params) flatMap{
-        case token => server.getSimulation(token)
+      server.run(params) flatMap{
+        case token => server.getResult(token)
       } pipeTo probe.ref
 
       probe.expectMsgPF(duration * 2) {

@@ -2,21 +2,30 @@ package org.denigma.kappa
 
 import java.io.InputStream
 
+import akka.http.scaladsl.Http
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.pattern.pipe
+import akka.stream.scaladsl.Source
 import akka.testkit.TestProbe
 import akka.util.Timeout
 import org.denigma.kappa.notebook.services.WebSimClient
 import org.scalatest.concurrent.Futures
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
 import scala.concurrent.duration._
 
-class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Futures {
+/**
+  * Tests quering WebSim
+  * to run this test make sure that WebSim server is up and running
+  */
+class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Futures with BeforeAndAfterAll {
 
   implicit val duration: FiniteDuration = 800 millis
 
   implicit val timeout:Timeout = Timeout(duration)
+
+  val server = new WebSimClient()
+
   /*
   val smallRoute =
     get {
@@ -46,7 +55,6 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
   }
 
   "WebSim" should {
-    val server = new WebSimClient()
     "return a version number" in {
 
       val probe = TestProbe()
@@ -57,7 +65,6 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
     }
 
     "run simulation and get token" in {
-      val server = new WebSimClient()
       val probeToken = TestProbe()
       val probeList = TestProbe()
 
@@ -81,7 +88,6 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
     }
 
     "run simulation and get results" in {
-      val server = new WebSimClient()
       val probe = TestProbe()
 
       // The string argument given to getResource is a path relative to
@@ -103,10 +109,40 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
           } getOrElse Array[(Double, String)]()
           println("charts are: ")
           charts.foreach(println(_))
-
       }
-
     }
 
+    "query simulation until it is running" in {
+      val probe = TestProbe()
+
+      // The string argument given to getResource is a path relative to
+      // the resources directory.
+
+      val abc = read("/abc.ka").reduce(_ + "\n" + _)
+      //server.getVersion().pipeTo(probe.ref)
+      val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
+      server.run(params) flatMap{ case token => server.getResult(token) }
+
+      /*
+      probe.expectMsgPF(duration * 2) {
+        case results: WebSim.SimulationStatus =>
+          //println(s"SIMULATION HAS RESULTS :\n"+results)
+          println("PERCENTS DONE: "+ results.percentage)
+          val charts = results.plot map {
+            case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
+          } getOrElse Array[(Double, String)]()
+          println("charts are: ")
+          charts.foreach(println(_))
+      }
+      */
+    }
+
+
+
+  }
+  protected override def afterAll() = {
+    Http().shutdownAllConnectionPools().onComplete{ _ =>
+      system.terminate()
+    }
   }
 }

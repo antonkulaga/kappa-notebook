@@ -26,14 +26,7 @@ import scala.util.{Failure, Success, Try}
   */
 trait WebSimFlows extends CirceSupport {
 
-  /*
-  implicit def system: ActorSystem
-
-  implicit def mat: ActorMaterializer
-  */
-
-  implicit def context: ExecutionContextExecutor
-
+//  implicit def context: ExecutionContextExecutor
 
   def base: String
 

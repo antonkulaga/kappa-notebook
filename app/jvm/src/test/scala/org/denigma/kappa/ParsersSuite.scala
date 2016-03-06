@@ -1,13 +1,13 @@
 package org.denigma.kappa
 
+import fastparse.core.Parsed
 import org.denigma.kappa.notebook.parsers.CommentLinksParser
-import org.scalatest.{Matchers, WordSpec}
-import org.scalatest.concurrent.Futures
+import org.scalatest.{Inside, Matchers, WordSpec}
 
 /**
   * Created by antonkulaga on 06/03/16.
   */
-class ParsersSuite extends WordSpec with Matchers  {
+class ParsersSuite extends WordSpec with Matchers with Inside {
 
 
   "Kappa parsers" should {
@@ -30,8 +30,27 @@ class ParsersSuite extends WordSpec with Matchers  {
     "parse comments" in {
 
       val parser = new CommentLinksParser
+      inside(parser.linkAfterComment.parse("'a.b' A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B")) {
+        case failure: Parsed.Failure =>
+      }
 
+      val comment = "#^ hello world"
 
+      inside(parser.linkAfterComment.parse(comment)) {
+        case failure: Parsed.Failure =>
+      }
+
+      val linkAfterComment = "#^ http://hello.world"
+
+      inside(parser.linkAfterComment.parse(linkAfterComment)) {
+        case Parsed.Success(value: String, index: Int) if value=="http://hello.world"=> println("parsed comment = "+value)
+      }
+
+    }
+
+    "parse PDF comments" in {
+      val paper = "#^ :in_paper /resources/pdf/eptcs.pdf"
+      val page = "#^ :on_page 1"
     }
   }
 }

@@ -18,7 +18,7 @@ Building from source and running examples
 
 To build from source:
 Install [sbt](http://www.scala-sbt.org/)
-Make sure that [KaSim](https://github.com/Kappa-Dev/KaSim) is in your system path and can be run by "KaSim" command.
+Make sure that [KaSim Server](https://github.com/Kappa-Dev/KaSim) is up and running in your system
 Type the following commands:
 ```scala
 $ sbt // to open sbt console

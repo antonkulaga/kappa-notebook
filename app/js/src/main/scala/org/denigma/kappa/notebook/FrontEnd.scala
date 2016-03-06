@@ -29,9 +29,9 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
    */
   override lazy val injector = defaultInjector
     // p.register("menu")( (el, args) => new MenuView(el).withBinder(new GeneralBinder(_)).withBinder(new NavigationBinder(_)))
-    .register("sidebar")((el, args) => new SidebarView(el).withBinder(new GeneralBinder(_)))
-    .register("login")((el, args) => new LoginView(el, session).withBinder(new GeneralBinder(_)))
-    .register("notebook")((el, args) => new NotebookView(el, session).withBinder(n => new CodeBinder(n)))
+    .register("Sidebar")((el, args) => new SidebarView(el).withBinder(new GeneralBinder(_)))
+    .register("Login")((el, args) => new LoginView(el, session).withBinder(new GeneralBinder(_)))
+    .register("Notebook")((el, args) => new NotebookView(el, session).withBinder(n => new CodeBinder(n)))
 
   this.withBinders(me => List(new GeneralBinder(me), new NavigationBinder(me)))
 

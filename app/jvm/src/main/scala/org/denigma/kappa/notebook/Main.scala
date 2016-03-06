@@ -18,10 +18,8 @@ object Main extends App  {
   val config: Config = system.settings.config
 
   val (host, port) = (config.getString("app.host"), config.getInt("app.port"))
-  println(s"starting server at $host:$port")
-  server.bindAndHandle(router.routes, host, port)
-
   val bindingFuture = server.bindAndHandle(router.routes, host, port)(materializer)
+
   println(s"starting server at $host:$port")
 }
 

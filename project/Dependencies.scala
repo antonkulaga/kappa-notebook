@@ -10,7 +10,9 @@ object Dependencies {
 
 	//libs for testing
   lazy val testing = Def.setting(Seq(
-		"org.scalatest" %%% "scalatest" % Versions.scalaTest % "test"
+		"org.scalatest" %%% "scalatest" % Versions.scalaTest % Test,
+
+		"org.scalatest" %%% "scalatest-matchers" % Versions.scalaTest % Test
   ))
 
 	//akka-related libs
@@ -18,11 +20,15 @@ object Dependencies {
 
 		"org.denigma" %%% "akka-http-extensions" % Versions.akkaHttpExtensions,
 
-		"com.typesafe.akka" %% "akka-http-testkit" % Versions.akkaHttp,
+		"com.typesafe.akka" %% "akka-http-testkit" % Versions.akkaHttp % Test,
+
+		"com.typesafe.akka" %% "akka-stream-testkit" % Versions.akkaHttp % Test,
 
 		"ch.qos.logback" % "logback-classic" % Versions.logback,
 
-		"com.typesafe.akka" % "akka-slf4j_2.11" % Versions.akka
+		"com.typesafe.akka" %% "akka-slf4j" % Versions.akka,
+
+		"de.heikoseeberger" %% "akka-http-circe" % Versions.circeHttp
 	))
 
 	//scalajs libs
@@ -57,7 +63,13 @@ object Dependencies {
 
 		"org.denigma" %%% "binding-controls" % Versions.bindingControls,
 
-		"com.lihaoyi" %%% "fastparse" % Versions.fastparse
+		"com.lihaoyi" %%% "fastparse" % Versions.fastparse,
+
+		"io.circe" %%% "circe-core" % Versions.circe,
+
+		"io.circe" %%% "circe-generic" % Versions.circe,
+
+		"io.circe" %%% "circe-parser" % Versions.circe
 	))
 
 	val otherJvm = Def.setting(Seq(

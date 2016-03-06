@@ -6,7 +6,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val bcrypt = "2.4"
 
-	val ammonite = "0.5.3"
+	val ammonite = "0.5.5"
 
 	val apacheCodec = "1.10"
 
@@ -22,9 +22,11 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val macroParadise = "2.1.0"
 
-	val logback = "1.1.3"
+	val logback = "1.1.6"
 
 	val akka = "2.4.2"
+
+	val circeHttp = "1.5.2"
 
 }
 
@@ -45,6 +47,9 @@ trait ScalaJSVersions {
 //versions for libs that are shared between client and server
 trait SharedVersions
 {
+
+	val circe = "0.3.0"
+
 	val scalaTags = "0.5.4"
 
 	val scalaCSS = "0.4.0"
@@ -53,7 +58,7 @@ trait SharedVersions
 
 	val scalaTest = "3.0.0-SNAP13"
 
-	val fastparse = "0.3.5"
+	val fastparse = "0.3.6"
 
 }
 

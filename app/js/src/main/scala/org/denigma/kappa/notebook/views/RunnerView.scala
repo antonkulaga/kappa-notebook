@@ -43,6 +43,7 @@ class RunnerView(val elem: Element, val parameters: Var[KappaMessages.RunParamet
 import org.scalajs.dom.ext._
 
 
+/*
 class AdvancedBinder[View <: BindableView](view: View, recover: Option[ReactiveBinder] = None)
                     (implicit
                      mpMap: MapRxMap[View], mpTag: TagRxMap[View],
@@ -91,3 +92,4 @@ class AdvancedBinder[View <: BindableView](view: View, recover: Option[ReactiveB
       }
   }
 }
+*/

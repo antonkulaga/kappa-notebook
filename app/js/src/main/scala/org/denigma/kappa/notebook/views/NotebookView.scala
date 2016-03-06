@@ -8,6 +8,7 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.Session
 import org.denigma.controls.sockets.WebSocketSubscriber
 import org.denigma.kappa.messages.KappaMessages
+import org.denigma.kappa.notebook.views.editor.KappaEditor
 import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
 import org.scalajs.dom
 import org.scalajs.dom._
@@ -77,8 +78,10 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     })
 
    override lazy val injector = defaultInjector
-    .register("parameters")((el, args) => new RunnerView(el, hub.runParameters).withBinder(n => new AdvancedBinder(n)))
-    .register("results")((el, args) => new ResultsView(el, hub).withBinder(n => new CodeBinder(n)))
+     .register("Parameters")((el, args) => new RunnerView(el, hub.runParameters).withBinder(n => new CodeBinder(n)))
+     .register("KappaEditor")((el, args) => new KappaEditor(el, code))
+     .register("Results")((el, args) => new ResultsView(el, hub).withBinder(n => new CodeBinder(n)))
+
 }
 
 

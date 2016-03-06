@@ -1,4 +1,4 @@
-<section class="ui green segment" data-view="notebook">
+<section class="ui green segment" data-view="Notebook">
     <p>This is a prototype of the notebook for <a href="http://kappalanguage.org">kappa-language</a>.
         With it you can run simulations and get plots and console output.</p>
     <section class="ui blue segment">
@@ -11,13 +11,13 @@
                     @html.parameters()
                     <button class="ui button" data-event-click="run">Run model</button>
                     <button class="ui button" data-event-click="save">Save model</button>
-                    <input id="the-file-input" type="file" title="Upload model"  data-event-change="onUpload">
+                    <input id="the-file-input" type="file" title="Upload model" data-event-change="onUpload">
                 </column>
             </row>
             <row class="ui equal width row">
-                <column class="ui column">
+                <column class="ui column" data-view="KappaEditor">
                     <div class="ui top attached label">Code</div>
-                    <textarea data-code-r="code"></textarea>
+                    <textarea data-editor="kappa" id="kappa"></textarea>
                 </column>
                 <column class="ui column">
                     @output.html.results()

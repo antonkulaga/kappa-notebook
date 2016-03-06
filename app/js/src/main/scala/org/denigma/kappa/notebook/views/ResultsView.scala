@@ -6,6 +6,7 @@ import org.denigma.controls.charts.Series
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.tabs._
 import org.denigma.kappa.notebook.KappaHub
+import org.denigma.kappa.notebook.views.papers.PapersView
 import org.scalajs.dom.raw.Element
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -33,6 +34,10 @@ class ResultsView(val elem: Element, hub: KappaHub) extends BindableView {
     .register("Console") {
       case (el, params) =>
         new ConsoleView(el, hub.console, selected).withBinder(new CodeBinder(_))
+    }
+    .register("Papers") {
+      case (el, params) =>
+        new PapersView(el, selected).withBinder(new CodeBinder(_))
     }
 }
 

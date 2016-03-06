@@ -13,6 +13,9 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.syntax.Kappa
 import fastparse.all._
 
+/**
+  * Websocket transport that unplickles/pickles messages
+  */
 class SocketTransport extends KappaPicklers {
 
   def webSocketFlow(channel: String, user: String = "guest"): Flow[Message, Message, _] = {

@@ -1,11 +1,12 @@
 @()
-<section data-view="results">
+<section data-view="Results">
   <div class="ui top attached tabular menu">
     <a class="item" data-set-selected-on-click="Console" data-class-active-if="Console.active">Console</a>
     <a class="item" data-set-selected-on-click="Plots" data-class-active-if="Plots.active">Plots</a>
+    <a class="item" data-set-selected-on-click="Papers" data-class-active-if="Papers.active">Papers</a>
   </div>
-  <div class="ui bottom attached tab segment"  data-class-active-if="active" id="Console" data-view="Console">
-    <textarea data-code-r="console"></textarea>
-  </div>
+  @console()
   @plots()
+  @papers()
+
 </section>

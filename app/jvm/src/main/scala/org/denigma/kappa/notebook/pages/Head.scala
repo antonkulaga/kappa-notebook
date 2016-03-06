@@ -16,6 +16,9 @@ object MyStyles extends StyleSheet.Standalone {
     height.auto
     )//-(overflowX.auto,overflowY.hidden)
 
+  ".breakpoints" - (
+    width( 1 em)
+    )
 
 }
 

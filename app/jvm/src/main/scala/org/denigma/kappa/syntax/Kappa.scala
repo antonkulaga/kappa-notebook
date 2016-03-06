@@ -4,7 +4,7 @@ import ammonite.ops._
 import fastparse.all._
 import org.denigma.controls.charts.Point
 import org.denigma.kappa.messages.{KappaPicklers, KappaMessages}
-import org.denigma.kappa.messages.KappaMessages.KappaSeries
+import org.denigma.kappa.messages.KappaMessages.{Container, KappaSeries}
 import scala.io.Source
 import scala.util._
 import scala.util.Try
@@ -12,7 +12,6 @@ import scala.collection.immutable._
 import ammonite.ops.ImplicitWd._
 
 trait KappaAgent
-
 
 object Kappa extends KappaPicklers{
 
@@ -43,11 +42,12 @@ object Kappa extends KappaPicklers{
 
   /**
     * Runs kappa with some parameters
+ *
     * @param code Code to Run
     * @param parameters Parameters to run with
     * @return
     */
-  def run(code: KappaMessages.Code, parameters: KappaMessages.RunParameters) = {
+  def run(code: KappaMessages.Code, parameters: KappaMessages.RunParameters): Container = {
     val kaname = parameters.kaname
     val folder: Path = tempFolder()
     val outPutFolder = folder

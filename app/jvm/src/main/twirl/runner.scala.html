@@ -1,7 +1,8 @@
 @(into:String = "main",leftSidebar:Boolean = false)
 <script src="/resources/kappa-notebook-fastopt.js"></script>
 <script>
-$( document ).ready(function() {
-    FrontEnd().main(); //activate ScalaJS main class
-});
+        $( document ).ready(function() {
+            selectionchange.start();
+            FrontEnd().main(); //activate ScalaJS main class
+        });
 </script>

@@ -2,7 +2,7 @@ package org.denigma.kappa.messages
 
 import boopickle.Default._
 import org.denigma.controls.charts.{LineStyles, Point, Series}
-import org.denigma.kappa.notebook.ChartParser
+import org.denigma.kappa.notebook.parsers.ChartParser
 import scala.collection.immutable._
 
 object KappaMessages {

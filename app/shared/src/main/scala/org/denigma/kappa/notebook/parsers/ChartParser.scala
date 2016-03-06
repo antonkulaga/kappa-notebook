@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook
+package org.denigma.kappa.notebook.parsers
 
 import fastparse.all._
 import org.denigma.controls.charts.Point

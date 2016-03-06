@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import boopickle.Default._
 import org.denigma.binding.extensions._
+import org.denigma.controls.papers.Bookmark
 import org.denigma.controls.sockets.{BinaryWebSocket, WebSocketSubscriber}
 import org.denigma.kappa.messages.{KappaPicklers, KappaMessages}
 import org.denigma.kappa.messages.KappaMessages.{Container, Message}
@@ -20,11 +21,13 @@ object KappaHub{
     Var(KappaMessages.Output.empty)
   )
 }
+
 case class KappaHub(
   code: Var[KappaMessages.Code],
   runParameters: Var[KappaMessages.RunParameters],
   console: Var[KappaMessages.Console],
-  output: Var[KappaMessages.Output]
+  output: Var[KappaMessages.Output],
+  paperLocation: Var[Bookmark] = Var(Bookmark("", 0, Nil))
 ){
   def packContainer(): Container = KappaMessages.Container(List(code.now, runParameters.now))
 

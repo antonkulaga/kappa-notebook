@@ -10,9 +10,25 @@ import rx.Var
 
 import scala.scalajs.js
 
+object EditorUpdates {
+
+  lazy val empty = EditorUpdates(None, Nil)
+
+}
+
+/**
+  * Class to follow to Editor updates
+  * @param editorOpt
+  * @param updates
+  */
+case class EditorUpdates(editorOpt: Option[Editor], updates: List[EditorChangeLike])
+
 trait EditorView extends BindableView with EditorMaker with WithMirrors{
 
   def mode: String = "Kappa"
+
+  def updates: Var[EditorUpdates] //used to subscribe editor to changes
+
 
   private var _editor: Editor = null
   def editor: Editor = {
@@ -25,10 +41,12 @@ trait EditorView extends BindableView with EditorMaker with WithMirrors{
     subscribeEditor(_editor)
   }
 
+  def onChanges(ed: Editor, ch: js.Array[EditorChangeLike]): Unit = {
+    updates() = EditorUpdates(Option(ed), ch.toList)
+  }
+
   protected def subscribeEditor(editor: Editor) = {
-    def onChanges(ed: Editor, ch: js.Array[EditorChangeLike]): Unit = {
-      changes() = ch
-    }
+
     def onGutterClick(ed: Editor, line: Int): Unit = {
       gutterClicks() = line
     }
@@ -37,7 +55,6 @@ trait EditorView extends BindableView with EditorMaker with WithMirrors{
     editor.addOnChanges(onChanges)
   }
 
-  lazy val changes: Var[js.Array[EditorChangeLike]] = Var(js.Array())
   lazy val gutterClicks: Var[Int] = Var(0)
 
   def contains(name: String): Boolean = if (_editor==null) false else {

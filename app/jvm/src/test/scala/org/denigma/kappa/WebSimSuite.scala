@@ -2,18 +2,14 @@ package org.denigma.kappa
 
 import java.io.InputStream
 
+import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.pattern.pipe
 import akka.testkit.TestProbe
 import akka.util.Timeout
-import org.denigma.kappa.notebook.services.{ WebSim}
+import org.denigma.kappa.notebook.services.WebSimClient
 import org.scalatest.concurrent.Futures
-import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.http.scaladsl.server._
-import Directives._
-import akka.pattern.pipe
-import scala.concurrent.Future
+
 import scala.concurrent.duration._
 
 class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Futures {
@@ -50,7 +46,7 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
   }
 
   "WebSim" should {
-    val server = new WebSim()
+    val server = new WebSimClient()
     "return a version number" in {
 
       val probe = TestProbe()
@@ -61,11 +57,9 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
     }
 
     "run simulation and get token" in {
-      val server = new WebSim()
+      val server = new WebSimClient()
       val probeToken = TestProbe()
       val probeList = TestProbe()
-
-      import scala.io.Source
 
       // The string argument given to getResource is a path relative to
       // the resources directory.
@@ -87,9 +81,8 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
     }
 
     "run simulation and get results" in {
-      val server = new WebSim()
+      val server = new WebSimClient()
       val probe = TestProbe()
-      import scala.io.Source
 
       // The string argument given to getResource is a path relative to
       // the resources directory.

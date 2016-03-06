@@ -42,6 +42,8 @@ object Dependencies {
 		"org.denigma" %%% "semantic-ui-facade" % Versions.semanticUIFacade,
 
 		"org.denigma" %%% "threejs-facade" % Versions.threejsFacade
+
+		//"org.singlespaced" %%% "scalajs-d3" % Versions.d3jsFacade
 	))
 
 	//dependencies on javascript libs
@@ -53,6 +55,8 @@ object Dependencies {
 		"org.webjars" % "jquery" % Versions.jquery,
 
 		"org.webjars" % "three.js" % Versions.threeJS
+
+		//"org.webjars" % "d3js" % Versions.d3js
 	))
 
 	//common purpose libs

@@ -12,13 +12,13 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val akkaHttpExtensions = "0.0.10"
 
+	val binding = "0.8.3"
+
 	val bindingControls = "0.0.12"
 
 	val kappaNotebook = "0.0.5"
 
 	val retry = "0.2.1"
-
-	val threejsFacade = "0.0.71-0.1.5"
 
 	val macroParadise = "2.1.0"
 
@@ -40,7 +40,9 @@ trait ScalaJSVersions {
 
 	val codemirrorFacade = "5.11-0.7"
 
-	val binding = "0.8.3"
+	val threejsFacade = "0.0.71-0.1.5"
+
+	val d3jsFacade = "0.3.1"
 
 }
 
@@ -74,6 +76,9 @@ trait WebJarsVersions{
 	val threeJS = "r74"
 
 	val webcomponents = "0.7.12"
+
+	val d3js: String = "3.5.12"
+
 
 }
 

@@ -11,6 +11,7 @@ import akka.http.scaladsl.Http
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import de.heikoseeberger.akkahttpcirce.CirceSupport
+import org.denigma.kappa.WebSim
 import org.denigma.kappa.messages.KappaMessages.RunParameters
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
@@ -24,81 +25,10 @@ import io.circe.syntax._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 
 
-object WebSim {
-
-  case class RunModel(code: String, nb_plot: Int = 1000, max_events: Option[Int], max_time: Option[Double] = None)
-
-  case class VersionInfo( build: String, version: String )
-
-  case class Observable(time: Double, values: Array[Double])
-
-  case class KappaPlot(observables: Array[Observable])
-
-  case class FluxData(flux_name: String)
-
-  case class FluxMap(flux_data: FluxData, flux_end: Double)
-
-  case class SimulationStatus(
-                             time_percentage: Option[Double],
-                             event: Option[Int],
-                             event_percentage: Option[Double],
-                             tracked_events: Option[Int],
-                             nb_plot: Option[Int],
-                             max_time: Option[Int],
-                             max_events: Option[Int],
-                             is_running: Option[Boolean],
-                             code: Option[String],
-                             logMessages: Option[String],
-                             plot: Option[KappaPlot],
-                             flux_maps: Array[FluxMap]
-                           )
-  {
-    def percentage = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
-  }
-
-
-  /*
-  *
-  *  Status {
-      plot:
-        undefined
-      time_percentage:
-        number
-      event:
-        integer
-      event_percentage:
-        integer
-      tracked_events:
-        integer
-      log_messages:
-        string
-      unary_distances:
-      []
-      snapshots:
-      []
-      flux_maps:
-      []
-      files:
-        string
-      is_running:
-        boolean
-      code:
-        string
-      nb_plot:
-        integer
-      max_time:
-        number
-      max_events:
-        integer
-    }
-  * */
-
-}
-
 /**
   * Created by antonkulaga on 04/03/16.
   */
-class WebSim(host: String = "localhost", port: Int = 8080)(implicit val system: ActorSystem, val mat: ActorMaterializer) extends CirceSupport {
+class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val system: ActorSystem, val mat: ActorMaterializer) extends CirceSupport {
 
   implicit def context = system.dispatcher
 

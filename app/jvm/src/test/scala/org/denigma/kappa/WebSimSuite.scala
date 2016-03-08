@@ -5,13 +5,16 @@ import java.io.InputStream
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.pattern.pipe
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit.TestProbe
 import akka.util.Timeout
+import org.denigma.kappa.WebSim.SimulationStatus
 import org.denigma.kappa.notebook.services.WebSimClient
 import org.scalatest.concurrent.Futures
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
+import scala.collection.immutable.Seq
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 /**
@@ -25,29 +28,6 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
   implicit val timeout:Timeout = Timeout(duration)
 
   val server = new WebSimClient()
-
-  /*
-  val smallRoute =
-    get {
-      pathSingleSlash {
-        complete {
-          "Captain on the bridge!"
-        }
-      } ~
-        path("ping") {
-          complete("PONG!")
-        }
-    }
-
-  "The service" should {
-    "return a greeting for GET requests to the root path" in {
-      // tests:
-      Get() ~> smallRoute ~> check {
-        responseAs[String] shouldEqual "Captain on the bridge!"
-      }
-    }
-  }
-  */
 
   def read(res: String) = {
     val stream : InputStream = getClass.getResourceAsStream(res)
@@ -103,43 +83,33 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
       probe.expectMsgPF(duration * 2) {
         case results: WebSim.SimulationStatus =>
           //println(s"SIMULATION HAS RESULTS :\n"+results)
-          println("PERCENTS DONE: "+ results.percentage)
+          //println("PERCENTS DONE: "+ results.percentage)
           val charts = results.plot map {
             case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
           } getOrElse Array[(Double, String)]()
-          println("charts are: ")
-          charts.foreach(println(_))
+          //println("charts are: ")
+          //charts.foreach(println(_))
       }
     }
 
-    "query simulation until it is running" in {
+    "runWithResults test" in {
       val probe = TestProbe()
-
-      // The string argument given to getResource is a path relative to
-      // the resources directory.
-
       val abc = read("/abc.ka").reduce(_ + "\n" + _)
       //server.getVersion().pipeTo(probe.ref)
-      val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
-      server.run(params) flatMap{ case token => server.getResult(token) }
-
-      /*
-      probe.expectMsgPF(duration * 2) {
-        case results: WebSim.SimulationStatus =>
+      val params = WebSim.RunModel(abc, 100, max_events = Some(10000))
+      val fut: Future[Seq[SimulationStatus]] = server.runWithStreamingFlatten(params, Sink.seq, 100 millis)
+      fut pipeTo probe.ref
+      probe.expectMsgPF(duration * 20) {
+        case results: Seq[SimulationStatus] if results.nonEmpty && results.last.percentage == 100 =>
           //println(s"SIMULATION HAS RESULTS :\n"+results)
-          println("PERCENTS DONE: "+ results.percentage)
-          val charts = results.plot map {
-            case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
-          } getOrElse Array[(Double, String)]()
-          println("charts are: ")
-          charts.foreach(println(_))
+          println(s"Number of results is ${results.length}")
+          println("RESULTS: "+ results.toList.mkString("\n=====================\n"))
       }
-      */
+      //server.run(params) flatMap{ case token => server.getResult(token) }
     }
 
 
-
-  }
+}
   protected override def afterAll() = {
     Http().shutdownAllConnectionPools().onComplete{ _ =>
       system.terminate()

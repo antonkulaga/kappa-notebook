@@ -29,6 +29,6 @@ object WebSim {
                                flux_maps: Array[FluxMap]
                              )
   {
-    def percentage = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
+    def percentage: Double = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
   }
 }

@@ -5,6 +5,7 @@ import java.io.InputStream
 import akka.NotUsed
 import akka.http.scaladsl.model.ws.BinaryMessage.Strict
 import akka.http.scaladsl.model.ws._
+import akka.stream.{Attributes, Shape}
 import akka.stream.scaladsl._
 import akka.stream.stage._
 import akka.util.ByteString

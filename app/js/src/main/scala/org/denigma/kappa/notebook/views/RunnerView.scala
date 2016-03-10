@@ -16,10 +16,11 @@ class RunnerView(val elem: Element, val parameters: Var[KappaMessages.RunParamet
 {
   self=>
 
-  def opt(n: Int) = if(n>0) Some(n) else None
+  def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
+  def opt(n: Double): Option[Double] = if(n > 0.0) Some(n) else None
 
   val events: Var[Int] = Var(10000)
-  var time: Var[Int] = Var(0)
+  var time: Var[Double] = Var(0.0)
   val points: Var[Int] = Var(250)
   val fileName = Var("model.ka")
   val implicitSignature = Var(true)
@@ -28,12 +29,12 @@ class RunnerView(val elem: Element, val parameters: Var[KappaMessages.RunParamet
   val output: Rx[Unit] = Rx{
     val fn: String = fileName()
     val ev = self.events()
-    val t = self.time()
+    val t: Double = self.time()
     val p = self.points()
     val s: Boolean = self.implicitSignature()
     val g = self.gluttony()
     //println(s"params = g($g) and s($s)")
-    val newParams: RunParameters = parameters.now.copy( fn, opt(ev), opt(t), p, implicitSignature = s, gluttony = g )
+    val newParams: RunParameters = parameters.now.copy( fn, optInt(ev), opt(t), p, implicitSignature = s, gluttony = g )
     parameters.set(newParams)
   }
 

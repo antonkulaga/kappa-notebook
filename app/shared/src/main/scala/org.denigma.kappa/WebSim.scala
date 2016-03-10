@@ -2,17 +2,11 @@ package org.denigma.kappa
 
 object WebSim {
 
-  case class RunModel(code: String, nb_plot: Int = 1000, max_events: Option[Int], max_time: Option[Double] = None)
+  trait WebSimMessage
 
-  case class VersionInfo( build: String, version: String )
+  case class RunModel(code: String, nb_plot: Int = 1000, max_events: Option[Int], max_time: Option[Double] = None) extends WebSimMessage
 
-  case class Observable(time: Double, values: Array[Double])
-
-  case class KappaPlot(observables: Array[Observable])
-
-  case class FluxData(flux_name: String)
-
-  case class FluxMap(flux_data: FluxData, flux_end: Double)
+  case class VersionInfo( build: String, version: String ) extends WebSimMessage
 
   case class SimulationStatus(
                                time_percentage: Option[Double],
@@ -27,8 +21,17 @@ object WebSim {
                                logMessages: Option[String],
                                plot: Option[KappaPlot],
                                flux_maps: Array[FluxMap]
-                             )
+                             )  extends WebSimMessage
   {
     def percentage: Double = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
   }
+
+  case class Observable(time: Double, values: Array[Double])  extends WebSimMessage
+
+  case class KappaPlot(observables: Array[Observable]) extends WebSimMessage
+
+  case class FluxData(flux_name: String) extends WebSimMessage
+
+  case class FluxMap(flux_data: FluxData, flux_end: Double) extends WebSimMessage
+
 }

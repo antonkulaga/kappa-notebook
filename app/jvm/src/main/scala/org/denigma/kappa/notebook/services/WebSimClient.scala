@@ -27,48 +27,19 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util._
 
-
-/**
-  * Basic idea of the API is that we create a flow for each type of request to websim API, then those flows are applied to http pool
-  */
-trait WebSimFlows extends CirceSupport {
-
-//  implicit def context: ExecutionContextExecutor
-
-  def base: String
-
-  protected val versionRequestFlow: Flow[Any, HttpRequest, NotUsed] = Flow[Any].map(any => HttpRequest(uri = s"$base/version"))
-
-  protected val runningRequestFlow: Flow[Any, HttpRequest, NotUsed] = Flow[Any].map(any => HttpRequest(uri = s"$base/process", method = HttpMethods.GET))
-  /**
-    * Flow where you provide Models to get httpRequest in return
-    */
-  protected val runModelRequestFlow = Flow[WebSim.RunModel].map{
-    case model =>
-      val json = model.asJson.noSpaces
-      val data = HttpEntity(ContentTypes.`application/json`, json)
-      HttpRequest.apply(uri = s"$base/process", method = HttpMethods.POST, entity =  data)
-  }
-
-  protected val resultsRequestFlow = Flow[Int].map{
-    case token => HttpRequest.apply(uri = s"$base/process/$token", method = HttpMethods.GET)
-  }
-
-}
-
 /**
   * Created by antonkulaga on 04/03/16.
   */
 class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val system: ActorSystem, val mat: ActorMaterializer) extends WebSimFlows {
 
-  implicit def context: ExecutionContextExecutor = system.dispatcher
+  implicit protected def context: ExecutionContextExecutor = system.dispatcher
 
   protected val pool: Flow[HttpRequest, (Try[HttpResponse], LocalDateTime), NotUsed] = {
     val p = Http().cachedHostConnectionPool[LocalDateTime](host, port)
     Flow[HttpRequest].map(req=> (req, LocalDateTime.now())).via(p)
   }
 
-  val resultsFlow: Flow[Int, SimulationStatus, NotUsed] = resultsRequestFlow.via(pool).map{
+  protected val resultsFlow: Flow[Int, SimulationStatus, NotUsed] = resultsRequestFlow.via(pool).map{
     case (Success(res), time) => Unmarshal(res).to[SimulationStatus]
     case (Failure(th), time) => Future.failed(th)
   }.mapAsync(1)(identity)
@@ -78,7 +49,7 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
     */
   val base = "/v1"
 
-  def exec(source:  Source[(Try[HttpResponse], LocalDateTime), NotUsed]): Future[HttpResponse] = {
+  protected def exec(source:  Source[(Try[HttpResponse], LocalDateTime), NotUsed]): Future[HttpResponse] = {
     source
       .runWith(Sink.head).flatMap {
       case (Success(r: HttpResponse), _) ⇒ Future.successful(r)
@@ -101,11 +72,15 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
   def getResult(token: Int): Future[SimulationStatus] = Source.single(token).via(resultsFlow) runWith(Sink.last)
 
   def runWithStreaming[Mat](model: WebSim.RunModel, sink: Sink[SimulationStatus, Mat], interval: FiniteDuration = 500 millis): Future[Mat] = run(model).map{
-    case token =>   streamResults(token, sink, interval)
+    case token => streamResults(token, sink, interval)
   }
 
   def runWithStreamingFlatten[Mat](model: WebSim.RunModel, sink: Sink[SimulationStatus, Future[Mat]], interval: FiniteDuration = 500 millis): Future[Mat] = run(model).flatMap{
-    case token =>   streamResults(token, sink, interval)
+    case token => streamResults(token, sink, interval)
+  }
+
+  def runWithResult(model: WebSim.RunModel, interval: FiniteDuration = 500 millis): Future[SimulationStatus] = {
+   runWithStreamingFlatten(model, Sink.last, interval)
   }
 
   def streamResults[Mat](token: Int, sink: Sink[SimulationStatus, Mat], interval: FiniteDuration = 500 millis): Mat = {

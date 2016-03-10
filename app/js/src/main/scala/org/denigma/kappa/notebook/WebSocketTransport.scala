@@ -65,5 +65,4 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
   }
 
 
-
 }

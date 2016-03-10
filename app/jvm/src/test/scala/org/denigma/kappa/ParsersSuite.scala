@@ -15,9 +15,6 @@ class ParsersSuite extends WordSpec with Matchers with Inside {
 
     }
 
-    "parse links" in {
-
-    }
 
     "parse agents" in {
 

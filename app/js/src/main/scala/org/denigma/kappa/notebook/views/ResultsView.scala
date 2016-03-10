@@ -12,9 +12,6 @@ import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 
 
-/**
-  * Created by antonkulaga on 12/5/15.
-  */
 class ResultsView(val elem: Element, hub: KappaHub) extends BindableView {
 
   self =>

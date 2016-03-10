@@ -13,7 +13,7 @@ import scala.concurrent.Future
 class WebSockets(
                 loginByName: (String, String) => Future[LoginResult],
                 loginByEmail: (String, String) => Future[LoginResult],
-                makeChannel: (String, String) => Flow[Message, Message, NotUsed]
+                makeChannel: (String, String) => Flow[Message, Message, Any]
                 ) extends AuthDirectives with Directives with WithLoginRejections with WithRegistrationRejections
 {
   def routes: Route =

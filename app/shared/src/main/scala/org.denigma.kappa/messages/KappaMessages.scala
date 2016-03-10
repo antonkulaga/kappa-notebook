@@ -5,8 +5,8 @@ import org.denigma.controls.charts.{LineStyles, Point, Series}
 import org.denigma.kappa.notebook.parsers.ChartParser
 import scala.collection.immutable._
 
-object KappaMessages {
 
+object KappaMessages  {
   class Message
 
   object Container {
@@ -18,7 +18,7 @@ object KappaMessages {
     lazy val load: List[Load] = messages.collect{ case message: Load => message}
     lazy val console: List[Console] = messages.collect{ case message: Console => message}
     lazy val code: List[Code] = messages.collect{ case message: Code => message}
-    lazy val charts: List[Chart] = messages.collect{ case message:Chart => message}
+    lazy val charts: List[Chart] = messages.collect{ case message: Chart => message}
   }
 
   case class Load(name: String = "abc") extends Message
@@ -66,7 +66,7 @@ object KappaMessages {
   case class RunParameters(
                             fileName: String = "model.ka",
                             events: Option[Int] = Some(10000),
-                            time: Option[Int] = None,
+                            time: Option[Double] = None,
                             points: Int = 250,
                             output: Option[String] = None, //"" means same as file name
                             flow: Option[String] = None,
@@ -100,34 +100,4 @@ object KappaMessages {
 
 }
 
-class KappaPicklers {
 
-  import KappaMessages._
-
-  implicit val datePickler = transformPickler[java.util.Date, Long](_.getTime, t => new java.util.Date(t))
-  implicit val pointPickler = generatePickler[Point]
-  implicit val lineStylesPickler = generatePickler[LineStyles]
-  implicit val series = generatePickler[KappaSeries]
-
-  object Single{
-    implicit val messagePickler = compositePickler[Message]
-      .addConcreteType[Code]
-      .addConcreteType[Console]
-      .addConcreteType[Chart]
-      .addConcreteType[RunParameters]
-      .addConcreteType[Output]
-      .addConcreteType[Load]
-  }
-  import Single._
-
-  implicit val kappaMessagePickler = compositePickler[Message]
-    .addConcreteType[Code]
-    .addConcreteType[Console]
-    .addConcreteType[Chart]
-    .addConcreteType[RunParameters]
-    .addConcreteType[Load]
-    .addConcreteType[Output]
-    .addConcreteType[Container]
-
-
-}

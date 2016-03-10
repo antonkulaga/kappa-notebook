@@ -42,8 +42,6 @@ object Dependencies {
 		"org.denigma" %%% "semantic-ui-facade" % Versions.semanticUIFacade,
 
 		"org.denigma" %%% "threejs-facade" % Versions.threejsFacade
-
-		//"org.singlespaced" %%% "scalajs-d3" % Versions.d3jsFacade
 	))
 
 	//dependencies on javascript libs
@@ -56,7 +54,6 @@ object Dependencies {
 
 		"org.webjars" % "three.js" % Versions.threeJS
 
-		//"org.webjars" % "d3js" % Versions.d3js
 	))
 
 	//common purpose libs
@@ -77,7 +74,9 @@ object Dependencies {
 	))
 
 	val otherJvm = Def.setting(Seq(
-    "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite
+    "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
+
+		"org.sbolstandard" % "libSBOLj-parent" % Versions.libSBOLj
 	))
 
 

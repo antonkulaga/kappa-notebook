@@ -7,7 +7,7 @@ import org.scalatest.{Inside, Matchers, WordSpec}
 /**
   * Created by antonkulaga on 06/03/16.
   */
-class RDFParsersSuite  extends WordSpec with Matchers with Inside {
+class RDFParsersSuite extends WordSpec with Matchers with Inside {
 
 
   "NTRIPLES PARSER" should {

@@ -27,6 +27,8 @@ trait EditorView extends BindableView with EditorMaker with WithMirrors{
 
   def mode: String = "Kappa"
 
+  def doc: Doc = editor.getDoc()
+
   def updates: Var[EditorUpdates] //used to subscribe editor to changes
 
 

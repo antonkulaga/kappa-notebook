@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views
+package org.denigma.kappa.notebook.views.charts
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.commons.Uploader
@@ -6,12 +6,13 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
 import org.denigma.controls.charts._
 import org.denigma.kappa.notebook.KappaHub
+import org.denigma.kappa.notebook.views.TabItem
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.ext._
 import org.scalajs.dom.raw.{Element, Event, SVGElement}
-import rx.{Rx, Var}
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.{Rx, Var}
 
 
 import scala.collection.immutable._
@@ -71,7 +72,6 @@ class PlotsView(val elem: Element, val selected: Var[String], hub: KappaHub) ext
     }
 
 }
-
 
 class ChartView(val elem: Element,
                 val title: Rx[String],

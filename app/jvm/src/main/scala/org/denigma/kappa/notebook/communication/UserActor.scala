@@ -61,8 +61,7 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
 
 
   def run(params: WebSim.RunModel): Unit = {
-    println(s"let us run $params")
-    val toServer = ServerMessages.Run(username, "localhost", params, self, 1 seconds)
+    val toServer = ServerMessages.Run(username, "localhost", params, self, 100 millis)
     servers ! toServer
   }
 
@@ -90,8 +89,9 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
       {
         case Load(modelName) =>
          val code = WebSim.Code(readResource("/examples/abc.ka").mkString("\n"))
-            val d = Pickle.intoBytes[WebSimMessage](code)
-            send(BinaryMessage(ByteString(d)))
+         val d = Pickle.intoBytes[WebSimMessage](code)
+         send(BinaryMessage(ByteString(d)))
+
         case model: RunModel=> run(model)
         case other => log.error(s"unexpected $other")
       }
@@ -101,17 +101,18 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
   protected def onServerMessage: Receive = {
 
     case ServerMessages.Result(server, status) =>
+      println("CONSOLE = "+status.logMessages)
       //println("received results")
-      val text = status.asJson.noSpaces
-      send(TextMessage.Strict(text), "all")
-      println(status)
+      //val text = status.asJson.noSpaces
+      //send(TextMessage.Strict(text), "all")
+      val d = Pickle.intoBytes[WebSimMessage](status)
+      send(BinaryMessage(ByteString(d)))
+
   }
 
   protected def onOtherMessage: Receive = {
 
-    case ActorPublisherMessage.Request(n) =>
-      println(s"new requested $n")
-      deliverBuf()
+    case ActorPublisherMessage.Request(n) => deliverBuf()
 
     case other => log.error(s"Unknown other message: $other")
   }

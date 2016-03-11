@@ -6,13 +6,15 @@ import org.denigma.controls.charts.Series
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.tabs._
 import org.denigma.kappa.notebook.KappaHub
+import org.denigma.kappa.notebook.views.charts.PlotsView
+import org.denigma.kappa.notebook.views.editor.{EditorUpdates, SBOLEditor}
 import org.denigma.kappa.notebook.views.papers.PapersView
 import org.scalajs.dom.raw.Element
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 
 
-class ResultsView(val elem: Element, hub: KappaHub) extends BindableView {
+class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
 
   self =>
 
@@ -21,7 +23,9 @@ class ResultsView(val elem: Element, hub: KappaHub) extends BindableView {
 
   type Item = Rx[TabItem]
 
-  val selected: Var[String] = Var("Console")
+  val selected: Var[String] = Var("Plots")
+
+  val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
   override lazy val injector = defaultInjector
     .register("Plots") {
@@ -34,7 +38,11 @@ class ResultsView(val elem: Element, hub: KappaHub) extends BindableView {
     }
     .register("Papers") {
       case (el, params) =>
-        new PapersView(el, selected).withBinder(new CodeBinder(_))
+        new PapersView(el, selected, hub).withBinder(new CodeBinder(_))
+    }
+    .register("SBOLEditor") {
+      case (el, params) =>
+        new SBOLEditor(el, hub, selected, editorsUpdates).withBinder(new CodeBinder(_))
     }
 }
 

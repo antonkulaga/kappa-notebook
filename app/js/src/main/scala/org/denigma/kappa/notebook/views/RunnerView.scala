@@ -35,7 +35,7 @@ class RunnerView(val elem: Element, val parameters: Var[WebSim.RunModel]) extend
     val g = self.gluttony()
     //println(s"params = g($g) and s($s)")
     //val newParams = parameters.now.copy( fn, optInt(ev), opt(t), p )
-    val newParams = parameters.now.copy(max_events = Some(ev), max_time = Some(t), nb_plot = p)
+    val newParams = parameters.now.copy(max_events = optInt(ev), max_time = opt(t), nb_plot = p)
     parameters.set(newParams)
   }
 

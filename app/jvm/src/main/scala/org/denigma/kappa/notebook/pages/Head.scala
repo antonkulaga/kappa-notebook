@@ -20,6 +20,12 @@ object MyStyles extends StyleSheet.Standalone {
     width( 1 em)
     )
 
+  ".highlighted" - (
+    width( 1 em),
+    backgroundColor.red
+    )
+
+
 }
 
 

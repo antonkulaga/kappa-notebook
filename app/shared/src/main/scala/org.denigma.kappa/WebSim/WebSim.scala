@@ -77,9 +77,22 @@ import scala.collection.immutable._
 
   case class FluxMap(flux_data: FluxData, flux_end: Double) extends WebSimMessage
 
-  case class Code(code: String) extends WebSimMessage
+  object Code {
+    def apply(lines: Seq[String]): Code = Code(lines.mkString("\n"))
+  }
+
+  case class Code(text: String) extends WebSimMessage
   {
-    def isEmpty = code == ""
+    def isEmpty = text == ""
+
+    lazy val lines = text.split("\n").toList
+
+    def withInsertion(num: Int, part: String): Code = withInsertion(num, part.split("\n").toList)
+
+    def withInsertion(num: Int, newLines: Seq[String]): Code = if(num > lines.length)
+
+      Code(lines.take(num) ++ newLines)  else Code(lines.take(num) ++ newLines ++ lines.drop(num))
+
   }
 
   case class Load(filename: String) extends WebSimMessage

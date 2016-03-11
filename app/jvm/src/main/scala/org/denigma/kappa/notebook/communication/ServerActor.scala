@@ -1,6 +1,6 @@
 package org.denigma.kappa.notebook.communication
 
-import akka.actor.{ActorRef, ActorLogging, Actor}
+import akka.actor.{ActorSystem, ActorRef, ActorLogging, Actor}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import org.denigma.kappa.WebSim
@@ -10,7 +10,7 @@ import scala.concurrent.duration.FiniteDuration
 
 class ServerActor extends Actor with ActorLogging {
 
-  implicit def system = context.system
+  implicit def system: ActorSystem = context.system
   implicit val materializer = ActorMaterializer()
 
   val server = new WebSimClient()(system, materializer)
@@ -19,10 +19,7 @@ class ServerActor extends Actor with ActorLogging {
 
     case ServerMessages.Run(username, serverName, message: WebSim.RunModel, userRef, interval) =>
 
-      server.runWithStreaming(message, Sink.foreach{ case res =>
-        println(s"next chunk: ${res.percentage}/n data is ${res}")
-        userRef ! ServerMessages.Result(serverName, res)
-      }, interval)
+      server.runWithStreaming(message, Sink.foreach{ case res =>  userRef ! ServerMessages.Result(serverName, res) }, interval)
 
     case other => this.log.error(s"some other message $other")
   }

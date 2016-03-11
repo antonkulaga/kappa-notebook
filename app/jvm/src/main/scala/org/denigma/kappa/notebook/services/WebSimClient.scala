@@ -38,8 +38,7 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
   }
 
   protected val resultsFlow: Flow[Int, WebSim.SimulationStatus, NotUsed] = resultsRequestFlow.via(pool).map{
-    case (Success(res), time) =>
-      println(s"RESULT: \n $res \n")
+    case (Success(res), time) => //println(s"RESULT: \n $res \n")
       Unmarshal(res).to[WebSim.SimulationStatus]
     case (Failure(th), time) => Future.failed(th)
   }.mapAsync(1)(identity)
@@ -67,7 +66,6 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
   def run(model: WebSim.RunModel): Future[Int] =  {
     val source = Source.single(model).via(runModelRequestFlow).via(pool)
     exec(source) flatMap{req =>
-      println("entity ISSSSSSs "+req.entity)
       Unmarshal(req).to[Int]
     }
   }
@@ -94,7 +92,7 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
           println("----------------------------")
           println(s"percentage = ${sim.percentage}")
           //println(sim)
-          sim.percentage >= 100.0 //|| !sim.is_running.getOrElse(false)
+          sim.percentage >= 100.0 || !sim.is_running.getOrElse(false)
       }
     stream.runWith[Mat](sink)
   }

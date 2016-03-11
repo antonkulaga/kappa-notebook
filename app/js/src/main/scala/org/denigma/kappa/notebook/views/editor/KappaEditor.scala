@@ -27,17 +27,28 @@ class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorU
 
 
   def code = hub.kappaCode
-  hub.kappaCursor.onChange(onCursorChange)
 
 
   override def mode = "Kappa"
+
+  protected def onCursorActivity(ed: Editor) = {
+    val c = doc.getCursor()
+    val (prev, cur) = (hub.kappaCursor.now.line, c.line.toInt)
+    if(prev != cur) {
+      editor.addLineClass(cur, "background", "focused")
+      editor.removeLineClass(prev, "background", "focused")
+      hub.kappaCursor() = new PositionLike {override val line: Int = cur
+        override val ch: Int = c.ch.toInt
+      }
+    }
+  }
 
 
   override def onChanges(ed: Editor, ch: js.Array[EditorChangeLike]): Unit = {
     updates() = EditorUpdates(Option(ed), ch.toList)
     val value = doc.getValue()
     if(value!=code.now.text) code() = code.now.copy(text = value)
-    updateCursor()
+    //updateCursor()
   }
 
 
@@ -48,6 +59,9 @@ class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorU
       code.foreach{ case c =>
           if(doc.getValue()!=c.text) doc.setValue(c.text)
       }
+      editor.addOnChanges(onChanges)
+      val handler: (Editor) => Unit = onCursorActivity _
+      editor.on("cursorActivity", handler)
       editor
 
     case _ =>
@@ -69,8 +83,4 @@ class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorU
     }
   }
 
-  protected def onCursorChange(position: PositionLike): Unit = {
-    //editor.addLineClass(position.line, "background", "highlighted")
-    //editor.addLineClass(position.line, "gutter", "highlighted")
-  }
 }

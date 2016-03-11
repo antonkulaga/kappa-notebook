@@ -87,13 +87,14 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty) //collect updates of all editors together
+  val commentManager = new CommentsWatcher(editorsUpdates, hub.paperLocation)
 
    override lazy val injector = defaultInjector
      .register("Parameters")((el, args) => new RunnerView(el, hub.runParameters).withBinder(n => new CodeBinder(n)))
      .register("KappaEditor")((el, args) => new KappaEditor(el, hub, editorsUpdates))
      .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
 
-  val commentManager = new CommentsWatcher(editorsUpdates)
+
 
 }
 

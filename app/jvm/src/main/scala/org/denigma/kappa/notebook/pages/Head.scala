@@ -17,15 +17,12 @@ object MyStyles extends StyleSheet.Standalone {
     )//-(overflowX.auto,overflowY.hidden)
 
   ".breakpoints" - (
-    width( 1 em)
+    width( 2 em)
     )
 
-  ".highlighted" - (
-    width( 1 em),
-    backgroundColor.red
+  ".focused" - (
+    backgroundColor.ghostwhite
     )
-
-
 }
 
 

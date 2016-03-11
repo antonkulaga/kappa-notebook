@@ -3,23 +3,28 @@ package org.denigma.kappa.notebook.views.editor
 import fastparse.all._
 import org.denigma.codemirror.Editor
 import org.denigma.codemirror.extensions._
+import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.notebook.parsers.CommentLinksParser
 import org.scalajs.dom.html._
+import org.scalajs.dom.raw.MouseEvent
 import rx._
 
 import scalatags.JsDom.all._
 /**
   * Created by antonkulaga on 11/03/16.
   */
-class CommentsWatcher(updates: Var[EditorUpdates])  {
+class CommentsWatcher(updates: Var[EditorUpdates], location: Var[Bookmark])  {
 
-  //val linkParser = P( "a" )
-  val commentsParser = new CommentLinksParser().linkAfterComment
+  updates.foreach(changeHandler) //subscription
+
+  val commentsParser = new CommentLinksParser()
+  val linkParser = commentsParser.linkAfterComment
+  val pageParser =  commentsParser.page
 
   protected def searchForLinks(editor: Editor, line: String, num: Int) = {
-    commentsParser.parse(line) match {
+    linkParser.parse(line) match {
       case Parsed.Success(result, index) =>
-        val marker = this.makeMarker(result)
+        val marker = this.makeURIMarker(result)
         editor.setGutterMarker(num, "breakpoints", marker)
 
       case Parsed.Failure(parser, index, extra) =>
@@ -27,15 +32,39 @@ class CommentsWatcher(updates: Var[EditorUpdates])  {
     }
   }
 
+  protected def searchForPages(editor: Editor, line: String, num: Int) = {
+    pageParser.parse(line) match {
+      case Parsed.Success(page, index) =>
+        val marker = this.makePageMarker(page)
+        editor.setGutterMarker(num, "breakpoints", marker)
 
-  protected def makeMarker(link: String): Anchor = {
+      case Parsed.Failure(parser, index, extra) =>
+        editor.setGutterMarker(num, "breakpoints", null) //test setting null
+    }
+  }
+
+  protected def makeURIMarker(link: String): Anchor = {
     val tag = a(href := link,
-      i(`class` := "file pdf outline icon")
+      i(`class` := "link outline icon")
     )
     tag.render
 
     // <i class="file pdf outline icon">
   }
+
+  protected def makePageMarker(num: Int) = {
+    val tag = button(`class` := "ui icon button", i(`class` := "file pdf outline icon", onclick := {
+      println(s"mouse down on $num")
+      location() = location.now.copy(page = num)
+      }))
+    val html = tag.render
+    html.onclick = {
+      event: MouseEvent => println(s"click on $num")
+        location() = location.now.copy(page = num)
+    }
+    html
+  }
+
 
 
   protected def changeHandler(upd: EditorUpdates) =
@@ -53,6 +82,7 @@ class CommentsWatcher(updates: Var[EditorUpdates])  {
       (num, line) <- editor.linesText(lines)
     } {
       searchForLinks(editor, line , num)
+      searchForPages(editor, line, num)
       //val info: LineInfo = editor.lineInfo(num)
       //val markers: js.Array[String] = info.gutterMarkers
     }

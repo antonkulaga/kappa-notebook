@@ -1,12 +1,13 @@
 package org.denigma.kappa.notebook.parsers
 
 import fastparse.all._
-
+/*
 class PaperCommentsParser extends CommentLinksParser {
   val propertyParser = P(propertyComment ~ " ".rep)
   //#^ :in_paper /resources/pdf/eptcs.pdf
   //#^ :on_page 1
 }
+*/
 
 class CommentLinksParser
 {
@@ -18,6 +19,7 @@ class CommentLinksParser
   protected val protocol = P( ("http" | "ftp" ) ~ "s".? ~ "://" )
   val link: P[String] = P("<".? ~ (protocol ~ notBracketsOrSpace.rep).! ~ ">".? ) //map(_.toString)
   val linkAfterComment: Parser[String] = P( notComment.rep  ~ comment ~ " ".rep ~ link )
+  val page = P( notComment.rep  ~ comment ~ " ".rep ~  ":on_page" ~ " ".rep ~ CharIn('0' to '9').rep.!.map(v=>v.toInt) )
 }
 
 /*case object FeaturesParser extends CommentsParser {

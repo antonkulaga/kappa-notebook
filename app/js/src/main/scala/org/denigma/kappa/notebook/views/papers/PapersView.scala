@@ -48,14 +48,13 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
   val lastSelections: Var[List[TextSelection]] = Var(List.empty[TextSelection])
 
   val hasSelection: Dynamic[Boolean] = Rx{
-    lastSelections().nonEmpty || currentSelection().nonEmpty
+    /*lastSelections().nonEmpty || */currentSelection().nonEmpty
   }
 
   val comments = Rx{
-
-    val opt = lastSelections.now.headOption
+  val opt = currentSelection.now.headOption//lastSelections.now.headOption
     val loc =
-    "\n#^ :in_paper "+paper() +
+    "#^ :in_paper "+paper() +
       "\n#^ :on_page "+ page() + lastSelections().foldLeft(""){
       case (acc, el) => acc + "\n#^ :has_text " + el.text
     }

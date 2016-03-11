@@ -41,7 +41,9 @@ object Dependencies {
 
 		"org.denigma" %%% "semantic-ui-facade" % Versions.semanticUIFacade,
 
-		"org.denigma" %%% "threejs-facade" % Versions.threejsFacade
+		"org.denigma" %%% "threejs-facade" % Versions.threejsFacade,
+
+		"io.circe" %%% "circe-scalajs" % Versions.circe
 	))
 
 	//dependencies on javascript libs

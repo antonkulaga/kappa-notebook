@@ -26,21 +26,22 @@ class PlotsView(val elem: Element, val selected: Var[String], hub: KappaHub) ext
   val outputActive = Var(true)
 
   val output = Var("")
-
+/*
   val applyOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
   applyOutput.triggerLater{
     val text = output.now
     val lines = output.now.split("\n").toVector
-    hub.output() = hub.output.now.copy(lines = lines)
+    //hub.output() = hub.output.now.copy(lines = lines)
   }
-
+  */
+/*
   hub.output.foreach{case h=>
     output.set(h.text)
   }
-
+*/
   val saveOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
   saveOutput.triggerLater{
-    saveAs(hub.runParameters.now.outputName, output.now)
+    saveAs(hub.name.now, output.now)
   }
 
   val activateChart: Var[MouseEvent] = Var(Events.createMouseEvent())
@@ -60,7 +61,7 @@ class PlotsView(val elem: Element, val selected: Var[String], hub: KappaHub) ext
       case Failure(th) => dom.console.error(s"File upload failure: ${th.toString}")
     })
 
-  val title = hub.runParameters.map(_.outputName.replace(".out",""))
+  val title = hub.name.map(_.replace(".out",""))
 
   override lazy val injector = defaultInjector
     .register("Chart") {

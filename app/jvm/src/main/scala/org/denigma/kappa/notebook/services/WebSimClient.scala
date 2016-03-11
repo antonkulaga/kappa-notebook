@@ -10,17 +10,15 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.stage._
 import akka.stream._
 import akka.stream.scaladsl._
-import de.heikoseeberger.akkahttpcirce.CirceSupport
 import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim.SimulationStatus
+import de.heikoseeberger.akkahttpcirce.CirceSupport
 import io.circe._
 import io.circe.generic.auto._
-import org.denigma.kappa.extensions._
-import scala.collection.immutable.Seq
-
-//NOTE: sole IDEs like Intellij think that import is unused while it is used
 import io.circe.parser._
 import io.circe.syntax._
+
+import org.denigma.kappa.extensions._
+import scala.collection.immutable.Seq
 import scala.concurrent.duration._
 
 import scala.concurrent.duration.FiniteDuration
@@ -39,8 +37,10 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
     Flow[HttpRequest].map(req=> (req, LocalDateTime.now())).via(p)
   }
 
-  protected val resultsFlow: Flow[Int, SimulationStatus, NotUsed] = resultsRequestFlow.via(pool).map{
-    case (Success(res), time) => Unmarshal(res).to[SimulationStatus]
+  protected val resultsFlow: Flow[Int, WebSim.SimulationStatus, NotUsed] = resultsRequestFlow.via(pool).map{
+    case (Success(res), time) =>
+      println(s"RESULT: \n $res \n")
+      Unmarshal(res).to[WebSim.SimulationStatus]
     case (Failure(th), time) => Future.failed(th)
   }.mapAsync(1)(identity)
 
@@ -66,32 +66,35 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
 
   def run(model: WebSim.RunModel): Future[Int] =  {
     val source = Source.single(model).via(runModelRequestFlow).via(pool)
-    exec(source) flatMap(req => Unmarshal(req).to[Int])
+    exec(source) flatMap{req =>
+      println("entity ISSSSSSs "+req.entity)
+      Unmarshal(req).to[Int]
+    }
   }
 
-  def getResult(token: Int): Future[SimulationStatus] = Source.single(token).via(resultsFlow) runWith(Sink.last)
+  def getResult(token: Int): Future[WebSim.SimulationStatus] = Source.single(token).via(resultsFlow) runWith(Sink.last)
 
-  def runWithStreaming[Mat](model: WebSim.RunModel, sink: Sink[SimulationStatus, Mat], interval: FiniteDuration = 500 millis): Future[Mat] = run(model).map{
+  def runWithStreaming[Mat](model: WebSim.RunModel, sink: Sink[WebSim.SimulationStatus, Mat], interval: FiniteDuration = 500 millis): Future[Mat] = run(model).map{
     case token => streamResults(token, sink, interval)
   }
 
-  def runWithStreamingFlatten[Mat](model: WebSim.RunModel, sink: Sink[SimulationStatus, Future[Mat]], interval: FiniteDuration = 500 millis): Future[Mat] = run(model).flatMap{
+  def runWithStreamingFlatten[Mat](model: WebSim.RunModel, sink: Sink[WebSim.SimulationStatus, Future[Mat]], interval: FiniteDuration = 500 millis): Future[Mat] = run(model).flatMap{
     case token => streamResults(token, sink, interval)
   }
 
-  def runWithResult(model: WebSim.RunModel, interval: FiniteDuration = 500 millis): Future[SimulationStatus] = {
+  def runWithResult(model: WebSim.RunModel, interval: FiniteDuration = 500 millis): Future[WebSim.SimulationStatus] = {
    runWithStreamingFlatten(model, Sink.last, interval)
   }
 
-  def streamResults[Mat](token: Int, sink: Sink[SimulationStatus, Mat], interval: FiniteDuration = 500 millis): Mat = {
+  def streamResults[Mat](token: Int, sink: Sink[WebSim.SimulationStatus, Mat], interval: FiniteDuration = 500 millis): Mat = {
     val tick: Source[Int, Cancellable] = Source.tick(0 millis, interval, token)
     val results: Source[WebSim.SimulationStatus, Cancellable] = tick.via(resultsFlow)
     val stream: Source[WebSim.SimulationStatus, Cancellable] = results.upTo{
         case sim =>
-          //println("----------------------------")
-          //println(s"percentage = ${sim.percentage}")
+          println("----------------------------")
+          println(s"percentage = ${sim.percentage}")
           //println(sim)
-          sim.percentage >= 100.0 || !sim.is_running.getOrElse(false)
+          sim.percentage >= 100.0 //|| !sim.is_running.getOrElse(false)
       }
     stream.runWith[Mat](sink)
   }

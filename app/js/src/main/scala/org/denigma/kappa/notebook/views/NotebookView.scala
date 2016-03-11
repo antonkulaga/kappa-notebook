@@ -9,7 +9,6 @@ import org.denigma.codemirror.{Editor, EditorChangeLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.Session
 import org.denigma.controls.sockets.WebSocketSubscriber
-import org.denigma.kappa.messages.KappaMessages
 import org.denigma.kappa.notebook.parsers.CommentLinksParser
 import org.denigma.kappa.notebook.views.editor.{EditorUpdates, KappaEditor}
 import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
@@ -23,6 +22,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import scala.scalajs.js
 import scala.util._
 import scalatags.JsDom.all._
+import org.denigma.kappa.WebSim
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView with Uploader
 {
@@ -51,34 +51,36 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val connector: WebSocketTransport = WebSocketTransport(subscriber, hub)
   subscriber.onOpen.triggerLater{
-    connector.send(KappaMessages.Load())
+    connector.send(WebSim.Load("model.ka"))
   }
 
   val code = Var(initialCode)
   code.onChange{ case txt=>
-    hub.code() = hub.code.now.copy(text = txt)
+    hub.code() = hub.code.now.copy(code = txt)
   }
 
-  hub.code.onChange{case value =>
-    if(value.isEmpty) code.set("") else code.set(value.text)
+  hub.code.onChange{case v =>
+    if(v.isEmpty) code.set("") else code.set(v.code)
   }
 
   val run = Var(org.denigma.binding.binders.Events.createMouseEvent)
   run.triggerLater{
     //dom.console.log("sending the code...")
-    connector.send(hub.packContainer())
+    hub.runParameters() = hub.runParameters.now.copy(code = code.now)
+    connector.send(hub.runParameters.now)
   }
 
   val save = Var(Events.createMouseEvent())
   save.triggerLater{
-    saveAs(hub.runParameters.now.fileName, code.now)
+    saveAs(hub.name.now, code.now)
   }
 
   val onUpload: Var[Event] = Var(Events.createEvent())
   onUpload.onChange(ev =>
     this.uploadHandler(ev){
       case Success((file, text))=>
-        hub.runParameters.set(hub.runParameters.now.copy(fileName = file.name))
+        hub.name() = file.name
+        //hub.runParameters.set(hub.runParameters.now.copy(fileName = file.name))
         code.set(text)
       case Failure(th) => dom.console.error(s"File upload failure: ${th.toString}")
     })

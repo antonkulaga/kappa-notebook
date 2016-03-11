@@ -33,7 +33,9 @@ trait WebSimFlows extends CirceSupport {
   }
 
   protected val resultsRequestFlow = Flow[Int].map{
-    case token => HttpRequest.apply(uri = s"$base/process/$token", method = HttpMethods.GET)
+    case token =>
+      println("token is "+token)
+      HttpRequest.apply(uri = s"$base/process/$token", method = HttpMethods.GET)
   }
 
 }

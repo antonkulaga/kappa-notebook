@@ -59,8 +59,8 @@ trait EditorView extends BindableView with EditorMaker with WithMirrors{
 
   lazy val gutterClicks: Var[Int] = Var(0)
 
-  def contains(name: String): Boolean = if (_editor==null) false else {
-    println("warning: editor view already contains an editor")
+  def contains(name: String): Boolean = if (_editor == null) false else {
+    dom.console.error(s"warning: EditorView($name) already contains an editor")
     true
   }
 

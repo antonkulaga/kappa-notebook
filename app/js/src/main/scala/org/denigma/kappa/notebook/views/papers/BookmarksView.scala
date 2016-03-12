@@ -69,7 +69,7 @@ class BookmarksView(val elem: Element, location: Var[Bookmark], textLayer: Eleme
   }
 
   @tailrec final def inTextLayer(node: Node): Boolean = if(node == null) false
-  else if (node.isEqualNode(textLayer) || textLayer == node || textLayer.isSameNode(node)) true
+  else if (node.isEqualNode(textLayer) || textLayer == node || textLayer == node) true
   else if(node.parentNode == null) false else inTextLayer(node.parentNode)
 
   protected def onSelectionChange(event: Event) = {

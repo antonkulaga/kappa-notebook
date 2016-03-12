@@ -18,7 +18,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 
 import scala.scalajs.js
 import scala.util.{Failure, Success}
-import scalatags.JsDom.all._
+import org.scalajs.dom.html.Input
 /**
   * Created by antonkulaga on 11/03/16.
   */
@@ -26,9 +26,20 @@ class SBOLEditor(val elem: Element, val hub: KappaHub, selected: Var[String],val
 
   val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
 
-  def code = hub.sbolCode
+  val refresh: Var[MouseEvent] = Var(Events.createMouseEvent())
+  refresh.onChange{ case ev=>
+    println("works")
+      ev.target match {
+        case i:Input =>
+          println("input works")
+          i.value = null
+        case other =>
+      }
+  }
 
-  override def mode = "sbol"
+  def code: Var[Code] = hub.sbolCode
+
+  override def mode = "xml"
 
   val generate = Var(Events.createMouseEvent())
   generate.triggerLater{
@@ -38,9 +49,12 @@ class SBOLEditor(val elem: Element, val hub: KappaHub, selected: Var[String],val
   val onUpload: Var[Event] = Var(Events.createEvent())
   onUpload.triggerLater(
     onUpload.onChange(ev =>
+
       this.uploadHandler(ev){
-        case Success((file, text))=> code() = code.now.copy(text)
-        case Failure(th) => dom.console.error(s"File upload failure: ${th.toString}")
+        case Success((file, text))=>
+          println("ON UPLOAD WORKS FOR SBOL")
+          code() = code.now.copy(text)
+        case Failure(t) => dom.console.error(s"File upload failure: ${t.toString}")
       })
   )
 
@@ -52,16 +66,22 @@ class SBOLEditor(val elem: Element, val hub: KappaHub, selected: Var[String],val
 
   }
 
-
   override def addEditor(name: String, element: ViewElement, codeMode: String): Unit = element match {
     case area: HTMLTextAreaElement =>
-      //val text = if (area.value == "") defaultText else area.value
+      /*
+      if(!active.now) {
+        val prev = this.selected.now //workaround
+        selected() = this.id
+        editor = this.makeEditor(area, code.now. text, codeMode)
+        selected() = prev
+      }
+
+      else */
       editor = this.makeEditor(area, code.now.text, codeMode)
       code.foreach{ case c =>
         if(doc.getValue()!=c.text) doc.setValue(c.text)
       }
-
-      editor
+    //else active.recalc()
 
     case _ =>
       val message = "cannot find text area for the code!"

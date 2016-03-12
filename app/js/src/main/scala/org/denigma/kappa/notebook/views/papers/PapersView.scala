@@ -58,7 +58,7 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
       "\n#^ :on_page "+ page() + lastSelections().foldLeft(""){
       case (acc, el) => acc + "\n#^ :has_text " + el.text
     }
-    println("loc = "+loc)
+    //println("loc = "+loc)
     loc
   }
 
@@ -99,7 +99,9 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
 
     }
     super.subscribePapers()
-    dom.window.document.onselectionchange = onSelectionChange _
+    dom.document.addEventListener("selectionchange", onSelectionChange _)
+    //dom.window.document.onselectionchange = onSelectionChange _
+
     textLayerDiv.parentNode.addEventListener(Events.mouseleave, fixSelection _)
   }
   protected def rangeToTextSelection(range: Range) = {
@@ -126,12 +128,12 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
   }
 
   @tailrec final def inTextLayer(node: Node): Boolean = if(node == null) false
-  else if (node.isEqualNode(textLayerDiv) || textLayerDiv == node || textLayerDiv.isSameNode(node)) true
+  else if (node.isEqualNode(textLayerDiv) || textLayerDiv == node || textLayerDiv == node) true
   else if(node.parentNode == null) false else inTextLayer(node.parentNode)
 
 
   protected def onSelectionChange(event: Event) = {
-    //println("selection change works!")
+    println("selection change works!")
     val selection: Selection = dom.window.getSelection()
     val count = selection.rangeCount
     inTextLayer(selection.anchorNode) || inTextLayer(selection.focusNode)  match {

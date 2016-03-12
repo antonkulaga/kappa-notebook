@@ -25,9 +25,7 @@ import scalatags.JsDom.all._
   */
 class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorUpdates]) extends BindableView with EditorView {
 
-
   def code = hub.kappaCode
-
 
   override def mode = "Kappa"
 
@@ -76,7 +74,7 @@ class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorU
 
   protected def updateCursor() = {
     val cur: Position = doc.getCursor()
-    println(hub.kappaCursor.now + " => "+doc.getCursor())
+    //println(hub.kappaCursor.now + " => "+doc.getCursor())
     hub.kappaCursor() = new PositionLike{
       override val ch: Int = cur.ch.toInt
       override val line: Int = cur.line.toInt

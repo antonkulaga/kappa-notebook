@@ -1,9 +1,14 @@
 @()
-<div class="ui bottom attached tab segment" class="ui bottom attached tab segment"  data-class-active-if="active" id="SBOLEditor" data-view="SBOLEditor">
-  <div>
-    <div class="ui top attached label">Code</div>
-    <textarea data-editor="sbol" id="sbol"></textarea>
-  </div>
-  <input id="the-file-input" type="file" title="Upload SBOL file" data-event-change="onUpload">
-  <button class="ui button" data-event-click="generate">Generate agents</button>
+<div class="ui bottom attached tab segment" data-class-active-if="active" id="SBOLEditor" data-view="SBOLEditor">
+  <section class="ui equal width grid">
+    <div class="ui row">
+      <div class="ui column">
+        <input id="the-file-input" type="file" title="Upload SBOL file" data-event-change="onUpload" data-event-onclick="refresh">
+        <button class="ui button" data-event-click="generate">Generate agents</button>
+      </div>
+    </div>
+    <div class="ui row">
+        <textarea data-editor="sbol" id="sbol"></textarea>
+    </div>
+  </section>
 </div>

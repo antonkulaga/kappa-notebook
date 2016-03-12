@@ -54,12 +54,12 @@ class CommentsWatcher(updates: Var[EditorUpdates], location: Var[Bookmark])  {
 
   protected def makePageMarker(num: Int) = {
     val tag = button(`class` := "ui icon button", i(`class` := "file pdf outline icon", onclick := {
-      println(s"mouse down on $num")
+      //println(s"mouse down on $num")
       location() = location.now.copy(page = num)
       }))
     val html = tag.render
     html.onclick = {
-      event: MouseEvent => println(s"click on $num")
+      event: MouseEvent => //println(s"click on $num")
         location() = location.now.copy(page = num)
     }
     html

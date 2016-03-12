@@ -91,7 +91,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
    override lazy val injector = defaultInjector
      .register("Parameters")((el, args) => new RunnerView(el, hub.runParameters).withBinder(n => new CodeBinder(n)))
-     .register("KappaEditor")((el, args) => new KappaEditor(el, hub, editorsUpdates))
+     .register("KappaEditor")((el, args) => new KappaEditor(el, hub, editorsUpdates).withBinder(n=>new GeneralBinder(n)))
      .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
 
 

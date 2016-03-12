@@ -1,11 +1,9 @@
 package org.denigma.kappa.notebook.pages
 
-import akka.NotUsed
 import akka.http.extensions.security._
-import akka.http.scaladsl.model.ws.{TextMessage, Message}
+import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server._
 import akka.stream.scaladsl.Flow
-import akka.stream.stage.{TerminationDirective, SyncDirective, Context, PushStage}
 
 import scala.concurrent.Future
 

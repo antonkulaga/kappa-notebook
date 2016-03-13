@@ -9,7 +9,18 @@ import org.scalatest.{Inside, Matchers, WordSpec}
   */
 class ParsersSuite extends WordSpec with Matchers with Inside {
 
+  "Kappa parser" should {
 
+    "parse agents" in {
+
+    }
+
+    "parse rules" in {
+
+    }
+
+
+  }
   "Kappa parsers" should {
     "parse charts" in {
 

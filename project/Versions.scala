@@ -42,7 +42,7 @@ trait ScalaJSVersions {
 
 	val codemirrorFacade = "5.11-0.7"
 
-	val threejsFacade = "0.0.71-0.1.5"
+	val threejsFacade = "0.0.74-0.1.6"
 
 	val d3jsFacade = "0.3.1"
 

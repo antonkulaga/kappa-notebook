@@ -4,8 +4,9 @@
     <section class="ui blue segment">
         <section class="ui equal width grid">
             <row class="ui equal width row">
-                <column class="column">
-                    <img src="/resources/kappa.svg">
+                <column id = "graph" data-view="GraphView" class="column">
+                    <div id="graph-container" data-show-if="active"></div>
+                    <img src="/resources/kappa.svg" data-hide-if="active">
                 </column>
                 <column class="column">
                     @html.parameters()

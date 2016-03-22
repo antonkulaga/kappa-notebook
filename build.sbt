@@ -73,6 +73,7 @@ lazy val app = crossProject
     scalaJSDevStage := scalaJSDevTaskStage.value,
     //pipelineStages := Seq(scalaJSProd,gzip),
     (emitSourceMaps in fullOptJS) := true,
+    parallelExecution in Test := false,
     pipelineStages in Assets := Seq(scalaJSDevStage, gzip), //for run configuration
     (fullClasspath in Runtime) += (packageBin in Assets).value, //to package production deps
     libraryDependencies += "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,

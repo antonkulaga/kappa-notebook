@@ -35,11 +35,12 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
   }
 
   "WebSim" should {
+
     "return a version number" in {
 
       val probe = TestProbe()
       server.getVersion().pipeTo(probe.ref)
-           probe.expectMsgPF(duration * 2) {
+      probe.expectMsgPF(duration * 2) {
         case WebSim.VersionInfo(build, "v1") if build.contains("Kappa Simulator") =>
       }
     }
@@ -54,7 +55,7 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
       val abc = read("/abc.ka").reduce(_ + "\n" + _)
       //server.getVersion().pipeTo(probe.ref)
       val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
-      val tokenFut =  server.run(params).pipeTo(probeToken.ref)
+      val tokenFut =  server.launch(params).pipeTo(probeToken.ref)
 
       probeToken.expectMsgPF(duration * 2) {
         case token: Int =>
@@ -69,35 +70,27 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
 
     "run simulation and get results" in {
       val probe = TestProbe()
-
-      // The string argument given to getResource is a path relative to
-      // the resources directory.
-
       val abc = read("/abc.ka").reduce(_ + "\n" + _)
       //server.getVersion().pipeTo(probe.ref)
       val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
-      server.run(params) flatMap{
-        case token => server.getResult(token)
+      server.launch(params) flatMap{
+        case token => server.resultByToken(token)
       } pipeTo probe.ref
 
       probe.expectMsgPF(duration * 2) {
         case results: WebSim.SimulationStatus =>
-          //println(s"SIMULATION HAS RESULTS :\n"+results)
-          //println("PERCENTS DONE: "+ results.percentage)
           val charts = results.plot map {
             case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
           } getOrElse Array[(Double, String)]()
-          //println("charts are: ")
-          //charts.foreach(println(_))
       }
     }
 
-    "runWithResults test" in {
+    "run streamed results" in {
       val probe = TestProbe()
       val abc = read("/abc.ka").reduce(_ + "\n" + _)
       //server.getVersion().pipeTo(probe.ref)
       val params = WebSim.RunModel(abc, 100, max_events = Some(10000))
-      val fut: Future[Seq[SimulationStatus]] = server.runWithStreamingFlatten(params, Sink.seq, 100 millis)
+      val fut: Future[Seq[SimulationStatus]] = Source.single(params).via(server.modelResultsFlow(1, 100 millis).map(_._2)).runWith(Sink.seq)//.runWithStreamingFlatten(params, Sink.seq, 100 millis)
       fut pipeTo probe.ref
       probe.expectMsgPF(duration * 20) {
         case results: Seq[SimulationStatus] if results.nonEmpty && results.last.percentage == 100 =>
@@ -109,7 +102,7 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
     }
 
 
-}
+  }
   protected override def afterAll() = {
     Http().shutdownAllConnectionPools().onComplete{ _ =>
       system.terminate()

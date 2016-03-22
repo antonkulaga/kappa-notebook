@@ -48,11 +48,11 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
   val lastSelections: Var[List[TextSelection]] = Var(List.empty[TextSelection])
 
   val hasSelection: Dynamic[Boolean] = Rx{
-    /*lastSelections().nonEmpty || */currentSelection().nonEmpty
+    lastSelections().nonEmpty || currentSelection().nonEmpty
   }
 
   val comments = Rx{
-  val opt = currentSelection.now.headOption//lastSelections.now.headOption
+    //val opt = currentSelection.now.headOption//lastSelections.now.headOption
     val loc =
     "#^ :in_paper "+paper() +
       "\n#^ :on_page "+ page() + lastSelections().foldLeft(""){
@@ -78,7 +78,7 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
     subscribePapers()
    }
 
-  override def subscribePapers():Unit = {
+  override def subscribePapers(): Unit = {
     nextPage.triggerLater{
       val b = location.now
       println(s"next click ${b.page + 1}")

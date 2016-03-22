@@ -30,7 +30,7 @@ class ExtensionsSuite extends WordSpec with Matchers with ScalatestRouteTest wit
     "Provide an ability to inclusively collect data" in {
       val probe = TestProbe()
       val source = Source(1 to 10) via FlowUpTo[Int](_ >= 4)
-      val expRes:Seq[Int] = Seq(1,2,3,4)
+      val expRes: Seq[Int] = Seq(1,2,3,4)
       source.runWith(Sink.seq).pipeTo(probe.ref)
       probe.expectMsg(expRes)
     }

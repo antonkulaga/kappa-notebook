@@ -1,11 +1,12 @@
 package org.denigma.kappa.notebook.communication
 
-import akka.actor.{ActorSystem, ActorRef, ActorLogging, Actor}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.{Sink, Source}
 import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim.{SimulationStatus, RunModel}
+import org.denigma.kappa.WebSim.{RunModel, SimulationStatus}
 import org.denigma.kappa.notebook.services.WebSimClient
+
 import scala.concurrent.duration.FiniteDuration
 
 class ServerActor extends Actor with ActorLogging {
@@ -18,8 +19,10 @@ class ServerActor extends Actor with ActorLogging {
   override def receive: Receive = {
 
     case ServerMessages.Run(username, serverName, message: WebSim.RunModel, userRef, interval) =>
+      Source.single(message).via(server.modelResultsFlow(1, interval)).runWith(Sink.foreach{ case (token, res) =>  userRef ! ServerMessages.Result(serverName, res) })
+      //server.runModelFlow
 
-      server.runWithStreaming(message, Sink.foreach{ case res =>  userRef ! ServerMessages.Result(serverName, res) }, interval)
+      //server.runWithStreaming(message, Sink.foreach{ case res =>  userRef ! ServerMessages.Result(serverName, res) }, interval)
 
     case other => this.log.error(s"some other message $other")
   }

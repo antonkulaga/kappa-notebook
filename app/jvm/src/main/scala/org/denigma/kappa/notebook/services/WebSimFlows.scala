@@ -1,40 +1,19 @@
 package org.denigma.kappa.notebook.services
 
-import java.time.LocalDateTime
-
 import akka.NotUsed
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.http.scaladsl.model.{HttpRequest, _}
+import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream.scaladsl._
 import de.heikoseeberger.akkahttpcirce.CirceSupport
 import org.denigma.kappa.WebSim
-
 import org.denigma.kappa.WebSim.RunModel
-import java.time.LocalDateTime
-
-import akka.NotUsed
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl._
-import de.heikoseeberger.akkahttpcirce.CirceSupport
+import io.circe.syntax._
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
-import io.circe.syntax._
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util._
-import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim.VersionInfo
-import scala.util._
-import de.heikoseeberger.akkahttpcirce.CirceSupport
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.parser._
-import io.circe.syntax._
-
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 /**
   * Basic idea of the API is that we create a flow for each type of request to websim API, then those flows are applied to http pool
@@ -61,6 +40,13 @@ trait WebSimFlows extends CirceSupport{
       val data = HttpEntity(ContentTypes.`application/json`, json)
       HttpRequest(uri = s"$base/process", method = HttpMethods.POST, entity =  data)
   }
+/*
+  def unmarshalFlow[Input, T](implicit um: Unmarshaller[HttpResponse, T]): Flow[Input, Future[T], NotUsed] = Flow[Input].map{
+    case (Success(req), time) => Unmarshal(req).to[T]
+    case (Failure(exception), time) => Future.failed(exception)
+  }
+  */
+
 
   protected val simulationStatusRequestFlow: Flow[Token, (Token, HttpRequest), NotUsed] = Flow[Token].map{  case token => token -> HttpRequest(uri = s"$base/process/$token", method = HttpMethods.GET) }
 

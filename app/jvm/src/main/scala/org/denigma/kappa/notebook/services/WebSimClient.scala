@@ -7,7 +7,7 @@ import akka.actor.{ActorSystem, Cancellable}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream.stage._
 import akka.stream._
 import akka.stream.scaladsl._
@@ -27,14 +27,8 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util._
 
 
-
-/**
-  * Created by antonkulaga on 04/03/16.
-  */
 class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val system: ActorSystem, val mat: ActorMaterializer) extends PooledWebSimFlows
 {
-
-  implicit protected def context: ExecutionContextExecutor = system.dispatcher
 
   val defaultParallelism = 1
   val defaultUpdateInterval = 500 millis
@@ -47,30 +41,36 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
     */
   val base = "/v1"
 
+
   def getVersion()= {
-    Source.single(Unit).via(versionRequestFlow).via(timePool).via(unmarshalFlow[VersionInfo]).mapAsync(1)(identity(_)).runWith(Sink.head)
+    Source.single(Unit).via(versionRequestFlow).via(timePool).via(unmarshalPoolFlow[VersionInfo]).mapAsync(1)(identity(_)).runWith(Sink.head)
   }
 
   def launch(model: WebSim.RunModel): Future[Token] = {
-    Source.single(model).via(runModelRequestFlow).via(timePool).via(unmarshalFlow[Int]).mapAsync(1)(identity(_)).runWith(Sink.head)
+    Source.single(model).via(runModelRequestFlow).via(timePool).via(unmarshalPoolFlow[Int]).mapAsync(1)(identity(_)).runWith(Sink.head)
   }
 
   def run(model: WebSim.RunModel): Future[SimulationStatus] =  {
-    Source.single(model).via(runModelFlow).map(_._2).runWith(Sink.last)
+    Source.single(model).via(defaultRunModelFlow).map(_._2).runWith(Sink.last)
   }
 
   def run(model: WebSim.RunModel, updateInterval: FiniteDuration, parallelism: Int = 1): Future[SimulationStatus] =  {
-    Source.single(model).via(modelResultsFlow(parallelism, updateInterval)).map(_._2).runWith(Sink.last)
+    Source.single(model).via(makeModelResultsFlow(parallelism, updateInterval)).map(_._2).runWith(Sink.last)
   }
 
-  lazy val runModelFlow: Flow[RunModel, (TokenPoolMessage, SimulationStatus), NotUsed] = modelResultsFlow(defaultParallelism, defaultUpdateInterval)
+  lazy val defaultRunModelFlow: Flow[RunModel, (TokenPoolMessage, SimulationStatus), NotUsed] = makeModelResultsFlow(defaultParallelism, defaultUpdateInterval)
+
+  /**
+    * flow that returns only final results
+    */
+  lazy val defaultRunModelFinalResultFlow: Flow[RunModel, (TokenPoolMessage, SimulationStatus), NotUsed] = makeModelFinalResultFlow(defaultParallelism, defaultUpdateInterval)
 
   def resultByToken(token: Int): Future[SimulationStatus] =  resultByToken(token, defaultUpdateInterval, defaultParallelism)
 
-  def resultByToken(token: Int,  updateInterval: FiniteDuration, parallelism: Int): Future[SimulationStatus] = Source.single(token).via(tokenResultsFlow(parallelism, updateInterval)) map(_._2) runWith Sink.last
+  def resultByToken(token: Token,  updateInterval: FiniteDuration, parallelism: Int): Future[SimulationStatus] = Source.single(token).via(makeTokenResultsFlow(parallelism, updateInterval)) map(_._2) runWith Sink.last
 
   def getRunning(): Future[Array[Int]] = {
-    Source.single(Unit).via(runningRequestFlow).via(timePool).via(unmarshalFlow[Array[Int]]).mapAsync(1)(identity(_)) runWith Sink.head
+    Source.single(Unit).via(runningRequestFlow).via(timePool).via(unmarshalPoolFlow[Array[Int]]).mapAsync(1)(identity(_)) runWith Sink.head
   }
 
 }

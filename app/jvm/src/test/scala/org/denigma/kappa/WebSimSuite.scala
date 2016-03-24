@@ -9,7 +9,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit.TestProbe
 import akka.util.Timeout
 import org.denigma.kappa.WebSim.SimulationStatus
-import org.denigma.kappa.notebook.services.WebSimClient
+import org.denigma.kappa.notebook.services.{TokenPoolMessage, WebSimClient}
 import org.scalatest.concurrent.Futures
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
@@ -68,41 +68,39 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
 
     }
 
-    "run simulation and get results" in {
-      val probe = TestProbe()
-      val abc = read("/abc.ka").reduce(_ + "\n" + _)
-      //server.getVersion().pipeTo(probe.ref)
-      val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
-      server.launch(params) flatMap{
-        case token => server.resultByToken(token)
-      } pipeTo probe.ref
+      "run simulation and get results" in {
+        val probe = TestProbe()
+        val abc = read("/abc.ka").reduce(_ + "\n" + _)
+        val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
+        server.launch(params) flatMap{
+          case token => server.resultByToken(token)
+        } pipeTo probe.ref
 
-      probe.expectMsgPF(duration * 2) {
-        case results: WebSim.SimulationStatus =>
-          val charts = results.plot map {
-            case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
-          } getOrElse Array[(Double, String)]()
+
+        probe.expectMsgPF(duration * 2) {
+          case results: WebSim.SimulationStatus =>
+            /*
+            val charts = results.plot map {
+              case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
+            } getOrElse Array[(Double, String)]()
+            */
+        }
       }
-    }
 
-    "run streamed results" in {
-      val probe = TestProbe()
-      val abc = read("/abc.ka").reduce(_ + "\n" + _)
-      //server.getVersion().pipeTo(probe.ref)
-      val params = WebSim.RunModel(abc, 100, max_events = Some(10000))
-      val fut: Future[Seq[SimulationStatus]] = Source.single(params).via(server.modelResultsFlow(1, 100 millis).map(_._2)).runWith(Sink.seq)//.runWithStreamingFlatten(params, Sink.seq, 100 millis)
-      fut pipeTo probe.ref
-      probe.expectMsgPF(duration * 20) {
-        case results: Seq[SimulationStatus] if results.nonEmpty && results.last.percentage == 100 =>
-          //println(s"SIMULATION HAS RESULTS :\n"+results)
-          println(s"Number of results is ${results.length}")
-          println("RESULTS: "+ results.toList.mkString("\n=====================\n"))
-      }
-      //server.run(params) flatMap{ case token => server.getResult(token) }
-    }
-
-
+     "run streamed results" in {
+       val probe = TestProbe()
+       val abc = read("/abc.ka").reduce(_ + "\n" + _)
+       //server.getVersion().pipeTo(probe.ref)
+       val params = WebSim.RunModel(abc, 100, max_events = Some(10000))
+       val fut: Future[Seq[SimulationStatus]] = Source.single(params).via(server.makeModelResultsFlow(1, 100 millis).map(_._2)).runWith(Sink.seq)//.runWithStreamingFlatten(params, Sink.seq, 100 millis)
+       fut pipeTo probe.ref
+       probe.expectMsgPF(duration * 20) {
+         case results: Seq[SimulationStatus] if results.nonEmpty && results.last.percentage == 100 =>
+       }
+       //server.run(params) flatMap{ case token => server.getResult(token) }
+     }
   }
+
   protected override def afterAll() = {
     Http().shutdownAllConnectionPools().onComplete{ _ =>
       system.terminate()

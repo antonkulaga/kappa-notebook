@@ -78,7 +78,9 @@ object Dependencies {
 	val otherJvm = Def.setting(Seq(
     "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
 
-		"org.sbolstandard" % "libSBOLj-parent" % Versions.libSBOLj
+		"org.sbolstandard" % "libSBOLj-parent" % Versions.libSBOLj,
+
+		"org.scalanlp" %% "breeze" % Versions.breeze
 	))
 
 

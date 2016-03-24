@@ -19,7 +19,7 @@ class ServerActor extends Actor with ActorLogging {
   override def receive: Receive = {
 
     case ServerMessages.Run(username, serverName, message: WebSim.RunModel, userRef, interval) =>
-      Source.single(message).via(server.modelResultsFlow(1, interval)).runWith(Sink.foreach{ case (token, res) =>  userRef ! ServerMessages.Result(serverName, res) })
+      Source.single(message).via(server.makeModelResultsFlow(1, interval)).runWith(Sink.foreach{ case (token, res) =>  userRef ! ServerMessages.Result(serverName, res) })
       //server.runModelFlow
 
       //server.runWithStreaming(message, Sink.foreach{ case res =>  userRef ! ServerMessages.Result(serverName, res) }, interval)

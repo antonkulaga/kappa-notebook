@@ -1,6 +1,9 @@
 package org.denigma.kappa.WebSim
 
 import boopickle.Default._
+import org.denigma.controls.charts.Point
+
+import scala.List
 import scala.collection.immutable._
 
   class WebSimPicklers {
@@ -40,7 +43,7 @@ import scala.collection.immutable._
   object Defaults
   {
     lazy val runModel: RunModel = RunModel(code = "", max_events = Some(10000), max_time = None)
-    lazy val simulationStatus: SimulationStatus = SimulationStatus(None, None, None, None, None, None, None, None, None, None, None, Array.empty[FluxMap])
+    lazy val simulationStatus: SimulationStatus = SimulationStatus(None, None, None, None, None, None, None,false, None, None, None/*, Array.empty[FluxMap]*/)
     lazy val code: Code = Code("")
 
   }
@@ -59,19 +62,23 @@ import scala.collection.immutable._
                                nb_plot: Option[Int],
                                max_time: Option[Int],
                                max_events: Option[Int],
-                               is_running: Option[Boolean],
+                               is_running: Boolean,
                                code: Option[String],
                                logMessages: Option[String],
-                               plot: Option[KappaPlot],
-                               flux_maps: Array[FluxMap]
+                               plot: Option[KappaPlot]/*,
+                               flux_maps: Array[FluxMap]*/
                              )  extends WebSimMessage
   {
+    def notFinished: Boolean = percentage < 100.0 && is_running//.getOrElse(true)
+
     def percentage: Double = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
   }
 
   case class Observable(time: Double, values: Array[Double])  extends WebSimMessage
 
-  case class KappaPlot(legend: Array[String], observables: Array[Observable]) extends WebSimMessage
+  case class KappaPlot(legend: Array[String], observables: Array[Observable]) extends WebSimMessage {
+    lazy val timePoints: List[Double] = observables.foldLeft(List.empty[Double])((acc, o)=> o.time::acc).reverse
+  }
 
   case class FluxData(flux_name: String) extends WebSimMessage
 

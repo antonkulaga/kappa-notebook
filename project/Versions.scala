@@ -30,6 +30,8 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val libSBOLj = "2.0.0"
 
+	val breeze = "0.12"
+
 }
 
 trait ScalaJSVersions {

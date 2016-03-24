@@ -1,7 +1,8 @@
 package org.denigma.kappa
 
 import fastparse.core.Parsed
-import org.denigma.kappa.notebook.parsers.CommentLinksParser
+import org.denigma.kappa.model.KappaModel
+import org.denigma.kappa.notebook.parsers.{CommentLinksParser, KappaParser}
 import org.scalatest.{Inside, Matchers, WordSpec}
 
 /**
@@ -22,12 +23,32 @@ class ParsersSuite extends WordSpec with Matchers with Inside {
 
   }
   "Kappa parsers" should {
+    /*
     "parse charts" in {
 
     }
-
-
+    */
     "parse agents" in {
+      import KappaModel._
+      val parser = new KappaParser
+      inside(parser.agent.parse("%wrongagent: A(x,c) # Declaration of agent A")) {
+        case failure: Parsed.Failure =>
+      }
+      inside(parser.agent.parse("'a.b' A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B")) {
+        case failure: Parsed.Failure =>
+      }
+
+      val A = "%agent: A(x,c) # Declaration of agent A"
+
+      inside(parser.agentDecl.parse(A)) {
+        case res @ Parsed.Success(value, index: Int)  if value==KappaModel.Agent("A", Set(Side("x"), Side("c"))) =>
+          println("============")
+          println("parsed agent is "+value.name+" "+value.sides)
+          println(value==KappaModel.Agent("A", Set(Side("x"), Side("c"))))
+          println(value.sides==Set(Side("x"), Side("c")))
+          println("============")
+        //println("parsed comment = "+value)
+      }
 
     }
 
@@ -51,7 +72,8 @@ class ParsersSuite extends WordSpec with Matchers with Inside {
       val linkAfterComment = "#^ http://hello.world"
 
       inside(parser.linkAfterComment.parse(linkAfterComment)) {
-        case Parsed.Success(value: String, index: Int) if value=="http://hello.world"=> println("parsed comment = "+value)
+        case Parsed.Success(value: String, index: Int) if value=="http://hello.world" =>
+          println("parsed comment = "+value)
       }
 
     }

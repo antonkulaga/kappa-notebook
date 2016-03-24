@@ -3,13 +3,15 @@ package org.denigma.kappa.messages
 import boopickle.Default._
 import org.denigma.controls.charts.{LineStyles, Point, Series}
 import org.denigma.kappa.WebSim
+import org.denigma.kappa.WebSim.KappaPlot
+
 import scala.collection.immutable._
 
 object KappaChart {
   lazy val empty = KappaChart(List.empty)
 
   implicit def fromKappaPlot(plot: WebSim.KappaPlot): KappaChart = {
-    val series = plot.legend.zipWithIndex.map{ case (title, i) => KappaSeries(title,plot.observables.map(o=> Point(o.time,o.values(i))).toList) }
+    val series = plot.legend.zipWithIndex.map{ case (title, i) => KappaSeries(title, plot.observables.map(o=> Point(o.time,o.values(i))).toList) }
     KappaChart(series.toList)
   }
 }

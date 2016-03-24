@@ -6,7 +6,7 @@ import akka.http.extensions.stubs.{Registration, _}
 import akka.http.scaladsl.server.Directives
 import akka.stream.Materializer
 import org.denigma.kappa.notebook.pages._
-import org.denigma.kappa.notebook.communication.{WebSocketManager}
+import org.denigma.kappa.notebook.communication.WebSocketManager
 
 class Router(implicit fm: Materializer, system: ActorSystem) extends Directives {
 

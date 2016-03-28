@@ -55,7 +55,6 @@ trait PooledWebSimFlows extends WebSimFlows  {
     case (Failure(exception), time) => Future.failed(exception)
   }
 
-
   protected val simulationStatusFutureFlow: Flow[Int, Future[(TokenPoolMessage, WebSim.SimulationStatus)], NotUsed] = simulationStatusRequestFlow.via(tokenPool).map{
     case (Success(res), mess: TokenPoolMessage) =>
       //pprint.pprintln("ENTITY "+res.entity)
@@ -76,7 +75,8 @@ trait PooledWebSimFlows extends WebSimFlows  {
         val source = Source.tick(0 millis, streamInterval, token)
         source.via( simulationStatusFutureFlow.mapAsync(1)(identity(_)))
           .upTo{
-            case (t, sim) => sim.percentage >= 100.0 || !sim.is_running//.getOrElse(false)
+            case (t, sim) =>
+              sim.percentage >= 100.0 || !sim.is_running//.getOrElse(false)
           }
   })
 }

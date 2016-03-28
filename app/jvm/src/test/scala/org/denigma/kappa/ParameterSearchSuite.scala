@@ -39,6 +39,7 @@ class ParameterSearchSuite extends WordSpec with Matchers with ScalatestRouteTes
     "Parameter searchers" should {
 
       "run several" in {
+
         val probe = TestProbe()
         val abc = read("/abc.ka").reduce(_ + "\n" + _)
         //server.getVersion().pipeTo(probe.ref)
@@ -51,8 +52,8 @@ class ParameterSearchSuite extends WordSpec with Matchers with ScalatestRouteTes
             val plots: List[KappaPlot] = sims.map { case s =>
               s.plot.get
             }.toList
-            println("length is " + plots.length)
-            if(plots.isEmpty) println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            //println("length is " + plots.length)
+            //if(plots.isEmpty) println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             //pprint.pprintln(s"===notFinished ${s.notFinished} and ${s.percentage} and ${s.is_running}=====")
             //pprint.pprintln(s.plot)
             //pprint.pprintln("===================")
@@ -62,6 +63,7 @@ class ParameterSearchSuite extends WordSpec with Matchers with ScalatestRouteTes
             //pprint.pprintln(m.rowStd.length)
             //pprint.pprintln(m.rowStd)
         }
+
       }
 
           /*

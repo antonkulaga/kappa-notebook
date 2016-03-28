@@ -45,7 +45,7 @@ class WebSocketManager(system: ActorSystem) {
       FlowShape( fromWebsocket.in, backToWebsocket.out )
     }.named("socket_flow")
     Flow.fromGraph(partial).recover { case ex =>
-      println(s"WS stream for $channel failed for $username with the following cause:\n  $ex")
+      this.system.log.error(s"WS stream for $channel failed for $username with the following cause:\n  $ex")
       throw ex
     }
   }//.via(reportErrorsFlow(channel, username)) // ... then log any processing errors on stdin

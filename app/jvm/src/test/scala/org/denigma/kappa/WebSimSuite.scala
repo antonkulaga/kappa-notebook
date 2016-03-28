@@ -99,6 +99,32 @@ class WebSimSuite extends WordSpec with Matchers with ScalatestRouteTest with Fu
        }
        //server.run(params) flatMap{ case token => server.getResult(token) }
      }
+
+      "run wrong models" in {
+        val probe = TestProbe()
+        val abc = read("/abc.ka").reduce(_ + "\n" + _).replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
+        val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
+        server.launch(params) flatMap{
+          case token =>
+            val result = server.resultByToken(token)
+            println("============================")
+            println(result)
+            result
+        } pipeTo probe.ref
+
+
+        probe.expectMsgPF(duration * 2) {
+          //case results: WebSim.SimulationStatus =>
+          case result =>
+            println("============================")
+            println(result)
+          /*
+          val charts = results.plot map {
+            case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
+          } getOrElse Array[(Double, String)]()
+          */
+        }
+      }
   }
 
   protected override def afterAll() = {

@@ -71,11 +71,11 @@ trait SharedVersions
 
 trait WebJarsVersions{
 
-	val jquery =  "2.2.1"
+	val jquery =  "2.2.2"
 
 	val semanticUI = "2.1.8"
 
-	val codemirror = "5.12"
+	val codemirror = "5.13.2"
 
 	val threeJS = "r74"
 

@@ -42,12 +42,6 @@ class ParsersSuite extends WordSpec with Matchers with Inside {
 
       inside(parser.agentDecl.parse(A)) {
         case res @ Parsed.Success(value, index: Int)  if value==KappaModel.Agent("A", Set(Side("x"), Side("c"))) =>
-          println("============")
-          println("parsed agent is "+value.name+" "+value.sides)
-          println(value==KappaModel.Agent("A", Set(Side("x"), Side("c"))))
-          println(value.sides==Set(Side("x"), Side("c")))
-          println("============")
-        //println("parsed comment = "+value)
       }
 
     }

@@ -58,7 +58,8 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
     Source.single(model).via(makeModelResultsFlow(parallelism, updateInterval)).map(_._2).runWith(Sink.last)
   }
 
-  lazy val defaultRunModelFlow: Flow[RunModel, (TokenPoolMessage, SimulationStatus), NotUsed] = makeModelResultsFlow(defaultParallelism, defaultUpdateInterval)
+  lazy val defaultRunModelFlow: Flow[RunModel, (TokenPoolMessage, SimulationStatus), NotUsed] =
+    makeModelResultsFlow(defaultParallelism, defaultUpdateInterval)
 
   /**
     * flow that returns only final results

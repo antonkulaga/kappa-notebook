@@ -9,20 +9,24 @@ import org.denigma.kappa.notebook.services.WebSimClient
 
 import scala.concurrent.duration.FiniteDuration
 
-class ServerActor extends Actor with ActorLogging {
+class KappaServerActor extends Actor with ActorLogging {
+
+  ammonite.repl.Main.Config
 
   implicit def system: ActorSystem = context.system
-  implicit val materializer = ActorMaterializer()
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   val server = new WebSimClient()(system, materializer)
 
   override def receive: Receive = {
 
     case ServerMessages.Run(username, serverName, message: WebSim.RunModel, userRef, interval) =>
-      Source.single(message).via(server.makeModelResultsFlow(1, interval)).runWith(Sink.foreach{ case (token, res) =>  userRef ! ServerMessages.Result(serverName, res) })
-      //server.runModelFlow
+      Source.single(message)
+        .via(server.makeModelResultsFlow(1, interval))
+        .runWith(Sink.foreach { case (token, res) =>  userRef ! ServerMessages.Result(serverName, res) })
+    //server.runModelFlow
 
-      //server.runWithStreaming(message, Sink.foreach{ case res =>  userRef ! ServerMessages.Result(serverName, res) }, interval)
+    //server.runWithStreaming(message, Sink.foreach{ case res =>  userRef ! ServerMessages.Result(serverName, res) }, interval)
 
     case other => this.log.error(s"some other message $other")
   }

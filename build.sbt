@@ -77,9 +77,9 @@ lazy val app = crossProject
     pipelineStages in Assets := Seq(scalaJSDevStage, gzip), //for run configuration
     (fullClasspath in Runtime) += (packageBin in Assets).value, //to package production deps
     libraryDependencies += "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
-    libraryDependencies += "com.lihaoyi" %% "ammonite-shell" % Versions.ammonite
-    //libraryDependencies += "com.lihaoyi" % "ammonite-repl" % Versions.ammonite % "test" cross CrossVersion.full,
-    //initialCommands in (Test, console) := """ammonite.repl.Repl.run("")"""
+    libraryDependencies += "com.lihaoyi" %% "ammonite-shell" % Versions.ammonite,
+    libraryDependencies += "com.lihaoyi" % "ammonite-repl" % Versions.ammonite % Test cross CrossVersion.full,
+    initialCommands in (Test, console) := Console.out
   )
   .jvmConfigure(p => p.enablePlugins(SbtTwirl, SbtWeb, PlayScalaJS))
 

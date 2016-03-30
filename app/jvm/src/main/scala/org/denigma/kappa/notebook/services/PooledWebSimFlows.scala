@@ -25,6 +25,8 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration.FiniteDuration
 import org.denigma.kappa.extensions._
 
+import scala.Either
+
 trait PoolMessage
 {
   def time: LocalDateTime
@@ -50,9 +52,21 @@ trait PooledWebSimFlows extends WebSimFlows  {
 
   val tokenPool = Flow[(Token, HttpRequest)].map{ case (token, req) => req -> TokenPoolMessage(token, LocalDateTime.now)}.via(pool)
 
-  def unmarshalPoolFlow[T](implicit um: Unmarshaller[HttpResponse, T]): Flow[TryRequest, Future[T], NotUsed] = Flow[TryRequest].map{
-    case (Success(req), time) => Unmarshal(req).to[T]
+  def unmarshalEitherPoolFlow[T, U](onfailure: HttpResponse=> PartialFunction[Throwable, Right[T, U]])(implicit um: Unmarshaller[HttpResponse, T]): Flow[TryRequest, Future[Either[T,U]], NotUsed] = Flow[TryRequest].map{
+    case (Success(req), time) =>
+      Unmarshal(req).to[T].map[Either[T,U]](Left(_)).recover(onfailure(req))
     case (Failure(exception), time) => Future.failed(exception)
+  }
+
+  def unmarshalPoolFlow[T](implicit um: Unmarshaller[HttpResponse, T]): Flow[TryRequest, Future[T], NotUsed] = Flow[TryRequest].map{
+    case (Success(req), time) =>
+      Unmarshal(req).to[T].recoverWith{
+        case th=>
+          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+req+"==\n")
+          Future.failed(th)
+      }
+    case (Failure(exception), time) =>
+      Future.failed(exception)
   }
 
   protected val simulationStatusFutureFlow: Flow[Int, Future[(TokenPoolMessage, WebSim.SimulationStatus)], NotUsed] = simulationStatusRequestFlow.via(tokenPool).map{

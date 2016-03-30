@@ -6,7 +6,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val bcrypt = "2.4"
 
-	val ammonite = "0.5.6"
+	val ammonite = "0.5.7"
 
 	val apacheCodec = "1.10"
 

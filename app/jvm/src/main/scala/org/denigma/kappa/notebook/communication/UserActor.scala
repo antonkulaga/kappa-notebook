@@ -2,26 +2,33 @@ package org.denigma.kappa.notebook.communication
 
 import java.io.InputStream
 
-import akka.actor.{ActorRef, Actor}
-import akka.http.scaladsl.model.ws.{TextMessage, BinaryMessage}
+import akka.actor.{Actor, ActorRef}
+import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.stream.ActorMaterializer
-import akka.stream.actor.{ActorPublisherMessage, ActorPublisher}
+import akka.stream.actor.{ActorPublisher, ActorPublisherMessage}
 import akka.util.ByteString
 import cats.data.Xor
 import io.circe.generic.semiauto
-
 import org.denigma.kappa.WebSim
 import org.denigma.kappa.WebSim._
 import boopickle.Default._
 import org.denigma.kappa.notebook.communication.SocketMessages.OutgoingMessage
+
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 import java.time._
+
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.Uri.Query
+import akka.http.scaladsl.model._
 import de.heikoseeberger.akkahttpcirce.CirceSupport
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser
 import io.circe.syntax._
+import HttpMethods._
+
+import scala.concurrent.Future
 
 
 
@@ -101,7 +108,7 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
   protected def onServerMessage: Receive = {
 
     case ServerMessages.Result(server, status) =>
-      println("CONSOLE = "+status.logMessages)
+      println("CONSOLE = "+ status.logMessages)
       //println("received results")
       //val text = status.asJson.noSpaces
       //send(TextMessage.Strict(text), "all")

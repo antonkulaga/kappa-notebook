@@ -17,7 +17,7 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 import scala.collection.immutable.Seq
 import scala.concurrent.Future
 import scala.concurrent.duration._
-
+/*
 /**
   * Tests quering WebSim
   * to run this test make sure that WebSim server is up and running
@@ -66,6 +66,7 @@ class ParameterSearchSuite extends WordSpec with Matchers with ScalatestRouteTes
 
       }
 
+
           /*
       "run parameter estimation" in {
         import breeze.linalg._
@@ -93,3 +94,4 @@ class ParameterSearchSuite extends WordSpec with Matchers with ScalatestRouteTes
     }
   }
 }
+*/

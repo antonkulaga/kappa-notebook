@@ -3,16 +3,16 @@ object Console
 
   protected val imports =
     """
+      | import scala.concurrent.duration._
+      | import scala.util._
+      |
       | import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
       | import akka.stream.ActorMaterializer
       | import akka.stream.scaladsl._
       | import akka.http.scaladsl.model._
       | import akka.http.scaladsl.model.Uri.Query
       | import akka.http.scaladsl.Http
-      | HttpMethods._
       |
-      | import scala.util._
-      | import scala.concurrent.duration._
       |
       | import org.denigma.kappa._
       | import org.denigma.kappa.WebSim
@@ -34,7 +34,10 @@ object Console
 
   protected val loaders =
     """
+      | import KappaRes._
+      | val host = "http://localhost:8080/v1/"
       | val tester = new Tester()
+      | import tester._
     """.stripMargin
 
   val predef = imports + akka + loaders

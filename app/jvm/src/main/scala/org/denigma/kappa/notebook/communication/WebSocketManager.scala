@@ -15,7 +15,9 @@ import org.denigma.kappa.notebook.communication.SocketMessages._
 class WebSocketManager(system: ActorSystem) {
 
   val allRoom = system.actorOf(Props(classOf[RoomActor], "all"))
+
   val servers = system.actorOf(Props[KappaServerActor])
+
   def openChannel(channel: String, username: String = "guest"): Flow[Message, Message, Any] = {
     val partial: Graph[FlowShape[Message, Message], ActorRef] = GraphDSL.create(
       Source.actorPublisher[OutgoingMessage](Props(classOf[UserActor], username, servers))

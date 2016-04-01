@@ -2,19 +2,47 @@ package org.denigma.kappa
 
 import akka.NotUsed
 import akka.stream._
-import akka.stream.scaladsl.{Flow, Source}
+import akka.stream.scaladsl._
 import akka.stream.stage._
+
+import scala.concurrent.Future
 
 //NOTE: sole IDEs like Intellij think that import is unused while it is used
 
 object extensions {
 
-  implicit class FlowOpsExt[T, Inp, M](val flow: Flow[Inp, T, M]) {
+  implicit class FlowOpsFutureExt[Inp, T, M](val flow: Flow[Inp, Future[T], M]) {
+    def sync: Flow[Inp, T, M] = flow.mapAsync(1)(identity(_))
+    def async(parallel: Int): Flow[Inp, T, M] = flow.mapAsync(parallel)(identity(_))
+
+  }
+
+
+  implicit class FlowOpsExt[Inp, T, M](val flow: Flow[Inp, T, M]) {
 
     def upTo(fun: T => Boolean): Flow[Inp, T, M] = flow.via(FlowUpTo(fun))
 
     def upToExcl(fun: T => Boolean): Flow[Inp, T, M] = flow via FlowUpTo(fun, inclusive = false)
 
+    /**
+      * Works similar to ZipWith but zips its input with output of the flow through which it goes to
+      * It is useful to making requests somewhere and tracking original value
+      * @param other Flow to go through
+      * @param combine combine my input with output
+      * @tparam U Type of other flow output
+      * @tparam O Result of combination
+      * @return
+      */
+    def inputZipWith[U, O](other: Flow[T, U, M])(combine: (Inp, U)=> O): Flow[Inp, O, NotUsed] = Flow.fromGraph(GraphDSL.create(){ implicit builder=>
+      import GraphDSL.Implicits._
+      val b = builder.add(Broadcast[Inp](2))
+      val me = builder.add(flow)
+      val pipe: FlowShape[T, U] = builder.add(other)
+      val zip = builder.add(ZipWith[Inp, U, O](combine))
+      b.out(0) ~> zip.in0
+      b.out(1) ~> me ~> pipe ~> zip.in1
+      FlowShape[Inp, O](b.in, zip.out)
+    })
   }
 
   implicit class SourceExt[T, M](val source: Source[T, M]) {
@@ -51,6 +79,8 @@ class MapPartial[Input, Output](fun: PartialFunction[Input, Output]) extends Flo
   }
 }
 
+
+
 //inclusive flow
 class UpToStage[T](fun: T => Boolean, inclusive: Boolean = true) extends FlowStage[T, T]{
 
@@ -76,11 +106,12 @@ class UpToStage[T](fun: T => Boolean, inclusive: Boolean = true) extends FlowSta
     })
 
   }
-
 }
 
 object FlowUpTo {
+
   def apply[T](fun: T => Boolean): Flow[T, T, NotUsed] = Flow.fromGraph(new UpToStage[T](fun))
+
   def apply[T, M](fun: T => Boolean, inclusive: Boolean): Flow[T, T, NotUsed] = Flow.fromGraph(new UpToStage[T](fun, inclusive))
 
 }

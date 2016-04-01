@@ -31,8 +31,9 @@ trait WebSimFlows extends CirceSupport{
   protected val versionRequestFlow: Flow[Any, HttpRequest, NotUsed] = Flow[Any].map(any => HttpRequest(uri = s"$base/version"))
 
   protected val runningRequestFlow: Flow[Any, HttpRequest, NotUsed] = Flow[Any].map(any => HttpRequest(uri = s"$base/process", method = HttpMethods.GET))
+
   /**
-    * Flow where you provide Models to get httpRequest in return
+    * Flow where you provide Running configurations to get Model with request in return
     */
   protected val runModelRequestFlow: Flow[RunModel, HttpRequest, NotUsed] = Flow[WebSim.RunModel].map{
     case model =>
@@ -40,6 +41,7 @@ trait WebSimFlows extends CirceSupport{
       val data = HttpEntity(ContentTypes.`application/json`, json)
       HttpRequest(uri = s"$base/process", method = HttpMethods.POST, entity =  data)
   }
+
 /*
   def unmarshalFlow[Input, T](implicit um: Unmarshaller[HttpResponse, T]): Flow[Input, Future[T], NotUsed] = Flow[Input].map{
     case (Success(req), time) => Unmarshal(req).to[T]

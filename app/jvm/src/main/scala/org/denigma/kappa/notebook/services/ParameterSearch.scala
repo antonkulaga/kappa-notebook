@@ -26,10 +26,11 @@ case class Fit(parameter: String, min: Double, max: Double, runNum: Int)
 
 class ParameterSearcher(host: String = "localhost", port: Int = 8080)(implicit system: ActorSystem, mat: ActorMaterializer) extends WebSimClient(host, port)(system, mat){
 
+  /*
   def run(models: Seq[WebSim.RunModel]): Future[Seq[(TokenPoolMessage, SimulationStatus)]] =  {
     Source(models).via(defaultRunModelFinalResultFlow).runWith(Sink.seq)
   }
-
+*/
   /*
   def stupidSearchFlow(toySearch: ToySearch) = {
     for{ i <- 1 to 10 }

@@ -6,7 +6,8 @@ import akka.NotUsed
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.pattern.pipe
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.testkit.javadsl.TestSink
 import akka.testkit.TestProbe
 import akka.util.Timeout
 import org.denigma.kappa.notebook.services.WebSimClient
@@ -21,10 +22,7 @@ import extensions._
 /**
   * Created by antonkulaga on 08/03/16.
   */
-class ExtensionsSuite extends WordSpec with Matchers with ScalatestRouteTest with Futures with BeforeAndAfterAll {
-  implicit val duration: FiniteDuration = 800 millis
-
-  implicit val timeout:Timeout = Timeout(duration)
+class ExtensionsSuite extends BasicSuite {
 
   "Extensions" should {
     "Provide an ability to inclusively collect data" in {
@@ -35,7 +33,7 @@ class ExtensionsSuite extends WordSpec with Matchers with ScalatestRouteTest wit
       probe.expectMsg(expRes)
     }
 
-    "Will stop ticking" in {
+    "Stop ticking" in {
       val probe = TestProbe()
       var a = 0
       val t = Source.tick(0 millis, 100 millis, true)
@@ -45,6 +43,22 @@ class ExtensionsSuite extends WordSpec with Matchers with ScalatestRouteTest wit
         .pipeTo(probe.ref)
       val expRes:Seq[Int] = Seq(1,2,3,4)
       probe.expectMsg(expRes)
+    }
+
+    "Will stop ticking" in {
+
+      val fl =  Flow[Int].map(i=>i * 10)
+      val other = Flow[Int].map(i => i + "!" )
+      val test = fl.inputZipWith(other)((a, b)=> (a, b))
+      val sink = TestSink.probe[(Int, String)](system)
+      Source(0 to 10).via(test)
+        .runWith(sink)
+        .request(1)
+        .expectNext((0, "0!"))
+        .request(1)
+        .expectNext((1, "10!"))
+        .request(1)
+        .expectNext((2, "20!"))
     }
 
   }

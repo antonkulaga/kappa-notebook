@@ -7,7 +7,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream._
 import akka.stream.scaladsl._
 import de.heikoseeberger.akkahttpcirce.CirceSupport
 import io.circe._
@@ -33,12 +33,12 @@ trait PoolMessage
 }
 
 case class TimePoolMessage(time: LocalDateTime) extends PoolMessage
-case class TokenPoolMessage(token: Int, time: LocalDateTime) extends PoolMessage
-
+//case class TokenPoolMessage(token: Int, time: LocalDateTime) extends PoolMessage
+case class ModelPoolMessage(runParams: RunModel, time: LocalDateTime, token: Option[Int] = None, results: List[SimulationStatus] = List.empty, errors: List[String] = List.empty) extends PoolMessage
 
 trait PooledWebSimFlows extends WebSimFlows  {
 
-  type TryRequest = (Try[HttpResponse], PoolMessage)
+  type TryResponse = (Try[HttpResponse], PoolMessage)
 
   implicit val system: ActorSystem
 
@@ -46,33 +46,57 @@ trait PooledWebSimFlows extends WebSimFlows  {
 
   implicit protected def context: ExecutionContextExecutor = system.dispatcher
 
-  protected def pool: Flow[(HttpRequest, PoolMessage), (Try[HttpResponse], PoolMessage), HostConnectionPool]
+  protected def pool: Flow[(HttpRequest, PoolMessage), TryResponse, HostConnectionPool] //note: should be extended by lazy val
 
-  val timePool = Flow[HttpRequest].map(req => req -> TimePoolMessage(LocalDateTime.now)).via(pool)
+  val timePool: Flow[HttpRequest, TryResponse, NotUsed] = Flow[HttpRequest].map(req => req -> TimePoolMessage(LocalDateTime.now)).via(pool)
 
-  val tokenPool = Flow[(Token, HttpRequest)].map{ case (token, req) => req -> TokenPoolMessage(token, LocalDateTime.now)}.via(pool)
+  val versionFlow = versionRequestFlow.via(timePool).via(unmarshalFlow[VersionInfo]).sync
 
-  def unmarshalEitherPoolFlow[T, U](onfailure: HttpResponse=> PartialFunction[Throwable, Right[T, U]])(implicit um: Unmarshaller[HttpResponse, T]): Flow[TryRequest, Future[Either[T,U]], NotUsed] = Flow[TryRequest].map{
-    case (Success(req), time) =>
-      Unmarshal(req).to[T].map[Either[T,U]](Left(_)).recover(onfailure(req))
-    case (Failure(exception), time) => Future.failed(exception)
+  val tokenFlow = runModelRequestFlow.inputZipWith(timePool.via(safeTokenUnmarshalFlow.sync)){
+    case (params, either)=> either -> params
   }
 
-  def unmarshalPoolFlow[T](implicit um: Unmarshaller[HttpResponse, T]): Flow[TryRequest, Future[T], NotUsed] = Flow[TryRequest].map{
-    case (Success(req), time) =>
-      Unmarshal(req).to[T].recoverWith{
+
+  lazy val safeTokenUnmarshalFlow: Flow[TryResponse, Future[Either[Token, Array[String]]], NotUsed] = safeUnmarshalFlow[Int, Array[String]]{
+    case (resp, time) =>
+      Unmarshal(resp).to[Array[String]].recoverWith{
         case th=>
-          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+req+"==\n")
+          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
+          Future.failed(th)
+      }
+  }
+
+
+  def safeUnmarshalFlow[T, U](onfailure: (HttpResponse, Throwable) => Future[U])(implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[Either[T,U]], NotUsed] =
+    Flow[TryResponse].map{
+      case (Success(resp), message) =>
+        val fut = Unmarshal(resp).to[T]
+        fut.map[Either[T,U]](Left(_)).recoverWith{
+          case exception => onfailure(resp, exception).map[Either[T,U]](Right(_))
+        }
+      case (Failure(exception), time) => Future.failed(exception)
+  }
+
+  def unmarshalFlow[T](implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[T], NotUsed] = Flow[TryResponse].map{
+    case (Success(resp), time) =>
+      Unmarshal(resp).to[T].recoverWith{
+        case th=>
+          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
           Future.failed(th)
       }
     case (Failure(exception), time) =>
       Future.failed(exception)
   }
 
+/*
   protected val simulationStatusFutureFlow: Flow[Int, Future[(TokenPoolMessage, WebSim.SimulationStatus)], NotUsed] = simulationStatusRequestFlow.via(tokenPool).map{
     case (Success(res), mess: TokenPoolMessage) =>
       //pprint.pprintln("ENTITY "+res.entity)
-      Unmarshal(res).to[WebSim.SimulationStatus].map(st=>mess -> st)
+      Unmarshal(res).to[WebSim.SimulationStatus].recoverWith{
+        case th=>
+          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+res+"==\n")
+          Future.failed(th)
+      }.map(st=>mess -> st)
     case (Failure(th), mess: TokenPoolMessage) => Future.failed(th)
     case (other, mess) => Future.failed(new Exception(s"Message $mess should be Tocken"))
   }
@@ -82,8 +106,9 @@ trait PooledWebSimFlows extends WebSimFlows  {
   }
 
   def makeModelResultsFlow(parallelism: Int, streamInterval: FiniteDuration): Flow[RunModel, (TokenPoolMessage, SimulationStatus), NotUsed] = runModelRequestFlow.via(timePool)
-    .via(unmarshalPoolFlow[Token]).mapAsync(parallelism)(identity(_)).via(makeTokenResultsFlow(parallelism, streamInterval))
+    .via(unmarshalFlow[Token]).mapAsync(parallelism)(identity(_)).via(makeTokenResultsFlow(parallelism, streamInterval))
 
+  /*
   def makeTokenResultsFlow(parallelism: Int, streamInterval: FiniteDuration): Flow[Token, (TokenPoolMessage, SimulationStatus), NotUsed] =  Flow[Token].flatMapMerge(parallelism, {
       case token =>
         val source = Source.tick(0 millis, streamInterval, token)
@@ -93,4 +118,19 @@ trait PooledWebSimFlows extends WebSimFlows  {
               sim.percentage >= 100.0 || !sim.is_running//.getOrElse(false)
           }
   })
+  */
+
+ def makeTokenResultsFlow(parallelism: Int, streamInterval: FiniteDuration): Flow[Token, (TokenPoolMessage, SimulationStatus), NotUsed] =  Flow[Token].flatMapMerge(parallelism, {
+    case token =>
+      //val source = Source.tick(0 millis, streamInterval, token)
+      val source = Source.repeat(token).delay(streamInterval)
+      source.via( simulationStatusFutureFlow.mapAsync(1)(identity(_)))
+        .upTo{
+          case (t, sim) =>
+            sim.percentage >= 100.0 || !sim.is_running
+        }
+  })
+
+  */
+
 }

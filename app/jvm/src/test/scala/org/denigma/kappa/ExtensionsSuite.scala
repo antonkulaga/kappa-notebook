@@ -45,7 +45,7 @@ class ExtensionsSuite extends BasicSuite {
       probe.expectMsg(expRes)
     }
 
-    "Will stop ticking" in {
+    "inputZipWith" in {
 
       val fl =  Flow[Int].map(i=>i * 10)
       val other = Flow[Int].map(i => i + "!" )

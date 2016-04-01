@@ -50,6 +50,6 @@ trait WebSimFlows extends CirceSupport{
   */
 
 
-  protected val simulationStatusRequestFlow: Flow[Token, (Token, HttpRequest), NotUsed] = Flow[Token].map{  case token => token -> HttpRequest(uri = s"$base/process/$token", method = HttpMethods.GET) }
+  protected val simulationStatusRequestFlow: Flow[Token, HttpRequest, NotUsed] = Flow[Token].map{  case token =>  HttpRequest(uri = s"$base/process/$token", method = HttpMethods.GET) }
 
 }

@@ -2,7 +2,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 {
 	val scala = "2.11.8"
 
-	val akkaHttp = "2.4.2"
+	val akkaHttp = "2.4.3"
 
 	val bcrypt = "2.4"
 
@@ -22,11 +22,11 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val macroParadise = "2.1.0"
 
-	val logback = "1.1.6"
+	val logback = "1.1.7"
 
 	val akka = "2.4.2"
 
-	val circeHttp = "1.5.2"
+	val circeHttp = "1.5.3"
 
 	val libSBOLj = "2.0.0"
 

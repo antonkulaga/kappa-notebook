@@ -30,9 +30,9 @@ import org.denigma.kappa.extensions._
 
 import scala.Either
 
-
-class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val system: ActorSystem, val mat: ActorMaterializer) extends PooledWebSimFlows
+class WebSimClientFlows(host: String = "localhost", port: Int = 8080)(implicit val system: ActorSystem, val mat: ActorMaterializer) extends PooledWebSimFlows
 {
+  val base = "/v1"
 
   val defaultParallelism = 1
 
@@ -40,48 +40,44 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
 
   protected lazy val pool: Flow[(HttpRequest, PoolMessage), (Try[HttpResponse], PoolMessage), HostConnectionPool] = Http().cachedHostConnectionPool[PoolMessage](host, port)
 
+}
+
+class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val system: ActorSystem, val mat: ActorMaterializer)
+{
+  //def stop(token: Int) =
+
+  type Token = Int
+
+  val flows = new WebSimClientFlows(host, port)
+
   protected lazy val ModelPool = Http().cachedHostConnectionPool[ModelPoolMessage](host, port)
 
-
-  /**
-    * Versin of WebSim API
-    */
-  val base = "/v1"
-
-
-  def getVersion() = Source.single(Unit).via(versionFlow).runWith(Sink.head)
+  def getVersion() = Source.single(Unit).via(flows.versionFlow).runWith(Sink.head)
 
 
   def launch(model: WebSim.RunModel): Future[Either[Token, Array[String]]] = {
     val source = Source.single(model) //give one model
-    source.via(tokenFlow).map(_._1) runWith Sink.head
+    source.via(flows.tokenFlow).map(_._1) runWith Sink.head
   }
 
   def run(model: WebSim.RunModel): Future[SimulationStatus] =  {
-    ??? //  Source.single(model).via(defaultRunModelFlow).map(_._2).runWith(Sink.last)
+    val source = Source.single(model)
+    ???
+      //via(defaultRunModelFlow).map(_._2).runWith(Sink.last)
   }
 
   def run(model: WebSim.RunModel, updateInterval: FiniteDuration, parallelism: Int = 1): Future[SimulationStatus] =  {
     ??? //Source.single(model).via(makeModelResultsFlow(parallelism, updateInterval)).map(_._2).runWith(Sink.last)
   }
 
-  /*
-  lazy val defaultRunModelFlow: Flow[RunModel, (TokenPoolMessage, SimulationStatus), NotUsed] =
-    makeModelResultsFlow(defaultParallelism, defaultUpdateInterval)
-*/
-  /**
-    * flow that returns only final results
-    */
-  //lazy val defaultRunModelFinalResultFlow: Flow[RunModel, (TokenPoolMessage, SimulationStatus), NotUsed] = makeModelFinalResultFlow(defaultParallelism, defaultUpdateInterval)
-
-  def resultByToken(token: Int): Future[SimulationStatus] =  resultByToken(token, defaultUpdateInterval, defaultParallelism)
+  //def resultByToken(token: Int): Future[SimulationStatus] =  resultByToken(token, defaultUpdateInterval, defaultParallelism)
 
   def resultByToken(token: Token,  updateInterval: FiniteDuration, parallelism: Int): Future[SimulationStatus] =
     ??? //Source.single(token).via(makeTokenResultsFlow(parallelism, updateInterval)) map(_._2) runWith Sink.last
 
   def getRunning(): Future[Array[Int]] = {
     val source = Source.single(Unit)
-    source.via(runningRequestFlow).via(timePool).via(unmarshalFlow[Array[Int]].sync) runWith Sink.head
+    source.via(flows.running) runWith Sink.head
   }
 
 }

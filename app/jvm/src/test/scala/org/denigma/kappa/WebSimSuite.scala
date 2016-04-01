@@ -1,22 +1,17 @@
 package org.denigma.kappa
 
-import java.io.InputStream
-
+import akka.NotUsed
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.pattern.pipe
 import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.testkit.TestSubscriber.Probe
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestProbe
-import akka.util.Timeout
 import org.denigma.kappa.WebSim.{SimulationStatus, VersionInfo}
-import org.denigma.kappa.notebook.services.{WebSimClient}
-import org.scalatest.concurrent.Futures
-import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
+import org.denigma.kappa.notebook.services.WebSimClient
 
-import scala.collection.immutable.Seq
 import scala.concurrent.Future
-import scala.concurrent.duration._
+import scala.util.Either
 
 /**
   * Tests quering WebSim
@@ -25,13 +20,14 @@ import scala.concurrent.duration._
 class WebSimSuite extends BasicKappaSuite {
 
   val server = new WebSimClient()
+  val flows = server.flows
 
   "WebSim" should {
 
     "have working version flow" in {
       val p = TestSink.probe
       val source = Source.single(Unit)
-      source.via(server.versionFlow)
+      source.via(flows.versionFlow)
         .runWith(TestSink.probe[VersionInfo])
         .request(1)
         .expectNextPF{ case v:VersionInfo => v }
@@ -60,7 +56,7 @@ class WebSimSuite extends BasicKappaSuite {
 
       probeToken.expectMsgPF(duration * 2) {
         case Left(token: Int) =>
-          println(s"MODEL TOKEN IS " + token)
+          //println(s"MODEL TOKEN IS " + token)
           server.getRunning().pipeTo(probeList.ref)
           probeList.expectMsgPF(duration * 3) {
             case arr: Array[Int] if arr.contains(token) => println(s"tokens are : [${arr.toList.mkString}]")
@@ -85,6 +81,31 @@ class WebSimSuite extends BasicKappaSuite {
          println(msg.toList.mkString("\n"))
      }
    }
+
+    "run simulation, get first result and " in {
+      val probeToken = TestProbe()
+      val model = abc
+      val params = WebSim.RunModel(model, 1000, max_events = Some(10000))
+      val tokenFut: Future[Either[server.Token, Array[String]]] = server.launch(params).pipeTo(probeToken.ref)
+
+      probeToken.expectMsgPF(duration * 2) {
+        case Left(token: Int) =>
+          val source =  Source.single(token)
+          val simSink: Sink[(flows.Token, SimulationStatus), Probe[(flows.Token, SimulationStatus)]] = TestSink.probe[(flows.Token, SimulationStatus)]
+          val s: Source[(flows.Token, SimulationStatus), NotUsed] = source.via(flows.simulationStatusFlow)
+          s.runWith(simSink).request(1).expectNextPF{
+            case (t, status) =>
+              println(t->status)
+          }
+          val testRun: Sink[Array[Int], Probe[Array[Int]]] = TestSink.probe[Array[Int]]
+          /*
+          Source.single(Unit).via(flows.running).runWith(testRun)
+              .request(1).expectNext(token)
+*/
+
+      }
+
+    }
 /*
     "parses for errors" in {
       val probeToken = TestProbe()

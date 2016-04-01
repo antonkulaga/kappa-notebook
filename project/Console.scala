@@ -13,7 +13,6 @@ object Console
       | import akka.http.scaladsl.model.Uri.Query
       | import akka.http.scaladsl.Http
       |
-      |
       | import org.denigma.kappa._
       | import org.denigma.kappa.WebSim
       | import org.denigma.kappa.WebSim._

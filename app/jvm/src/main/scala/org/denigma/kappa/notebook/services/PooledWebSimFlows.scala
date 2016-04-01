@@ -36,7 +36,7 @@ case class TimePoolMessage(time: LocalDateTime) extends PoolMessage
 //case class TokenPoolMessage(token: Int, time: LocalDateTime) extends PoolMessage
 case class ModelPoolMessage(runParams: RunModel, time: LocalDateTime, token: Option[Int] = None, results: List[SimulationStatus] = List.empty, errors: List[String] = List.empty) extends PoolMessage
 
-trait PooledWebSimFlows extends WebSimFlows  {
+trait PooledWebSimFlows extends WebSimFlows {
 
   type TryResponse = (Try[HttpResponse], PoolMessage)
 
@@ -52,20 +52,8 @@ trait PooledWebSimFlows extends WebSimFlows  {
 
   val versionFlow = versionRequestFlow.via(timePool).via(unmarshalFlow[VersionInfo]).sync
 
-  val tokenFlow = runModelRequestFlow.inputZipWith(timePool.via(safeTokenUnmarshalFlow.sync)){
-    case (params, either)=> either -> params
-  }
 
-
-  lazy val safeTokenUnmarshalFlow: Flow[TryResponse, Future[Either[Token, Array[String]]], NotUsed] = safeUnmarshalFlow[Int, Array[String]]{
-    case (resp, time) =>
-      Unmarshal(resp).to[Array[String]].recoverWith{
-        case th=>
-          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
-          Future.failed(th)
-      }
-  }
-
+  val running: Flow[Any, Array[Token], NotUsed] = runningRequestFlow.via(timePool).via(unmarshalFlow[Array[Int]].sync)
 
   def safeUnmarshalFlow[T, U](onfailure: (HttpResponse, Throwable) => Future[U])(implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[Either[T,U]], NotUsed] =
     Flow[TryResponse].map{
@@ -75,7 +63,25 @@ trait PooledWebSimFlows extends WebSimFlows  {
           case exception => onfailure(resp, exception).map[Either[T,U]](Right(_))
         }
       case (Failure(exception), time) => Future.failed(exception)
+    }
+
+  val safeTokenUnmarshalFlow: Flow[TryResponse, Future[Either[Token, Array[String]]], NotUsed] = safeUnmarshalFlow[Int, Array[String]]{
+    case (resp, time) =>
+      Unmarshal(resp).to[Array[String]].recoverWith{
+        case th=>
+          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
+          Future.failed(th)
+      }
   }
+
+  val tokenFlow: Flow[RunModel, (Either[Token, Array[String]], RunModel), NotUsed] = runModelRequestFlow.inputZipWith(timePool.via(safeTokenUnmarshalFlow.sync)){
+    case (params, either)=> either -> params
+  }
+
+  val simulationStatusFlow: Flow[Token, (Token, SimulationStatus), NotUsed] = simulationStatusRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
+    case (token, result)=> token->result
+  }
+
 
   def unmarshalFlow[T](implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[T], NotUsed] = Flow[TryResponse].map{
     case (Success(resp), time) =>
@@ -87,7 +93,30 @@ trait PooledWebSimFlows extends WebSimFlows  {
     case (Failure(exception), time) =>
       Future.failed(exception)
   }
-
+  /*
+  def makeTokenResultsFlow(parallelism: Int, streamInterval: FiniteDuration)=  Flow[(Token, RunModel)].flatMapMerge(parallelism, {
+    case (token, params) =>
+      val source = Source.tick(0 millis, streamInterval, token)
+      source.via( simulationStatusFutureFlow.mapAsync(1)(identity(_)))
+        .upTo{
+          case (t, sim) =>
+            sim.percentage >= 100.0 || !sim.is_running//.getOrElse(false)
+        }
+  })
+  */
+  /*
+  protected val simulationStatusFutureFlow = simulationStatusRequestFlow.via(tokenPool).map{
+    case (Success(res), mess: TokenPoolMessage) =>
+      //pprint.pprintln("ENTITY "+res.entity)
+      Unmarshal(res).to[WebSim.SimulationStatus].recoverWith{
+        case th=>
+          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+res+"==\n")
+          Future.failed(th)
+      }.map(st=>mess -> st)
+    case (Failure(th), mess: TokenPoolMessage) => Future.failed(th)
+    case (other, mess) => Future.failed(new Exception(s"Message $mess should be Tocken"))
+  }
+  */
 /*
   protected val simulationStatusFutureFlow: Flow[Int, Future[(TokenPoolMessage, WebSim.SimulationStatus)], NotUsed] = simulationStatusRequestFlow.via(tokenPool).map{
     case (Success(res), mess: TokenPoolMessage) =>

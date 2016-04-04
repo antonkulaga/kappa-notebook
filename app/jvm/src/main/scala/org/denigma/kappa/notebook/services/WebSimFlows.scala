@@ -42,14 +42,9 @@ trait WebSimFlows extends CirceSupport{
       HttpRequest(uri = s"$base/process", method = HttpMethods.POST, entity =  data)
   }
 
-/*
-  def unmarshalFlow[Input, T](implicit um: Unmarshaller[HttpResponse, T]): Flow[Input, Future[T], NotUsed] = Flow[Input].map{
-    case (Success(req), time) => Unmarshal(req).to[T]
-    case (Failure(exception), time) => Future.failed(exception)
-  }
-  */
-
-
   protected val simulationStatusRequestFlow: Flow[Token, HttpRequest, NotUsed] = Flow[Token].map{  case token =>  HttpRequest(uri = s"$base/process/$token", method = HttpMethods.GET) }
+
+  /*protected */val stopRequestFlow: Flow[Token, HttpRequest, NotUsed] = Flow[Token].map{  case token =>  HttpRequest(uri = s"$base/process/$token", method = HttpMethods.DELETE) }
+
 
 }

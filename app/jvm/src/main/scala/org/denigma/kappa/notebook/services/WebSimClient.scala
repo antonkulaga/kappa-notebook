@@ -60,6 +60,11 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
     source.via(flows.tokenFlow).map(_._1) runWith Sink.head
   }
 
+  def stop(token: Token): Future[SimulationStatus] = {
+    val source: Source[Token, NotUsed] = Source.single(token)
+    source.via(flows.simulationStatusFlow).map(_._2) runWith Sink.head
+  }
+
   def run(model: WebSim.RunModel): Future[SimulationStatus] =  {
     val source = Source.single(model)
     ???

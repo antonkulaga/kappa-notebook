@@ -2,16 +2,19 @@ package org.denigma.kappa
 
 import akka.NotUsed
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.HttpResponse
 import akka.pattern.pipe
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.testkit.TestSubscriber.Probe
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestProbe
-import org.denigma.kappa.WebSim.{SimulationStatus, VersionInfo}
-import org.denigma.kappa.notebook.services.WebSimClient
+import org.denigma.kappa.WebSim._
+import org.denigma.kappa.notebook.services._
 
+import scala.collection.immutable.Seq
 import scala.concurrent.Future
-import scala.util.Either
+import scala.concurrent.duration._
+import scala.util._
 
 /**
   * Tests quering WebSim
@@ -59,7 +62,7 @@ class WebSimSuite extends BasicKappaSuite {
           //println(s"MODEL TOKEN IS " + token)
           server.getRunning().pipeTo(probeList.ref)
           probeList.expectMsgPF(duration * 3) {
-            case arr: Array[Int] if arr.contains(token) => println(s"tokens are : [${arr.toList.mkString}]")
+            case arr: Array[Int] if arr.contains(token) => println(s"tokens are : [${arr.toList.mkString(" ")}]")
           }
       }
     }
@@ -85,49 +88,76 @@ class WebSimSuite extends BasicKappaSuite {
     "run simulation, get first result and " in {
       val probeToken = TestProbe()
       val model = abc
-      val params = WebSim.RunModel(model, 1000, max_events = Some(10000))
+      val params = WebSim.RunModel(model, 1000, max_events = Some(1000000))
       val tokenFut: Future[Either[server.Token, Array[String]]] = server.launch(params).pipeTo(probeToken.ref)
 
-      probeToken.expectMsgPF(duration * 2) {
-        case Left(token: Int) =>
-          val source =  Source.single(token)
-          val simSink: Sink[(flows.Token, SimulationStatus), Probe[(flows.Token, SimulationStatus)]] = TestSink.probe[(flows.Token, SimulationStatus)]
-          val s: Source[(flows.Token, SimulationStatus), NotUsed] = source.via(flows.simulationStatusFlow)
-          s.runWith(simSink).request(1).expectNextPF{
-            case (t, status) =>
-              println(t->status)
-          }
-          val testRun: Sink[Array[Int], Probe[Array[Int]]] = TestSink.probe[Array[Int]]
-          /*
-          Source.single(Unit).via(flows.running).runWith(testRun)
-              .request(1).expectNext(token)
+      val token = probeToken.expectMsgPF(duration * 2) {  case Left(t: Int) => t  }
+      val source =  Source.single(token)
+      val simSink: Sink[(flows.Token, SimulationStatus), Probe[(flows.Token, SimulationStatus)]] = TestSink.probe[(flows.Token, SimulationStatus)]
+      val s: Source[(flows.Token, SimulationStatus), NotUsed] = source.via(flows.simulationStatusFlow)
+      val tok: Int = s.runWith(simSink).request(1).expectNextPF{
+        case (t: Int, status: SimulationStatus ) =>
+          println(t -> status)
+          t
+      }
+
+      val testRun = TestSink.probe[Array[Int]]
+      val ps: Array[Int] = Source.single(Unit).via(server.flows.running).runWith(testRun).request(1).expectNext()
+      ps.contains(tok) shouldEqual(true)
+
+      val respSink = TestSink.probe[HttpResponse]
+
+      //val del= source.via(flows.stopFlow)
+      val delSink = TestSink.probe[Try[HttpResponse]]
+      val del = flows.stopRequestFlow.via(flows.timePool).map(_._1)
+      Source.single[Int](tok).via(del).runWith(delSink).request(1).expectNextPF {
+        case res =>
+          println("result " + res)
+      }
+
+      /*
+      val stat = del.runWith(simSink).request(1).expectNextPF{
+        case (t, sim: SimulationStatus ) =>
+          println(t -> sim)
+          sim
+      }
+      */
+      //ps shouldEqual Array(tok)
+      /*
+      Source.single(Unit).via(flows.running).runWith(testRun)
+        .request(1).expectNext(token)
 */
-
-      }
-
-    }
-/*
-    "parses for errors" in {
-      val probeToken = TestProbe()
-      val probeList = TestProbe()
-
-      val model = abc
-        .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
-        .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
-
-      val params = WebSim.RunModel(model, 1000, max_events = Some(10000))
-      val tokenFut = server.launch(params).pipeTo(probeToken.ref)
-
-      probeToken.expectMsgPF(duration * 2) {
-        case Right(msg: Array[String]) =>
-          //println("cannot launch simulation with the following error:")
-          println(msg.toList.mkString("\n"))
-      }
     }
 
+    "run streamed results" in {
+      val tokenSink = TestSink.probe[(Either[Int, Array[String]], RunModel)]
+      val params = WebSim.RunModel(abc, 100, max_events = Some(10000))
+      val launcher = Source.single(params).via(flows.tokenFlow).runWith(tokenSink)
+      val (token, model) = launcher.request(1).expectNextPF{ case (Left(t: Int), mod) =>  t -> mod }
 
-   /*
-         "runmulation and get results" in {
+      //val resultsSink = TestSink.probe[(Int, SimulationStatus)]
+      val simSource = Source.single(token).via(flows.syncSimulationStream)
+      /*
+      val simLauncher = Source.single(token).via(flows.syncSimulationStream).runWith(resultsSink)
+      simLauncher.request(1).expectNextPF{
+        case (t, sim:SimulationStatus)=>
+          println("======================================")
+          println(sim)
+          println(sim.percentage)
+      }
+      */
+      val probe = TestProbe()
+      simSource.runWith(Sink.seq).pipeTo(probe.ref)
+      val results = probe.expectMsgPF(800 millis){
+        case res: Seq[(Int, SimulationStatus)]=> res
+
+      }
+      results.nonEmpty shouldEqual true
+      results.last._2.percentage >= 100.0 shouldBe true
+    }
+
+
+         "run simulation and get results" in {
            val probe = TestProbe()
            val abc = read("/abc.ka").reduce(_ + "\n" + _)
            val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
@@ -146,6 +176,7 @@ class WebSimSuite extends BasicKappaSuite {
            }
          }
 
+   /*
         "run streamed results" in {
           val probe = TestProbe()
           val abc = read("/abc.ka").reduce(_ + "\n" + _)
@@ -184,7 +215,7 @@ class WebSimSuite extends BasicKappaSuite {
              */
            }
          }
-       */*/
+       */
  }
 
  protected override def afterAll() = {

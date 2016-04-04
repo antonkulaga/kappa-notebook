@@ -26,4 +26,6 @@ class Tester(implicit system: ActorSystem, materializer: ActorMaterializer) {
   def post(path: String, params: (String, String)*): Future[HttpResponse] =
     open(HttpMethods.GET, path, params:_*)
 
+  def delete(path: String, params: (String, String)*): Future[HttpResponse] =  open(HttpMethods.DELETE, path, params:_*)
+
 }

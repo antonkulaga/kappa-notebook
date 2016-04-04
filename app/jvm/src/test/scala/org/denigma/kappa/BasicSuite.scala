@@ -20,6 +20,7 @@ import extensions._
   * Created by antonkulaga on 31/03/16.
   */
 class BasicSuite extends WordSpec with Matchers with ScalatestRouteTest with Futures with Inside with BeforeAndAfterAll{
+
   implicit val duration: FiniteDuration = 800 millis
 
   implicit val timeout:Timeout = Timeout(duration)

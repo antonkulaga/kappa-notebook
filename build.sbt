@@ -95,5 +95,5 @@ lazy val root = Project("root",file("."),settings = commonSettings)
     maintainer := "Anton Kulaga <antonkulaga@gmail.com>",
     packageSummary := "kappa-notebook",
     packageDescription := """Kappa notebook runs kappa from the browser""",
-    javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
+    javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M")
   ) dependsOn appJVM aggregate(appJVM, appJS) enablePlugins JavaServerAppPackaging

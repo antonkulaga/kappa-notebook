@@ -52,7 +52,6 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   val versionFlow = versionRequestFlow.via(timePool).via(unmarshalFlow[VersionInfo]).sync
 
-
   val running: Flow[Any, Array[Int], NotUsed] = runningRequestFlow.via(timePool).via(unmarshalFlow[Array[Int]].sync)
 
   def safeUnmarshalFlow[T, U](onfailure: (HttpResponse, Throwable) => Future[U])(implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[Either[T,U]], NotUsed] =
@@ -92,27 +91,10 @@ trait PooledWebSimFlows extends WebSimFlows {
   val simulationStatusFlow: Flow[Token, (Token, SimulationStatus), NotUsed] = simulationStatusRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
     case (token, result)=> token -> result
   }
-  /*
-  def simulationResultStrem(parallelism: Int, streamInterval: FiniteDuration) = tokenFlow.flatMapMerge(parallelism, {
-    case (Left(), model) =>
-      val source = Source.tick(0 millis, streamInterval, token)
-      source.via( simulationStatusFlow )
-        .upTo{
-          case (t, sim) =>
-            sim.percentage >= 100.0 || !sim.is_running//.getOrElse(false)
-        }
-    case (Right(error), model) =>
-      val source = Source.tick(0 millis, streamInterval, token)
-      source.via( simulationStatusFlow )
-        .upTo{
-          case (t, sim) =>
-            sim.percentage >= 100.0 || !sim.is_running//.getOrElse(false)
-        }
-  })
-  */
-  def simulationStream(parallelism: Int, streamInterval: FiniteDuration) =  Flow[Token].flatMapMerge(parallelism, {
+
+  def simulationStream(updateInterval: FiniteDuration, parallelism: Int) =  Flow[Token].flatMapMerge(parallelism, {
     case token =>
-      val source = Source.tick(0 millis, streamInterval, token)
+      val source = Source.tick(0 millis, updateInterval, token)
       source.via( simulationStatusFlow )
         .upTo{
           case (t, sim) =>
@@ -120,7 +102,17 @@ trait PooledWebSimFlows extends WebSimFlows {
         }
   })
 
-  lazy val syncSimulationStream: Flow[Token, (Token, SimulationStatus), NotUsed] = simulationStream(1, 300 millis)
+  lazy val syncSimulationStream: Flow[Token, (Token, SimulationStatus), NotUsed] = simulationStream(300 millis, 1)
+
+  def simulationResultStream(updateInterval: FiniteDuration, parallelism: Int): Flow[RunModel, (Either[(Token, SimulationStatus), Array[String]], RunModel), NotUsed] = tokenFlow.flatMapMerge(parallelism, {
+    case (Left(token), model) =>
+      val source = Source.tick(0 millis, updateInterval, token)
+      source.via( simulationStatusFlow ).upTo{ case (t, sim) => sim.percentage >= 100.0 || !sim.is_running   }.map(v=>Left(v)->model)
+    case (Right(errors), model) =>
+      Source.single(Right(errors)->model)
+  })
+
+  lazy val syncSimulationResultStream: Flow[RunModel, (Either[(Token, SimulationStatus), Array[String]], RunModel), NotUsed] = simulationResultStream(300 millis, 1)
 
   /*
   def test() = {
@@ -133,10 +125,6 @@ trait PooledWebSimFlows extends WebSimFlows {
   val stopFlow: Flow[Token, (Token, SimulationStatus), NotUsed] = stopRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
     case (token, result)=> token -> result
   }
-
-
-
-
   /*
   def makeTokenResultsFlow(parallelism: Int, streamInterval: FiniteDuration)=  Flow[(Token, RunModel)].flatMapMerge(parallelism, {
     case (token, params) =>

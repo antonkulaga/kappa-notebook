@@ -155,27 +155,29 @@ class WebSimSuite extends BasicKappaSuite {
       results.nonEmpty shouldEqual true
       results.last._2.percentage >= 100.0 shouldBe true
     }
+/*
+
+     "run simulation and get results" in {
+       val probe = TestProbe()
+       val abc = read("/abc.ka").reduce(_ + "\n" + _)
+       val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
+       server.run(params)
+
+       server.launch(params) flatMap{
+         case (д) => server.resultByToken(token)
+       } pipeTo probe.ref
 
 
-         "run simulation and get results" in {
-           val probe = TestProbe()
-           val abc = read("/abc.ka").reduce(_ + "\n" + _)
-           val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
-           server.launch(params) flatMap{
-             case token => server.resultByToken(token)
-           } pipeTo probe.ref
-
-
-           probe.expectMsgPF(duration * 2) {
-             case results: WebSim.SimulationStatus =>
-               /*
-               val charts = results.plot map {
-                 case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
-               } getOrElse Array[(Double, String)]()
-               */
-           }
-         }
-
+       probe.expectMsgPF(duration * 2) {
+         case results: WebSim.SimulationStatus =>
+           /*
+           val charts = results.plot map {
+             case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
+           } getOrElse Array[(Double, String)]()
+           */
+       }
+     }
+*/
    /*
         "run streamed results" in {
           val probe = TestProbe()

@@ -8,7 +8,7 @@ import org.denigma.controls.papers.Bookmark
 import org.denigma.controls.sockets.{BinaryWebSocket, WebSocketSubscriber}
 import org.denigma.kappa.WebSim
 import org.denigma.kappa.WebSim.WebSimPicklers
-import org.denigma.kappa.messages.{KappaChart}
+import org.denigma.kappa.messages.KappaChart
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ProgressEvent, FileReader, Blob, MessageEvent}
 import rx.Var
@@ -32,7 +32,7 @@ object KappaHub{
     Var(WebSim.Defaults.code),
     Var(WebSim.Defaults.simulationStatus),
     Var(WebSim.Defaults.runModel),
-    Var(Array.empty[String])
+    Var(List.empty[String])
   )
 }
 
@@ -43,7 +43,7 @@ case class KappaHub(
                      sbolCode: Var[WebSim.Code],
                      simulation: Var[WebSim.SimulationStatus],
                      runParameters: Var[WebSim.RunModel],
-                     errors: Var[Array[String]],
+                     errors: Var[List[String]],
                      paperLocation: Var[Bookmark] = Var(Bookmark("/resources/pdf/eptcs.pdf", 1)) ///*Var(Bookmark("", 0, Nil)*/
 ){
   val chart  = simulation.map{
@@ -51,7 +51,7 @@ case class KappaHub(
   }
   val console = simulation.map{
     case s=>
-      println("LOG:\n"+s.logMessages)
+      //println("LOG:\n"+s.logMessages)
       s.logMessages.getOrElse("")
   }
 
@@ -114,7 +114,7 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
 
 
   override protected def updateFromMessage(bytes: ByteBuffer): Unit = {
-    println("from bytes fires")
+    //println("from bytes fires")
     receive(Unpickle[WebSim.WebSimMessage].fromBytes(bytes))
   }
 
@@ -123,13 +123,14 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
     case WebSim.SyntaxErrors(server, errors, params) =>
       //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
 
-      kappaHub.errors() = errors
+      kappaHub.errors() = errors.toList
 
 
     case WebSim.SimulationResult(server, status, tokenOpt, params) =>
       //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
 
       kappaHub.simulation() = status
+      if(kappaHub.errors.now.nonEmpty) kappaHub.errors() = List.empty
 
 
     case message: WebSim.SimulationStatus =>

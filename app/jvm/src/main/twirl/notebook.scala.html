@@ -17,9 +17,8 @@
             </row>
             <row class="ui equal width row">
                 <column class="ui column" data-view="KappaEditor">
-                    <div class="ui top attached label">Code</div>
+                    <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
                     <textarea data-editor="kappa" id="kappa"></textarea>
-                    <textarea data-bind="errors" data-show-if="hasErrors" data-class-errors-if="hasErrors" id="errors"></textarea>
                 </column>
                 <column class="ui column">
                     @tabs.html.results()

@@ -26,7 +26,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
   */
 class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorUpdates]) extends BindableView with EditorView {
 
-  val errors = hub.errors
+  val errors = hub.errors.map( er=> if(er.isEmpty) "" else er.reduce(_ + "\n" + _))
   val hasErrors = errors.map(_.nonEmpty)
 
   def code = hub.kappaCode

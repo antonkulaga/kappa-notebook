@@ -1,4 +1,4 @@
-addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.2.3") // advanced assets handling
+addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.3.0") // advanced assets handling
 
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.8.0") //live refresh
 
@@ -14,7 +14,7 @@ addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0") // for publishing
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-gzip" % "1.0.0")
 
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.7.0")
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
 
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "4.0.0")
 

@@ -65,19 +65,22 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
     source.via(flows.simulationStatusFlow).map(_._2) runWith Sink.head
   }
 
-  def run(model: WebSim.RunModel) =  {
+  def run(model: WebSim.RunModel): Future[(Either[(flows.Token, SimulationStatus), Array[String]], RunModel)] =  {
     val source = Source.single(model)
     source.via(flows.syncSimulationResultStream).runWith(Sink.last)
   }
 
   def run(model: WebSim.RunModel, updateInterval: FiniteDuration, parallelism: Int = 1) =  {
+    runStreamed(model, Sink.last, updateInterval, parallelism)
+  }
+
+  def runStreamed[T](model: WebSim.RunModel, sink: Sink[(Either[(Int, SimulationStatus), Array[String]], RunModel), T], updateInterval: FiniteDuration, parallelism: Int = 1) =  {
     val source = Source.single(model)
-    source.via(flows.simulationResultStream(updateInterval, parallelism)).runWith(Sink.last)
+    val withFlow = source.via(flows.simulationResultStream(updateInterval, parallelism))
+    withFlow.runWith(sink)
+      //.runWith(sink)
   }
 
-  def runStream(model: WebSim.RunModel, updateInterval: FiniteDuration, parallelism: Int = 1) = {
-
-  }
 
   //def resultByToken(token: Int): Future[SimulationStatus] =  resultByToken(token, defaultUpdateInterval, defaultParallelism)
 

@@ -18,6 +18,11 @@ class WebSocketManager(system: ActorSystem) {
 
   val servers = system.actorOf(Props[KappaServerActor])
 
+  protected def makeIncomingFlow(channel: String, username: String) = Flow[Message].map {  case mes => SocketMessages.IncomingMessage(username, channel, mes) }
+
+  protected val outgoingFlow = Flow[SocketMessages.OutgoingMessage].map{ case SocketMessages.OutgoingMessage(_, _, message, _) => message }
+
+
   def openChannel(channel: String, username: String = "guest"): Flow[Message, Message, Any] = {
     val partial: Graph[FlowShape[Message, Message], ActorRef] = GraphDSL.create(
       Source.actorPublisher[OutgoingMessage](Props(classOf[UserActor], username, servers))
@@ -26,10 +31,11 @@ class WebSocketManager(system: ActorSystem) {
       implicit builder => user =>
       import GraphDSL.Implicits._
 
-        val fromWebsocket: FlowShape[Message, IncomingMessage] = builder.add( Flow[Message].map {case mes => SocketMessages.IncomingMessage(username, channel, mes)  })
-        val backToWebsocket: FlowShape[OutgoingMessage, Message] = builder.add(Flow[SocketMessages.OutgoingMessage].map{ case SocketMessages.OutgoingMessage(_, _, message, _) => message })
+        val fromWebsocket: FlowShape[Message, IncomingMessage] = builder.add( makeIncomingFlow(channel, username) )
+        val backToWebsocket: FlowShape[OutgoingMessage, Message] = builder.add( outgoingFlow )
         val actorAsSource: PortOps[SocketMessages.ChannelMessage] = builder.materializedValue.map{ case actor =>  SocketMessages.UserJoined(username, channel, actor) }
-       //send messages to the actor, if send also UserLeft(user) before stream completes.
+
+        //send messages to the actor, if send also UserLeft(user) before stream completes.
         val chatActorSink: Sink[ChannelMessage, NotUsed] = Sink.actorRef[SocketMessages.ChannelMessage](allRoom, UserLeft(username, channel))
 
         val merge: UniformFanInShape[ChannelMessage, ChannelMessage] = builder.add(Merge[SocketMessages.ChannelMessage](2))
@@ -45,7 +51,9 @@ class WebSocketManager(system: ActorSystem) {
         user ~> backToWebsocket
 
       FlowShape( fromWebsocket.in, backToWebsocket.out )
+
     }.named("socket_flow")
+
     Flow.fromGraph(partial).recover { case ex =>
       this.system.log.error(s"WS stream for $channel failed for $username with the following cause:\n  $ex")
       throw ex

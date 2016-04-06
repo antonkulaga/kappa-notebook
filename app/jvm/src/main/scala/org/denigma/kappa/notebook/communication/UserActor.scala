@@ -17,21 +17,13 @@ import org.denigma.kappa.notebook.communication.SocketMessages.OutgoingMessage
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 import java.time._
-
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
-import de.heikoseeberger.akkahttpcirce.CirceSupport
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.parser
-import io.circe.syntax._
-import HttpMethods._
 
-import scala.concurrent.Future
-
-
-
+/**
+  * This actor is creates for each user that connects via websocket
+  * @param username
+  * @param servers
+  */
 class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with Actor with akka.actor.ActorLogging with ActorPublisher[SocketMessages.OutgoingMessage]{
 
 
@@ -68,7 +60,7 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
 
 
   def run(params: WebSim.RunModel): Unit = {
-    val toServer = ServerMessages.Run(username, "localhost", params, self, 100 millis)
+    val toServer = RunAtServer(username, "localhost", params, self, 100 millis)
     servers ! toServer
   }
 
@@ -107,12 +99,16 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
 
   protected def onServerMessage: Receive = {
 
-    case ServerMessages.Result(server, status) =>
-      println("CONSOLE = "+ status.logMessages)
+    case result: SimulationResult =>
+      //println("CONSOLE = "+ status.logMessages)
       //println("received results")
       //val text = status.asJson.noSpaces
       //send(TextMessage.Strict(text), "all")
-      val d = Pickle.intoBytes[WebSimMessage](status)
+      val d = Pickle.intoBytes[WebSimMessage](result)
+      send(BinaryMessage(ByteString(d)))
+
+    case s: SyntaxErrors=>
+      val d = Pickle.intoBytes[WebSimMessage](s)
       send(BinaryMessage(ByteString(d)))
 
   }

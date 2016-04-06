@@ -10,10 +10,11 @@ import org.denigma.kappa.notebook.KappaHub
 import org.denigma.kappa.notebook.parsers.CommentLinksParser
 import org.scalajs.dom.html._
 import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
-import rx.Var
+import rx._
 
 import scala.scalajs.js
 import scalatags.JsDom.all._
+import rx.Ctx.Owner.Unsafe.Unsafe
 
 
 /**
@@ -24,6 +25,9 @@ import scalatags.JsDom.all._
   * @param updates reactive varible to which we report our editor updates
   */
 class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorUpdates]) extends BindableView with EditorView {
+
+  val errors = hub.errors
+  val hasErrors = errors.map(_.nonEmpty)
 
   def code = hub.kappaCode
 

@@ -31,7 +31,8 @@ object KappaHub{
     Var(WebSim.Defaults.code),
     Var(WebSim.Defaults.code),
     Var(WebSim.Defaults.simulationStatus),
-    Var(WebSim.Defaults.runModel)
+    Var(WebSim.Defaults.runModel),
+    Var(Array.empty[String])
   )
 }
 
@@ -42,6 +43,7 @@ case class KappaHub(
                      sbolCode: Var[WebSim.Code],
                      simulation: Var[WebSim.SimulationStatus],
                      runParameters: Var[WebSim.RunModel],
+                     errors: Var[Array[String]],
                      paperLocation: Var[Bookmark] = Var(Bookmark("/resources/pdf/eptcs.pdf", 1)) ///*Var(Bookmark("", 0, Nil)*/
 ){
   val chart  = simulation.map{
@@ -117,6 +119,19 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
   }
 
   def receive: PartialFunction[WebSim.WebSimMessage, Unit] = {
+
+    case WebSim.SyntaxErrors(server, errors, params) =>
+      //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
+
+      kappaHub.errors() = errors
+
+
+    case WebSim.SimulationResult(server, status, tokenOpt, params) =>
+      //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
+
+      kappaHub.simulation() = status
+
+
     case message: WebSim.SimulationStatus =>
       //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
 

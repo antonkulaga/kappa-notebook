@@ -81,7 +81,7 @@ class WebSimSuite extends BasicKappaSuite {
      probeToken.expectMsgPF(duration * 2) {
        case Right(msg: Array[String]) =>
          //println("cannot launch simulation with the following error:")
-         println(msg.toList.mkString("\n"))
+         //println(msg.toList.mkString("\n"))
      }
    }
 
@@ -114,19 +114,6 @@ class WebSimSuite extends BasicKappaSuite {
         case res =>
           println("result " + res)
       }
-
-      /*
-      val stat = del.runWith(simSink).request(1).expectNextPF{
-        case (t, sim: SimulationStatus ) =>
-          println(t -> sim)
-          sim
-      }
-      */
-      //ps shouldEqual Array(tok)
-      /*
-      Source.single(Unit).via(flows.running).runWith(testRun)
-        .request(1).expectNext(token)
-*/
     }
 
     "run streamed results" in {
@@ -134,90 +121,26 @@ class WebSimSuite extends BasicKappaSuite {
       val params = WebSim.RunModel(abc, 100, max_events = Some(10000))
       val launcher = Source.single(params).via(flows.tokenFlow).runWith(tokenSink)
       val (token, model) = launcher.request(1).expectNextPF{ case (Left(t: Int), mod) =>  t -> mod }
-
-      //val resultsSink = TestSink.probe[(Int, SimulationStatus)]
       val simSource = Source.single(token).via(flows.syncSimulationStream)
-      /*
-      val simLauncher = Source.single(token).via(flows.syncSimulationStream).runWith(resultsSink)
-      simLauncher.request(1).expectNextPF{
-        case (t, sim:SimulationStatus)=>
-          println("======================================")
-          println(sim)
-          println(sim.percentage)
-      }
-      */
       val probe = TestProbe()
       simSource.runWith(Sink.seq).pipeTo(probe.ref)
       val results = probe.expectMsgPF(800 millis){
         case res: Seq[(Int, SimulationStatus)]=> res
-
       }
       results.nonEmpty shouldEqual true
       results.last._2.percentage >= 100.0 shouldBe true
     }
-/*
+
 
      "run simulation and get results" in {
        val probe = TestProbe()
-       val abc = read("/abc.ka").reduce(_ + "\n" + _)
        val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
-       server.run(params)
-
-       server.launch(params) flatMap{
-         case (д) => server.resultByToken(token)
-       } pipeTo probe.ref
-
-
-       probe.expectMsgPF(duration * 2) {
-         case results: WebSim.SimulationStatus =>
-           /*
-           val charts = results.plot map {
-             case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
-           } getOrElse Array[(Double, String)]()
-           */
+       server.run(params).map(_._1).pipeTo(probe.ref)
+       probe.expectMsgPF(800 millis){
+         case  Left( (token: Int, sim: SimulationStatus)) if sim.percentage>=100.0  =>
+           //println(sim)
        }
      }
-*/
-   /*
-        "run streamed results" in {
-          val probe = TestProbe()
-          val abc = read("/abc.ka").reduce(_ + "\n" + _)
-          //server.getVersion().pipeTo(probe.ref)
-          val params = WebSim.RunModel(abc, 100, max_events = Some(10000))
-          val fut: Future[Seq[SimulationStatus]] = Source.single(params).via(server.makeModelResultsFlow(1, 100 millis).map(_._2)).runWith(Sink.seq)//.runWithStreamingFlatten(params, Sink.seq, 100 millis)
-          fut pipeTo probe.ref
-          probe.expectMsgPF(duration * 20) {
-            case results: Seq[SimulationStatus] if results.nonEmpty && results.last.percentage == 100 =>
-          }
-          //server.run(params) flatMap{ case token => server.getResult(token) }
-        }
-
-         "run wrong models" in {
-           val probe = TestProbe()
-           val abc = read("/abc.ka").reduce(_ + "\n" + _).replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
-           val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
-           server.launch(params) flatMap{
-             case token =>
-               val result = server.resultByToken(token)
-               println("============================")
-               println(result)
-               result
-           } pipeTo probe.ref
-
-
-           probe.expectMsgPF(duration * 2) {
-             //case results: WebSim.SimulationStatus =>
-             case result =>
-               println("============================")
-               println(result)
-             /*
-             val charts = results.plot map {
-               case plot => plot.observables.map(o=>o.time->o.values.toList.mkString)
-             } getOrElse Array[(Double, String)]()
-             */
-           }
-         }
-       */
  }
 
  protected override def afterAll() = {

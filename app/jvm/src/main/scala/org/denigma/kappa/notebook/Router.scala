@@ -29,7 +29,7 @@ class Router(implicit fm: Materializer, system: ActorSystem) extends Directives 
     )
       .routes ~
     new Pages().routes ~ new WebSockets(
-    loginController.loginByName,
-    loginController.loginByEmail,
+    //loginController.loginByName,
+    //loginController.loginByEmail,
     transport.openChannel).routes
 }

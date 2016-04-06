@@ -24,7 +24,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.2"
+	val akka = "2.4.3"
 
 	val circeHttp = "1.5.3"
 

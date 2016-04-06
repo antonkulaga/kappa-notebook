@@ -4,28 +4,6 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.{Directives, Route}
 import scalacss.Defaults._
 
-object MyStyles extends StyleSheet.Standalone {
-  import dsl._
-
-  ".CodeMirror" -(
-    height.auto important
-    // width.auto important
-    )
-  ".CodeMirror-scroll" -(
-    overflow.visible,
-    height.auto
-    )//-(overflowX.auto,overflowY.hidden)
-
-  ".breakpoints" - (
-    width( 2 em)
-    )
-
-  ".focused" - (
-    backgroundColor.ghostwhite
-    )
-}
-
-
 class Head extends Directives
 {
 

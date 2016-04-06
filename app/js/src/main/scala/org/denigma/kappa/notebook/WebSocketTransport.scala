@@ -44,7 +44,7 @@ case class KappaHub(
                      simulation: Var[WebSim.SimulationStatus],
                      runParameters: Var[WebSim.RunModel],
                      errors: Var[List[String]],
-                     paperLocation: Var[Bookmark] = Var(Bookmark("/resources/pdf/eptcs.pdf", 1)) ///*Var(Bookmark("", 0, Nil)*/
+                     paperLocation: Var[Bookmark] = Var(Bookmark("/resources/models/repressilator/Repressilator.pdf", 1)) ///*Var(Bookmark("", 0, Nil)*/ //"/resources/models/Stricker08.pdf"
 ){
   val chart  = simulation.map{
     case s=> s.plot.map(KappaChart.fromKappaPlot).getOrElse(KappaChart.empty)
@@ -107,8 +107,14 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
   }
 
   subscriber.onClose.triggerLater(
-    dom.console.log("WebSocked has been closed")
+    dom.console.error("WebSocked has been closed")
   )
+
+  subscriber.onError.onChange(error=>
+    dom.console.error("WebSocket had the following error: "+ error)
+  )
+
+
   subscriber.onMessage.onChange(onMessage)
   //chosen.onChange("chosenChange")(onChosenChange)
 

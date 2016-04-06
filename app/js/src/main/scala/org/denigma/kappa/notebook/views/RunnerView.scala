@@ -12,7 +12,7 @@ import org.denigma.binding.binders.{Events, ReactiveBinder}
 import org.denigma.binding.macroses._
 import rx.Ctx.Owner.Unsafe.Unsafe
 
-class RunnerView(val elem: Element, val parameters: Var[WebSim.RunModel]) extends BindableView
+class RunnerView(val elem: Element, name: Var[String], val parameters: Var[WebSim.RunModel]) extends BindableView
 {
   self=>
 
@@ -33,10 +33,13 @@ class RunnerView(val elem: Element, val parameters: Var[WebSim.RunModel]) extend
     val p: Int = self.points()
     val s: Boolean = self.implicitSignature()
     val g = self.gluttony()
+    name() = fn
     //println(s"params = g($g) and s($s)")
     //val newParams = parameters.now.copy( fn, optInt(ev), opt(t), p )
     val newParams = parameters.now.copy(max_events = optInt(ev), max_time = opt(t), nb_plot = p)
     parameters.set(newParams)
   }
+
+  name.onChange{  case n=>  if(fileName!=n) fileName() = n  }
 
 }

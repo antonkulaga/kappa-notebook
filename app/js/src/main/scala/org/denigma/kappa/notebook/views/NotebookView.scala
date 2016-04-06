@@ -28,7 +28,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
   self =>
 
-  lazy val subscriber = WebSocketSubscriber("notebook", "guest")
+  lazy val subscriber = WebSocketSubscriber("notebook", "guest" + Math.random() * 1000)
 
   val hub: KappaHub = KappaHub.empty
 
@@ -51,6 +51,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val connector: WebSocketTransport = WebSocketTransport(subscriber, hub)
   subscriber.onOpen.triggerLater{
+    println("send onload")
     connector.send(WebSim.Load("model.ka"))
   }
 
@@ -90,7 +91,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   val commentManager = new CommentsWatcher(editorsUpdates, hub.paperLocation)
 
    override lazy val injector = defaultInjector
-     .register("Parameters")((el, args) => new RunnerView(el, hub.runParameters).withBinder(n => new CodeBinder(n)))
+     .register("Parameters")((el, args) => new RunnerView(el, hub.name, hub.runParameters).withBinder(n => new CodeBinder(n)))
      .register("KappaEditor")((el, args) => new KappaEditor(el, hub, editorsUpdates).withBinder(n=>new CodeBinder(n)))
      .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
 

@@ -78,8 +78,12 @@ class ChartView(val elem: Element,
                 val items: Rx[Seq[Rx[Series]]]
                ) extends FlexibleLinearPlot {
 
-   val scaleX: Var[LinearScale] = Var(LinearScale("Time", 0.0, 10, 2, 400))
-   val scaleY: Var[LinearScale] = Var(LinearScale("Concentration", 0.0, 10, 2, 500, inverted = true))
+  protected def defaultWidth = Math.max(dom.window.screenX / 3, 400)
+  protected def defaultHeight = Math.max(dom.window.screenY / 1.5, 500)
+
+
+  val scaleX: Var[LinearScale] = Var(LinearScale("Time", 0.0, 10, 2, defaultWidth))
+  val scaleY: Var[LinearScale] = Var(LinearScale("Concentration", 0.0, 10, 2, defaultHeight, inverted = true))
 
   val halfWidth = Rx{ width() / 2.0 }
 

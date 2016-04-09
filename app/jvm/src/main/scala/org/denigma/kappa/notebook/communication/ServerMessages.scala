@@ -23,7 +23,7 @@ class KappaServerActor extends Actor with ActorLogging {
     case RunAtServer(username, serverName, message: WebSim.RunModel, userRef, interval) =>
       Source.single(message)
       val sink: Sink[(Either[(Int, SimulationStatus), Array[String]], RunModel), Any] = Sink.foreach {
-        case (Left( (token, res: SimulationStatus)), model) =>  userRef ! SimulationResult(serverName, res, Some(token), Some(model))
+        case (Left( (token, res: SimulationStatus)), model) =>  userRef ! SimulationResult(serverName, res, token, Some(model))
         case (Right(errors: Array[String]), model) => userRef ! SyntaxErrors(serverName, errors, Some(model))
       }
       server.runStreamed(message, sink, interval)

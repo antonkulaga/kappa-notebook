@@ -12,9 +12,9 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val akkaHttpExtensions = "0.0.10"
 
-	val binding = "0.8.3"
+	val binding = "0.8.5"
 
-	val bindingControls = "0.0.12"
+	val bindingControls = "0.0.13"
 
 	val kappaNotebook = "0.0.6"
 

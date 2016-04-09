@@ -7,11 +7,10 @@ import org.denigma.binding.views.BindableView
 import org.denigma.codemirror._
 import org.denigma.codemirror.extensions._
 import org.denigma.kappa.notebook.KappaHub
-import org.denigma.kappa.notebook.parsers.CommentLinksParser
 import org.scalajs.dom.html._
 import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
 import rx._
-
+import org.denigma.kappa.WebSim
 import scala.scalajs.js
 import scalatags.JsDom.all._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -24,12 +23,19 @@ import rx.Ctx.Owner.Unsafe.Unsafe
   * @param hub ugly shareble hub to connect with other UI elements
   * @param updates reactive varible to which we report our editor updates
   */
-class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorUpdates]) extends BindableView with EditorView {
+class KappaCodeEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorUpdates]) extends BindableView with EditorView {
 
   val errors = hub.errors.map( er=> if(er.isEmpty) "" else er.reduce(_ + "\n" + _))
+
   val hasErrors = errors.map(_.nonEmpty)
 
   def code = hub.kappaCode
+
+  override def bindView() =
+  {
+    println("BIND VIEW")
+    super.bindView()
+  }
 
   override def mode = "Kappa"
 
@@ -49,7 +55,7 @@ class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorU
   override def onChanges(ed: Editor, ch: js.Array[EditorChangeLike]): Unit = {
     updates() = EditorUpdates(Option(ed), ch.toList)
     val value = doc.getValue()
-    if(value!=code.now.text) code() = code.now.copy(text = value)
+    if(value != code.now.text) code() = code.now.copy(text = value)
     //updateCursor()
   }
 
@@ -84,5 +90,10 @@ class KappaEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorU
       override val line: Int = cur.line.toInt
     }
   }
+/*
+  override def withBinder(fun: this.type => ViewBinder): this.type  = withBinders(fun(this)::binders)
+
+  override def withBinders(fun: this.type => List[ViewBinder]): this.type  = withBinders(fun(this) ++ binders)
+  */
 
 }

@@ -1,5 +1,7 @@
 package org.denigma.kappa.WebSim
 
+import java.time.LocalDateTime
+
 import boopickle.Default._
 
 import scala.List
@@ -9,6 +11,9 @@ import scala.concurrent.duration.FiniteDuration
 trait WebSimPicklers {
 
     implicit val datePickler = transformPickler[java.util.Date, Long](_.getTime, t => new java.util.Date(t))
+    //implicit val dateTimePickler = transformPickler[LocalDateTime, Long](_., t => new java.util.Date(t))
+
+
 
     object Single{
 
@@ -24,6 +29,8 @@ trait WebSimPicklers {
         .addConcreteType[VersionInfo]
         .addConcreteType[SimulationResult]
         .addConcreteType[SyntaxErrors]
+        .addConcreteType[Connected]
+        .addConcreteType[Disconnected]
     }
 
     import Single._
@@ -40,19 +47,26 @@ trait WebSimPicklers {
       .addConcreteType[VersionInfo]
       .addConcreteType[SimulationResult]
       .addConcreteType[SyntaxErrors]
+      .addConcreteType[Connected]
+      .addConcreteType[Disconnected]
+
 }
 
 
 object Defaults
 {
   lazy val runModel: RunModel = RunModel(code = "", max_events = Some(10000), max_time = None)
-  lazy val simulationStatus: SimulationStatus = SimulationStatus(None, None, None, None, None, None, None,false, None, None, None/*, Array.empty[FluxMap]*/)
+
+  //lazy val simulationStatus: SimulationStatus = SimulationStatus(None, None, None, None, None, None, None,false, None, None, None/*, Array.empty[FluxMap]*/)
+
+  lazy val simulations = Map.empty[(Int, RunModel), SimulationStatus]
+
   lazy val code: Code = Code("")
 }
 
 sealed trait WebSimMessage
 
-case class RunModel(code: String, nb_plot: Int = 250, max_events: Option[Int], max_time: Option[Double] = None) extends WebSimMessage
+case class RunModel(code: String, nb_plot: Option[Int] = Some(250), max_events: Option[Int], max_time: Option[Double] = None) extends WebSimMessage
 
 case class VersionInfo( build: String, version: String ) extends WebSimMessage
 
@@ -62,7 +76,7 @@ case class SimulationStatus(
                              event_percentage: Option[Double],
                              tracked_events: Option[Int],
                              nb_plot: Option[Int],
-                             max_time: Option[Int],
+                             max_time: Option[Double],
                              max_events: Option[Int],
                              is_running: Boolean,
                              code: Option[String],
@@ -74,6 +88,8 @@ case class SimulationStatus(
   def notFinished: Boolean = percentage < 100.0 && is_running//.getOrElse(true)
 
   def percentage: Double = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
+
+  def runParameters: RunModel = RunModel(code.getOrElse("### no code info"), nb_plot, max_events, max_time)
 }
 
 case class Observable(time: Double, values: Array[Double])  extends WebSimMessage
@@ -106,6 +122,11 @@ case class Code(text: String) extends WebSimMessage
 
 case class Load(filename: String) extends WebSimMessage
 
+
+case class Connected(username: String, channel: String /*, time: LocalDateTime = LocalDateTime.now()*/) extends WebSimMessage
+
+case class Disconnected(username: String, channel: String /*, time: LocalDateTime = LocalDateTime.now()*/) extends WebSimMessage
+
 trait ServerMessage extends WebSimMessage
 {
   def server: String
@@ -113,7 +134,7 @@ trait ServerMessage extends WebSimMessage
 
 //case class Run(username: String, server: String, message: WebSim.RunModel, userRef: ActorRef, interval: FiniteDuration) extends ServerMessage
 
-case class SimulationResult(server: String, simulationStatus: SimulationStatus, token: Option[Int] = None, initialParams: Option[RunModel] = None) extends ServerMessage
+case class SimulationResult(server: String, simulationStatus: SimulationStatus, token:Int, initialParams: Option[RunModel] = None) extends ServerMessage
 
 case class SyntaxErrors(server: String, errors: Array[String], initialParams: Option[RunModel] = None) extends ServerMessage
 

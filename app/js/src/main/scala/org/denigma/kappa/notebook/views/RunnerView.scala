@@ -3,14 +3,13 @@ package org.denigma.kappa.notebook.views
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim.WebSimMessage
 import org.scalajs.dom.Event
 import org.scalajs.dom.raw.{HTMLTextAreaElement, HTMLInputElement, Element}
 import rx._
 import org.denigma.binding.binders.{Events, ReactiveBinder}
 import org.denigma.binding.macroses._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import org.denigma.kappa.WebSim
 
 class RunnerView(val elem: Element, name: Var[String], val parameters: Var[WebSim.RunModel]) extends BindableView
 {
@@ -34,12 +33,13 @@ class RunnerView(val elem: Element, name: Var[String], val parameters: Var[WebSi
     val s: Boolean = self.implicitSignature()
     val g = self.gluttony()
     name() = fn
+    val popt = if(p<=0) None else Some(p)
     //println(s"params = g($g) and s($s)")
     //val newParams = parameters.now.copy( fn, optInt(ev), opt(t), p )
-    val newParams = parameters.now.copy(max_events = optInt(ev), max_time = opt(t), nb_plot = p)
+    val newParams = parameters.now.copy(max_events = optInt(ev), max_time = opt(t), nb_plot = popt)
     parameters.set(newParams)
   }
 
-  name.onChange{  case n=>  if(fileName!=n) fileName() = n  }
+  name.onChange{  case n=>  if(fileName.now!=n) fileName() = n  }
 
 }

@@ -1,13 +1,15 @@
 @()
-<section data-view="Tabs">
-  <div class="ui top attached tabular menu">
-    <a class="item" data-set-selected-on-click="Plots" data-class-active-if="Plots.active">Plots</a>
-    <a class="item" data-set-selected-on-click="Papers" data-class-active-if="Papers.active">Papers</a>
-    <a class="item" data-set-selected-on-click="Console" data-class-active-if="Console.active">Console</a>
-    <!--<a class="item" data-set-selected-on-click="SBOLEditor" data-class-active-if="SBOLEditor.active">SBOL</a>-->
-  </div>
-  @console()
-  @plots()
-  @papers()
+<column class="ui column">
+  <section data-view="Tabs">
+    <div class="ui top attached tabular menu">
+      <a class="item" data-set-selected-on-click="Plots" data-class-active-if="Simulations.active">Simulations</a>
+      <a class="item" data-set-selected-on-click="Papers" data-class-active-if="Papers.active">Papers</a>
+      <!-- <a class="item" data-set-selected-on-click="Console" data-class-active-if="Console.active">Console</a>-->
+      <!--<a class="item" data-set-selected-on-click="SBOLEditor" data-class-active-if="SBOLEditor.active">SBOL</a>-->
+    </div>
+    <!-- @console() -->
+    @simulations()
+    @papers()
 
-</section>
+  </section>
+</column>

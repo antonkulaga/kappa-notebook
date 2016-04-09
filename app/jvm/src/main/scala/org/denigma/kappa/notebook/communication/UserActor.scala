@@ -26,7 +26,6 @@ import akka.http.scaladsl.model._
   */
 class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with Actor with akka.actor.ActorLogging with ActorPublisher[SocketMessages.OutgoingMessage]{
 
-
   implicit def ctx = context.dispatcher
 
   val MaxBufferSize = 100
@@ -110,6 +109,11 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
     case s: SyntaxErrors=>
       val d = Pickle.intoBytes[WebSimMessage](s)
       send(BinaryMessage(ByteString(d)))
+
+    case result: Connected =>
+      val d = Pickle.intoBytes[WebSimMessage](result)
+      send(BinaryMessage(ByteString(d)))
+
 
   }
 

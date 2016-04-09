@@ -4,6 +4,7 @@ import com.typesafe.sbt.web.SbtWeb.autoImport._
 import com.typesafe.sbt.web.pipeline.Pipeline
 import com.typesafe.sbt.web.{PathMapping, SbtWeb}
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
+import org.scalajs.sbtplugin.ScalaJSPluginInternal
 import playscalajs.PlayScalaJS
 import sbt.Keys._
 import sbt._
@@ -54,16 +55,29 @@ def scalaJSDevTaskStage: Def.Initialize[Task[Pipeline.Stage]] = Def.task { mappi
 lazy val app = crossProject
   .crossType(CrossType.Full)
   .in(file("app"))
-  .settings(commonSettings++publishSettings: _*)
+  .settings(commonSettings ++ publishSettings: _*)
   .settings(
     name := "kappa-notebook",
     version := Versions.kappaNotebook
-  ).disablePlugins(RevolverPlugin)
+  ).disablePlugins(RevolverPlugin).
+    // adding the `it` configuration
+    configs(IntegrationTest).
+    // adding `it` tasks
+    settings(Defaults.itSettings:_*).
+    // add `shared` folder to `jvm` source directories
+    jvmSettings(unmanagedSourceDirectories in IntegrationTest ++=
+    CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq).
+    // add `shared` folder to `js` source directories
+    jsSettings(unmanagedSourceDirectories in IntegrationTest ++=
+    CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq).
+  // adding ScalaJSClassLoader to `js` configuration
+  jsSettings(inConfig(IntegrationTest)(ScalaJSPluginInternal.scalaJSTestSettings):_*)
   .jsSettings(
     libraryDependencies ++= Dependencies.sjsLibs.value,
     persistLauncher in Compile := true,
     persistLauncher in Test := false,
-    jsDependencies += RuntimeDOM % "test"
+    jsDependencies += RuntimeDOM % Test
+    //jsEnv in Test := new org.scalajs.jsenv.selenium.SeleniumJSEnv(org.scalajs.jsenv.selenium.Firefox)
   )
   .jsConfigure(p=>p.enablePlugins(ScalaJSPlay))
   .jvmSettings(

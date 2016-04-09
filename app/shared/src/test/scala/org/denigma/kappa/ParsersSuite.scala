@@ -8,7 +8,7 @@ import org.scalatest.{Inside, Matchers, WordSpec}
 /**
   * Created by antonkulaga on 06/03/16.
   */
-class ParsersSuite extends BasicSuite {
+class ParsersSuite extends WordSpec with Matchers with Inside  {
 
   "Kappa parser" should {
     /*
@@ -31,10 +31,6 @@ class ParsersSuite extends BasicSuite {
       inside(parser.agentDecl.parse(A)) {
         case res @ Parsed.Success(value, index: Int)  if value==KappaModel.Agent("A", Set(Side("x"), Side("c"))) =>
       }
-
-    }
-
-    "parse rules" in {
 
     }
 

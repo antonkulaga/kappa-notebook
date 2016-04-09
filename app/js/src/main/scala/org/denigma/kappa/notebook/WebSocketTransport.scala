@@ -6,11 +6,7 @@ import org.denigma.binding.extensions._
 import org.denigma.codemirror.PositionLike
 import org.denigma.controls.papers.Bookmark
 import org.denigma.controls.sockets.{BinaryWebSocket, WebSocketSubscriber}
-import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim.WebSimPicklers
-import org.denigma.kappa.messages.KappaChart
 import org.scalajs.dom
-import org.scalajs.dom.raw.{ProgressEvent, FileReader, Blob, MessageEvent}
 import rx.Var
 import rx.Ctx.Owner.Unsafe.Unsafe
 import io.circe._
@@ -20,43 +16,14 @@ import io.circe.syntax._
 import cats.data.Xor
 import shapeless.syntax._
 import boopickle.Default._
+import org.denigma.kappa.WebSim
+import org.denigma.kappa.WebSim.WebSimPicklers
 
 import scala.collection.immutable._
-import scala.scalajs.js.typedarray.{TypedArrayBuffer, ArrayBuffer}
+import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 
-object KappaHub{
-  def empty: KappaHub = KappaHub(
-    Var("HelloWorld.ka"),
-    Var( PositionLike.empty),
-    Var(WebSim.Defaults.code),
-    Var(WebSim.Defaults.code),
-    Var(WebSim.Defaults.simulationStatus),
-    Var(WebSim.Defaults.runModel),
-    Var(List.empty[String])
-  )
-}
 
-case class KappaHub(
-                     name: Var[String],
-                     kappaCursor: Var[PositionLike],
-                     kappaCode: Var[WebSim.Code],
-                     sbolCode: Var[WebSim.Code],
-                     simulation: Var[WebSim.SimulationStatus],
-                     runParameters: Var[WebSim.RunModel],
-                     errors: Var[List[String]],
-                     paperLocation: Var[Bookmark] = Var(Bookmark("/resources/models/repressilator/Repressilator.pdf", 1)) ///*Var(Bookmark("", 0, Nil)*/ //"/resources/models/Stricker08.pdf"
-){
-  val chart  = simulation.map{
-    case s=> s.plot.map(KappaChart.fromKappaPlot).getOrElse(KappaChart.empty)
-  }
-  val console = simulation.map{
-    case s=>
-      //println("LOG:\n"+s.logMessages)
-      s.logMessages.getOrElse("")
-  }
 
-  //val KappaChart = output.map(o => WebSim.Messages.KappaChart.parse(o))
-}
 
 case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHub) extends WebSimPicklers with BinaryWebSocket
 {
@@ -132,20 +99,18 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
       kappaHub.errors() = errors.toList
 
 
-    case WebSim.SimulationResult(server, status, tokenOpt, params) =>
+    case WebSim.SimulationResult(server, status, token, params) =>
       //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
-
-      kappaHub.simulation() = status
+      kappaHub.simulations() = kappaHub.simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
       if(kappaHub.errors.now.nonEmpty) kappaHub.errors() = List.empty
 
 
-    case message: WebSim.SimulationStatus =>
-      //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
-
-      kappaHub.simulation() = message
-
     case message: WebSim.Code =>
       kappaHub.kappaCode() = message
+
+    case message: WebSim.Connected =>
+      send(WebSim.Load("model.ka"))
+
     //case message: WebSim. => message.messages.foreach(receive)
     case other =>
       dom.console.error(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)

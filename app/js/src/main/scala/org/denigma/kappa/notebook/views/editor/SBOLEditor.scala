@@ -8,7 +8,6 @@ import org.denigma.codemirror.{Editor, EditorChangeLike}
 import org.denigma.codemirror.extensions._
 import org.denigma.kappa.WebSim.Code
 import org.denigma.kappa.notebook.KappaHub
-import org.denigma.kappa.notebook.parsers.CommentLinksParser
 import org.scalajs.dom
 import org.scalajs.dom._
 import org.scalajs.dom.html._
@@ -19,6 +18,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 import org.scalajs.dom.html.Input
+/*
 /**
   * Created by antonkulaga on 11/03/16.
   */
@@ -89,3 +89,4 @@ class SBOLEditor(val elem: Element, val hub: KappaHub, selected: Var[String],val
   }
 
 }
+*/

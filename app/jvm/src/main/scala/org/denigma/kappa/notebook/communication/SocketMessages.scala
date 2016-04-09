@@ -27,4 +27,11 @@ object SocketMessages {
 
   case class UserJoined(username: String, channel: String, actorRef: ActorRef, time: LocalDateTime = LocalDateTime.now()) extends ChannelMessage
   case class UserLeft(username: String, channel: String, time: LocalDateTime = LocalDateTime.now()) extends  ChannelMessage
+
+
+}
+
+object RoomMessages
+{
+  case class Broadcast[Message](channel: String, message: Message, senderName: String, includeSender: Boolean = false)
 }

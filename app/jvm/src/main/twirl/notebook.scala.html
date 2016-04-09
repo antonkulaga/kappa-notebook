@@ -16,13 +16,8 @@
                 </column>
             </row>
             <row class="ui equal width row">
-                <column class="ui column" data-view="KappaEditor">
-                    <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
-                    <textarea data-editor="kappa" id="kappa"></textarea>
-                </column>
-                <column class="ui column">
-                    @tabs.html.results()
-                </column>
+                @ide.html.editor()
+                @tabs.html.results()
             </row>
         </section>
         <a href="https://github.com/antonkulaga/kappa-notebook"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>

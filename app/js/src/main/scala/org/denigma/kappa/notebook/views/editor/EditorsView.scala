@@ -100,7 +100,7 @@ class EditorsBinder(view: WithMirrors, defaultMode: String = "htmlmixed") extend
 
   override def bindAttributes(el: Element, attributes: Map[String, String]): Boolean= {
     val ats = this.dataAttributesOnly(attributes)
-    val fun: PartialFunction[(String, String), Unit] = elementPartial(el, ats).orElse{case other =>}
+    val fun: PartialFunction[(String, String), Unit] = elementPartial(el, ats).orElse{ case other =>}
     ats.foreach(fun)
     true
   }
@@ -108,11 +108,13 @@ class EditorsBinder(view: WithMirrors, defaultMode: String = "htmlmixed") extend
   override def elementPartial(el: Element, ats: Map[String, String]): PartialFunction[(String, String), Unit] = {
     case ("editor", v) if !view.contains(v) =>
       import scala.scalajs.js.timers._
-      setTimeout(200) { //a delay to do it after binding
-        println(s"adding editor for name $v")
+      //println(v+"   ======================")
+      //println(el.outerHTML)
+      //setTimeout(200)
+      //{
+        //a delay to do it after binding
+        //println(s"adding editor for name $v")
         view.addEditor(v, el, ats.getOrElse("mode", defaultMode))
-      }
-
-
+      //}
   }
 }

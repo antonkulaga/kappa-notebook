@@ -30,7 +30,7 @@ object WebSocketStorage {
 
   def remove(url: String): this.type = sockets.get(url) match {
     case Some(w) =>
-      w.close(CloseCode.CLOSE_NORMAL.id,"logout")
+      w.close(CloseCode.CLOSE_NORMAL.id, "logout")
       this
     case None =>
       dom.console.log(s"nothing to remove with url $url")

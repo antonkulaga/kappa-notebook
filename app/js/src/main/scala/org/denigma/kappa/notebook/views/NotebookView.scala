@@ -9,8 +9,7 @@ import org.denigma.codemirror.{Editor, EditorChangeLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.Session
 import org.denigma.controls.sockets.WebSocketSubscriber
-import org.denigma.kappa.notebook.parsers.CommentLinksParser
-import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaEditor}
+import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor}
 import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
 import org.scalajs.dom
 import org.scalajs.dom._
@@ -32,6 +31,20 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val hub: KappaHub = KappaHub.empty
 
+
+  val connector: WebSocketTransport = WebSocketTransport(subscriber, hub)
+  subscriber.onOpen.triggerLater{
+    println("websocket opened onload")
+    connector.send(WebSim.Load("model.ka"))
+  }
+
+  val run = Var(org.denigma.binding.binders.Events.createMouseEvent)
+  run.triggerLater{
+    //dom.console.log("sending the code...")
+    hub.runParameters() = hub.runParameters.now.copy(code = code.now)
+    connector.send(hub.runParameters.now)
+  }
+
   val initialCode =
     """
       |####### ADD YOUR CODE HERE #############
@@ -49,12 +62,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
       |#### Modifications
     """.stripMargin
 
-  val connector: WebSocketTransport = WebSocketTransport(subscriber, hub)
-  subscriber.onOpen.triggerLater{
-    println("send onload")
-    connector.send(WebSim.Load("model.ka"))
-  }
-
   val code = Var(initialCode)
   code.onChange{ case txt=>
     hub.kappaCode() = hub.kappaCode.now.copy(text = txt)
@@ -64,12 +71,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     if(v.isEmpty) code.set("") else code.set(v.text)
   }
 
-  val run = Var(org.denigma.binding.binders.Events.createMouseEvent)
-  run.triggerLater{
-    //dom.console.log("sending the code...")
-    hub.runParameters() = hub.runParameters.now.copy(code = code.now)
-    connector.send(hub.runParameters.now)
-  }
 
   val save = Var(Events.createMouseEvent())
   save.triggerLater{
@@ -88,12 +89,14 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty) //collect updates of all editors together
+
   val commentManager = new CommentsWatcher(editorsUpdates, hub.paperLocation)
 
    override lazy val injector = defaultInjector
      .register("Parameters")((el, args) => new RunnerView(el, hub.name, hub.runParameters).withBinder(n => new CodeBinder(n)))
-     .register("KappaEditor")((el, args) => new KappaEditor(el, hub, editorsUpdates).withBinder(n=>new CodeBinder(n)))
+     .register("KappaEditor")((el, args) => new KappaCodeEditor(el, hub, editorsUpdates).withBinder(n => new CodeBinder(n)))
      .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
+     .register("GraphView")((el, args) => new GraphView(el).withBinder(n => new CodeBinder(n)))
 
 
 

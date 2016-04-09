@@ -4,7 +4,6 @@ import org.denigma.binding.binders.Events
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
 import org.denigma.controls.pdf.{PDFPageViewport, TextLayerBuilder, TextLayerOptions}
-import org.denigma.kappa.notebook.KappaHub
 import org.querki.jquery.$
 import org.scalajs.dom
 import org.scalajs.dom.html.Canvas
@@ -13,6 +12,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 import org.denigma.binding.extensions._
+import org.denigma.kappa.notebook.KappaHub
 
 import scala.annotation.tailrec
 import scala.scalajs.js
@@ -21,9 +21,6 @@ import scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 
 class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extends Annotator {
-
-
-  val scale = Var(1.4)
 
   val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
 
@@ -36,7 +33,6 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
 
   val paperURI = location.map(_.paper)
 
-
   val canvas: Canvas  = $("#the-canvas").get(0).asInstanceOf[Canvas]
   //val $textLayerDiv: JQuery = $("#text-layer")
   val textLayerDiv: Element = dom.document.getElementById("text-layer")//.asInstanceOf[HTMLElement]
@@ -48,7 +44,7 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
 
   val selections = Var(List.empty[Range])
 
-  val currentSelection = selections.map{ case sel =>
+  val currentSelection= selections.map{ case sel =>
     sel.foldLeft("")((acc, el)=>acc + "\n" + el.cloneContents().textContent)
   }
 
@@ -80,48 +76,6 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
 
   }
 
-  /**
-    * Refreshes page
-    */
-  def refreshesPage() = if(this.currentPage.now.nonEmpty){
-    val paper = currentPaper.now
-    paper.getPage(currentPage.now.get.num).onSuccess{
-      case pg: Page => onPageChange(Some(pg))
-    }
-  }
-
-  override protected def onPageChange(pageOpt: Option[Page]): Unit =  pageOpt match
-  {
-    case Some(page) =>
-      //println(s"page option change with ${page}")
-      //var scale = 1.0
-      val viewport: PDFPageViewport = page.viewport(scale.now)
-      var context = canvas.getContext("2d")//("webgl")
-      canvas.height = viewport.height.toInt
-      canvas.width =  viewport.width.toInt
-      page.render(js.Dynamic.literal(
-        canvasContext = context,
-        viewport = viewport
-      ))
-      val textContentFut = page.textContentFut.onComplete{
-        case Success(textContent) =>
-          alignTextLayer(viewport)
-          textLayerDiv.innerHTML = ""
-          val textLayerOptions = new TextLayerOptions(textLayerDiv, 1, viewport)
-          val textLayer = new TextLayerBuilder(textLayerOptions)
-          textLayer.setTextContent(textContent)
-          //println(textContent+"!!! is TEXT")
-          textLayer.render()
-          updateSelection(textLayerDiv)
-
-        case Failure(th) =>
-          dom.console.error(s"cannot load the text layer for ${location.now}")
-      }
-    case None =>
-      //println("nothing changes")
-      textLayerDiv.innerHTML = ""
-  }
-
 
   override def bindView(): Unit = {
     super.bindView()
@@ -147,8 +101,7 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
         scale() = scale.now + wheel.deltaY / 1000
     }
     scale.onChange{
-      case sc=>
-        refreshesPage()
+      case sc=> refreshPage()
     }
     elem.addEventListener[WheelEvent]("onwheel", {event: WheelEvent => scroll() = event })
     elem.addEventListener[WheelEvent]("onmousewheel", {event: WheelEvent => scroll() = event })

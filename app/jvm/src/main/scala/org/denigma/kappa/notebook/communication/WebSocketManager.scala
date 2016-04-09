@@ -18,7 +18,7 @@ class WebSocketManager(system: ActorSystem) {
 
   val servers = system.actorOf(Props[KappaServerActor])
 
-  protected def makeIncomingFlow(channel: String, username: String) = Flow[Message].map {  case mes => SocketMessages.IncomingMessage(username, channel, mes) }
+  protected def makeIncomingFlow(channel: String, username: String) = Flow[Message].map {  case mes => SocketMessages.IncomingMessage(channel, username, mes) }
 
   protected val outgoingFlow = Flow[SocketMessages.OutgoingMessage].map{ case SocketMessages.OutgoingMessage(_, _, message, _) => message }
 

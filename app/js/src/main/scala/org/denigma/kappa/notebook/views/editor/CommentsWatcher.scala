@@ -8,6 +8,7 @@ import org.denigma.kappa.notebook.parsers.CommentLinksParser
 import org.scalajs.dom.html._
 import org.scalajs.dom.raw.MouseEvent
 import rx._
+import rx.Ctx.Owner.Unsafe.Unsafe
 
 import scalatags.JsDom.all._
 /**

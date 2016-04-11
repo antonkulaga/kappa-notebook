@@ -40,6 +40,7 @@ lazy val commonSettings = Seq(
   // Enable JAR export for staging
   exportJars := true,
   resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"), //for scala-js-binding
+  resolvers += Resolver.jcenterRepo,
   unmanagedClasspath in Compile <++= unmanagedResources in Compile,
   libraryDependencies ++= Dependencies.commonShared.value ++ Dependencies.testing.value,
   updateOptions := updateOptions.value.withCachedResolution(true) //to speed up dependency resolution

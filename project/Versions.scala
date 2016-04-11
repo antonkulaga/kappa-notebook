@@ -1,6 +1,18 @@
-object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
+object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions with OtherJVM
 {
 	val scala = "2.11.8"
+
+	val kappaNotebook = "0.0.6"
+
+	val binding = "0.8.6"
+
+	val bindingControls = "0.0.14"
+
+	val betterFiles = "2.15.0"
+
+}
+
+trait OtherJVM {
 
 	val akkaHttp = "2.4.3"
 
@@ -11,12 +23,6 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 	val apacheCodec = "1.10"
 
 	val akkaHttpExtensions = "0.0.10"
-
-	val binding = "0.8.5"
-
-	val bindingControls = "0.0.13"
-
-	val kappaNotebook = "0.0.6"
 
 	val retry = "0.2.1"
 
@@ -32,7 +38,10 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val breeze = "0.12"
 
+	val ficus: String = "1.2.3"
+
 }
+
 
 trait ScalaJSVersions {
 
@@ -47,6 +56,8 @@ trait ScalaJSVersions {
 	val threejsFacade = "0.0.74-0.1.6"
 
 	val d3jsFacade = "0.3.1"
+
+
 
 }
 

@@ -2,6 +2,7 @@ package org.denigma.kappa.notebook.views.editor
 
 import fastparse.all._
 import org.denigma.binding.binders.Events
+import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
 import org.denigma.codemirror._
@@ -11,6 +12,9 @@ import org.scalajs.dom.html._
 import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
 import rx._
 import org.denigma.kappa.WebSim
+import org.scalajs.dom
+import org.scalajs.dom.Event
+import scala.util._
 import scala.scalajs.js
 import scalatags.JsDom.all._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -23,19 +27,14 @@ import rx.Ctx.Owner.Unsafe.Unsafe
   * @param hub ugly shareble hub to connect with other UI elements
   * @param updates reactive varible to which we report our editor updates
   */
-class KappaCodeEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorUpdates]) extends BindableView with EditorView {
+class KappaCodeEditor(val elem: Element, val hub: KappaHub, val updates: Var[EditorUpdates]) extends BindableView with EditorView with Uploader
+{
 
   val errors = hub.errors.map( er=> if(er.isEmpty) "" else er.reduce(_ + "\n" + _))
 
   val hasErrors = errors.map(_.nonEmpty)
 
   def code = hub.kappaCode
-
-  override def bindView() =
-  {
-    println("BIND VIEW")
-    super.bindView()
-  }
 
   override def mode = "Kappa"
 
@@ -50,6 +49,23 @@ class KappaCodeEditor(val elem: Element, val hub: KappaHub, val updates: Var[Edi
       }
     }
   }
+
+  val save = Var(Events.createMouseEvent())
+  save.triggerLater{
+    saveAs(hub.name.now, hub.kappaCode.now.text)
+  }
+
+  val onUpload: Var[Event] = Var(Events.createEvent())
+  onUpload.onChange(ev =>
+    this.uploadHandler(ev){
+      case Success((file, text))=>
+        hub.name() = file.name
+        //hub.runParameters.set(hub.runParameters.now.copy(fileName = file.name))
+        //code.set(text)
+        hub.kappaCode() = hub.kappaCode.now.copy(text = text)
+      case Failure(th) => dom.console.error(s"File upload failure: ${th.toString}")
+    })
+
 
 
   override def onChanges(ed: Editor, ch: js.Array[EditorChangeLike]): Unit = {

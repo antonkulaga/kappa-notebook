@@ -10,7 +10,8 @@ object MyStyles extends TextLayerStyles{
   import dsl._
 
   ".CodeMirror" -(
-    height.auto important
+    //height.auto important
+    height(100.0 %%) important
     // width.auto important
     )
   ".CodeMirror-scroll" -(
@@ -27,13 +28,28 @@ object MyStyles extends TextLayerStyles{
     )
 
   "#Papers" -(
-    padding(0 px)
+    )
+
+  ".ui.segment.paper" -(
+    padding(0 px),
+    height(100.0 %%)
+    )
+  "#Notebook" -(
+    height(100.0 %%)
+    )
+
+  "#main" -(
+    height(100.0 %%)
     )
 
   ".tab.page" -(
       //overflowY.scroll,
       //overflowX.scroll,
+      minHeight(100 vh),
       height(100.0 %%)
+    )
+  "#MainGrid" -(
+    minHeight(100 vh)
     )
 
   ".tab.flexible.page" -(
@@ -42,11 +58,6 @@ object MyStyles extends TextLayerStyles{
     height(100.0 %%)
     )
 
-  "#Tabs" -(
-    overflowY.scroll,
-    overflowX.scroll,
-    height(100.0 %%)
-    )
 }
 
 trait TextLayerStyles extends StyleSheet.Standalone {

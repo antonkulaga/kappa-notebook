@@ -19,7 +19,7 @@ import scala.scalajs.js.annotation.JSExport
 object FrontEnd extends BindableView with scalajs.js.JSApp
 {
 
-  override val id: String = "main"
+  override lazy val id: String = "main"
 
   lazy val elem: Element = dom.document.body
 

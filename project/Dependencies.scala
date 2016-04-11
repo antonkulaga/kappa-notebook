@@ -12,7 +12,7 @@ object Dependencies {
   lazy val testing = Def.setting(Seq(
 		"org.scalatest" %%% "scalatest" % Versions.scalaTest % Test,
 
-		"org.scalatUest" %%% "scalatest-matchers" % Versions.scalaTest % Test,
+		"org.scalatest" %%% "scalatest-matchers" % Versions.scalaTest % Test,
 
 		"org.scalatest" %%% "scalatest-wordspec" % Versions.scalaTest % Test
   ))
@@ -82,7 +82,12 @@ object Dependencies {
 
 		"org.sbolstandard" % "libSBOLj-parent" % Versions.libSBOLj,
 
-		"org.scalanlp" %% "breeze" % Versions.breeze
+		"org.scalanlp" %% "breeze" % Versions.breeze,
+
+		"com.iheart" %% "ficus" % Versions.ficus,
+
+		"com.github.pathikrit"  %% "better-files-akka"  % Versions.betterFiles
+
 	))
 
 

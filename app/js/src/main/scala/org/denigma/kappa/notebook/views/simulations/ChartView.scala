@@ -16,16 +16,23 @@ class ChartView(val elem: Element,
                 val items: Rx[Seq[Rx[Series]]]
                ) extends FlexibleLinearPlot {
 
-  protected def defaultWidth = Math.max(dom.window.screenX / 2.5, 500)
+  protected def defaultWidth = Math.max(dom.window.innerWidth / 2.5, 300)
 
-  protected def defaultHeight = Math.max(dom.window.screenY / 1.5, 500)
-
+  protected def defaultHeight = Math.max(dom.window.innerHeight / 2, 400)
 
   val scaleX: Var[LinearScale] = Var(LinearScale("Time", 0.0, 10, 2, defaultWidth))
 
   val scaleY: Var[LinearScale] = Var(LinearScale("Concentration", 0.0, 10, 2, defaultHeight, inverted = true))
 
   val halfWidth = Rx{ width() / 2.0 }
+
+  override def max(series: Series)(fun: Point=>Double): Point = if(series.points.nonEmpty) series.points.maxBy(fun) else Point(0.0, 0.0)
+
+  override val max: rx.Rx[Point] = items.map{case its=>
+    val x = its.foldLeft(0.0){ case (acc, series)=> Math.max(acc, if(series.now.points.nonEmpty) series.now.points.maxBy(_.x).x else 0.0)}
+    val y = its.foldLeft(0.0){ case (acc, series)=> Math.max(acc, if(series.now.points.nonEmpty) series.now.points.maxBy(_.y).y else 0.0)}
+    Point(x, y)
+  }
 
   override def newItemView(item: Item): SeriesView = constructItemView(item){
     case (el, mp) => new SeriesView(el, item, transform).withBinder(new GeneralBinder(_))

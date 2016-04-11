@@ -15,6 +15,7 @@ import org.denigma.binding.extensions._
 import org.denigma.kappa.notebook.KappaHub
 
 import scala.annotation.tailrec
+import scala.collection.SortedSet
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 import scalajs.concurrent.JSExecutionContext.Implicits.queue
@@ -70,12 +71,22 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
   val nextPage = Var(Events.createMouseEvent())
   val previousPage = Var(Events.createMouseEvent())
   val addNugget= Var(Events.createMouseEvent())
+  /*
+  TODO: fix it!
+  does not work in firefox!!!
   val scroll= Var(Events.createWheelEvent())
+  scroll.onChange{
+    case wheel=>
+      println("DELTAY = "+ wheel.deltaY)
+      scale() = scale.now + wheel.deltaY / 1000
+  }
+  elem.addEventListener[WheelEvent]("onwheel", {event: WheelEvent => scroll() = event })
+  elem.addEventListener[WheelEvent]("onmousewheel", {event: WheelEvent => scroll() = event })
 
+  */
   protected def insertInto(line: Int, code: String) = {
 
   }
-
 
   override def bindView(): Unit = {
     super.bindView()
@@ -95,16 +106,11 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
       val position = hub.kappaCursor
       hub.kappaCode() = hub.kappaCode.now.withInsertion(position.now.line, comments.now)
     }
-    scroll.onChange{
-      case wheel=>
-        println("DELTAY = "+ wheel.deltaY)
-        scale() = scale.now + wheel.deltaY / 1000
-    }
+
     scale.onChange{
       case sc=> refreshPage()
     }
-    elem.addEventListener[WheelEvent]("onwheel", {event: WheelEvent => scroll() = event })
-    elem.addEventListener[WheelEvent]("onmousewheel", {event: WheelEvent => scroll() = event })
+
     super.subscribePapers()
     dom.document.addEventListener("selectionchange", onSelectionChange _)
     textLayerDiv.parentNode.addEventListener(Events.mouseleave, fixSelection _)

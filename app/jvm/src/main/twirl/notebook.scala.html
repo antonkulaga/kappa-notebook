@@ -1,25 +1,25 @@
-<section class="ui green segment" data-view="Notebook">
+<section class="ui green segment" id="Notebook" data-view="Notebook">
     <p>This is a prototype of the notebook for <a href="http://kappalanguage.org">kappa-language</a>.
-        With it you can run simulations and get plots and console output.</p>
-    <section class="ui blue segment">
-        <section class="ui equal width grid">
-            <row class="ui equal width row">
-                <column id = "graph" data-view="GraphView" class="column">
-                    <div id="graph-container" data-show-if="active"></div>
-                    <img src="/resources/kappa.svg" data-hide-if="active">
-                </column>
-                <column class="column">
-                    @html.parameters()
-                    <button class="ui button" data-event-click="run">Run model</button>
-                    <button class="ui button" data-event-click="save">Save model</button>
-                    <input id="the-file-input" type="file" title="Upload model" data-event-change="onUpload">
-                </column>
-            </row>
-            <row class="ui equal width row">
-                @ide.html.editor()
+        With it you can run simulations, annotate papers and get plots as output.</p>
+        <section class="ui equal width grid" id="MainGrid">
+            <div class="ui equal width row">
+                <div class="column">
+                    <section class="ui equal width grid">
+                        <div class="ui equal width row">
+
+                            <div id = "graph" data-view="GraphView" class="column">
+                                <div id="graph-container" data-show-if="active"></div>
+                                <img src="/resources/kappa.svg" data-hide-if="active">
+                            </div>
+
+                        </div>
+                        <div class="ui equal width row">
+                            @ide.html.editor()
+                        </div>
+                    </section>
+                </div>
                 @tabs.html.results()
-            </row>
+            </div>
         </section>
         <a href="https://github.com/antonkulaga/kappa-notebook"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
-  </section>
 </section>

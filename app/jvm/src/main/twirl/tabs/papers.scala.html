@@ -1,7 +1,5 @@
 @()
 <section class="ui bottom attached tab segment" data-view="Papers" id="Papers" data-class-active-if="active">
-  <canvas id="the-canvas" style="border:1px solid black;"></canvas>
-  <div id="text-layer" class="textLayer"></div>
   <div class="ui inverted segment">
     <button class="ui inverted button" data-showif="hasPreviousPage" data-event-click="previousPage">Previous</button>
     <input class="ui input" data-bind-value="currentPageNum">
@@ -9,4 +7,8 @@
     <button class="ui inverted blue button" data-showif="hasSelection"  data-event-click="addNugget">Insert nugget</button>
   </div>
   <h4 class="ui title" data-bind="paperURI"></h4>
+  <section class="ui segment paper">
+    <canvas id="the-canvas" style="border:1px solid black;"></canvas>
+    <div id="text-layer" class="textLayer"></div>
+  </section>
 </section>

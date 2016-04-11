@@ -80,8 +80,11 @@ case class SimulationStatus(
                              max_events: Option[Int],
                              is_running: Boolean,
                              code: Option[String],
-                             logMessages: Option[String],
-                             plot: Option[KappaPlot]/*,
+                             log_messages: Option[List[String]],
+                             plot: Option[KappaPlot]
+                             /*
+                             debugJSON: Option[String] = None
+                             ,
                              flux_maps: Array[FluxMap]*/
                            )  extends WebSimMessage
 {
@@ -95,6 +98,7 @@ case class SimulationStatus(
 case class Observable(time: Double, values: Array[Double])  extends WebSimMessage
 
 case class KappaPlot(legend: Array[String], observables: Array[Observable]) extends WebSimMessage {
+  //println("kappa plot: "+legend.toList)
   lazy val timePoints: List[Double] = observables.foldLeft(List.empty[Double])((acc, o)=> o.time::acc).reverse
 }
 

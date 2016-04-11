@@ -1,6 +1,7 @@
 package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
+import org.denigma.binding.views.{BindableView, ItemsSeqView}
 import org.denigma.controls.charts._
 import org.scalajs.dom
 import org.scalajs.dom.ext._
@@ -54,8 +55,29 @@ class ChartView(val elem: Element,
       .withBinder(new GeneralBinder(_))}
     .register("oy"){case (el, args) => new AxisView(el, scaleY, chartStyles.map(_.scaleY))
       .withBinder(new GeneralBinder(_))}
-    .register("legend"){case (el, args) => new LegendView(el, items)
+    .register("legend"){case (el, args) => new LegendView2(el, items)
       .withBinder(new GeneralBinder(_))}
+
+}
+
+
+class LegendView2(val elem: Element, val items: rx.Rx[Seq[Rx[Series]]]) extends ItemsSeqView with BindableView{
+
+  type Item = Rx[Series]
+  type ItemView = LegendItemView
+
+  override def newItemView(item: Rx[Series]): LegendItemView = this.constructItemView(item){ case (el, mp)=>
+    new LegendItemView(el, item).withBinder(new GeneralBinder(_))
+  }
+}
+
+class LegendItemView(val elem: Element, series: Rx[Series]) extends BindableView
+{
+  val color = series.map(s => s.style.strokeColor)
+  val title = series.map{case s =>
+    println(s.title)
+    s.title
+  }
 
 }
 

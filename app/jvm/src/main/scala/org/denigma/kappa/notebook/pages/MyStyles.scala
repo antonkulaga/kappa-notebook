@@ -34,9 +34,6 @@ object MyStyles extends TextLayerStyles{
     padding(0 px),
     height(100.0 %%)
     )
-  "#Notebook" -(
-    height(100.0 %%)
-    )
 
   "#main" -(
     height(100.0 %%)

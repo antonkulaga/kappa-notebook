@@ -84,11 +84,16 @@ trait PooledWebSimFlows extends WebSimFlows {
       Future.failed(exception)
   }
 
+  def response2String(resp: HttpResponse, timeout: FiniteDuration = 300 millis): Future[String] = {
+    resp.entity.toStrict(timeout).map { _.data }.map(_.utf8String)
+  }
+
   val tokenFlow: Flow[RunModel, (Either[Token, Array[String]], RunModel), NotUsed] = runModelRequestFlow.inputZipWith(timePool.via(safeTokenUnmarshalFlow.sync)){
     case (params, either)=> either -> params
   }
 
-  val simulationStatusFlow: Flow[Token, (Token, SimulationStatus), NotUsed] = simulationStatusRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
+  val simulationStatusFlow: Flow[Token, (Token, SimulationStatus), NotUsed] =
+    simulationStatusRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
     case (token, result)=> token -> result
   }
 
@@ -107,7 +112,9 @@ trait PooledWebSimFlows extends WebSimFlows {
   def simulationResultStream(updateInterval: FiniteDuration, parallelism: Int): Flow[RunModel, (Either[(Token, SimulationStatus), Array[String]], RunModel), NotUsed] = tokenFlow.flatMapMerge(parallelism, {
     case (Left(token), model) =>
       val source = Source.tick(0 millis, updateInterval, token)
-      source.via( simulationStatusFlow ).upTo{ case (t, sim) => sim.percentage >= 100.0 || !sim.is_running   }.map(v=>Left(v)->model)
+      source.via( simulationStatusFlow ).upTo{
+        case (t, sim) => sim.percentage >= 100.0 || !sim.is_running
+      }.map(v=>Left(v)->model)
     case (Right(errors), model) =>
       Source.single(Right(errors)->model)
   })

@@ -78,7 +78,7 @@ class SimulationsView(val elem: Element, val selected: Var[String], hub: KappaHu
   override def newItemView(item: Key): SimulationStatusView = this.constructItemView(item)( {
     case (el, mp) =>
       el.id =  makeId(item) //bad practice
-      val view = new SimulationStatusView(el, item._1, item._2, selectTab, Var(None)).withBinder(new GeneralBinder(_))
+      val view = new SimulationStatusView(el, item._1, item._2, selectTab, Var(None)).withBinder(new CodeBinder(_))
       selectTab() = view.id
       view
   })
@@ -93,8 +93,14 @@ class SimulationStatusView(val elem: Element, token: Int, params: RunModel,  val
   extends BindableView with UpdatableView[SimulationStatus] with TabItem
 {
 
+  val console: Rx[String] = simulation.map{
+    case Some(s) => s.log_messages.fold("") {  case arr => arr.foldLeft("")((acc, el) => acc + el)  }
+    case None => ""
+  }
+
   val series: Rx[List[Var[KappaSeries]]] = simulation.map{
-    case Some(s)=> s.plot.map(KappaChart.fromKappaPlot).getOrElse(KappaChart.empty).series.map(Var(_))
+    case Some(s)=>
+      s.plot.map(KappaChart.fromKappaPlot).getOrElse(KappaChart.empty).series.map(Var(_))
     case None => KappaChart.empty.series.map(Var(_))
   }
 

@@ -11,7 +11,9 @@ object KappaChart {
   lazy val empty = KappaChart(List.empty)
 
   implicit def fromKappaPlot(plot: WebSim.KappaPlot): KappaChart = {
-    val series = plot.legend.zipWithIndex.map{ case (title, i) => KappaSeries(title, plot.observables.map(o=> Point(o.time,o.values(i))).toList) }
+    val series = plot.legend.zipWithIndex.map{ case (title, i) =>
+      //println("title: " + title)
+      KappaSeries(title, plot.observables.map(o=> Point(o.time, o.values(i))).toList) }
     KappaChart(series.toList)
   }
 }

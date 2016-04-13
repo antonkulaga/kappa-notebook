@@ -31,7 +31,7 @@ class SimulationsView(val elem: Element, val selected: Var[String], hub: KappaHu
 {
   self=>
 
-  val headers=  itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
+  val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
   //this.items.map{ case its=> SortedSet.empty[String] ++ its.keySet.map(makeId) }
 
   val selectTab = Var("")
@@ -89,7 +89,11 @@ class SimulationsView(val elem: Element, val selected: Var[String], hub: KappaHu
 
 }
 
-class SimulationStatusView(val elem: Element, token: Int, params: RunModel,  val selected: Var[String], val simulation: Var[Option[SimulationStatus]] = Var(None))
+class SimulationStatusView(val elem: Element,
+                           token: Int,
+                           params: RunModel,
+                           val selected: Var[String],
+                           val simulation: Var[Option[SimulationStatus]] = Var(None))
   extends BindableView with UpdatableView[SimulationStatus] with TabItem
 {
 

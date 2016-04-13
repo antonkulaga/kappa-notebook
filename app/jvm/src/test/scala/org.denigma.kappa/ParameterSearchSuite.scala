@@ -47,8 +47,8 @@ class ParameterSearchSuite extends WordSpec with Matchers with ScalatestRouteTes
         val fut: Future[Seq[(TokenPoolMessage, SimulationStatus)]] = server.run(Seq(params, params, params)) //Source.single(params).via(server.modelResultsFlow(1, 100 millis).map(_._2)).runWith(Sink.seq)//.runWithStreamingFlatten(params, Sink.seq, 100 millis)
         fut pipeTo probe.ref
         probe.expectMsgPF(duration * 20) {
-          case results: Seq[(TokenPoolMessage, SimulationStatus)] if results.length == 3 && results.forall(p => p._2.percentage >= 100.0 && p._2.plot.isDefined) =>
-            val sims = results.map { case (token, res) => res }
+          case tabs: Seq[(TokenPoolMessage, SimulationStatus)] if tabs.length == 3 && tabs.forall(p => p._2.percentage >= 100.0 && p._2.plot.isDefined) =>
+            val sims = tabs.map { case (token, res) => res }
             val plots: List[KappaPlot] = sims.map { case s =>
               s.plot.get
             }.toList
@@ -79,8 +79,8 @@ class ParameterSearchSuite extends WordSpec with Matchers with ScalatestRouteTes
         val fut: Future[Seq[(TokenPoolMessage, SimulationStatus)]] = server.run(Seq(params, params, params))//Source.single(params).via(server.modelResultsFlow(1, 100 millis).map(_._2)).runWith(Sink.seq)//.runWithStreamingFlatten(params, Sink.seq, 100 millis)
         fut pipeTo probe.ref
         probe.expectMsgPF(duration * 20) {
-          case results: Seq[(TokenPoolMessage, SimulationStatus)] if results.length == 3 && results.forall(p => p._2.percentage >= 100.0 && p._2.plot.isDefined) =>
-            results.map{ case (token, res)=>res.plot.get }
+          case tabs: Seq[(TokenPoolMessage, SimulationStatus)] if tabs.length == 3 && tabs.forall(p => p._2.percentage >= 100.0 && p._2.plot.isDefined) =>
+            tabs.map{ case (token, res)=>res.plot.get }
         }
       }
       */

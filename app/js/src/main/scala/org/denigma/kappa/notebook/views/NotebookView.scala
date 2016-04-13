@@ -14,8 +14,8 @@ import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
 import org.scalajs.dom.raw.{Element, HTMLElement}
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
-
 import org.denigma.kappa.notebook.views.visual.GraphView
+import org.scalajs.dom
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
@@ -68,13 +68,12 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty) //collect updates of all editors together
 
-    val commentManager = new CommentsWatcher(editorsUpdates, hub.paperLocation)
+    val commentManager = new CommentsWatcher(editorsUpdates, hub.papers)
 
      override lazy val injector = defaultInjector
        .register("KappaEditor")((el, args) => new KappaCodeEditor(el, hub, editorsUpdates).withBinder(n => new CodeBinder(n)))
        .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
-       .register("GraphView") {  (el, args) => new GraphView(el).withBinder(n => new CodeBinder(n))
-       }
+       .register("GraphView") {  (el, args) => new GraphView(el).withBinder(n => new CodeBinder(n)) }
 }
 
 

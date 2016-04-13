@@ -1,30 +1,17 @@
-<section class="ui equal width green segment grid" id="MainGrid"  id="Notebook" data-view="Notebook">
-    <div class="ui equal width row">
-        <div class="column">
-            <p>This is a prototype of the notebook for <a href="http://kappalanguage.org">kappa-language</a>.
-                With it you can run simulations, annotate papers and get plots as output.</p>
-        </div>
-        <div class="column">
-            <a href="https://github.com/antonkulaga/kappa-notebook"><i class="github alternate icon"></i>Fork me on github</a>
-
-        </div>
-    </div>
-        <div class="ui equal width row">
-        <div class="column">
-            <section class="ui equal width grid">
-                <div class="ui equal width row">
-
-                    <div id = "graph" data-view="GraphView" class="column">
-                        <div id="graph-container" data-show-if="active"></div>
-                        <img src="/resources/kappa.svg" data-hide-if="active">
-                    </div>
-
-                </div>
-                <div class="ui equal width row">
-                    @ide.html.editor()
-                </div>
-            </section>
-        </div>
-        @tabs.html.results()
+<div id="Scroller" data-param-target="Notebook" data-view="Scroller" class="ui equal width segment grid"></div>
+<section class="ui equal width blue secondary segment celled grid"  id="Notebook" data-view="Notebook">
+      <div class="ui equal width row">
+          <section class="four wide column">
+              <div class="ui blue segment">
+                  <h5 class="ui header">This is a prototype of the notebook for <a href="http://kappalanguage.org">kappa-language</a></h5>
+                  <div id = "graph" data-view="GraphView" class="column">
+                      <div id="graph-container" data-show-if="active"></div>
+                      <img src="/resources/kappa.svg" data-hide-if="active">
+                  </div>
+                  <h5>There will be filemanager and some buttons </h5>
+              </div>
+          </section>
+        @ide.html.editor()
+        @tabs()
     </div>
 </section>

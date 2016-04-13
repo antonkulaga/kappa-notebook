@@ -7,7 +7,8 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.{AjaxSession, LoginView}
 import org.denigma.kappa.notebook.views.{NotebookView, SidebarView}
 import org.scalajs.dom
-import org.scalajs.dom.raw.Element
+import org.scalajs.dom.UIEvent
+import org.scalajs.dom.raw.{Element, HTMLElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
 
 import scala.scalajs.js.annotation.JSExport
@@ -25,6 +26,27 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
 
   val session = new AjaxSession()
 
+  class Scroller(val elem: HTMLElement, target: HTMLElement) extends BindableView{
+    import scalatags.JsDom.all._
+
+    override def bindView() = {
+      super.bindView()
+      val child = p( name := "insider", width := target.scrollWidth, br()).render
+      elem.appendChild(child)
+      println(child.outerHTML + " "+target.scrollWidth)
+      elem.style.overflowX = "scroll"
+      elem.onscroll = {e: UIEvent =>
+        println("scrolllefft = "+ elem.scrollLeft)
+        if(target.scrollLeft != elem.scrollLeft) target.scrollLeft = elem.scrollLeft
+      }
+      target.onscroll = {e: UIEvent =>
+        println("scrollleft =" + target.scrollLeft)
+        elem.scrollLeft = target.scrollLeft
+      }
+    }
+
+  }
+
   /**
    * Register views
    */
@@ -33,6 +55,13 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
     .register("Sidebar")((el, args) => new SidebarView(el).withBinder(new GeneralBinder(_)))
     .register("Login")((el, args) => new LoginView(el, session).withBinder(new GeneralBinder(_)))
     .register("Notebook")((el, args) => new NotebookView(el, session).withBinder(n => new CodeBinder(n)))
+    .register("Scroller") {
+      case (el: HTMLElement, args) if args.contains("target")=>
+        val name = args("target").toString
+        val target = sq.byId(name).get
+        new Scroller(el, target).withBinder(n => new GeneralBinder(n))
+    }
+
 
   this.withBinders(me => List(new GeneralBinder(me), new NavigationBinder(me)))
 

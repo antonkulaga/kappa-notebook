@@ -116,7 +116,7 @@ class WebSimSuite extends BasicKappaSuite {
       }
     }
 
-    "run streamed results" in {
+    "run streamed tabs" in {
       val tokenSink = TestSink.probe[(Either[Int, Array[String]], RunModel)]
       val params = WebSim.RunModel(abc, 100, max_events = Some(10000))
       val launcher = Source.single(params).via(flows.tokenFlow).runWith(tokenSink)

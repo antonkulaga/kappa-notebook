@@ -1,6 +1,6 @@
 package org.denigma.kappa.notebook.views.papers
 
-import org.denigma.binding.binders.Events
+import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
 import org.denigma.controls.pdf.{PDFPageViewport, TextLayerBuilder, TextLayerOptions}
@@ -12,21 +12,55 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 import org.denigma.binding.extensions._
+import org.denigma.binding.views.{BindableView, ItemsMapView, ItemsSeqView, UpdatableView}
 import org.denigma.kappa.notebook.KappaHub
+import org.denigma.kappa.notebook.views.common.TabItem
+import org.denigma.kappa.notebook.views.simulations.TabHeaders
 
 import scala.annotation.tailrec
-import scala.collection.SortedSet
+import scala.collection.immutable
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 import scalajs.concurrent.JSExecutionContext.Implicits.queue
 
+class PapersView(val elem: Element, val selected: Var[String], hub: KappaHub) extends
+  BindableView
+  with ItemsMapView
+  with TabItem{
 
-class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extends Annotator {
+  val items = hub.papers
+
+  val selectTab = Var("")
+
+  override type Item = String
+
+  override type Value = Bookmark
+
+  override type ItemView = PublicationView
+
+  val headers=  itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
+
+  override def newItemView(name: String): PublicationView = this.constructItemView(name){
+    case (el, params)=>
+      el.id = name
+      val location = this.items.now(name) //buggy but hope it will work
+      val v = new PublicationView(el, selectTab, Var(location), hub ).withBinder(v=>new CodeBinder(v))
+      selectTab() = name
+      v
+  }
+
+  override lazy val injector = defaultInjector
+    .register("headers")((el, args) => new TabHeaders(el, headers, selectTab).withBinder(new GeneralBinder(_)))
+
+}
+
+class PublicationView(val elem: Element, selected: Var[String], val location: Var[Bookmark], hub: KappaHub)
+  extends Annotator with UpdatableView[Bookmark]
+{
 
   val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
 
-  //start location to run
-  val location = hub.paperLocation
+  scale.Internal.value = 1.4
 
   location.triggerLater(
     selected() = this.id
@@ -58,10 +92,10 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
   val comments = Rx{
     //val opt = currentSelection.now.headOption//lastSelections.now.headOption
     val loc =
-    "#^ :in_paper "+paper() +
-      "\n#^ :on_page "+ page() + lastSelections().foldLeft(""){
-      case (acc, el) => acc + "\n#^ :has_text " + el.text
-    }
+      "#^ :in_paper "+paper() +
+        "\n#^ :on_page "+ page() + lastSelections().foldLeft(""){
+        case (acc, el) => acc + "\n#^ :has_text " + el.text
+      }
     //println("loc = "+loc)
     loc
   }
@@ -91,7 +125,7 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
   override def bindView(): Unit = {
     super.bindView()
     subscribePapers()
-   }
+  }
 
   override def subscribePapers(): Unit = {
     nextPage.triggerLater{
@@ -165,15 +199,8 @@ class PapersView(val elem: Element, selected: Var[String], hub: KappaHub) extend
 
   }
 
-
-  /**
-    * Register views
-    */
-  override lazy val injector = defaultInjector
-    /*
-    .register("Bookmarks"){
-      case (el, args) =>  new BookmarksView(el, location, textLayerDiv).withBinder(new CodeBinder(_))
-    }
-  */
-
- }
+  override def update(value: Bookmark): PublicationView.this.type = {
+    location() = value
+    this
+  }
+}

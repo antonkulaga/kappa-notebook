@@ -9,11 +9,40 @@ import scalacss.Defaults._
 object MyStyles extends TextLayerStyles{
   import dsl._
 
+  "#Notebook" -(
+    maxHeight(100 vh),
+    minWidth(2500.0 px)
+    )
+
+  "#Scroller" -(
+    maxHeight(100 vh),
+    minWidth(2500.0 px)
+    )
+
+  "#main" -(
+    overflowX.auto,
+    maxHeight(100 vh)
+    )
+
+  ".attached.tab.segment" -(
+      overflowY.auto
+    )
+
+  ".ui.column" -(
+    overflowY.auto  important,
+    padding(0 px)  important
+    )
+
+
   ".CodeMirror" -(
-    //height.auto important
-    height(100.0 %%) important
+    height.auto important,
+    minHeight(15.0 vh),
+    maxHeight(100 %%),
+    width(100 %%)
+    //height(100.0 %%) important
     // width.auto important
     )
+
   ".CodeMirror-scroll" -(
     overflow.visible,
     height.auto
@@ -28,14 +57,11 @@ object MyStyles extends TextLayerStyles{
     )
 
   "#Papers" -(
+    padding(0 px)
     )
 
   ".ui.segment.paper" -(
     padding(0 px),
-    height(100.0 %%)
-    )
-
-  "#main" -(
     height(100.0 %%)
     )
 
@@ -44,9 +70,6 @@ object MyStyles extends TextLayerStyles{
       //overflowX.scroll,
       minHeight(100 vh),
       height(100.0 %%)
-    )
-  "#MainGrid" -(
-    minHeight(100 vh)
     )
 
   ".tab.flexible.page" -(

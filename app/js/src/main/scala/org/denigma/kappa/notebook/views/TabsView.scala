@@ -46,10 +46,18 @@ class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
       case (el, params) =>
         new PapersView(el, selected, hub).withBinder(new CodeBinder(_))
     }
+    .register("UnderDevelopment") {
+      case (el, params) =>
+        el.id = "UnderDevelopment" //dirty trick to set viewid
+        new UnderDevelopment(el, selected).withBinder(new CodeBinder(_))
+    }
     /*
     .register("SBOLEditor") {
       case (el, params) =>
         new SBOLEditor(el, hub, selected, editorsUpdates).withBinder(new CodeBinder(_))
     }
     */
+}
+class UnderDevelopment(val elem: Element, val selected: Var[String]) extends BindableView with common.TabItem {
+
 }

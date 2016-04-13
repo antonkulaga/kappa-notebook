@@ -5,7 +5,7 @@ import org.denigma.codemirror.Editor
 import org.denigma.codemirror.extensions._
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.notebook.parsers.CommentLinksParser
-import org.scalajs.dom.html._
+import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -14,7 +14,7 @@ import scalatags.JsDom.all._
 /**
   * Created by antonkulaga on 11/03/16.
   */
-class CommentsWatcher(updates: Var[EditorUpdates], location: Var[Bookmark])  {
+class CommentsWatcher(updates: Var[EditorUpdates], papers: Var[Map[String, Bookmark]])  {
 
   updates.foreach(changeHandler) //subscription
 
@@ -36,8 +36,8 @@ class CommentsWatcher(updates: Var[EditorUpdates], location: Var[Bookmark])  {
   protected def searchForPages(editor: Editor, line: String, num: Int) = {
     pageParser.parse(line) match {
       case Parsed.Success(page, index) =>
-        val marker = this.makePageMarker(page)
-        editor.setGutterMarker(num, "breakpoints", marker)
+        //val marker = this.makePageMarker(page)
+        //editor.setGutterMarker(num, "breakpoints", marker)
 
       case Parsed.Failure(parser, index, extra) =>
         editor.setGutterMarker(num, "breakpoints", null) //test setting null
@@ -52,7 +52,7 @@ class CommentsWatcher(updates: Var[EditorUpdates], location: Var[Bookmark])  {
 
     // <i class="file pdf outline icon">
   }
-
+/*
   protected def makePageMarker(num: Int) = {
     val tag = button(`class` := "ui icon button", i(`class` := "file pdf outline icon", onclick := {
       //println(s"mouse down on $num")
@@ -65,7 +65,7 @@ class CommentsWatcher(updates: Var[EditorUpdates], location: Var[Bookmark])  {
     }
     html
   }
-
+*/
 
 
   protected def changeHandler(upd: EditorUpdates) =
@@ -83,7 +83,7 @@ class CommentsWatcher(updates: Var[EditorUpdates], location: Var[Bookmark])  {
       (num, line) <- editor.linesText(lines)
     } {
       searchForLinks(editor, line , num)
-      searchForPages(editor, line, num)
+      //searchForPages(editor, line, num)
       //val info: LineInfo = editor.lineInfo(num)
       //val markers: js.Array[String] = info.gutterMarkers
     }

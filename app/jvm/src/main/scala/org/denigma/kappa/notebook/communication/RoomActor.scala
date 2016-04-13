@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.communication
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
-import org.denigma.kappa.WebSim.{Connected, Disconnected}
+import org.denigma.kappa.messages.{Connected, Disconnected}
 import org.denigma.kappa.notebook.services.WebSimClient
 
 class RoomActor(channel: String) extends Actor with ActorLogging{

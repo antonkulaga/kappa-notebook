@@ -3,8 +3,7 @@ package org.denigma.kappa.notebook.communication
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
-import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim._
+import org.denigma.kappa.messages.{RunModel, SimulationStatus, _}
 import org.denigma.kappa.notebook.services.WebSimClient
 
 import scala.concurrent.duration.FiniteDuration
@@ -20,7 +19,7 @@ class KappaServerActor extends Actor with ActorLogging {
   val server = new WebSimClient()(system, materializer)
     override def receive: Receive = {
 
-    case RunAtServer(username, serverName, message: WebSim.RunModel, userRef, interval) =>
+    case RunAtServer(username, serverName, message: RunModel, userRef, interval) =>
       Source.single(message)
       val sink: Sink[(Either[(Int, SimulationStatus), Array[String]], RunModel), Any] = Sink.foreach {
         case (Left( (token, res: SimulationStatus)), model) =>  userRef ! SimulationResult(serverName, res, token, Some(model))

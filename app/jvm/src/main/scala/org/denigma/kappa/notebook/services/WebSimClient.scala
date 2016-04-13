@@ -12,13 +12,11 @@ import akka.stream.stage._
 import akka.stream._
 import akka.stream.impl.fusing.GraphStages
 import akka.stream.scaladsl._
-import org.denigma.kappa.WebSim
 import de.heikoseeberger.akkahttpcirce.CirceSupport
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
-import org.denigma.kappa.WebSim.{RunModel, SimulationStatus, VersionInfo}
 import org.denigma.kappa.extensions._
 
 import scala.collection.immutable.Seq
@@ -27,6 +25,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util._
 import org.denigma.kappa.extensions._
+import org.denigma.kappa.messages.{RunModel, SimulationStatus}
 
 import scala.Either
 
@@ -55,7 +54,7 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
   def getVersion() = Source.single(Unit).via(flows.versionFlow).runWith(Sink.head)
 
 
-  def launch(model: WebSim.RunModel): Future[Either[Token, Array[String]]] = {
+  def launch(model: RunModel): Future[Either[Token, Array[String]]] = {
     val source = Source.single(model) //give one model
     source.via(flows.tokenFlow).map(_._1) runWith Sink.head
   }
@@ -65,16 +64,16 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
     source.via(flows.simulationStatusFlow).map(_._2) runWith Sink.head
   }
 
-  def run(model: WebSim.RunModel): Future[(Either[(flows.Token, SimulationStatus), Array[String]], RunModel)] =  {
+  def run(model: RunModel): Future[(Either[(flows.Token, SimulationStatus), Array[String]], RunModel)] =  {
     val source = Source.single(model)
     source.via(flows.syncSimulationResultStream).runWith(Sink.last)
   }
 
-  def run(model: WebSim.RunModel, updateInterval: FiniteDuration, parallelism: Int = 1) =  {
+  def run(model: RunModel, updateInterval: FiniteDuration, parallelism: Int = 1) =  {
     runStreamed(model, Sink.last, updateInterval, parallelism)
   }
 
-  def runStreamed[T](model: WebSim.RunModel, sink: Sink[(Either[(Int, SimulationStatus), Array[String]], RunModel), T], updateInterval: FiniteDuration, parallelism: Int = 1) =  {
+  def runStreamed[T](model: RunModel, sink: Sink[(Either[(Int, SimulationStatus), Array[String]], RunModel), T], updateInterval: FiniteDuration, parallelism: Int = 1) =  {
     val source = Source.single(model)
     val withFlow = source.via(flows.simulationResultStream(updateInterval, parallelism))
     withFlow.runWith(sink)

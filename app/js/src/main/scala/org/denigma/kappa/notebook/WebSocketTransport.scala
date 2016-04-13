@@ -16,21 +16,21 @@ import io.circe.syntax._
 import cats.data.Xor
 import shapeless.syntax._
 import boopickle.Default._
-import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim.WebSimPicklers
+import org.denigma.kappa.messages._
 
 import scala.collection.immutable._
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 
 
-case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHub) extends WebSimPicklers with BinaryWebSocket
+case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHub) extends KappaPicklers with BinaryWebSocket
 {
   subscriber.onOpen.triggerLater{
     dom.console.log("WebSocket has been opened")
+    send(Load(KappaProject("model.ka")))
     //send(disc)
   }
 
-  def send(message: WebSim.WebSimMessage): Unit = {
+  def send(message: KappaMessage): Unit = {
     val mes = bytes2message(Pickle.intoBytes(message))
     subscriber.send(mes)
   }
@@ -52,28 +52,27 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
 
   override protected def updateFromMessage(bytes: ByteBuffer): Unit = {
     //println("from bytes fires")
-    receive(Unpickle[WebSim.WebSimMessage].fromBytes(bytes))
+    receive(Unpickle[KappaMessage].fromBytes(bytes))
   }
 
-  def receive: PartialFunction[WebSim.WebSimMessage, Unit] = {
+  def receive: PartialFunction[KappaMessage, Unit] = {
 
-    case WebSim.SyntaxErrors(server, errors, params) =>
+    case SyntaxErrors(server, errors, params) =>
       //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
 
       kappaHub.errors() = errors.toList
 
 
-    case WebSim.SimulationResult(server, status, token, params) =>
+    case SimulationResult(server, status, token, params) =>
       //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
       kappaHub.simulations() = kappaHub.simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
       if(kappaHub.errors.now.nonEmpty) kappaHub.errors() = List.empty
 
 
-    case message: WebSim.Code =>
+    case message: Code =>
       kappaHub.kappaCode() = message
 
-    case message: WebSim.Connected =>
-      send(WebSim.Load("model.ka"))
+    case message: Connected =>
 
     //case message: WebSim. => message.messages.foreach(receive)
     case other =>

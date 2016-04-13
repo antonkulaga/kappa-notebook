@@ -1,21 +1,19 @@
 package org.denigma.kappa.notebook.views
 
-import fastparse.all._
-import org.denigma.binding.binders._
-import org.denigma.binding.commons.Uploader
+
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
-import org.denigma.codemirror.{Editor, EditorChangeLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.Session
 import org.denigma.controls.sockets.WebSocketSubscriber
+import org.denigma.kappa.messages.LaunchModel
 import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor}
-import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
-import org.scalajs.dom.raw.{Element, HTMLElement}
-import rx._
-import rx.Ctx.Owner.Unsafe.Unsafe
+import org.denigma.kappa.notebook.views.project.FilesView
 import org.denigma.kappa.notebook.views.visual.GraphView
-import org.scalajs.dom
+import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
+import org.scalajs.dom.raw.Element
+import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
@@ -33,8 +31,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
       println("websocket opened")
       //connector.send(WebSim.Load("model.ka"))
     }
-
-
 
 
     val initialCode =
@@ -64,7 +60,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
 
     hub.runParameters.triggerLater{
-      connector.send(hub.runParameters.now)
+      connector.send(LaunchModel("", hub.runParameters.now))
     }
     val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty) //collect updates of all editors together
 
@@ -74,6 +70,8 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
        .register("KappaEditor")((el, args) => new KappaCodeEditor(el, hub, editorsUpdates).withBinder(n => new CodeBinder(n)))
        .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
        .register("GraphView") {  (el, args) => new GraphView(el).withBinder(n => new CodeBinder(n)) }
+       .register("Files") {  (el, args) => new FilesView(el, hub.path).withBinder(n => new CodeBinder(n)) }
+
 }
 
 

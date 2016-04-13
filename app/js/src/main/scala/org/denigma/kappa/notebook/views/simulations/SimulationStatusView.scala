@@ -5,10 +5,8 @@ import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView, ItemsSetView, UpdatableView}
-import org.denigma.controls.charts._
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.WebSim.{RunModel, SimulationStatus}
-import org.denigma.kappa.messages.{KappaChart, KappaSeries}
+import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.KappaHub
 import org.denigma.kappa.notebook.views.RunnerView
 import org.denigma.kappa.notebook.views.common._

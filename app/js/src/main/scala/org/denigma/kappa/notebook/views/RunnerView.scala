@@ -9,7 +9,6 @@ import rx._
 import org.denigma.binding.binders.{Events, ReactiveBinder}
 import org.denigma.binding.macroses._
 import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.kappa.WebSim
 import org.denigma.kappa.notebook.KappaHub
 
 class RunnerView(val elem: Element, val name: Var[String], hub: KappaHub) extends BindableView

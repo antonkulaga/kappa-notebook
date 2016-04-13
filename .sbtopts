@@ -2,4 +2,3 @@
 -J-Xmx4G
 -J-XX:+UseConcMarkSweepGC
 -J-XX:+CMSClassUnloadingEnabled
--jvm-debug 5008

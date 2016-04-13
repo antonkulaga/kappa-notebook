@@ -4,15 +4,13 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream._
 import akka.stream.scaladsl._
-import breeze.linalg.sum
-import org.denigma.kappa.WebSim.{KappaPlot, RunModel, SimulationStatus}
-import org.denigma.kappa.WebSim
+import org.denigma.kappa.messages.{RunModel, SimulationStatus}
 
 import scala.collection.immutable.Seq
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
-case class ToySearch(model: RunModel, original: WebSim.SimulationStatus, fit: Fit, makeRuns: Int)
+case class ToySearch(model: RunModel, original: SimulationStatus, fit: Fit, makeRuns: Int)
 {
 }
 

@@ -1,15 +1,7 @@
 package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.binding.commons.Uploader
-import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsSetView}
-import org.denigma.controls.charts._
-import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.WebSim.{RunModel, SimulationStatus}
-import org.denigma.kappa.messages.{KappaChart, KappaSeries}
-import org.denigma.kappa.notebook.KappaHub
-import org.denigma.kappa.notebook.views.common._
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.ext._

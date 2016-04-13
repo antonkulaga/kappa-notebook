@@ -9,6 +9,7 @@ import akka.stream.testkit.TestSubscriber.Probe
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestProbe
 import org.denigma.kappa.WebSim._
+import org.denigma.kappa.messages.{RunModel, SimulationStatus, VersionInfo}
 import org.denigma.kappa.notebook.services._
 
 import scala.collection.immutable.Seq
@@ -54,7 +55,7 @@ class WebSimSuite extends BasicKappaSuite {
 
       //server.getVersion().pipeTo(probe.ref)
       val model = abc
-      val params = WebSim.RunModel(model, 1000, max_events = Some(10000))
+      val params = RunModel(model, 1000, max_events = Some(10000))
       val tokenFut =  server.launch(params).pipeTo(probeToken.ref)
 
       probeToken.expectMsgPF(duration * 2) {
@@ -75,7 +76,7 @@ class WebSimSuite extends BasicKappaSuite {
        .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
        .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
 
-     val params = WebSim.RunModel(model, 1000, max_events = Some(10000))
+     val params = messages.RunModel(model, 1000, max_events = Some(10000))
      val tokenFut: Future[Either[server.Token, Array[String]]] = server.launch(params).pipeTo(probeToken.ref)
 
      probeToken.expectMsgPF(duration * 2) {
@@ -88,7 +89,7 @@ class WebSimSuite extends BasicKappaSuite {
     "run simulation, get first result and " in {
       val probeToken = TestProbe()
       val model = abc
-      val params = WebSim.RunModel(model, 1000, max_events = Some(1000000))
+      val params = messages.RunModel(model, 1000, max_events = Some(1000000))
       val tokenFut: Future[Either[server.Token, Array[String]]] = server.launch(params).pipeTo(probeToken.ref)
 
       val token = probeToken.expectMsgPF(duration * 2) {  case Left(t: Int) => t  }
@@ -118,7 +119,7 @@ class WebSimSuite extends BasicKappaSuite {
 
     "run streamed tabs" in {
       val tokenSink = TestSink.probe[(Either[Int, Array[String]], RunModel)]
-      val params = WebSim.RunModel(abc, 100, max_events = Some(10000))
+      val params = messages.RunModel(abc, 100, max_events = Some(10000))
       val launcher = Source.single(params).via(flows.tokenFlow).runWith(tokenSink)
       val (token, model) = launcher.request(1).expectNextPF{ case (Left(t: Int), mod) =>  t -> mod }
       val simSource = Source.single(token).via(flows.syncSimulationStream)
@@ -134,7 +135,7 @@ class WebSimSuite extends BasicKappaSuite {
 
      "run simulation and get results" in {
        val probe = TestProbe()
-       val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
+       val params = messages.RunModel(abc, 1000, max_events = Some(10000))
        server.run(params).map(_._1).pipeTo(probe.ref)
        probe.expectMsgPF(800 millis){
          case  Left( (token: Int, sim: SimulationStatus)) if sim.percentage>=100.0  =>

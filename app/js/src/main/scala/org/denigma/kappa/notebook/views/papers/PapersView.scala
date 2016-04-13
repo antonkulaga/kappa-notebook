@@ -28,8 +28,6 @@ class PapersView(val elem: Element, val selected: Var[String], hub: KappaHub) ex
   with ItemsMapView
   with TabItem{
 
-  val items = hub.papers
-
   val selectTab = Var("")
 
   override type Item = String
@@ -38,19 +36,44 @@ class PapersView(val elem: Element, val selected: Var[String], hub: KappaHub) ex
 
   override type ItemView = PublicationView
 
-  val headers=  itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
+  val items = hub.papers
+
+  val headers = itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
 
   override def newItemView(name: String): PublicationView = this.constructItemView(name){
     case (el, params)=>
       el.id = name
+      println("add view "+name)
       val location = this.items.now(name) //buggy but hope it will work
       val v = new PublicationView(el, selectTab, Var(location), hub ).withBinder(v=>new CodeBinder(v))
       selectTab() = name
       v
   }
 
+
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selectTab).withBinder(new GeneralBinder(_)))
+
+  override protected def subscribeUpdates() = {
+    template.hide()
+    //this.items.now.foreach(i => this.addItemView(i, this.newItemView(i)) ) //initialization of views
+    updates.onChange(upd=>{
+      upd.added.foreach{
+        case (key, value)=>
+          val n = newItemView(key)
+          n.update(value)
+          this.addItemView(key, n)
+      }
+      upd.removed.foreach{ case (key, value ) => removeItemView(key)}
+      upd.updated.foreach{ case( key, (old, current))=> itemViews.now(key).update(current)}
+    })
+    //TODO: move to scalajs binding
+    for ( (key, value) <- items.now) {
+      val n = newItemView(key)
+      n.update(value)
+      this.addItemView(key, n)
+    }
+  }
 
 }
 

@@ -11,7 +11,6 @@ import org.denigma.kappa.notebook.KappaHub
 import org.scalajs.dom.html._
 import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
 import rx._
-import org.denigma.kappa.WebSim
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import scala.util._
@@ -63,7 +62,7 @@ class KappaCodeEditor(val elem: Element, val hub: KappaHub, val updates: Var[Edi
         //hub.runParameters.set(hub.runParameters.now.copy(fileName = file.name))
         //code.set(text)
         hub.kappaCode() = hub.kappaCode.now.copy(text = text)
-      case Failure(th) => dom.console.error(s"File upload failure: ${th.toString}")
+      case Failure(t) => dom.console.error(s"File upload failure: ${t.toString}")
     })
 
 

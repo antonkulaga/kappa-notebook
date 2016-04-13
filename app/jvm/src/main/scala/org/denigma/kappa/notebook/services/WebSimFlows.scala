@@ -5,12 +5,11 @@ import akka.http.scaladsl.model.{HttpRequest, _}
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream.scaladsl._
 import de.heikoseeberger.akkahttpcirce.CirceSupport
-import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim.RunModel
 import io.circe.syntax._
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
+import org.denigma.kappa.messages.RunModel
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -35,7 +34,7 @@ trait WebSimFlows extends CirceSupport{
   /**
     * Flow where you provide Running configurations to get Model with request in return
     */
-  protected val runModelRequestFlow: Flow[RunModel, HttpRequest, NotUsed] = Flow[WebSim.RunModel].map{
+  protected val runModelRequestFlow: Flow[RunModel, HttpRequest, NotUsed] = Flow[RunModel].map{
     case model =>
       val json = model.asJson.noSpaces
       val data = HttpEntity(ContentTypes.`application/json`, json)

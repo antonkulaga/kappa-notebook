@@ -17,13 +17,12 @@ import io.circe.syntax._
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.util._
-import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim.{RunModel, SimulationStatus, VersionInfo}
 
 import scala.concurrent.duration._
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration.FiniteDuration
 import org.denigma.kappa.extensions._
+import org.denigma.kappa.messages.{RunModel, SimulationStatus, VersionInfo}
 
 import scala.Either
 

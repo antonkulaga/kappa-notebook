@@ -32,7 +32,7 @@ trait OtherJVM {
 
 	val akka = "2.4.3"
 
-	val circeHttp = "1.5.3"
+	val circeHttp = "1.5.4"
 
 	val libSBOLj = "2.0.0"
 
@@ -65,11 +65,11 @@ trait ScalaJSVersions {
 trait SharedVersions
 {
 
-	val circe = "0.3.0"
+	val circe = "0.4.0"
 
 	val scalaTags = "0.5.4"
 
-	val scalaCSS = "0.4.0"
+	val scalaCSS = "0.4.1"
 
 	val productCollections = "1.4.2"
 
@@ -82,7 +82,7 @@ trait SharedVersions
 
 trait WebJarsVersions{
 
-	val jquery =  "2.2.2"
+	val jquery =  "2.2.3"
 
 	val semanticUI = "2.1.8"
 

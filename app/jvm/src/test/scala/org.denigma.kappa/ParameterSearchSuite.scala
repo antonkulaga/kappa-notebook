@@ -9,7 +9,7 @@ import akka.pattern.pipe
 import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit.TestProbe
 import akka.util.Timeout
-import org.denigma.kappa.WebSim.{KappaPlot, SimulationStatus}
+import org.denigma.kappa.WebSim.KappaPlot
 import org.denigma.kappa.notebook.services._
 import org.scalatest.concurrent.Futures
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}

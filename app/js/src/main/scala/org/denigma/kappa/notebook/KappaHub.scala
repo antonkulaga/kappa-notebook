@@ -6,7 +6,8 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Var
 
 import scala.collection.immutable._
-import org.denigma.kappa.WebSim
+import org.denigma.kappa.messages
+import org.denigma.kappa.messages.{KappaPath, _}
 
 import scala.Predef.Map
 
@@ -15,11 +16,13 @@ object KappaHub{
   private val testMap: Map[String, Bookmark] = Map( ("/files/ossilator/Stricker08.pdf", Bookmark("/files/ossilator/Stricker08.pdf", 1)))
 
   def empty: KappaHub = KappaHub(
+    //Var(KappaProject()),
     Var("HelloWorld.ka"),
+    Var(KappaPath.empty),
     Var(PositionLike.empty),
-    Var(WebSim.Defaults.code),
-    Var(WebSim.Defaults.simulations),
-    Var(WebSim.Defaults.runModel),
+    Var(Defaults.code),
+    Var(messages.Defaults.simulations),
+    Var(messages.Defaults.runModel),
     Var(List.empty[String]),
     Var(testMap)
   )
@@ -30,11 +33,12 @@ object KappaHub{
   */
 case class KappaHub(
                      name: Var[String],
+                     path: Var[KappaPath],
                      kappaCursor: Var[PositionLike],
-                     kappaCode: Var[WebSim.Code],
+                     kappaCode: Var[Code],
                      //kappaCode: Var[Map[String, WebSim.Code]],
-                     simulations: Var[Map[(Int, WebSim.RunModel), WebSim.SimulationStatus]],
-                     runParameters: Var[WebSim.RunModel],
+                     simulations: Var[Map[(Int, RunModel), SimulationStatus]],
+                     runParameters: Var[RunModel],
                      errors: Var[List[String]],
                      papers: Var[Map[String, Bookmark]]
 )

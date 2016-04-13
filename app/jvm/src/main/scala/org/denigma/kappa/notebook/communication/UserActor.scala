@@ -9,22 +9,22 @@ import akka.stream.actor.{ActorPublisher, ActorPublisherMessage}
 import akka.util.ByteString
 import cats.data.Xor
 import io.circe.generic.semiauto
-import org.denigma.kappa.WebSim
-import org.denigma.kappa.WebSim._
 import boopickle.Default._
 import org.denigma.kappa.notebook.communication.SocketMessages.OutgoingMessage
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 import java.time._
+
 import akka.http.scaladsl.model._
+import org.denigma.kappa.messages._
 
 /**
   * This actor is creates for each user that connects via websocket
   * @param username
   * @param servers
   */
-class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with Actor with akka.actor.ActorLogging with ActorPublisher[SocketMessages.OutgoingMessage]{
+class UserActor(username: String, servers: ActorRef) extends KappaPicklers with Actor with akka.actor.ActorLogging with ActorPublisher[SocketMessages.OutgoingMessage]{
 
   implicit def ctx = context.dispatcher
 
@@ -58,7 +58,7 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
   }
 
 
-  def run(params: WebSim.RunModel): Unit = {
+  def run(params: RunModel): Unit = {
     val toServer = RunAtServer(username, "localhost", params, self, 100 millis)
     servers ! toServer
   }
@@ -67,7 +67,7 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
   protected def onTextMessage: Receive = {
     case SocketMessages.IncomingMessage(channel, uname, TextMessage.Strict(text), time) =>
     /*
-      val dec = parser.decode[WebSim.WebSimMessage](text)
+      val dec = parser.decode[WebSim.KappaMessage](text)
       dec match {
         case Xor.Right(value) => value match {
           //case status: WebSim.SimulationStatus =>
@@ -83,11 +83,11 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
 
   protected def onBinaryMessage: Receive = {
     case SocketMessages.IncomingMessage(channel, uname, message: BinaryMessage.Strict, time) =>
-      Unpickle[WebSimMessage].fromBytes(message.data.toByteBuffer) match
+      Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer) match
       {
         case Load(modelName) =>
-         val code = WebSim.Code(readResource("/examples/abc.ka").mkString("\n"))
-         val d = Pickle.intoBytes[WebSimMessage](code)
+         val code = Code(readResource("/examples/abc.ka").mkString("\n"))
+         val d = Pickle.intoBytes[KappaMessage](code)
          send(BinaryMessage(ByteString(d)))
 
         case model: RunModel=> run(model)
@@ -103,15 +103,15 @@ class UserActor(username: String, servers: ActorRef) extends WebSimPicklers with
       //println("received results")
       //val text = status.asJson.noSpaces
       //send(TextMessage.Strict(text), "all")
-      val d = Pickle.intoBytes[WebSimMessage](result)
+      val d = Pickle.intoBytes[KappaMessage](result)
       send(BinaryMessage(ByteString(d)))
 
     case s: SyntaxErrors=>
-      val d = Pickle.intoBytes[WebSimMessage](s)
+      val d = Pickle.intoBytes[KappaMessage](s)
       send(BinaryMessage(ByteString(d)))
 
     case result: Connected =>
-      val d = Pickle.intoBytes[WebSimMessage](result)
+      val d = Pickle.intoBytes[KappaMessage](result)
       send(BinaryMessage(ByteString(d)))
 
 

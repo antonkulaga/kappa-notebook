@@ -8,6 +8,7 @@ import akka.util.ByteString
 import org.denigma.kappa.WebSim._
 import org.denigma.kappa.notebook.Router
 import boopickle.Default._
+import org.denigma.kappa.messages.{RunModel, WebSimMessage, WebSimPicklers}
 import org.denigma.kappa.notebook.communication.WebSocketManager
 import org.denigma.kappa.notebook.pages.WebSockets
 
@@ -28,7 +29,7 @@ class WebSocketSuite extends BasicKappaSuite with WebSimPicklers{
           // check response for WS Upgrade headers
           isWebSocketUpgrade shouldEqual true
           //val code = WebSim.Code(abc)
-          val params = WebSim.RunModel(abc, 1000, max_events = Some(10000))
+          val params = RunModel(abc, 1000, max_events = Some(10000))
           val d: ByteBuffer = Pickle.intoBytes[WebSimMessage](params)
           wsClient.sendMessage(pack(d))
 
@@ -53,7 +54,7 @@ class WebSocketSuite extends BasicKappaSuite with WebSimPicklers{
           val model = abc
             .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
             .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
-          val params = WebSim.RunModel(model, 1000, max_events = Some(10000))
+          val params = messages.RunModel(model, 1000, max_events = Some(10000))
           val d: ByteBuffer = Pickle.intoBytes[WebSimMessage](params)
           wsClient.sendMessage(pack(d))
 

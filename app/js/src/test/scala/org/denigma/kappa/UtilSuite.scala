@@ -1,7 +1,7 @@
 package org.denigma.kappa
 
 import org.scalatest.{Matchers, WordSpec}
-import org.denigma.kappa.notebook.extensions._
+import org.denigma.binding.extensions._
 import rx._
 
 /**

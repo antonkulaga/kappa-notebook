@@ -15,9 +15,6 @@ import scala.concurrent.duration.FiniteDuration
 
 class Router(files: File)(implicit fm: Materializer, system: ActorSystem) extends Directives {
 
-  files.createIfNotExists(true)
-  //println("files are located at '+files.path")
-
   implicit def ctx = system.dispatcher
 
   val sessionController: SessionController = new InMemorySessionController

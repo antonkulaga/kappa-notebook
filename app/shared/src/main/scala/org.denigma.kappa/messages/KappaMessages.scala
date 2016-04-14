@@ -93,4 +93,4 @@ object KappaPath{
   lazy val empty = KappaPath("", Nil, None, active = false)
 }
 
-case class KappaPath(path: String, children: List[KappaPath], parent: Option[KappaPath], active: Boolean = false) extends KappaMessage
+case class KappaPath(path: String, children: List[KappaPath] = Nil, parent: Option[KappaPath] = None, active: Boolean = false) extends KappaMessage

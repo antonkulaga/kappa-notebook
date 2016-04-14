@@ -1,4 +1,5 @@
-<div id="Scroller" data-param-target="Notebook" data-view="Scroller" class="ui equal width segment grid"></div>
+<!--<div id="Scroller" data-param-target="Notebook" data-view="Scroller" class="ui equal width segment grid"></div>-->
+
 <section class="ui equal width blue secondary segment celled grid"  id="Notebook" data-view="Notebook">
       <div class="ui equal width row">
           <section class="four wide column">
@@ -8,8 +9,16 @@
                       <div id="graph-container" data-show-if="active"></div>
                       <img src="/resources/kappa.svg" data-hide-if="active">
                   </div>
-                  <div class="files" data-view="Files">
-
+                  <div class="ui accordion" data-view="Files">
+                      <div class="ui accordion">
+                          <div class="title active">
+                              <i class="dropdown icon"></i>
+                              What is a dog?
+                          </div>
+                          <div class="content active">
+                              <p class="transition visible" style="display: block !important;">A dog is a type of domesticated animal. Known for its loyalty and faithfulness, it can be found as a welcome guest in many households across the world.</p>
+                          </div>
+                      </div>
                   </div>
               </div>
           </section>

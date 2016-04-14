@@ -4,11 +4,8 @@ import java.io.InputStream
 
 import akka.actor.{Actor, ActorRef}
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
-import akka.stream.ActorMaterializer
 import akka.stream.actor.{ActorPublisher, ActorPublisherMessage}
 import akka.util.ByteString
-import cats.data.Xor
-import io.circe.generic.semiauto
 import boopickle.Default._
 import org.denigma.kappa.notebook.communication.SocketMessages.OutgoingMessage
 
@@ -18,6 +15,14 @@ import java.time._
 
 import akka.http.scaladsl.model._
 import org.denigma.kappa.messages._
+
+import better.files._
+import java.io.{File => JFile}
+
+class FileManager {
+
+}
+
 
 /**
   * This actor is creates for each user that connects via websocket
@@ -53,7 +58,7 @@ class UserActor(username: String, servers: ActorRef) extends KappaPicklers with 
 
 
   def readResource(path: String): Iterator[String] = {
-    val stream : InputStream = getClass.getResourceAsStream(path)
+    val stream: InputStream = getClass.getResourceAsStream(path)
     scala.io.Source.fromInputStream( stream ).getLines
   }
 
@@ -90,7 +95,8 @@ class UserActor(username: String, servers: ActorRef) extends KappaPicklers with 
          val d = Pickle.intoBytes[KappaMessage](code)
          send(BinaryMessage(ByteString(d)))
 
-        case model: RunModel=> run(model)
+        case LaunchModel(server, parameters)=> run(parameters)
+
         case other => log.error(s"unexpected $other")
       }
     //log.error(s"something binary received on $channel by $username")

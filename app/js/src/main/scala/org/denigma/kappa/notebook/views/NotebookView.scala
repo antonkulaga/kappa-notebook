@@ -19,11 +19,9 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
   self =>
 
-
   lazy val subscriber = WebSocketSubscriber("notebook", "guest" + Math.random() * 1000)
 
   val hub: KappaHub = KappaHub.empty
-
 
   val connector: WebSocketTransport = WebSocketTransport(subscriber, hub)
 

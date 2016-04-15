@@ -28,21 +28,25 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
         check {
           // check response for WS Upgrade headers
           isWebSocketUpgrade shouldEqual true
-          //val code = WebSim.Code(abc)
           val params = RunModel(abc, Some(1000), max_events = Some(10000))
-          val d: ByteBuffer = Pickle.intoBytes[WebSimMessage](params)
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](LaunchModel("", params))
           wsClient.sendMessage(pack(d))
-
           wsClient.inProbe.request(1).expectNextPF{
-            case BinaryMessage.Strict(bytes)  =>
-              val mes = Unpickle[WebSimMessage].fromBytes(bytes.asByteBuffer)
-              mes match {
-                case sim: SimulationResult=>
-                  println("console output: "+sim.simulationStatus.log_messages)
-              }
+            case BinaryMessage.Strict(bytes) if {
+              Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
+                case c: Connected=>  true
+                case _ => false} } =>
           }
-          //wsClient.sendCompletion()
-          //wsClient.expectCompletion()
+          wsClient.inProbe.request(1).expectNextPF{
+                        case BinaryMessage.Strict(bytes) if {
+                          Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
+                            case sim: SimulationResult=>
+                              println("console output: "+sim.simulationStatus.log_messages)
+                              true
+                            case _ =>
+                              false
+                          }        } =>
+                     }
         }
     }
 
@@ -58,14 +62,24 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
           val params = messages.LaunchModel("", RunModel(model, Some(1000), max_events = Some(10000)))
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](params)
           wsClient.sendMessage(pack(d))
+          wsClient.inProbe.request(1).expectNextPF{
+            case BinaryMessage.Strict(bytes) if {
+              Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
+                case c: Connected=>  true
+                case _ => false} } =>
+          }
 
           wsClient.inProbe.request(1).expectNextPF{
-            case BinaryMessage.Strict(bytes)  =>
+            case BinaryMessage.Strict(bytes)  if {
               val mes = Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer)
               mes match {
-                case SyntaxErrors(server, errors, params)=>
+                case SyntaxErrors(server, errors, _)=>
                   println("expected errors are: "+ errors)
+                  true
+                case _=> false
               }
+            } =>
+
           }
           //wsClient.sendCompletion()
           //wsClient.expectCompletion()

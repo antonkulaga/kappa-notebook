@@ -10,9 +10,6 @@ import rx.Rx.Dynamic
 
 import scala.collection.immutable.SortedSet
 
-
-//class ProjectView(elem: Element, root: Var[])
-
 class FilesView(val elem: Element, path: Rx[KappaPath]) extends BindableView with ItemsSeqView {
 
   override type Item = Var[KappaPath]

@@ -10,12 +10,11 @@ object MyStyles extends TextLayerStyles{
   import dsl._
 
   "#Notebook" -(
-    maxHeight(100 vh),
+    maxHeight(95 vh),
     minWidth(2500.0 px)
     )
 
   "#Scroller" -(
-    maxHeight(100 vh),
     minWidth(2500.0 px)
     )
 

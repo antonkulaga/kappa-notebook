@@ -1,14 +1,19 @@
 package org.denigma.kappa.notebook.views.visual
 
+import org.denigma.kappa.model.KappaModel
 /*
-class ForceLayout(val width:Double = 1000, val height:Double = 1000, val attractionMult:Double =  10/*4*/, val repulsionMult:Double =  0.6/*0.4*/) extends GraphLayout
+class ForceLayout(
+                   val width: Double = 1000,
+                   val height: Double = 1000,
+                   val attractionMult: Double =  10/*4*/,
+                   val repulsionMult: Double =  0.6/*0.4*/) extends GraphLayout
 {
 
-  override type Node = SemanticNode
-  override type Edge = SemanticEdge
+  type Node = NodeView[KappaModel.Agent]
+  type Edge = EdgeView[Int]
 
 
-  var info = Map.empty[Node,LayoutInfo]
+  var info = Map.empty[Node, LayoutInfo]
 
   private var _nodes:Seq[Node] = Seq.empty[Node]
   def nodes_=(value:Seq[Node]) = {
@@ -17,8 +22,8 @@ class ForceLayout(val width:Double = 1000, val height:Double = 1000, val attract
   }
 
 
-  def nodes:Seq[Node] = _nodes
-  var edges:Seq[Edge] = Seq.empty[Edge]
+  def nodes: Seq[Node] = _nodes
+  var edges: Seq[Edge] = Seq.empty[Edge]
 
 
 
@@ -68,7 +73,7 @@ class ForceLayout(val width:Double = 1000, val height:Double = 1000, val attract
   def repulse(nodes:Seq[Node],repulsion:Double) = {
     for {i <- 0 until  nodes.size} {
 
-      val no1 = nodes(i)
+      val no1: Node = nodes(i)
       val n1 = no1.view
       val l1 = info(no1)
       if(i==0) l1.setOffsets(0, 0, 0)
@@ -192,6 +197,6 @@ class ForceLayout(val width:Double = 1000, val height:Double = 1000, val attract
     layoutIterations = this.maxIterations
     active = false
   }
-}
 
+}
 */

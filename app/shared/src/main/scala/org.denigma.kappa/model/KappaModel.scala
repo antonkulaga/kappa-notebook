@@ -26,7 +26,7 @@ object KappaModel {
     }
   }
 
-  case class Agent(name: String, sides: Set[Side]) extends KappaElement
+  case class Agent(name: String, sides: Set[Side] = Set.empty) extends KappaElement
 
 }
 

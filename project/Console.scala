@@ -22,6 +22,7 @@ object Console
       | import io.circe.generic.auto._
       | import io.circe.parser
       | import io.circe.syntax._
+      | import org.denigma.kappa.notebook._
     """.stripMargin
 
   protected val akka =

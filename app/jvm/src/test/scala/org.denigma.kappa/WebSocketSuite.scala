@@ -21,6 +21,7 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
   def pack(buffer:  ByteBuffer): Strict = BinaryMessage(ByteString(buffer))
 
   "WebSockets" should {
+
     "get run messages and start simulations" in {
       val wsClient = WSProbe()
       // WS creates a WebSocket request for testing
@@ -87,6 +88,7 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
     }
 
     "provide a list of files" in {
+
 
     }
 

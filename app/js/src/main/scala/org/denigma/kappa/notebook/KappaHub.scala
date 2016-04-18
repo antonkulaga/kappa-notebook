@@ -18,7 +18,12 @@ object KappaHub{
   def empty: KappaHub = KappaHub(
     //Var(KappaProject()),
     Var("HelloWorld.ka"),
-    Var(KappaPath.empty),
+    //Var(KappaPath.empty),
+    Var(KappaPath("/files/",
+      children = List(
+        KappaPath("first folder"), KappaPath("second folder"), KappaPath("third folder"), KappaPath("fourth folder"))
+    )
+    ),
     Var(PositionLike.empty),
     Var(Defaults.code),
     Var(messages.Defaults.simulations),

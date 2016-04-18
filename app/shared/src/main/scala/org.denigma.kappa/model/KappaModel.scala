@@ -24,9 +24,13 @@ object KappaModel {
     def ~(state: State): Side = {
       copy(states = states + state)
     }
+
   }
 
-  case class Agent(name: String, sides: Set[Side] = Set.empty) extends KappaElement
+  case class Agent(name: String, sides: List[Side] = List.empty) extends KappaElement
+  {
+    lazy val sideSet = sides.toSet
+  }
 
 }
 

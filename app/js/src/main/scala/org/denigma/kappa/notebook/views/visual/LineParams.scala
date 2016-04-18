@@ -24,4 +24,4 @@ object Defs extends Randomizable
 
 }
 
-case class LineParams(lineColor: Double = Defs.color,headLength:Double = Defs.headLength, headWidth:Double = Defs.headWidth)
+case class LineParams(lineColor: Double = Defs.color,headLength: Double = Defs.headLength, headWidth: Double = Defs.headWidth)

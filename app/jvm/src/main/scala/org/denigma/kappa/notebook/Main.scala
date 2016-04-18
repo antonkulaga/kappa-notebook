@@ -44,8 +44,8 @@ object FileManager {
 class FileManager(root: File) {
 
   def listFolder(file: File, parent: Option[File] = None): KappaPath = {
-    val children = file.children.map{ case ch=> listFolder(ch, Some(file)) }.toList
-    KappaPath(file.pathAsString, children, parent.map(f=>KappaPath(f.pathAsString)))
+    val children: List[KappaPath] = file.children.map{ case ch => listFolder(ch, Some(file)) }.toList
+    KappaPath(file.pathAsString, children, parent.map(f => KappaPath(f.pathAsString)))
   }
 
 }

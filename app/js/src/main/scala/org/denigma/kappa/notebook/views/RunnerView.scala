@@ -18,13 +18,19 @@ class RunnerView(val elem: Element, val name: Var[String], hub: KappaHub) extend
   val parameters = Var(hub.runParameters.now)
 
   def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
+
   def opt(n: Double): Option[Double] = if(n > 0.0) Some(n) else None
 
   val events: Var[Int] = Var(10000)
+
   var time: Var[Double] = Var(0.0)
+
   val points: Var[Int] = Var(250)
+
   val fileName = Var("model.ka")
+
   val implicitSignature = Var(true)
+
   val gluttony: Var[Boolean] = Var(false)
 
   val output: Rx[Unit] = Rx{

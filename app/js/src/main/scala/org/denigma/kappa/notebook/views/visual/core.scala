@@ -1,5 +1,6 @@
 package org.denigma.kappa.notebook.views.visual
 
+import org.denigma.kappa.model.KappaModel
 import org.denigma.threejs.extras.HtmlObject
 import org.denigma.threejs.{ArrowHelper, Object3D, Vector3}
 import org.scalajs.dom
@@ -18,6 +19,55 @@ class HtmlObject(element: Element) extends Object3D
 {
 
 }
+
+
+class KappaNode(val data: KappaModel.Agent, val view: HtmlSprite) {
+
+  val layoutInfo = new LayoutInfo()
+}
+
+class KappaEdge(val from: KappaNode, val to: KappaNode, val view: HtmlSprite, lp: LineParams = LineParams()) {
+
+  def sourcePos: Vector3 = from.view.position
+  def targetPos: Vector3 = to.view.position
+  def middle = new Vector3((sourcePos.x+targetPos.x)/2,(sourcePos.y+targetPos.y)/2, (sourcePos.z+targetPos.z)/2)
+
+  def direction = new Vector3().subVectors(targetPos, sourcePos)
+
+  protected def posArrow() = {
+    arrow.position = sourcePos
+    arrow.setDirection(direction.normalize())
+    arrow.setLength(direction.length()-10, lp.headLength, lp.headWidth)
+  }
+
+  protected def posSprite() = {
+    val m = middle
+    view.position.set(m.x, m.y, m.z)
+  }
+
+  import lp._
+  val arrow =  new ArrowHelper(direction.normalize(), sourcePos, direction.length(), lineColor, headLength, headWidth)
+  arrow.addEventListener("mouseover", this.onLineMouseOver _)
+  arrow.addEventListener("mouseout", this.onLineMouseOver _)
+
+  def onLineMouseOver(event: Any): Unit = {
+    this.view.visible = true
+    dom.console.log("onMouseOver")
+  }
+
+  def onLineMouseOut(event: Any): Unit = {
+    this.view.visible = false
+    dom.console.log("onMouseOut")
+  }
+
+  def update() = {
+    posArrow()
+    posSprite()
+  }
+
+  this.update()
+}
+
 
 /*
 

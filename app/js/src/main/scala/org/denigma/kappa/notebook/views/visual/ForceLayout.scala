@@ -8,7 +8,7 @@ object ForceLayoutParams {
 
   lazy val default2D = ForceLayoutParams(10, 1, 0.01, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(10, 1, 0.01, new Vector3(0.0, 0.0, 0.0))
+  lazy val default3D = ForceLayoutParams(10, 1, 0.02, new Vector3(0.0, 0.0, 0.0))
 
 }
 case class ForceLayoutParams(

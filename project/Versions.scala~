@@ -30,9 +30,9 @@ trait OtherJVM {
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.4"
+	val akka = "2.4.3"
 
-	val circeHttp = "1.6.0"
+	val circeHttp = "1.5.4"
 
 	val libSBOLj = "2.0.0"
 
@@ -65,7 +65,7 @@ trait ScalaJSVersions {
 trait SharedVersions
 {
 
-	val circe = "0.4.1"
+	val circe = "0.4.0"
 
 	val scalaTags = "0.5.4"
 

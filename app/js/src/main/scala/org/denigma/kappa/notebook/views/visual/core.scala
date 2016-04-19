@@ -1,24 +1,9 @@
 package org.denigma.kappa.notebook.views.visual
 
 import org.denigma.kappa.model.KappaModel
-import org.denigma.threejs.extras.HtmlObject
-import org.denigma.threejs.{ArrowHelper, Object3D, Vector3}
+import org.denigma.threejs.extras.HtmlSprite
+import org.denigma.threejs.{ArrowHelper, Vector3}
 import org.scalajs.dom
-import org.scalajs.dom.raw.{Element, HTMLElement}
-import rx.Var
-
-import scala.scalajs.js.annotation.JSName
-
-@JSName("THREE.CSS3DSprite")
-class HtmlSprite(val element: Element) extends HtmlObject(element){
-
-}
-
-@JSName("THREE.CSS3DObject")
-class HtmlObject(element: Element) extends Object3D
-{
-
-}
 
 
 class KappaNode(val data: KappaModel.Agent, val view: HtmlSprite) {

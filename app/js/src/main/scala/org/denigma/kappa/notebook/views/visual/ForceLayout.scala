@@ -136,7 +136,6 @@ class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double
 
 
   override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[KappaNode], edges: Vector[KappaEdge], forceConstant: Double) = {
-    println(width, height)
     val repulsion = repulsionMult * forceConstant
     val rect = border(width *  mult, height * mult)
     for {

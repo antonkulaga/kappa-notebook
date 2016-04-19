@@ -14,8 +14,6 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 trait OtherJVM {
 
-	val akkaHttp = "2.4.3"
-
 	val bcrypt = "2.4"
 
 	val ammonite = "0.5.7"
@@ -53,7 +51,7 @@ trait ScalaJSVersions {
 
 	val codemirrorFacade = "5.11-0.7"
 
-	val threejsFacade = "0.0.74-0.1.6"
+	val threejsFacade = "0.0.74-0.1.7"
 
 	val d3jsFacade = "0.3.1"
 

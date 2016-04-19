@@ -46,7 +46,7 @@ class KappaCodeEditor(val elem: Element, val hub: KappaHub, val updates: Var[Edi
         hub.kappaCursor() = Some(editor, new PositionLike {override val line: Int = cur
           override val ch: Int = c.ch.toInt
         })
-      case Some((e, prev)) if prev.line !=cur && prev.ch != c.ch.toInt && e != ed =>
+      case Some((e, prev)) if prev.line !=cur || prev.ch != c.ch.toInt || e != ed =>
         editor.addLineClass(cur, "background", "focused")
         editor.removeLineClass(prev, "background", "focused")
         hub.kappaCursor() = Some(editor, new PositionLike {override val line: Int = cur

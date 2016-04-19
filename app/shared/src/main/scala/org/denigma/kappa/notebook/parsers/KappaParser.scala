@@ -12,7 +12,7 @@ class KappaParser extends CommentLinksParser
   val side: P[Side] = P(text.rep(min = 1).! ~ state.rep).map{ case (name, states) => Side(name, states.toSet) }
 
   val agent: P[Agent] = P(text.rep(min = 1).! ~ "(" ~ side.? ~ (optSpaces ~ "," ~ optSpaces ~side).rep ~ ")").map{
-    case (name, sideOpt, sides2) => Agent(name,  sides2.toList)
+    case (name, sideOpt, sides2) => Agent(name,  sideOpt.map(List(_)).getOrElse(List.empty[Side]) ::: sides2.toList)
   }
 
   val agentDecl: P[Agent] = P(optSpaces ~ "%agent:" ~ spaces ~ agent)
@@ -21,11 +21,21 @@ class KappaParser extends CommentLinksParser
     case (ag, agents) => Pattern(agents.toSet + ag)
   }
 
+  val coeffs = P("@")
+
+
   val bothDirections = P("<-").map(v=>Right2Left)
   val left2right = P("->").map(v=>Left2Right)
   val right2left = P("<-").map(v=>Right2Left)
 
   val direction: P[Direction] = P(optSpaces ~ bothDirections | left2right | right2left ~ optSpaces)
+
+  val rule = P("'" ~ text.rep(min = 1).! ~ "'" ~ optSpaces ~  rulePart ~ direction ~ rulePart ~ spaces ~ coeffs).map{
+    case (name, left, BothDirections, right) => Rule(name, left, right, 0)
+    case (name, left, Left2Right, right) => Rule(name, left, right, 0)
+    case (name, left, Right2Left, right) => Rule(name, left, right, 0)
+  }
+
 
   /*
   val rule = P("'" ~ text.! ~ "'" ~ rulePart ~ direction ~ rulePart ).map{

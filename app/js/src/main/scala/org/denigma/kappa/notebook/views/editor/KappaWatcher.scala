@@ -1,6 +1,7 @@
 package org.denigma.kappa.notebook.views.editor
 
-import org.denigma.codemirror.{Editor, PositionLike}
+import fastparse.core.Parsed
+import org.denigma.codemirror.{Editor, LineInfo, PositionLike}
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.Side
 import org.denigma.kappa.notebook.parsers.KappaParser
@@ -8,7 +9,9 @@ import org.denigma.kappa.notebook.views.visual._
 import org.scalajs.dom.svg.SVG
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
-
+import org.denigma.binding.extensions._
+import org.denigma.threejs.extras.HtmlSprite
+import rx.Rx.Dynamic
 
 object Tester {
 
@@ -75,6 +78,31 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
     //if(agents.)
     Vector(forceLayout)
   }
+
+  val text: Rx[String] = cursor.map{
+    case None => ""
+    case Some((ed: Editor, lines)) =>
+      val t = ed.getDoc().getLine(lines.line)
+      println("lines is == "+t)
+      t
+ }
+
+  text.onChange(parseText)
+
+  protected def parseText(line: String) = {
+    if(line=="") {
+
+    } else {
+      agentParser.parse(line) match {
+        case Parsed.Success(result, index) =>
+          val value = SortedSet(result)
+          if(agents.now != value) agents() = value
+
+        case Parsed.Failure(parser, index, extra) =>
+
+      }
+    }
+  }
   //updates.foreach(changeHandler) //subscription
   /*
 
@@ -85,15 +113,6 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
   }
 
 
-  protected def searchForAgents(editor: Editor, line: String, num: Int) = {
-    agentParser.parse(line) match {
-      case Parsed.Success(result, index) =>
-        println("found agent: " + result)
-        agents() = SortedSet(result)
-
-      case Parsed.Failure(parser, index, extra) =>
-    }
-  }
 
   protected def changeHandler(editor: Editor, lines: Seq[(Int, String)]) =
   {

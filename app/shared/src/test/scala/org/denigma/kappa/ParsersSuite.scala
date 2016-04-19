@@ -11,11 +11,7 @@ import org.scalatest.{Inside, Matchers, WordSpec}
 class ParsersSuite extends WordSpec with Matchers with Inside  {
 
   "Kappa parser" should {
-    /*
-    "parse charts" in {
 
-    }
-    */
     "parse agents" in {
       import KappaModel._
       val parser = new KappaParser
@@ -29,7 +25,27 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
       val A = "%agent: A(x,c) # Declaration of agent A"
 
       inside(parser.agentDecl.parse(A)) {
-        case res @ Parsed.Success(value, index: Int)  if value==KappaModel.Agent("A", Set(Side("x"), Side("c"))) =>
+        case res @ Parsed.Success(v, index: Int)  if v==KappaModel.Agent("A", List(Side("x"), Side("c"))) =>
+      }
+
+    }
+
+    "parse rules" in {
+      import KappaModel._
+      val parser = new KappaParser
+      val wrong = "'a.b'qwe A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B "
+      inside(parser.rule.parse(wrong)) {
+        case failure: Parsed.Failure =>
+      }
+      val right = "'a.b' A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate'"
+      inside(parser.rule.parse(right)) {
+        case res @ Parsed.Success(v, index: Int) =>
+          println("********************************************************")
+          println(value)
+        case failure: Parsed.Failure => println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+          println(failure)
+
+
       }
 
     }
@@ -51,7 +67,7 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
 
       inside(parser.linkAfterComment.parse(linkAfterComment)) {
         case Parsed.Success(value: String, index: Int) if value=="http://hello.world" =>
-          println("parsed comment = "+value)
+          //println("parsed comment = "+value)
       }
 
     }

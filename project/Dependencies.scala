@@ -22,9 +22,9 @@ object Dependencies {
 
 		"org.denigma" %%% "akka-http-extensions" % Versions.akkaHttpExtensions,
 
-		"com.typesafe.akka" %% "akka-http-testkit" % Versions.akkaHttp % Test,
+		"com.typesafe.akka" %% "akka-http-testkit" % Versions.akka % Test,
 
-		"com.typesafe.akka" %% "akka-stream-testkit" % Versions.akkaHttp % Test,
+		"com.typesafe.akka" %% "akka-stream-testkit" % Versions.akka % Test,
 
 		"ch.qos.logback" % "logback-classic" % Versions.logback,
 

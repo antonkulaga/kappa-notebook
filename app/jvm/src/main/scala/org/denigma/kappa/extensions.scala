@@ -14,7 +14,6 @@ object extensions {
   implicit class FlowOpsFutureExt[Inp, T, M](val flow: Flow[Inp, Future[T], M]) {
     def sync: Flow[Inp, T, M] = flow.mapAsync(1)(identity(_))
     def async(parallel: Int): Flow[Inp, T, M] = flow.mapAsync(parallel)(identity(_))
-
   }
 
 

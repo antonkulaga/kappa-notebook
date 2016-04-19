@@ -22,6 +22,21 @@ object EditorUpdates {
   * @param updates
   */
 case class EditorUpdates(editorOpt: Option[Editor], updates: List[EditorChangeLike])
+{
+
+  lazy val changedLinesOpt: Option[(Editor, Seq[(Int, String)])] =
+    for {
+      editor <- editorOpt
+      changed = updates
+    }
+      yield {
+        val (from, to) = changed.foldLeft( (Int.MaxValue, 0)) {
+          case (acc, ch) => ch.mergeSpans(acc)
+        }
+        val lines = from to to
+        editor -> editor.linesText(lines)
+      }
+}
 
 trait EditorView extends BindableView with EditorMaker with WithMirrors{
 

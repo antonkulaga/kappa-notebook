@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.views.visual
 
 import org.denigma.kappa.model.KappaModel
-import org.denigma.threejs.Vector3
+import org.denigma.threejs.{PerspectiveCamera, Vector3}
 import rx._
 
 object ForceLayoutParams {
@@ -28,7 +28,7 @@ class ForceLayout(
 
                    val graphNodes: Var[Vector[KappaNode]],
                    val graphEdges: Var[Vector[KappaEdge]],
-                   val width: Double, val height: Double, params: ForceLayoutParams, forces: List[Force] = Nil
+                   params: ForceLayoutParams, forces: List[Force] = Nil
                    ) extends GraphLayout
 {
 
@@ -60,7 +60,7 @@ class ForceLayout(
 
   var EPSILON = 0.00001
   var layoutIterations = 0
-  var temperature = width / 50.0
+  var temperature = 1000 / 50.0
   
 
   private var _active = false
@@ -70,14 +70,15 @@ class ForceLayout(
 
   def active = _active
 
-  def start(): Unit = {
+  def start(width: Double, height: Double, camera: PerspectiveCamera): Unit = {
+    var temperature = width / 50.0
     layoutIterations = 0
     active = true
   }
 
-  def tick() = if(keepGoing(nodes.size))
+  def tick(width: Double, height: Double, camera: PerspectiveCamera) = if(keepGoing(nodes.size))
   {
-    var forceConstant = Math.sqrt(this.height * this.width / nodes.size)
+    var forceConstant = Math.sqrt(height * width / nodes.size)
     val repulsion = params.repulsionMult * forceConstant
     this.repulse(nodes, repulsion)
     val attraction = params.attractionMult * forceConstant
@@ -89,7 +90,6 @@ class ForceLayout(
     this.update(this.edges)
 
   }
-  
   
 
   def repulse(nodes: Vector[Node], repulsion: Double) = {

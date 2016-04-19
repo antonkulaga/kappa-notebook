@@ -46,7 +46,7 @@ class KappaEdge(val from: KappaNode, val to: KappaNode, val view: HtmlSprite, lp
   }
 
   import lp._
-  val arrow =  new ArrowHelper(direction.normalize(), sourcePos, direction.length(), lineColor, headLength, headWidth)
+  val arrow = new ArrowHelper(direction.normalize(), sourcePos, direction.length(), lineColor, headLength, headWidth)
   arrow.addEventListener("mouseover", this.onLineMouseOver _)
   arrow.addEventListener("mouseout", this.onLineMouseOver _)
 

@@ -26,6 +26,11 @@ object KappaModel {
     }
 
   }
+  object Agent {
+    implicit val ordering = new Ordering[Agent] {
+      override def compare(x: Agent, y: Agent): Int = x.name.compare(y.name)
+    }
+  }
 
   case class Agent(name: String, sides: List[Side] = List.empty) extends KappaElement
   {

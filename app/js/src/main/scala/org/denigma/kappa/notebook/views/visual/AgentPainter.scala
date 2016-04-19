@@ -1,26 +1,32 @@
 package org.denigma.kappa.notebook.views.visual
 
 
-import org.denigma.binding.extensions.sq
-import org.denigma.binding.views.BindableView
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.Side
-import org.denigma.threejs.{Object3D, Vector3}
-import org.denigma.threejs.extensions.Container3D
-import org.denigma.threejs.extensions.controls.JumpCameraControls
 import org.scalajs.dom
-import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw._
-import org.scalajs.dom.svg.{Defs, SVG}
-import rx._
+import org.scalajs.dom.svg.SVG
 
 import scala.collection.immutable.::
 import scalatags.JsDom
-import scalatags.JsDom.{TypedTag, all}
-import scalatags.JsDom.svgAttrs
-import svgAttrs._
-import scalatags.JsDom.svgTags._
-import scalatags.JsDom.implicits._
+import scalatags.JsDom.TypedTag
+import scalatags.JsDom.all.onclick
+
+object SvgBundle {
+  import scalatags._
+  import scalatags.JsDom._
+
+  object all extends Cap
+    with jsdom.SvgTags
+    with DataConverters
+    with Aggregate
+    with LowPriorityImplicits {
+    object attrs extends Cap with SvgAttrs
+  }
+}
+import SvgBundle.all._
+import SvgBundle.all.attrs._
+
 
 object Rectangle {
 
@@ -88,7 +94,6 @@ object SideBorder {
 
     case w =>
       val (top, list, _) = splitByWidth(sides, parentWidth, padding)
-      //println(splitByWidth(sides, parentWidth, padding))
       list match {
 
         case Nil =>  SideBorder(top, Nil) //if right is left better to add it to the bottom
@@ -120,17 +125,19 @@ case class SideBorder(top: List[(Side, Rectangle)], bottom: List[(Side, Rectangl
 
 class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
 
+
   val sideFontSize = agentFontSize / 1.6
 
   val sidePadding = agentPadding / 1.6
 
   type Locatable = SVGElement with SVGLocatable
 
-  protected def getTextBox(str: String, fSize: Double): Rectangle = {
-    getBox(text(str, fontSize := fSize).render)
+  def getTextBox(str: String, fSize: Double): Rectangle = {
+    val svg = text(str, fontSize := fSize)
+    getBox(svg.render)
   }
 
-  protected def getBox(e: Locatable): Rectangle = {
+  def getBox(e: Locatable): Rectangle = {
     s.appendChild(e)
     val box = e.getBBox()
     s.removeChild(e)
@@ -154,9 +161,7 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
 
   def drawAgent(agent: KappaModel.Agent): TypedTag[SVG] = {
     val b: Rectangle = getTextBox(agent.name, agentFontSize)
-    //val (w, h) = (b.width + agentPadding * 2, b.height + agentPadding)
-    drawAgent(agent, b.copy(width = b.width, height = b.height))
-    //val agent = dra this.addNode(id, data, new ViewOfNode(data, new HtmlSprite(element), colorName))
+    drawAgent(agent, b)
   }
 
   /**
@@ -174,7 +179,6 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
 
       case ( (hs, hbox) :: tail, (sd, box)) =>
         val nx = hbox.right + padding * 2
-        //println("NX = "+ nx+" and x = "+hbox.left)
         (sd, box.copy(x = nx))::(hs, hbox)::tail
     }
     val totalWidth = rev.head._2.right
@@ -188,7 +192,7 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
   }
 
   protected def renderWithSides(agent: KappaModel.Agent, box: Rectangle, border: SideBorder): TypedTag[SVG] = {
-    require(border.top.nonEmpty, "SideBorder should always have an element on top")
+    require(border.top.nonEmpty, s"SideBorder should always have an element on top;\n current border is $border \nand agent is $agent")
 
     val rect = Rectangle(box.width, box.height).withPadding(agentPadding * 2, agentPadding).copy(x = 0)
     val (rectTop, mergedTop, topSides)= renderTop(border, rect, rect)
@@ -286,11 +290,6 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
       }
       val border = SideBorder.extract(box.width, boxes.reverse, w, sidePadding)
       renderWithSides(agent, box, border)
-/*
-      val rect = Rectangle(box.width, box.height).withPadding(agentPadding * 2, agentPadding)
-      val agentLabel = drawLabel(agent.name, rect, box, agentFontSize, agentPadding * 2, agentPadding)
-      drawSprite(rect.width, rect.height, List(agentLabel))
-      */
   }
 
   protected def drawLabel(str: String, rectangle: Rectangle, textBox: Rectangle,
@@ -300,8 +299,8 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
       stroke := "blue",
       fill := s"url(#${grad})",
       strokeWidth := st,
-      svgAttrs.height := rectangle.height,
-      svgAttrs.width := rectangle.width,
+      height := rectangle.height,
+      width := rectangle.width,
       rx := 50, ry := 50
     )
     val startX = (rectangle.width - textBox.width) / 2
@@ -310,10 +309,11 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
     import scalatags.JsDom.implicits._
 
     svg(
-      svgAttrs.height := rectangle.height + st,
-      svgAttrs.width := rectangle.width + st,
-      svgAttrs.x := rectangle.x,
-      svgAttrs.y := rectangle.y,
+      height := rectangle.height + st,
+      width := rectangle.width + st,
+      x := rectangle.x,
+      y := rectangle.y,
+      onclick := { ev: MouseEvent=> println("hello")},
       r, txt
     )
   }
@@ -321,8 +321,8 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
   protected def drawSprite(w: Double, h: Double, children: List[JsDom.Modifier]): TypedTag[SVG] = {
     val decs: JsDom.Modifier = defs(agentGradient, sideGradient)
     val params = List(
-      svgAttrs.height := h,
-      svgAttrs.width := w,
+      height := h,
+      width := w,
       decs
     ) ++ children
     svg.apply(params: _*)

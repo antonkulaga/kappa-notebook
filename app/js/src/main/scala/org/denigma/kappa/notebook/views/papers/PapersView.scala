@@ -160,8 +160,12 @@ class PublicationView(val elem: Element, selected: Var[String], val location: Va
       location() = location.now.copy(page = b.page - 1)
     }
     addNugget.triggerLater{
-      val position = hub.kappaCursor
-      hub.kappaCode() = hub.kappaCode.now.withInsertion(position.now.line, comments.now)
+      hub.kappaCursor.now match
+      {
+        case Some((ed, position)) =>
+          hub.kappaCode() = hub.kappaCode.now.withInsertion(position.line, comments.now)
+        case None =>
+      }
     }
 
     scale.onChange{

@@ -69,18 +69,10 @@ class CommentsWatcher(updates: Var[EditorUpdates], papers: Var[Map[String, Bookm
 
 
   protected def changeHandler(upd: EditorUpdates) =
-  for {
-    editor <- upd.editorOpt
-    changed = upd.updates
-  }
   {
-    val (from, to) = changed.foldLeft( (Int.MaxValue, 0)) {
-      case (acc, ch) => ch.mergeSpans(acc)
-    }
-    val lines = from to to
-    //if(lines.nonEmpty)  editor.clearGutter("breakpoints")
     for {
-      (num, line) <- editor.linesText(lines)
+      (editor, changedLines) <- upd.changedLinesOpt
+      (num, line) <- changedLines
     } {
       searchForLinks(editor, line , num)
       //searchForPages(editor, line, num)

@@ -1,5 +1,7 @@
 package org.denigma.kappa.notebook.views.visual
 
+import org.denigma.threejs.PerspectiveCamera
+
 trait GraphLayout
 {
 
@@ -11,11 +13,9 @@ trait GraphLayout
   def edges: Vector[Edge]
   */
 
-  def width: Double
-  def height: Double
   def active: Boolean
-  def tick(): Unit
+  def tick(width: Double, height: Double, camera: PerspectiveCamera): Unit //ticks
   def stop(): Unit
   def pause(): Unit
-  def start(): Unit
+  def start(width: Double, height: Double, camera: PerspectiveCamera): Unit
 }

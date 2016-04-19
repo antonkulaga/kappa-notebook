@@ -39,13 +39,20 @@ class KappaCodeEditor(val elem: Element, val hub: KappaHub, val updates: Var[Edi
 
   protected def onCursorActivity(ed: Editor) = {
     val c = doc.getCursor()
-    val (prev, cur) = (hub.kappaCursor.now.line, c.line.toInt)
-    if(prev != cur) {
-      editor.addLineClass(cur, "background", "focused")
-      editor.removeLineClass(prev, "background", "focused")
-      hub.kappaCursor() = new PositionLike {override val line: Int = cur
-        override val ch: Int = c.ch.toInt
-      }
+    val cur = c.line.toInt
+    hub.kappaCursor.now match {
+      case None=>
+        editor.addLineClass(cur, "background", "focused")
+        hub.kappaCursor() = Some(editor, new PositionLike {override val line: Int = cur
+          override val ch: Int = c.ch.toInt
+        })
+      case Some((e, prev)) if prev.line !=cur && prev.ch != c.ch.toInt && e != ed =>
+        editor.addLineClass(cur, "background", "focused")
+        editor.removeLineClass(prev, "background", "focused")
+        hub.kappaCursor() = Some(editor, new PositionLike {override val line: Int = cur
+          override val ch: Int = c.ch.toInt
+        })
+      case _ => //do nothing
     }
   }
 
@@ -100,10 +107,10 @@ class KappaCodeEditor(val elem: Element, val hub: KappaHub, val updates: Var[Edi
   protected def updateCursor() = {
     val cur: Position = doc.getCursor()
     //println(hub.kappaCursor.now + " => "+doc.getCursor())
-    hub.kappaCursor() = new PositionLike{
+    hub.kappaCursor() = Some(this.editor -> new PositionLike{
       override val ch: Int = cur.ch.toInt
       override val line: Int = cur.line.toInt
-    }
+    })
   }
 /*
   override def withBinder(fun: this.type => ViewBinder): this.type  = withBinders(fun(this)::binders)

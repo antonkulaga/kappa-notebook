@@ -1,6 +1,6 @@
 package org.denigma.kappa.notebook
 
-import org.denigma.codemirror.PositionLike
+import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers.Bookmark
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Var
@@ -24,7 +24,7 @@ object KappaHub{
         KappaPath("first folder"), KappaPath("second folder"), KappaPath("third folder"), KappaPath("fourth folder"))
     )
     ),
-    Var(PositionLike.empty),
+    Var(None),
     Var(Defaults.code),
     Var(messages.Defaults.simulations),
     Var(messages.Defaults.runModel),
@@ -39,7 +39,7 @@ object KappaHub{
 case class KappaHub(
                      name: Var[String],
                      path: Var[KappaPath],
-                     kappaCursor: Var[PositionLike],
+                     kappaCursor: Var[Option[(Editor, PositionLike)]],
                      kappaCode: Var[Code],
                      //kappaCode: Var[Map[String, WebSim.Code]],
                      simulations: Var[Map[(Int, RunModel), SimulationStatus]],

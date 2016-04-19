@@ -20,11 +20,12 @@ class LayoutInfo
   }
 
   def setPoses(x: Double, y: Double, z: Double = 0) = { pos.x= x; pos.y = y; pos.z = z}
+
   def setOffsets(x: Double, y: Double, z: Double = 0) = { offset.x= x; offset.y = y; offset.z = z}
 
-  def clean(){
-    setPoses(0,0,0)
-    setOffsets(0,0,0)
+  def clean() = {
+    setPoses(0, 0, 0)
+    setOffsets(0, 0, 0)
     force = 0
   }
 }

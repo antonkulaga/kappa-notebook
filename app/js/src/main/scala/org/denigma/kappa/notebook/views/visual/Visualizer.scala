@@ -21,7 +21,7 @@ class Visualizer (val container: HTMLElement,
                   val layouts: Rx[Vector[GraphLayout]],
                   override val distance: Double
                  )
-  extends Container3D with Randomizable
+  extends Container3D
 {
 
   val layoutUpdates = layouts.removedInserted
@@ -31,11 +31,8 @@ class Visualizer (val container: HTMLElement,
     added.foreach(r=>r.start(width, height, camera))
   }
 
-  override def defRandomDistance = distance * 0.6
 
   override val controls: JumpCameraControls = new  JumpCameraControls(camera, this.container, scene, width, height)
-
-  def randomPos(obj: Object3D): Vector3 =  obj.position.set(rand(),rand(),rand())
 
   def onMouseDown(obj: Object3D)(event: MouseEvent ):Unit =  if(event.button==0)
   {
@@ -53,7 +50,6 @@ class Visualizer (val container: HTMLElement,
 
 
   def addSprite(htmlSprite: HtmlSprite) = {
-    randomPos(htmlSprite)
     cssScene.add(htmlSprite)
   }
 

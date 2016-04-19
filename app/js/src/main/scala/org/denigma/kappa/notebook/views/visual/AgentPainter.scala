@@ -66,6 +66,7 @@ case class Rectangle(x: Double, y: Double, width: Double, height: Double) {
   def centerVert(rect: Rectangle) = copy(y = rect.oy - 0.5 * height)
 
   def withPadding(horPadding: Double, verPadding: Double): Rectangle = copy(height = height + verPadding * 2, width = width + horPadding *2)
+
 }
 
 object SideBorder {

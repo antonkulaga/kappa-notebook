@@ -32,7 +32,7 @@ class GraphView(val elem: Element, val nodes: Rx[Vector[KappaNode]], val edges: 
     defaultWidth,
     defaultHeight,
     layouts,
-    800.0
+    500.0
   )
 
   protected def subscribeUpdates() = {

@@ -46,7 +46,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val edges = Var(Vector.empty[KappaEdge])
 
-  lazy val agentFontSize: Double = 20
+  lazy val agentFontSize: Double = 24
 
   lazy val padding: Double= 10
 
@@ -58,7 +58,18 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
     new KappaNode(agent, sp)
   }
 
-  protected val forceLayout = new ForceLayout(nodes, edges, ForceLayoutParams.default3D)
+  val graivityForce = new Gravity(ForceLayoutParams.default2D.attractionMult, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
+
+  val borderForce = new BorderForce(ForceLayoutParams.default2D.repulsionMult , 100, 2, ForceLayoutParams.default2D.center)
+
+
+  val forces: Vector[Force[KappaNode, KappaEdge]] = Vector(
+    new Repulsion(ForceLayoutParams.default2D.repulsionMult),
+    new Attraction(ForceLayoutParams.default2D.attractionMult),
+    borderForce
+  )
+
+  protected val forceLayout = new ForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)
 
   val layouts = Rx{
     //if(agents.)

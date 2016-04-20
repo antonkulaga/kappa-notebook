@@ -35,6 +35,23 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
 
     }
 
+    "parse tokens" in {
+      import KappaModel._
+      val parser = new KappaParser
+      val wrong = "token: atp"
+      inside(parser.tokenDeclaration.parse(wrong)) {
+        case failure: Parsed.Failure =>
+      }
+
+
+      val right = "%token: atp"
+      inside(parser.tokenDeclaration.parse(right)) {
+        case Parsed.Success("atp", index) =>
+
+      }
+
+    }
+
     "parse rules" in {
       import KappaModel._
       val parser = new KappaParser
@@ -44,9 +61,17 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
       }
       val right = "'a.b' A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate'"
       inside(parser.rule.parse(right)) {
-        case res @ Parsed.Success(v, index: Int) if v.left.agents =>
+        case res @ Parsed.Success(v, index: Int) =>
       }
 
+      val withLink = "'a binds to b' A(x),B(x),C(x!_) <-> A(x!1),B(x!1),C(x!_) @ 'on_rate','off_rate'"
+      inside(parser.rule.parse(withLink)) {
+        case res @ Parsed.Success(v, index: Int) if v.name == "a binds to b"
+          && v.left.agents.length ==3
+          && v.right.agents.length ==3
+          && v.right.agents.tail.head == Agent("B", List(Side("x", Set(), Set("1"))))
+        =>
+      }
     }
 
     "parse comments" in {
@@ -80,7 +105,7 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
 
       val parser = new KappaParser
       inside(parser.number.parse("10")) { case Parsed.Success(10, index: Int)=>  }
-      inside(parser.number.parse("-10")) { case Parsed.Success(10, index: Int)=>  }
+      inside(parser.number.parse("-10")) { case Parsed.Success(-10, index: Int)=>  }
       inside(parser.number.parse("10.1234")) { case Parsed.Success(10.1234, index: Int)=>  }
       inside(parser.number.parse("10E2")) { case Parsed.Success(10E2, index: Int)=>  }
       inside(parser.number.parse("10.9E3")) { case Parsed.Success(10.9E3, index: Int)=>  }

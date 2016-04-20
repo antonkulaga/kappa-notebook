@@ -18,20 +18,27 @@ object KappaModel {
   }
   case class Pattern(agents: List[Agent]) extends KappaElement
   {
+    protected def isNamed(key: String) = key != "_" && key !="?"
+
     protected lazy val linkTuples: List[(String, (Side, Agent))] = for{
       a <- agents
       (name, side) <-a.links
     } yield(name, (side, a))
 
+    //TODO: think about a potential bug with two ? and _
     lazy val allLinks: Map[String, List[(Side, Agent)]] = linkTuples.groupBy(_._1).map{ case (key, value) => key -> value.map(v=>v._2)}
 
     lazy val danglingLinks: Map[String, List[(Side, Agent)]] = allLinks.collect{
-      case (key, value) if value.length < 2 => key -> value
+      case (key, value) if value.length < 2 && isNamed(key) => key -> value
     }
 
     lazy val duplicatedLinks: Map[String, List[(Side, Agent)]] = allLinks.collect{
-      case (key, value) if value.length > 2 => key -> value
+      case (key, value) if value.length > 2 && isNamed(key) => key -> value
     }
+
+    lazy val linksSomewhere = allLinks.getOrElse("_", List.empty)
+
+    lazy val unclearLinks = allLinks.getOrElse("?", List.empty)
 
     lazy val links: Map[String, Link] = allLinks.collect {
       case (key, (side1, agent1)::(side2, agent2)::Nil)  =>
@@ -39,11 +46,11 @@ object KappaModel {
     }
   }
 
-  case class Rule(name: String, left: Pattern, right: Pattern, forward: Double, backward: Option[Double] = None) {
-    val added = left.agents.diff(right.agents)
-    val removed = right.agents.diff(left.agents)
-
-    def atomic: Boolean = added.size==1 || removed.size == 1
+  case class Rule(name: String, left: Pattern, right: Pattern, forward: Either[String, Double], backward: Option[Either[String, Double]] = None) {
+    lazy val added = left.agents.diff(right.agents)
+    lazy val removed = right.agents.diff(left.agents)
+    //lazy val kept = right
+    //def atomic: Boolean = added.size==1 || removed.size == 1
   }
 
   case class State(name: String) extends KappaElement
@@ -71,7 +78,7 @@ object KappaModel {
 
     lazy val linkMap = links.toMap
 
-    def hasDuplicates = links.size != linkMap.size
+    def hasDuplicates = links.size > linkMap.size
   }
 
 }

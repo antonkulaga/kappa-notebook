@@ -88,7 +88,6 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       t
  }
 
-
   text.onChange(parseText)
 
   protected def refreshAgents(value: SortedSet[Agent], ls: Vector[GraphLayout] = Vector(forceLayout)) = if(value!=agents.now) {
@@ -131,17 +130,6 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
   changeOptions.foreach{
     case Some((editor, lines))=> changeHandler(editor, lines)
     case other => //nothing
-  }
-
-
-
-  protected def changeHandler(editor: Editor, lines: Seq[(Int, String)]) =
-  {
-    for {
-      (num, line) <- lines
-    } {
-      searchForAgents(editor, line , num)
-    }
   }
   */
 }

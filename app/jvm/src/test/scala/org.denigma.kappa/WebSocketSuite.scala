@@ -48,6 +48,8 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
                               false
                           }        } =>
                      }
+          //wsClient.sendCompletion()
+          //wsClient.expectCompletion()
         }
     }
 
@@ -82,8 +84,8 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
             } =>
 
           }
-         // wsClient.sendCompletion()
-          //wsClient.expectCompletion()
+         //wsClient.sendCompletion()
+         //wsClient.expectCompletion()
         }
     }
 

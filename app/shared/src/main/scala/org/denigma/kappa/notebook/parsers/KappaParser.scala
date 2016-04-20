@@ -24,20 +24,21 @@ class KappaParser extends CommentLinksParser
     case (i, Some(o)) => (i + "." + o).toDouble
   }
 
-  protected val eNumber = P( normalNumber ~ "E" ~ integer ).map{
+  protected val eNumber = P( normalNumber ~ CharIn("Ee") ~ integer ).map{
     case (a, b) => a * Math.pow(10, b)
   }
 
-  val number: P[Double] = P( normalNumber | eNumber )
+  val number: P[Double] = P( eNumber | normalNumber )
 
+  val textWithSymbols = P(digit | letter | CharIn("_!@$%^&*()_+=-.,/|?><`~"))
 
-  val textWithSymbols = P(digit | letter | CharIn("!@#$%^&*()_+=-.,/\\|?><`~ "))
+  val tokenDeclaration = P("%token:"~optSpaces~textWithSymbols.rep(min = 1).!)
 
-  val label: P[String] = P("'"~textWithSymbols.rep(min = 1).! ~ "'")
+  val label: P[String] = P("'"~(textWithSymbols | " ").rep(min = 1).! ~ "'")
 
   val labelOrNumber: P[Either[String, Double]] = P(label.map(l=>Left(l)) | number.map(n=>Right(n)))
 
-  val linkLabel: P[String] = P("!" ~ text.rep(min = 1).!)
+  val linkLabel: P[String] = P( ("!" ~ text.rep(min = 1).!) | "!_".! | "?".!)
 
   val state: P[State] = P("~" ~ text.rep(min = 1).!).map(s=> State(s) )
 
@@ -48,24 +49,26 @@ class KappaParser extends CommentLinksParser
     case (name, sideOpt, sides2) => Agent(name,  sideOpt.map(List(_)).getOrElse(List.empty[Side]) ::: sides2.toList)
   }
 
-  val agentDecl: P[Agent] = P(optSpaces ~ "%agent:" ~ spaces ~ agent)
+  val agentDecl: P[Agent] = P(optSpaces ~ "%agent:" ~ optSpaces ~ agent)
 
   val rulePart: P[Pattern] = P(agent ~ (optSpaces ~ "," ~ optSpaces ~ agent).rep).map{
     case (ag, agents) => Pattern(ag::agents.toList)
   }
 
-  val coeffs = P("@" ~ AnyChar.rep)
+  val coeffs: P[(Either[String, Double], Option[Either[String, Double]])] = P("@" ~optSpaces ~ labelOrNumber ~ (optSpaces ~ ","~ optSpaces ~labelOrNumber).?)
 
   val bothDirections = P("<->").map(v=>BothDirections)
+
   val left2right = P("->").map(v=>Left2Right)
+
   val right2left = P("<-").map(v=>Right2Left)
 
   val direction: P[Direction] = P(bothDirections | left2right | right2left)
 
-  val rule = P("'" ~ textWithSymbols.rep(min = 1).! ~ "'" ~ spaces ~  rulePart ~ optSpaces ~ direction ~ optSpaces ~ rulePart ~ spaces ~ coeffs).map{
-    case (name, left, BothDirections, right) => Rule(name, left, right, 0)
-    case (name, left, Left2Right, right) => Rule(name, left, right, 0)
-    case (name, left, Right2Left, right) => Rule(name, left, right, 0)
+  val rule = P("'" ~ (textWithSymbols | " ").rep(min = 1).! ~ "'" ~ spaces ~  rulePart ~ optSpaces ~ direction ~ optSpaces ~ rulePart ~ spaces ~ coeffs).map{
+    case (name, left, BothDirections, right, (c1, c2opt)) => Rule(name, left, right, c1, c2opt)
+    case (name, left, Left2Right, right, (c1, c2opt)) => Rule(name, left, right, c1, c2opt)
+    case (name, left, Right2Left, right, (c1, c2opt)) => Rule(name, left, right, c1, c2opt) //TODO: fix coefficents
   }
 
 

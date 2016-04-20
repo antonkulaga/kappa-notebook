@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.views.editor
 import fastparse.core.Parsed
 import org.denigma.codemirror.{Editor, LineInfo, PositionLike}
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.model.KappaModel.Side
+import org.denigma.kappa.model.KappaModel.{Agent, Side}
 import org.denigma.kappa.notebook.parsers.KappaParser
 import org.denigma.kappa.notebook.views.visual._
 import org.scalajs.dom.svg.SVG
@@ -12,6 +12,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
 import org.denigma.threejs.extras.HtmlSprite
 import rx.Rx.Dynamic
+import org.denigma.kappa.notebook.extensions._
 
 object Tester {
 
@@ -39,7 +40,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val agentParser = kappaParser.agentDecl
 
-  val ruleParser = kappaParser.rulePart
+  val ruleParser = kappaParser.rule
 
   val agents: Var[SortedSet[KappaModel.Agent]] = Var(Tester.agents)
 
@@ -74,7 +75,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   protected val forceLayout = new ForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)
 
-  val layouts = Rx{
+  val layouts: Var[Vector[GraphLayout]] = Var{
     //if(agents.)
     Vector(forceLayout)
   }
@@ -87,23 +88,43 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       t
  }
 
+
   text.onChange(parseText)
+
+  protected def refreshAgents(value: SortedSet[Agent], ls: Vector[GraphLayout] = Vector(forceLayout)) = if(value!=agents.now) {
+    layouts() = Vector.empty
+    if(agents.now != value) agents() = value
+    layouts() = ls
+  }
 
   protected def parseText(line: String) = {
     if(line=="") {
 
     } else {
-      agentParser.parse(line) match {
-        case Parsed.Success(result, index) =>
+      agentParser.parse(line).onSuccess{
+        case result =>
           val value = SortedSet(result)
-          if(agents.now != value) agents() = value
+          refreshAgents(value)
 
-        case Parsed.Failure(parser, index, extra) =>
-
+      }.onFailure{
+        input=>
+          ruleParser.parse(input).onSuccess{
+            case result =>
+              val value = SortedSet(result.left.agents:_*)
+              refreshAgents(value)
+          }
       }
     }
   }
-  //updates.foreach(changeHandler) //subscription
+  protected def changeHandler(editor: Editor, lines: Seq[(Int, String)]) =
+  {
+    for {
+      (num, line) <- lines
+    } {
+
+      //searchForAgents(editor, line , num)
+    }
+  }
   /*
 
   val changeOptions: Dynamic[Option[(Editor, Seq[(Int, String)])]] = updates.map(upd=>upd.changedLinesOpt)

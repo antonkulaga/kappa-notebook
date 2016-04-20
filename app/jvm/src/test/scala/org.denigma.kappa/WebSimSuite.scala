@@ -62,7 +62,7 @@ class WebSimSuite extends BasicKappaSuite {
           //println(s"MODEL TOKEN IS " + token)
           server.getRunning().pipeTo(probeList.ref)
           probeList.expectMsgPF(duration * 3) {
-            case arr: Array[Int] if arr.contains(token) => println(s"tokens are : [${arr.toList.mkString(" ")}]")
+            case arr: Array[Int] if arr.contains(token) => //println(s"tokens are : [${arr.toList.mkString(" ")}]")
           }
       }
     }
@@ -116,7 +116,7 @@ class WebSimSuite extends BasicKappaSuite {
       }
     }
 
-    "run streamed tabs" in {
+    "run streamed" in {
       val tokenSink = TestSink.probe[(Either[Int, Array[String]], RunModel)]
       val params = messages.RunModel(abc, Some(100), max_events = Some(10000))
       val launcher = Source.single(params).via(flows.tokenFlow).runWith(tokenSink)
@@ -134,9 +134,9 @@ class WebSimSuite extends BasicKappaSuite {
 
      "run simulation and get results" in {
        val probe = TestProbe()
-       val params = messages.RunModel(abc, Some(1000), max_events = Some(10000))
+       val params = messages.RunModel(abc, Some(1000), max_events = Some(1000))
        server.run(params).map(_._1).pipeTo(probe.ref)
-       probe.expectMsgPF(800 millis){
+       probe.expectMsgPF(1 second){
          case  Left( (token: Int, sim: SimulationStatus)) if sim.percentage>=100.0  =>
            //println(sim)
        }

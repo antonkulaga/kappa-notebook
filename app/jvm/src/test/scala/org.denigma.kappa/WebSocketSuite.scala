@@ -25,7 +25,7 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
     "get run messages and start simulations" in {
       val wsClient = WSProbe()
       // WS creates a WebSocket request for testing
-      WS("/channel/notebook?username=tester", wsClient.flow) ~>  routes ~>
+      WS("/channel/notebook?username=tester1", wsClient.flow) ~>  routes ~>
         check {
           // check response for WS Upgrade headers
           isWebSocketUpgrade shouldEqual true
@@ -42,7 +42,7 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
                         case BinaryMessage.Strict(bytes) if {
                           Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
                             case sim: SimulationResult=>
-                              println("console output: "+sim.simulationStatus.log_messages)
+                              //println("console output: "+sim.simulationStatus.log_messages)
                               true
                             case _ =>
                               false
@@ -53,7 +53,7 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
 
     "provide errors messages for wrong models" in {
       val wsClient = WSProbe()
-      WS("/channel/notebook?username=tester", wsClient.flow) ~>  routes ~>
+      WS("/channel/notebook?username=tester2", wsClient.flow) ~>  routes ~>
         check {
           // check response for WS Upgrade headers
           isWebSocketUpgrade shouldEqual true
@@ -75,21 +75,16 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
               val mes = Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer)
               mes match {
                 case SyntaxErrors(server, errors, _)=>
-                  println("expected errors are: "+ errors)
+                  //println("expected errors are: "+ errors)
                   true
                 case _=> false
               }
             } =>
 
           }
-          //wsClient.sendCompletion()
+         // wsClient.sendCompletion()
           //wsClient.expectCompletion()
         }
-    }
-
-    "provide a list of files" in {
-
-
     }
 
     }

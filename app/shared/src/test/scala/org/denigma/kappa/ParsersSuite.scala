@@ -18,8 +18,13 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
       inside(parser.agent.parse("%wrongagent: A(x,c) # Declaration of agent A")) {
         case failure: Parsed.Failure =>
       }
+
       inside(parser.agent.parse("'a.b' A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B")) {
         case failure: Parsed.Failure =>
+      }
+
+      inside(parser.agent.parse("A(x,c~u!1)")) {
+        case res @ Parsed.Success(v, index: Int) if v == Agent("A", List(Side("x", Set(), Set()), Side("c", Set(State("u")), Set("1"))))=>
       }
 
       val A = "%agent: A(x,c) # Declaration of agent A"
@@ -39,13 +44,7 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
       }
       val right = "'a.b' A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate'"
       inside(parser.rule.parse(right)) {
-        case res @ Parsed.Success(v, index: Int) =>
-          println("********************************************************")
-          println(value)
-        case failure: Parsed.Failure => println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-          println(failure)
-
-
+        case res @ Parsed.Success(v, index: Int) if v.left.agents =>
       }
 
     }
@@ -71,10 +70,20 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
       }
 
     }
-
+    /*
     "parse PDF comments" in {
       val paper = "#^ :in_paper /resources/pdf/eptcs.pdf"
       val page = "#^ :on_page 1"
+    }
+    */
+    "parse numbers" in {
+
+      val parser = new KappaParser
+      inside(parser.number.parse("10")) { case Parsed.Success(10, index: Int)=>  }
+      inside(parser.number.parse("-10")) { case Parsed.Success(10, index: Int)=>  }
+      inside(parser.number.parse("10.1234")) { case Parsed.Success(10.1234, index: Int)=>  }
+      inside(parser.number.parse("10E2")) { case Parsed.Success(10E2, index: Int)=>  }
+      inside(parser.number.parse("10.9E3")) { case Parsed.Success(10.9E3, index: Int)=>  }
     }
   }
 }

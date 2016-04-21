@@ -25,6 +25,11 @@ object KappaModel {
     require(toAgent.sideSet.contains(toSide), s"from Agent($toAgent) should contain fromSide($toSide)")
 
   }
+
+  object Pattern {
+    lazy val empty = Pattern(Nil)
+  }
+
   case class Pattern(agents: List[Agent]) extends KappaElement
   {
     protected def isNamed(key: String) = key != "_" && key !="?"
@@ -53,11 +58,14 @@ object KappaModel {
       case (key, (side1, agent1)::(side2, agent2)::Nil)  =>
         key -> KappaModel.Link(agent1, agent2, side1, side2, key)
     }
+
   }
 
   case class Rule(name: String, left: Pattern, right: Pattern, forward: Either[String, Double], backward: Option[Either[String, Double]] = None) {
     lazy val added = left.agents.diff(right.agents)
     lazy val removed = right.agents.diff(left.agents)
+
+    def direction: Direction = if(backward.isEmpty) KappaModel.Left2Right else KappaModel.BothDirections
     //lazy val kept = right
     //def atomic: Boolean = added.size==1 || removed.size == 1
   }
@@ -79,7 +87,7 @@ object KappaModel {
     }
   }
 
-  case class Agent(name: String, sides: List[Side] = List.empty) extends KappaElement
+  case class Agent(name: String, sides: List[Side] = List.empty, extra: String = "") extends KappaElement
   {
     lazy val sideSet = sides.toSet
 

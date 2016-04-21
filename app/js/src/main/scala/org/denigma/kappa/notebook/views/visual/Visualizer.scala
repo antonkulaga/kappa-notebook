@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.views.visual
 import org.denigma.kappa.model.KappaModel
 import org.denigma.threejs.extensions.Container3D
 import org.denigma.threejs.extensions.controls.JumpCameraControls
-import org.denigma.threejs.{Object3D, Vector3}
+import org.denigma.threejs.{Object3D, PerspectiveCamera, Vector3}
 import org.denigma.threejs.extras._
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw._
@@ -13,7 +13,6 @@ import rx._
 import scalatags.JsDom.implicits._
 import scalatags.JsDom.svgAttrs._
 import scalatags.JsDom.svgTags._
-
 import org.denigma.binding.extensions._
 
 
@@ -33,8 +32,15 @@ class Visualizer (val container: HTMLElement,
     added.foreach(r=>r.start(width, height, camera))
   }
 
-
   override val controls: JumpCameraControls = new  JumpCameraControls(camera, this.container, scene, width, height)
+
+  override protected def initCamera() =
+  {
+    val camera = new PerspectiveCamera(40, this.aspectRatio, 1, 1000)
+    camera.position.z = distance
+    camera
+  }
+
 
   def onMouseDown(obj: Object3D)(event: MouseEvent ):Unit =  if(event.button==0)
   {

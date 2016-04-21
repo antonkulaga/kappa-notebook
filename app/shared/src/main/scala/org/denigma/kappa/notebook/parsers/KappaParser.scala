@@ -16,6 +16,10 @@ class KappaParser extends CommentLinksParser
       case (Some(_), str) => - str.toInt
     }
 
+  protected val name = P(
+    (digit | letter | CharIn("_+-")).rep(min = 1).!
+  )
+
 
   protected val normalNumber = P(
     integer ~ ("."~ integer).?
@@ -32,7 +36,7 @@ class KappaParser extends CommentLinksParser
 
   val textWithSymbols = P(digit | letter | CharIn("_!@$%^&*()_+=-.,/|?><`~"))
 
-  val tokenDeclaration = P("%token:"~optSpaces~textWithSymbols.rep(min = 1).!)
+  val tokenDeclaration = P("%token:"~optSpaces~name)
 
   val label: P[String] = P("'"~(textWithSymbols | " ").rep(min = 1).! ~ "'")
 
@@ -40,19 +44,23 @@ class KappaParser extends CommentLinksParser
 
   val linkLabel: P[String] = P( ("!" ~ text.rep(min = 1).!) | "!_".! | "?".!)
 
-  val state: P[State] = P("~" ~ text.rep(min = 1).!).map(s=> State(s) )
+  val state: P[State] = P("~" ~ name).map(s=> State(s) )
 
-  val side: P[Side] = P(text.rep(min = 1).! ~ state.rep ~ linkLabel.rep)
-    .map{ case (name, states, links) => Side(name, states.toSet, links.toSet) }
+  val side: P[Side] = P(name ~ state.rep ~ linkLabel.rep)
+    .map{ case (n, states, links) => Side(n, states.toSet, links.toSet) }
 
-  val agent: P[Agent] = P(text.rep(min = 1).! ~ "(" ~ side.? ~ (optSpaces ~ "," ~ optSpaces ~ side).rep ~ ")").map{
-    case (name, sideOpt, sides2) => Agent(name,  sideOpt.map(List(_)).getOrElse(List.empty[Side]) ::: sides2.toList)
+  val agent: P[Agent] = P(name ~ "(" ~ side.? ~ (optSpaces ~ "," ~ optSpaces ~ side).rep ~ ")").map{
+    case (n, sideOpt, sides2) => Agent(n,  sideOpt.map(List(_)).getOrElse(List.empty[Side]) ::: sides2.toList)
   }
 
   val agentDecl: P[Agent] = P(optSpaces ~ "%agent:" ~ optSpaces ~ agent)
 
   val rulePart: P[Pattern] = P(agent ~ (optSpaces ~ "," ~ optSpaces ~ agent).rep).map{
-    case (ag, agents) => Pattern(ag::agents.toList)
+    case (ag, agents) =>
+      val ags = ag::agents.toList
+      val dist = ags.distinct
+      val dupl = ags.diff(dist).zipWithIndex.map{case (value, i)=> value.copy(extra = i.toString)} //make agents unique
+      Pattern(dist++dupl)
   }
 
   val coeffs: P[(Either[String, Double], Option[Either[String, Double]])] = P("@" ~optSpaces ~ labelOrNumber ~ (optSpaces ~ ","~ optSpaces ~labelOrNumber).?)
@@ -65,10 +73,10 @@ class KappaParser extends CommentLinksParser
 
   val direction: P[Direction] = P(bothDirections | left2right | right2left)
 
-  val rule = P("'" ~ (textWithSymbols | " ").rep(min = 1).! ~ "'" ~ spaces ~  rulePart ~ optSpaces ~ direction ~ optSpaces ~ rulePart ~ spaces ~ coeffs).map{
-    case (name, left, BothDirections, right, (c1, c2opt)) => Rule(name, left, right, c1, c2opt)
-    case (name, left, Left2Right, right, (c1, c2opt)) => Rule(name, left, right, c1, c2opt)
-    case (name, left, Right2Left, right, (c1, c2opt)) => Rule(name, left, right, c1, c2opt) //TODO: fix coefficents
+  val rule = P(("'" ~ (textWithSymbols | " ").rep(min = 1).! ~ "'").? ~ spaces ~  rulePart ~ optSpaces ~ direction ~ optSpaces ~ rulePart ~ spaces ~ coeffs).map{
+    case (n, left, BothDirections, right, (c1, c2opt)) => Rule(n.getOrElse(left + " "+Left2Right + " "+right), left, right, c1, c2opt)
+    case (n, left, Left2Right, right, (c1, c2opt)) => Rule(n.getOrElse(left + " "+Left2Right + " "+right), left, right, c1, c2opt)
+    case (n, left, Right2Left, right, (c1, c2opt)) => Rule(n.getOrElse(left + " "+Right2Left + " "+right), left, right, c1, c2opt) //TODO: fix coefficents
   }
 
 

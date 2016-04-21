@@ -7,9 +7,9 @@ import rx._
 
 object ForceLayoutParams {
 
-  lazy val default2D = ForceLayoutParams(30, 0.2, 0.01, new Vector3(0.0, 0.0, 0.0))
+  lazy val default2D = ForceLayoutParams(50, 0.8, 0.01, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(0.2, 0.2, 0.02, new Vector3(0.0, 0.0, 0.0))
+  lazy val default3D = ForceLayoutParams(50, 0.8, 0.01, new Vector3(0.0, 0.0, 0.0))
 
 }
 
@@ -118,7 +118,7 @@ class Attraction(val attractionMult: Double, EPSILON: Double = 0.00001) extends 
 
 class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double, center: Vector3) extends Force[KappaNode, KappaEdge] {
 
-  def border(width: Double, height: Double) = Rectangle.fromCorners(center.x - width / 2, center.y - height / 2, center.x + width /2, center.y + height / 2)
+  def border(width: Double, height: Double) = Rectangle.fromCorners(center.x - width / 2, center.y - height / 2, center.x + width / 2, center.y + height / 2)
 
   def toHorBorders(rect: Rectangle, x: Double) = (x - rect.left, rect.right - x)
 
@@ -143,18 +143,17 @@ class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double
     }
     {
       val no1 = nodes(i)
-      val n1 = no1.view
       val l1 = no1.layoutInfo
       if(i==0) l1.setOffsets(0, 0, 0)
 
-      val leftD = rect.x - threshold - l1.pos.y
-
       val deltaX = toBorder(toHorBorders(rect, l1.pos.x))
       val deltaY = toBorder(toVerBorders(rect, l1.pos.y))
+      println("rect = " + rect+ " deltaX "+deltaX + "  HOR IS"+ toHorBorders(rect, l1.pos.x)+ " ** "+l1.pos.x+ " camera qt " +camera.position.toArray().toList)
+      println("rect = " + rect+ " deltaY "+deltaY + "  VERT IS"+ toHorBorders(rect, l1.pos.y)+ " ** "+l1.pos.y+ " camera qt " +camera.position.toArray().toList)
 
       val deltaZ = 0
 
-      val distance = Math.max(Math.abs(deltaX), Math.abs(deltaY))
+      val distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2))
       if(distance > 0) {
         val force =  (repulsion * repulsion) / Math.pow(distance, 2)
         l1.force += force
@@ -217,11 +216,14 @@ class ForceLayout(
 
   def info(node: Node): LayoutInfo = node.layoutInfo
 
-  override def defRandomDistance = 400
+  def defRandomDistance = 30
 
   def randomPos()=  mode match {
-    case LayoutMode.TwoD =>new Vector3(rand(), rand(), 0.0)
-    case LayoutMode.ThreeD => new Vector3(rand(), rand(), rand())
+    case LayoutMode.TwoD =>
+      new Vector3(rand(defRandomDistance), rand(defRandomDistance), 0.0)
+      //new Vector3(0, 0, 0.0)
+
+    case LayoutMode.ThreeD => new Vector3(rand(defRandomDistance), rand(defRandomDistance), rand(defRandomDistance))
   }
 
   val maxIterations = 400

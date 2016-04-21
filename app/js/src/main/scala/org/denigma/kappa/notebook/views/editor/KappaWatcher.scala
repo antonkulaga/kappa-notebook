@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.views.editor
 import fastparse.core.Parsed
 import org.denigma.codemirror.{Editor, LineInfo, PositionLike}
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.model.KappaModel.{Agent, Link, Pattern, Side}
+import org.denigma.kappa.model.KappaModel._
 import org.denigma.kappa.notebook.parsers.KappaParser
 import org.denigma.kappa.notebook.views.visual._
 import org.scalajs.dom.svg.SVG
@@ -14,6 +14,8 @@ import org.denigma.threejs.extras.HtmlSprite
 import rx.Rx.Dynamic
 import org.denigma.kappa.notebook.extensions._
 
+import scalatags.JsDom
+/*
 object Tester {
 
   val agents =  scala.collection.immutable.SortedSet(
@@ -28,6 +30,7 @@ object Tester {
     KappaModel.Agent("AraC_unf")
   )
 }
+*/
 
 import scala.collection.immutable.SortedSet
 
@@ -42,84 +45,37 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val ruleParser = kappaParser.rule
 
-  val agents: Var[SortedSet[KappaModel.Agent]] = Var(Tester.agents)
-
-  val pattern: Rx[Pattern] = agents.map(ags=>Pattern(ags.toList))
-
-  val agentMap: Rx[Map[Agent, KappaNode]] = agents.map{
-    case ags => ags.map(a => a -> agent2node(a)).toMap
-  }
-
-  val links: Rx[SortedSet[Link]] = pattern.map(p => SortedSet(p.links.values.toSeq:_*))
-
-  import org.denigma.kappa.notebook.extensions._
-
-  val nodes: Rx[Vector[KappaNode]] = agentMap.map(mp => mp.values.toVector)//agents.toSyncVector(agent2node)((a, n)=> n.data == a)
-
-  val edges = Rx{
-    val mp = agentMap()
-    val ls = links()
-    (for{
-      link <- ls
-      from <- mp.get(link.fromAgent)
-      to <- mp.get(link.toAgent)
-    }
-    yield {
-     val sprite = painter.drawLink(link)
-     val sp = new HtmlSprite(sprite.render)
-     new KappaEdge(from, to, sp)
-    }).toVector
-  }
-
   lazy val agentFontSize: Double = 24
 
   lazy val padding: Double= 10
 
-  lazy val painter = new AgentPainter(agentFontSize, padding, s)
+  lazy val painter: AgentPainter = new AgentPainter(agentFontSize, padding, s)
 
-  protected def agent2node(agent: KappaModel.Agent) = {
-    val sprite = painter.drawAgent(agent)
-    val sp = new HtmlSprite(sprite.render)
-    new KappaNode(agent, sp)
-  }
+  val leftPattern = new WatchPattern(painter)
 
-  val graivityForce = new Gravity(ForceLayoutParams.default2D.attractionMult, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
+  val rightPattern = new WatchPattern(painter)
 
-  val borderForce = new BorderForce(ForceLayoutParams.default2D.repulsionMult , 100, 2, ForceLayoutParams.default2D.center)
+  val direction: Var[KappaModel.Direction] = Var(KappaModel.Left2Right)
 
+  //protected val graivityForce = new Gravity(ForceLayoutParams.default2D.attractionMult, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
 
-  val forces: Vector[Force[KappaNode, KappaEdge]] = Vector(
+  protected val borderForce = new BorderForce(ForceLayoutParams.default2D.repulsionMult , 10, 0.9, ForceLayoutParams.default2D.center)
+
+  protected val forces: Vector[Force[KappaNode, KappaEdge]] = Vector(
     new Repulsion(ForceLayoutParams.default2D.repulsionMult),
     new Attraction(ForceLayoutParams.default2D.attractionMult),
     borderForce
   )
 
-  protected val forceLayout = new ForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)
-
-  val layouts: Var[Vector[GraphLayout]] = Var{
-    //if(agents.)
-    Vector(forceLayout)
-  }
 
   val text: Rx[String] = cursor.map{
     case None => ""
     case Some((ed: Editor, lines)) =>
       val t = ed.getDoc().getLine(lines.line)
-      //println("lines is == "+t)
       t
  }
-
   text.onChange(parseText)
 
-  protected def refreshAgents(value: SortedSet[Agent], ls: Vector[GraphLayout] = Vector(forceLayout)) = if(value == agents.now) {
-    println("SHOULD BE EQUAL:\n" + agents.now+ "\n AND \n"+value)
-
-  }
-  else {
-    layouts() = Vector.empty
-    agents() = value
-    layouts() = ls
-  }
 
   protected def parseText(line: String) = {
     if(line=="") {
@@ -127,15 +83,16 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
     } else {
       agentParser.parse(line).onSuccess{
         case result =>
-          val value = SortedSet(result)
-          refreshAgents(value)
+          val value = Pattern(List(result))
+        leftPattern.refresh(value, forces)
 
       }.onFailure{
         input=>
           ruleParser.parse(input).onSuccess{
             case result =>
-              val value = SortedSet(result.left.agents:_*)
-              refreshAgents(value)
+              leftPattern.refresh(result.left, forces)
+              rightPattern.refresh(result.right, forces)
+              direction() = result.direction
           }
       }
     }
@@ -158,4 +115,57 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
     case other => //nothing
   }
   */
+
+
+}
+class WatchPattern(painter: AgentPainter) {
+
+  val pattern = Var(Pattern.empty)
+
+  val agents = pattern.map(p=>p.agents)
+
+  val links: Rx[SortedSet[Link]] = pattern.map(p => SortedSet(p.links.values.toSeq:_*))
+
+  import org.denigma.kappa.notebook.extensions._
+
+  protected def agent2node(agent: KappaModel.Agent) = {
+    val sprite = painter.drawAgent(agent)
+    val sp = new HtmlSprite(sprite.render)
+    new KappaNode(agent, sp)
+  }
+
+
+
+  val layouts: Var[Vector[GraphLayout]] = Var{Vector.empty}
+
+
+  val agentMap: Rx[Map[Agent, KappaNode]] = agents.map{
+    case ags => ags.map(a => a -> agent2node(a)).toMap
+  }
+
+  val nodes: Rx[Vector[KappaNode]] = agentMap.map(mp => mp.values.toVector)//agents.toSyncVector(agent2node)((a, n)=> n.data == a)
+
+  val edges = Rx{
+    val mp = agentMap()
+    val ls = links()
+    (for{
+      link <- ls
+      from <- mp.get(link.fromAgent)
+      to <- mp.get(link.toAgent)
+    }
+      yield {
+        val sprite = painter.drawLink(link)
+        val sp = new HtmlSprite(sprite.render)
+        new KappaEdge(from, to, sp)
+      }).toVector
+  }
+
+  def refresh(value: Pattern, forces: Vector[Force[KappaNode, KappaEdge]] ): Unit =  if(value != pattern.now) {
+    layouts() = Vector.empty
+    pattern() = value
+    layouts() = Vector(new ForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces))
+  }
+
+  def clean() = refresh(Pattern.empty, Vector.empty)
+
 }

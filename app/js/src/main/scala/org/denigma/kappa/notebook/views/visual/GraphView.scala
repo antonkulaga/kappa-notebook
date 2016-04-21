@@ -16,16 +16,20 @@ import scala.collection.immutable
 class GraphView(val elem: Element,
                 val nodes: Rx[Vector[KappaNode]],
                 val edges: Rx[Vector[KappaEdge]],
-                val layouts: Rx[Vector[GraphLayout]]) extends BindableView
+                val layouts: Rx[Vector[GraphLayout]],
+                val containerName: String
+               ) extends BindableView
 {
 
-  val active: Var[Boolean] = Var(true)// Var(false)
+  val active: Rx[Boolean] = Rx{
+    nodes().nonEmpty
+  }// Var(false)
 
   protected def defaultWidth: Double = elem.getBoundingClientRect().width
 
-  protected def defaultHeight: Double = Math.max(250.0, dom.window.innerHeight / 4)
+  protected def defaultHeight: Double = Math.max(150.0, dom.window.innerHeight / 4)
 
-  val container = sq.byId("graph-container").get
+  val container = sq.byId(containerName).get
 
   val nodeUpdates = nodes.removedInserted
 
@@ -46,6 +50,7 @@ class GraphView(val elem: Element,
     edgeUpdates.onChange{ case (removed, added)=>
       removed.foreach{ case r=>
         viz.removeObject(r.arrow)
+        viz.removeObject(r.arrow.line)
         viz.removeSprite(r.view)
       }
       added.foreach{

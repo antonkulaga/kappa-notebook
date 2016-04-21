@@ -26,7 +26,7 @@ object Main extends App  {
   val (host, port) = (config.getString("app.host"), config.getInt("app.port"))
   val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
   val root = File(filePath)
-  root.createIfNotExists(true)
+  root.createIfNotExists(asDirectory = true)
   val fileManager = new FileManager(root)
 
   val router = new Router(File(filePath))

@@ -131,6 +131,8 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
 
   val sidePadding = agentPadding / 1.6
 
+  val modificationPadding = sidePadding / 1.6
+
   type Locatable = SVGElement with SVGLocatable
 
   def getTextBox(str: String, fSize: Double): Rectangle = {
@@ -160,6 +162,13 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
       stop(offset := "100%", stopColor := "deepskyblue")
   )
 
+  protected lazy val modificationGradient =
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := "GradModif",
+      stop(offset := "0%", stopColor := "white"),
+      stop(offset := "100%", stopColor := "deepskyblue")
+    )
+
+
   def drawAgent(agent: KappaModel.Agent): TypedTag[SVG] = {
     val b: Rectangle = getTextBox(agent.name, agentFontSize)
     drawAgent(agent, b)
@@ -168,7 +177,7 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
   def drawLink(link: KappaModel.Link): TypedTag[SVG] = {
     val box: Rectangle = getTextBox(link.label, sideFontSize)
     val rect = Rectangle(box.width, box.height).withPadding(sidePadding, sidePadding)
-    val linkLabel = drawLabel(link.label, rect, box, agentFontSize, "GradSide")
+    val linkLabel = drawLabel(link.label, rect, box, sideFontSize, "GradModif")
     drawSprite(rect.width, rect.height, List(linkLabel))
   }
 
@@ -327,7 +336,7 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
   }
 
   protected def drawSprite(w: Double, h: Double, children: List[JsDom.Modifier]): TypedTag[SVG] = {
-    val decs: JsDom.Modifier = defs(agentGradient, sideGradient)
+    val decs: JsDom.Modifier = defs(agentGradient, sideGradient, modificationGradient)
     val params = List(
       height := h,
       width := w,

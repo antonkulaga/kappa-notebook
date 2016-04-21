@@ -74,6 +74,14 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
           && v.right.agents.tail.head == Agent("B", List(Side("x", Set(), Set("1"))))
         =>
       }
+      val withoutName = "A(x),B(x),C(x!_) <-> A(x!1),B(x!1),C(x!_) @ 'on_rate','off_rate'"
+      inside(parser.rule.parse(withLink)) {
+        case res @ Parsed.Success(v, index: Int) if v.name == "a binds to b"
+          && v.left.agents.length ==3
+          && v.right.agents.length ==3
+          && v.right.agents.tail.head == Agent("B", List(Side("x", Set(), Set("1"))))
+        =>
+      }
     }
 
     "differentiate agents in rules" in {

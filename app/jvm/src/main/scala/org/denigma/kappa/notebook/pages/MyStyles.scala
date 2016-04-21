@@ -20,7 +20,12 @@ object MyStyles extends TextLayerStyles{
 
   "#main" -(
     overflowX.auto,
-    maxHeight(100 vh)
+    overflowY.hidden,
+    maxHeight(98 vh)
+    )
+  ".graph" -(
+    borderColor(blue),
+    borderWidth(3 px)
     )
 
   ".attached.tab.segment" -(
@@ -61,14 +66,13 @@ object MyStyles extends TextLayerStyles{
 
   ".ui.segment.paper" -(
     padding(0 px),
-    height(100.0 %%)
+    minHeight(98.0 vh)
     )
 
   ".tab.page" -(
       //overflowY.scroll,
       //overflowX.scroll,
-      minHeight(100 vh),
-      height(100.0 %%)
+      minHeight(98.0 vh)
     )
 
   ".tab.flexible.page" -(
@@ -77,6 +81,13 @@ object MyStyles extends TextLayerStyles{
     height(100.0 %%)
     )
 
+  "#LeftGraph" -(
+    padding(0 px)
+    )
+
+  "#RightGraph" -(
+    padding(0 px)
+    )
 }
 
 trait TextLayerStyles extends StyleSheet.Standalone {

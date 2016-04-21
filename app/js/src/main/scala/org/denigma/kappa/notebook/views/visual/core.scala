@@ -4,6 +4,7 @@ import org.denigma.kappa.model.KappaModel
 import org.denigma.threejs.extras.HtmlSprite
 import org.denigma.threejs.{ArrowHelper, Vector3}
 import org.scalajs.dom
+import org.scalajs.dom.svg.SVG
 
 
 class KappaNode(val data: KappaModel.Agent, val view: HtmlSprite) {

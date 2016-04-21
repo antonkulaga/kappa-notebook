@@ -2,15 +2,23 @@
 
 <section class="ui equal width blue secondary segment celled grid"  id="Notebook" data-view="Notebook">
       <div class="ui equal width row">
-          <section class="four wide column">
+          <section class="ui three wide column">
+              <h3 class="ui center aligned header" data-bind="currentLine">
+              </h3>
               <div class="ui blue segment">
-                  <h5 class="ui header">This is a prototype of the notebook for <a href="http://kappalanguage.org">kappa-language</a></h5>
-                  <div id = "graph" data-view="GraphView" data-show-if="active">
-                      <div id="graph-container"></div>
-                  </div>
-                @* @ide.html.files()*@
+
+              <div id = "LeftGraph" data-view="LeftGraph" data-param-container="left-container">
+                  <div id="left-container" class="graph"></div>
               </div>
+                  <div class="ui clearing center aligned segment">
+                      <i class="arrow up icon" data-show-if="right2left"></i><i class="arrow down icon" data-show-if="left2right"></i></div>
+              <div id = "RightGraph" data-view="RightGraph"  data-param-container="right-container">
+                  <div id="right-container" class="graph"></div>
+              </div>
+              </div>
+              @ide.html.files()
           </section>
+
         @ide.html.editor()
         @tabs()
     </div>

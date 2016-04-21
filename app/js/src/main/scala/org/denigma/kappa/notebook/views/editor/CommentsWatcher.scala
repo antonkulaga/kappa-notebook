@@ -25,6 +25,7 @@ class CommentsWatcher(updates: Var[EditorUpdates], papers: Var[Map[String, Bookm
   protected def searchForLinks(editor: Editor, line: String, num: Int) = {
     linkParser.parse(line) match {
       case Parsed.Success(result, index) =>
+        println("LINK FOUND1")
         val marker = this.makeURIMarker(result)
         editor.setGutterMarker(num, "breakpoints", marker)
 
@@ -48,6 +49,7 @@ class CommentsWatcher(updates: Var[EditorUpdates], papers: Var[Map[String, Bookm
     val tag = a(href := link,
       i(`class` := "link outline icon")
     )
+    println("TAG IS "+tag)
     tag.render
 
     // <i class="file pdf outline icon">

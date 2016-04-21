@@ -19,6 +19,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import SvgBundle.all._
 import SvgBundle.all.attrs._
+import _root_.rx.Rx.Dynamic
 
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView with InitialCode
@@ -62,11 +63,27 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
 
   val kappaWatcher = new KappaWatcher(hub.kappaCursor, editorsUpdates, s)
+  val left2right: Rx[Boolean] = kappaWatcher.direction.map{
+    case KappaModel.BothDirections | KappaModel.Left2Right=> true
+    case _=> false
+  }
+
+  val currentLine: Rx[String] = kappaWatcher.text
+
+  val inRule = kappaWatcher.leftPattern
+
+  val right2left: Rx[Boolean] = kappaWatcher.direction.map{
+    case KappaModel.BothDirections | KappaModel.Right2Left=> true
+    case _=> false
+  }
 
    override lazy val injector = defaultInjector
      .register("KappaEditor")((el, args) => new KappaCodeEditor(el, hub, editorsUpdates).withBinder(n => new CodeBinder(n)))
      .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
-     .register("GraphView") {  (el, args) => new GraphView(el, kappaWatcher.nodes, kappaWatcher.edges, kappaWatcher.layouts).withBinder(n => new CodeBinder(n)) }
+     .register("LeftGraph") {  (el, args) =>
+       new GraphView(el, kappaWatcher.leftPattern.nodes, kappaWatcher.leftPattern.edges, kappaWatcher.leftPattern.layouts, args.getOrElse("container","graph-container").toString).withBinder(n => new CodeBinder(n)) }
+     .register("RightGraph") {  (el, args) =>
+       new GraphView(el, kappaWatcher.rightPattern.nodes, kappaWatcher.rightPattern.edges, kappaWatcher.rightPattern.layouts, args.getOrElse("container","graph-container").toString).withBinder(n => new CodeBinder(n)) }
      .register("Files") {  (el, args) => new FilesView(el, hub.path).withBinder(n => new CodeBinder(n)) }
 
 }

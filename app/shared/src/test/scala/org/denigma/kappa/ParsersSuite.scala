@@ -5,6 +5,8 @@ import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.notebook.parsers.{CommentLinksParser, KappaParser}
 import org.scalatest.{Inside, Matchers, WordSpec}
 
+import scala.collection.immutable.SortedSet
+
 /**
   * Created by antonkulaga on 06/03/16.
   */
@@ -72,6 +74,28 @@ class ParsersSuite extends WordSpec with Matchers with Inside  {
           && v.right.agents.tail.head == Agent("B", List(Side("x", Set(), Set("1"))))
         =>
       }
+    }
+
+    "differentiate agents in rules" in {
+      //'ab.c' A(x!_,c),C(x1~u) ->A(x!_,c!2),C(x1~u!2) @ 'on_rate' #AB binds C
+      import KappaModel._
+      val parser = new KappaParser
+      val ac1 = "'mod x1' C(x1~u!1),A(c!1) ->C(x1~p),A(c) @ 'mod_rate' #AB modifies x1"
+      val ac2 = "'a.c' A(x,c),C(x1~p,x2~u) -> A(x,c!1),C(x1~p,x2~u!1) @ 'on_rate' #A binds C on x2"
+      inside(parser.rule.parse(ac1)) {
+        case res @ Parsed.Success(v, index: Int) =>
+      }
+      val r1 = parser.rule.parse(ac1).get.value
+      val r2 = parser.rule.parse(ac2).get.value
+      (r1.left.agents == r2.left.agents) shouldEqual false
+      val ag1 = Agent("A",List(Side("c",Set(),Set("1"))))
+      val ag2 = Agent("A",List(Side("x",Set(),Set())))
+      (ag1 == ag2) shouldEqual false
+      (SortedSet(ag1) == SortedSet(ag2)) shouldEqual false
+      (Agent("A",List(Side("c",Set(),Set("1")))) == ag1) shouldEqual true
+      (SortedSet(ag1) == SortedSet(Agent("A",List(Side("c",Set(),Set("1")))))) shouldEqual true
+
+      //TreeSet(Agent(A,List(Side(x,Set(),Set()), Side(c,Set(),Set()))), Agent(C,List(Side(x1,Set(State(p)),Set()), Side(x2,Set(State(u)),Set()))))
     }
 
     "parse comments" in {

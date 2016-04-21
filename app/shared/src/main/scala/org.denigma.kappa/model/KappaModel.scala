@@ -9,6 +9,15 @@ object KappaModel {
   case object Right2Left extends Direction
   case object BothDirections extends Direction
 
+  object Link {
+    implicit val ordering = new Ordering[Link] {
+      override def compare(x: Link, y: Link): Int = x.label.compare(y.label) match {
+        case 0 => x.hashCode().compare(y.hashCode())
+        case other => other
+      }
+    }
+  }
+
   case class Link(fromAgent: Agent, toAgent: Agent, fromSide: Side, toSide: Side, label: String) extends KappaElement
   {
     require(fromAgent.sideSet.contains(fromSide), s"from Agent($fromAgent) should contain fromSide($fromSide)")
@@ -63,7 +72,10 @@ object KappaModel {
   }
   object Agent {
     implicit val ordering = new Ordering[Agent] {
-      override def compare(x: Agent, y: Agent): Int = x.name.compare(y.name)
+      override def compare(x: Agent, y: Agent): Int = x.name.compare(y.name) match {
+        case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
+        case other => other
+      }
     }
   }
 

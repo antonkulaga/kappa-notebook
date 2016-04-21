@@ -20,7 +20,7 @@ class KappaEdge(val from: KappaNode, val to: KappaNode, val view: HtmlSprite, lp
   def direction = new Vector3().subVectors(targetPos, sourcePos)
 
   protected def posArrow() = {
-    arrow.position = sourcePos
+    arrow.position.set(sourcePos.x, sourcePos.y, sourcePos.z) // = sourcePos
     arrow.setDirection(direction.normalize())
     arrow.setLength(direction.length()-10, lp.headLength, lp.headWidth)
   }

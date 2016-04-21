@@ -7,9 +7,9 @@ import rx._
 
 object ForceLayoutParams {
 
-  lazy val default2D = ForceLayoutParams(10, 0.2, 0.01, new Vector3(0.0, 0.0, 0.0))
+  lazy val default2D = ForceLayoutParams(30, 0.2, 0.01, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(10, 0.2, 0.02, new Vector3(0.0, 0.0, 0.0))
+  lazy val default3D = ForceLayoutParams(0.2, 0.2, 0.02, new Vector3(0.0, 0.0, 0.0))
 
 }
 
@@ -98,19 +98,19 @@ class Attraction(val attractionMult: Double, EPSILON: Double = 0.00001) extends 
 
       val distance = Math.max(EPSILON, l1.pos.distanceTo(l2.pos))
 
-      val force = (distance * distance) / attraction
+      val force = distance  / attraction
 
       l1.force -= force
       l2.force += force
 
-      l1.offset.x -= (deltaX / distance) * force
-      l1.offset.y -= (deltaY / distance) * force
-      l1.offset.z -= (deltaZ / distance) * force
+      l1.offset.x -= deltaX  * force
+      l1.offset.y -= deltaY  * force
+      l1.offset.z -= deltaZ  * force
 
 
-      l2.offset.x += (deltaX / distance) * force
-      l2.offset.y += (deltaY / distance) * force
-      l2.offset.z += (deltaZ / distance) * force
+      l2.offset.x += deltaX  * force
+      l2.offset.y += deltaY  * force
+      l2.offset.z += deltaZ  * force
     }
   }
 
@@ -202,8 +202,8 @@ class Gravity(val attractionMult: Double, val gravityMult: Double, center: Vecto
 
 class ForceLayout(
 
-                   val graphNodes: Var[Vector[KappaNode]],
-                   val graphEdges: Var[Vector[KappaEdge]],
+                   val graphNodes: Rx[Vector[KappaNode]],
+                   val graphEdges: Rx[Vector[KappaEdge]],
                    val mode: LayoutMode,
                    val forces: Vector[Force[KappaNode, KappaEdge]]
                  ) extends GraphLayout  with Randomizable

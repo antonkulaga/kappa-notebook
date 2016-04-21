@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.views.editor
 import fastparse.core.Parsed
 import org.denigma.codemirror.{Editor, LineInfo, PositionLike}
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.model.KappaModel.{Agent, Side}
+import org.denigma.kappa.model.KappaModel.{Agent, Link, Pattern, Side}
 import org.denigma.kappa.notebook.parsers.KappaParser
 import org.denigma.kappa.notebook.views.visual._
 import org.scalajs.dom.svg.SVG
@@ -44,11 +44,32 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val agents: Var[SortedSet[KappaModel.Agent]] = Var(Tester.agents)
 
+  val pattern: Rx[Pattern] = agents.map(ags=>Pattern(ags.toList))
+
+  val agentMap: Rx[Map[Agent, KappaNode]] = agents.map{
+    case ags => ags.map(a => a -> agent2node(a)).toMap
+  }
+
+  val links: Rx[SortedSet[Link]] = pattern.map(p => SortedSet(p.links.values.toSeq:_*))
+
   import org.denigma.kappa.notebook.extensions._
 
-  val nodes = agents.toSyncVector(agent2node)((a, n)=> n.data == a)
+  val nodes: Rx[Vector[KappaNode]] = agentMap.map(mp => mp.values.toVector)//agents.toSyncVector(agent2node)((a, n)=> n.data == a)
 
-  val edges = Var(Vector.empty[KappaEdge])
+  val edges = Rx{
+    val mp = agentMap()
+    val ls = links()
+    (for{
+      link <- ls
+      from <- mp.get(link.fromAgent)
+      to <- mp.get(link.toAgent)
+    }
+    yield {
+     val sprite = painter.drawLink(link)
+     val sp = new HtmlSprite(sprite.render)
+     new KappaEdge(from, to, sp)
+    }).toVector
+  }
 
   lazy val agentFontSize: Double = 24
 
@@ -84,15 +105,19 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
     case None => ""
     case Some((ed: Editor, lines)) =>
       val t = ed.getDoc().getLine(lines.line)
-      println("lines is == "+t)
+      //println("lines is == "+t)
       t
  }
 
   text.onChange(parseText)
 
-  protected def refreshAgents(value: SortedSet[Agent], ls: Vector[GraphLayout] = Vector(forceLayout)) = if(value!=agents.now) {
+  protected def refreshAgents(value: SortedSet[Agent], ls: Vector[GraphLayout] = Vector(forceLayout)) = if(value == agents.now) {
+    println("SHOULD BE EQUAL:\n" + agents.now+ "\n AND \n"+value)
+
+  }
+  else {
     layouts() = Vector.empty
-    if(agents.now != value) agents() = value
+    agents() = value
     layouts() = ls
   }
 
@@ -115,6 +140,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       }
     }
   }
+
   protected def changeHandler(editor: Editor, lines: Seq[(Int, String)]) =
   {
     for {

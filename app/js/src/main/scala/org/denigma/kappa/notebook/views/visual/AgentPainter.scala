@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.visual
 
 
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.model.KappaModel.Side
+import org.denigma.kappa.model.KappaModel.{Link, Side}
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import org.scalajs.dom.svg.SVG
@@ -163,6 +163,13 @@ class AgentPainter(agentFontSize: Double, agentPadding: Double, s: SVG) {
   def drawAgent(agent: KappaModel.Agent): TypedTag[SVG] = {
     val b: Rectangle = getTextBox(agent.name, agentFontSize)
     drawAgent(agent, b)
+  }
+
+  def drawLink(link: KappaModel.Link): TypedTag[SVG] = {
+    val box: Rectangle = getTextBox(link.label, sideFontSize)
+    val rect = Rectangle(box.width, box.height).withPadding(sidePadding, sidePadding)
+    val linkLabel = drawLabel(link.label, rect, box, agentFontSize, "GradSide")
+    drawSprite(rect.width, rect.height, List(linkLabel))
   }
 
   /**

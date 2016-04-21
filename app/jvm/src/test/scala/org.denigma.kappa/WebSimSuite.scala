@@ -118,13 +118,13 @@ class WebSimSuite extends BasicKappaSuite {
 
     "run streamed" in {
       val tokenSink = TestSink.probe[(Either[Int, Array[String]], RunModel)]
-      val params = messages.RunModel(abc, Some(100), max_events = Some(10000))
+      val params = messages.RunModel(abc, Some(100), max_events = Some(5000))
       val launcher = Source.single(params).via(flows.tokenFlow).runWith(tokenSink)
       val (token, model) = launcher.request(1).expectNextPF{ case (Left(t: Int), mod) =>  t -> mod }
       val simSource = Source.single(token).via(flows.syncSimulationStream)
       val probe = TestProbe()
       simSource.runWith(Sink.seq).pipeTo(probe.ref)
-      val results = probe.expectMsgPF(800 millis){
+      val results = probe.expectMsgPF(2 seconds){
         case res: Seq[(Int, SimulationStatus)]=> res
       }
       results.nonEmpty shouldEqual true

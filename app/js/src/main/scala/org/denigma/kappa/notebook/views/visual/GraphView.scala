@@ -13,7 +13,10 @@ import rx._
 
 import scala.collection.immutable
 
-class GraphView(val elem: Element, val nodes: Rx[Vector[KappaNode]], val edges: Rx[Vector[KappaEdge]], val layouts: Rx[Vector[GraphLayout]]) extends BindableView
+class GraphView(val elem: Element,
+                val nodes: Rx[Vector[KappaNode]],
+                val edges: Rx[Vector[KappaEdge]],
+                val layouts: Rx[Vector[GraphLayout]]) extends BindableView
 {
 
   val active: Var[Boolean] = Var(true)// Var(false)
@@ -37,8 +40,8 @@ class GraphView(val elem: Element, val nodes: Rx[Vector[KappaNode]], val edges: 
 
   protected def subscribeUpdates() = {
     nodeUpdates.onChange{ case (removed, added) =>
-      removed.foreach(r=>viz.removeSprite(r.view))
-      added.foreach(a=>viz.addSprite(a.view))
+      removed.foreach(r => viz.removeSprite(r.view))
+      added.foreach(a => viz.addSprite(a.view))
     }
     edgeUpdates.onChange{ case (removed, added)=>
       removed.foreach{ case r=>

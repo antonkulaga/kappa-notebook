@@ -7,12 +7,13 @@ import akka.stream._
 import akka.stream.scaladsl._
 import akka.stream.stage._
 import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.SocketMessages._
 
 /**
   * Websocket transport that unplickles/pickles messages
   */
-class WebSocketManager(system: ActorSystem) {
+class WebSocketManager(system: ActorSystem, fileManager: FileManager) {
 
   val allRoom = system.actorOf(Props(classOf[RoomActor], "all"))
 
@@ -25,7 +26,7 @@ class WebSocketManager(system: ActorSystem) {
 
   def openChannel(channel: String, username: String = "guest"): Flow[Message, Message, Any] = {
     val partial: Graph[FlowShape[Message, Message], ActorRef] = GraphDSL.create(
-      Source.actorPublisher[OutgoingMessage](Props(classOf[UserActor], username, servers))
+      Source.actorPublisher[OutgoingMessage](Props(classOf[UserActor], username, servers, fileManager))
     )
     {
       implicit builder => user =>

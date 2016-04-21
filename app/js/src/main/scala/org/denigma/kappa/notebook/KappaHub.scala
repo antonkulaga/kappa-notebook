@@ -23,11 +23,7 @@ object KappaHub{
     //Var(KappaProject()),
     Var("HelloWorld.ka"),
     //Var(KappaPath.empty),
-    Var(KappaPath("/files/",
-      children = List(
-        KappaPath("first folder"), KappaPath("second folder"), KappaPath("third folder"), KappaPath("fourth folder"))
-    )
-    ),
+    Var(KappaFolder.empty),
     Var(None),
     Var(Defaults.code),
     Var(messages.Defaults.simulations),

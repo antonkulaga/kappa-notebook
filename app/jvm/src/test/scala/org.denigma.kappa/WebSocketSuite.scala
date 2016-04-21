@@ -1,20 +1,29 @@
 package org.denigma.kappa
 
+import java.io.{File => JFile}
 import java.nio.ByteBuffer
 
 import akka.http.scaladsl.model.ws.BinaryMessage
 import akka.http.scaladsl.model.ws.BinaryMessage.Strict
 import akka.http.scaladsl.testkit.WSProbe
 import akka.util.ByteString
-import org.denigma.kappa.notebook.Router
+import better.files.File
 import boopickle.Default._
+import net.ceedubs.ficus.Ficus._
 import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.WebSocketManager
 import org.denigma.kappa.notebook.pages.WebSockets
 
 class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
 
-  val transport = new WebSocketManager(system)
+  val (host, port) = (config.getString("app.host"), config.getInt("app.port"))
+  val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
+  val files = File(filePath)
+  files.createIfNotExists(asDirectory = true)
+  val fileManager = new FileManager.(files)
+
+  val transport = new WebSocketManager(system, fileManager)
 
   val  routes = new WebSockets(transport.openChannel).routes
 

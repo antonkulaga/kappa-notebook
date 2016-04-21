@@ -15,13 +15,10 @@ import java.time._
 
 import akka.http.scaladsl.model._
 import org.denigma.kappa.messages._
-
 import better.files._
 import java.io.{File => JFile}
 
-class FileManager {
-
-}
+import org.denigma.kappa.notebook.FileManager
 
 
 /**
@@ -29,7 +26,10 @@ class FileManager {
   * @param username
   * @param servers
   */
-class UserActor(username: String, servers: ActorRef) extends KappaPicklers with Actor with akka.actor.ActorLogging with ActorPublisher[SocketMessages.OutgoingMessage]{
+class UserActor(username: String, servers: ActorRef, fileManager: FileManager) extends KappaPicklers
+  with Actor
+  with akka.actor.ActorLogging
+  with ActorPublisher[SocketMessages.OutgoingMessage]{
 
   implicit def ctx = context.dispatcher
 
@@ -90,10 +90,13 @@ class UserActor(username: String, servers: ActorRef) extends KappaPicklers with 
     case SocketMessages.IncomingMessage(channel, uname, message: BinaryMessage.Strict, time) =>
       Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer) match
       {
-        case Load(modelName) =>
-         val code = Code(readResource("/examples/abc.ka").mkString("\n"))
-         val d = Pickle.intoBytes[KappaMessage](code)
-         send(BinaryMessage(ByteString(d)))
+        case Load(project) =>
+
+          val rep = fileManager.cd("repressilator").read("repress.ka")
+          val code = Code(rep)//Code(readResource("/examples/abc.ka").mkString("\n"))
+
+          val d = Pickle.intoBytes[KappaMessage](code)
+          send(BinaryMessage(ByteString(d)))
 
         case LaunchModel(server, parameters)=> run(parameters)
 

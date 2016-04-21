@@ -26,7 +26,7 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
 {
   subscriber.onOpen.triggerLater{
     dom.console.log("WebSocket has been opened")
-    send(Load(KappaProject("model.ka")))
+    send(Load(KappaProject.default))
     //send(disc)
   }
 

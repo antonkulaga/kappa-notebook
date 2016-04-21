@@ -79,18 +79,39 @@ case class Code(text: String) extends KappaMessage
 
 case class Load(project: KappaProject = KappaProject.default)  extends KappaMessage
 
-
 import scala.collection.immutable.{List, Nil}
 
 object KappaProject {
-  lazy val default = KappaProject("_default")
+  lazy val default = KappaProject("repressilator", loaded = false)
 }
 
-case class KappaProject(name: String) extends KappaMessage
+case class KappaProject(name: String, loaded: Boolean/*, folder: KappaFolder = KappaFolder.empty*/) extends KappaMessage
 
 
 object KappaPath{
-  lazy val empty = KappaPath("", Nil, None, active = false)
+  implicit val ordering = new Ordering[KappaPath] {
+    override def compare(x: KappaPath, y: KappaPath): Int = x.path.compare(y.path) match {
+      case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
+      case other => other
+    }
+  }
+
+  lazy val empty = KappaFolder("", SortedSet.empty,  active = false)
 }
 
-case class KappaPath(path: String, children: List[KappaPath] = Nil, parent: Option[KappaPath] = None, active: Boolean = false) extends KappaMessage
+object KappaFolder {
+  lazy val empty = KappaFolder("", SortedSet.empty, active = false)
+}
+
+case class KappaFolder(path: String, children: SortedSet[KappaPath] = SortedSet.empty, active: Boolean = false) extends KappaPath
+{
+  lazy val childFiles = children.collect{case f: KappaFile =>f}
+}
+
+case class KappaFile(path: String, name: String, content: String, active: Boolean = false) extends KappaPath
+
+trait KappaPath extends KappaMessage
+{
+  def path: String
+  def active: Boolean
+}

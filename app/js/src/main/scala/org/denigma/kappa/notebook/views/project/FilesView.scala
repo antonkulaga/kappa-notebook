@@ -2,15 +2,14 @@ package org.denigma.kappa.notebook.views.project
 
 import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView}
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.KappaPath
+import org.denigma.kappa.messages.{KappaFolder, KappaPath}
 import org.scalajs.dom.raw.Element
 import rx._
-
 import rx.Rx.Dynamic
 
 import scala.collection.immutable.SortedSet
 
-class FilesView(val elem: Element, path: Rx[KappaPath]) extends BindableView with ItemsSeqView {
+class FilesView(val elem: Element, path: Rx[KappaFolder]) extends BindableView with ItemsSeqView {
 
   override type Item = Var[KappaPath]
 
@@ -20,7 +19,7 @@ class FilesView(val elem: Element, path: Rx[KappaPath]) extends BindableView wit
 
   val items: Rx[List[Item]] = Rx.unsafe {
     val p = path()
-    for (child <- p.children) yield wrap(child)
+    (for (child <- p.children) yield wrap(child)).toList
   }
 
   /*

@@ -8,6 +8,7 @@ import akka.pattern.pipe
 import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit.TestProbe
 import akka.util.Timeout
+import com.typesafe.config.Config
 import org.denigma.kappa.notebook.services.WebSimClient
 import org.scalatest.concurrent.Futures
 import org.scalatest.{BeforeAndAfterAll, Inside, Matchers, WordSpec}
@@ -30,5 +31,7 @@ import java.io.InputStream
 
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
 class BasicKappaSuite extends BasicSuite with KappaRes {
+
+  val config: Config = system.settings.config
 
 }

@@ -85,11 +85,13 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
         case result =>
           val value = Pattern(List(result))
           leftPattern.refresh(value, forces)
+          rightPattern.refresh(Pattern.empty, forces)
 
       }.onFailure{
         input=>
           ruleParser.parse(input).onSuccess{
             case rule =>
+              direction() = rule.direction
               leftPattern.refresh(rule.left, forces)
               rightPattern.refresh(rule.right, forces)
               val (chLeft, chRight) = rule.changed.unzip
@@ -107,7 +109,6 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
               } {
                 if(chRight.contains(a)) n.markChanged() else n.markDeleted()
               }
-              direction() = rule.direction
           }
       }
     }
@@ -146,10 +147,10 @@ class WatchPattern(s: SVG) {
 
   val nodes: Rx[Vector[AgentNode]] = agentMap.map(mp => mp.values.toVector)//agents.toSyncVector(agent2node)((a, n)=> n.data == a)
 
-  val edges = Rx{
+  val edges: Rx[Vector[KappaEdge]] = Rx{
     val mp = agentMap()
     val ls = links()
-    (for{
+    val result = (for{
       link <- ls
       from <- mp.get(link.fromAgent)
       to <- mp.get(link.toAgent)
@@ -159,6 +160,8 @@ class WatchPattern(s: SVG) {
         //val sp = new HtmlSprite(sprite.render)
         new KappaEdge(link, from, to, s = this.s)
       }).toVector
+    println("EDGES NUMBER = "+result.length)
+    result
   }
 
   def refresh(value: Pattern, forces: Vector[Force[AgentNode, KappaEdge]] ): Unit =  if(value != pattern.now) {

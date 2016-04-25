@@ -47,7 +47,8 @@ class GraphView(val elem: Element,
   }
 
   protected def onRemoveNode(node: AgentNode) = {
-    viz.removeSprite(node.render())
+    node.clearChildren()
+    viz.removeSprite(node.view)
   }
 
   protected def onAddEdge(edge: KappaEdge) = {
@@ -56,8 +57,10 @@ class GraphView(val elem: Element,
   }
 
   protected def onRemoveEdge(edge: KappaEdge) = {
+    edge.clearChildren()
     viz.removeObject(edge.arrow)
     viz.removeSprite(edge.view)
+    //println("removed edge with :" + viz.cssScene.children.contains(edge.view))
   }
 
   protected def subscribeUpdates() = {

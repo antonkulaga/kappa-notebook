@@ -48,8 +48,10 @@ trait KappaView extends KappaPainter {
   protected val spriteChange = sprite.zip
   spriteChange.onChange{
     case (old, n)=>
-      view.remove(old)
-      view.add(n)
+      if(old != n) {
+        view.remove(old)
+        view.add(n)
+      }
   }
 
 
@@ -58,11 +60,12 @@ trait KappaView extends KappaPainter {
   def render(): Object3D = {
     clearChildren()
     view.add(sprite.now)
+    view.renderDepth
     view
     //container.children.foreach(c=>scene.remove(c))
   }
 
-  protected def clearChildren() = {
+  def clearChildren() = {
     view.children.toList.foreach(view.remove)
   }
 
@@ -168,6 +171,11 @@ trait KappaParentView extends KappaView {
     drawChildren(true)
     view
     //container.children.foreach(c=>scene.remove(c))
+  }
+
+  override def clearChildren() = {
+    view.children.toList.foreach(view.remove)
+    children.foreach(_.clearChildren())
   }
 }
 

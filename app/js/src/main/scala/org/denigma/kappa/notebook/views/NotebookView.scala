@@ -81,9 +81,17 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
      .register("KappaEditor")((el, args) => new KappaCodeEditor(el, hub, editorsUpdates).withBinder(n => new CodeBinder(n)))
      .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
      .register("LeftGraph") {  (el, args) =>
-       new GraphView(el, kappaWatcher.leftPattern.nodes, kappaWatcher.leftPattern.edges, kappaWatcher.leftPattern.layouts, args.getOrElse("container","graph-container").toString).withBinder(n => new CodeBinder(n)) }
+       new GraphView(el,
+         kappaWatcher.leftPattern.nodes,
+         kappaWatcher.leftPattern.edges,
+         kappaWatcher.leftPattern.layouts,
+         args.getOrElse("container","graph-container").toString).withBinder(n => new CodeBinder(n)) }
      .register("RightGraph") {  (el, args) =>
-       new GraphView(el, kappaWatcher.rightPattern.nodes, kappaWatcher.rightPattern.edges, kappaWatcher.rightPattern.layouts, args.getOrElse("container","graph-container").toString).withBinder(n => new CodeBinder(n)) }
+       new GraphView(el,
+         kappaWatcher.rightPattern.nodes,
+         kappaWatcher.rightPattern.edges,
+         kappaWatcher.rightPattern.layouts,
+         args.getOrElse("container","graph-container").toString).withBinder(n => new CodeBinder(n)) }
      //.register("Files") {  (el, args) => new FilesView(el, hub.path).withBinder(n => new CodeBinder(n)) }
 
 }

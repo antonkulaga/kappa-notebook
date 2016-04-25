@@ -49,6 +49,7 @@ class Visualizer (val container: HTMLElement,
 
   //https://github.com/antonkulaga/semantic-graph/tree/master/graphs/src/main/scala/org/denigma/graphs
   def addObject(obj: Object3D) = {
+    if(cssScene.children.contains(obj)) println("DOUBLE ADDITION OF OBJECT!")
     scene.add(obj)
   }
 
@@ -58,6 +59,7 @@ class Visualizer (val container: HTMLElement,
 
 
   def addSprite(htmlSprite: Object3D) = {
+    if(cssScene.children.contains(htmlSprite)) println("DOUBLE ADDITION OF SPRITE!")
     cssScene.add(htmlSprite)
   }
 

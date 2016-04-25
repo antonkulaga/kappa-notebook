@@ -42,31 +42,36 @@ class GraphView(val elem: Element,
     500.0
   )
 
+  protected def onAddNode(node: KappaNode) = {
+    viz.addSprite(node.render())
+  }
+
+  protected def onRemoveNode(node: KappaNode) = {
+    viz.removeSprite(node.render())
+  }
+
+  protected def onAddEdge(edge: KappaEdge) = {
+    viz.addSprite(edge.render())
+    viz.addObject(edge.arrow)
+  }
+
+  protected def onRemoveEdge(edge: KappaEdge) = {
+    viz.removeObject(edge.arrow)
+    viz.removeSprite(edge.container)
+  }
+
   protected def subscribeUpdates() = {
     nodeUpdates.onChange{ case (removed, added) =>
-      removed.foreach(r => viz.removeSprite(r.view))
-      added.foreach(a => viz.addSprite(a.view))
+      removed.foreach(onRemoveNode)
+      added.foreach(onAddNode)
     }
     edgeUpdates.onChange{ case (removed, added)=>
-      removed.foreach{ case r=>
-        viz.removeObject(r.arrow)
-        viz.removeObject(r.arrow.line)
-        viz.removeSprite(r.view)
-      }
-      added.foreach{
-        case a=>
-          viz.addObject(a.arrow)
-          viz.addSprite(a.view)
-      }
+      removed.foreach(onRemoveEdge)
+      added.foreach(onAddEdge)
     }
-
-    nodes.now.foreach(a=>viz.addSprite(a.view))
-    edges.now.foreach{
-      case a=>
-        viz.addObject(a.arrow)
-        viz.addSprite(a.view)
-    }
-    layouts.now.foreach(_.start(viz.width, viz.height,viz.camera))
+    nodes.now.foreach(onAddNode)
+    edges.now.foreach(onAddEdge)
+    layouts.now.foreach(_.start(viz.width, viz.height, viz.camera))
   }
 
 

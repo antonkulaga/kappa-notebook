@@ -2,6 +2,7 @@ package org.denigma.kappa.notebook.views.visual
 
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.notebook.views.visual.LayoutMode.LayoutMode
+import org.denigma.kappa.notebook.views.visual.drawing.Rectangle
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
 import rx._
 
@@ -40,7 +41,7 @@ class Repulsion(val repulsionMult: Double, EPSILON: Double = 0.00001) extends Fo
     for {i <- nodes.indices}
     {
       val no1 = nodes(i)
-      val n1 = no1.view
+      val n1 = no1.container
       val l1 = no1.layoutInfo
       if(i==0) l1.setOffsets(0, 0, 0)
 
@@ -49,7 +50,7 @@ class Repulsion(val repulsionMult: Double, EPSILON: Double = 0.00001) extends Fo
 
       for {j <- (i + 1) until  nodes.size; if i != j} {
         val no2 = nodes(j)
-        val n2 = no2.view
+        val n2 = no2.container
         val l2 = no2.layoutInfo
         l2.init(n2.position)
 
@@ -148,9 +149,6 @@ class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double
 
       val deltaX = toBorder(toHorBorders(rect, l1.pos.x))
       val deltaY = toBorder(toVerBorders(rect, l1.pos.y))
-      println("rect = " + rect+ " deltaX "+deltaX + "  HOR IS"+ toHorBorders(rect, l1.pos.x)+ " ** "+l1.pos.x+ " camera qt " +camera.position.toArray().toList)
-      println("rect = " + rect+ " deltaY "+deltaY + "  VERT IS"+ toHorBorders(rect, l1.pos.y)+ " ** "+l1.pos.y+ " camera qt " +camera.position.toArray().toList)
-
       val deltaZ = 0
 
       val distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2))
@@ -174,7 +172,7 @@ class Gravity(val attractionMult: Double, val gravityMult: Double, center: Vecto
       for {i <- nodes.indices}
       {
         val no1 = nodes(i)
-        val n1 = no1.view
+        val n1 = no1.container
         val l1 = no1.layoutInfo
         if(i==0) l1.setOffsets(0, 0, 0)
 
@@ -267,7 +265,7 @@ class ForceLayout(
   def position(nodes: Vector[Node]) = {
     for {i <- nodes.indices} {
       val node = nodes(i)//.view
-      val view = node.view
+      val view = node.container
       val l = info(node)
 
       val length = Math.max(EPSILON, l.offset.length())

@@ -45,5 +45,24 @@ case class KappaHub(
                      simulations: Var[Map[(Int, RunModel), SimulationStatus]],
                      runParameters: Var[RunModel],
                      errors: Var[List[String]],
-                     papers: Var[Map[String, Bookmark]]
-)
+                     papers: Var[Map[String, Bookmark]],
+                     selectedTab: Var[String] = Var("Simulations"),
+                     selectedImage: Var[String] = Var("presentation/people.jpg"),
+                     selectedPaper: Var[String] = Var("/files/ossilator/Stricker08.pdf")
+                   )
+{
+  import org.denigma.binding.extensions._
+  import rx.Ctx.Owner.Unsafe.Unsafe
+  selectedImage.onChange {
+    case "" =>
+    case img => go2images()
+  }
+  selectedPaper.onChange {
+    case "" =>
+    case img => go2images()
+  }
+
+  def go2images() =     selectedTab() = "Image"
+  def go2papers() =     selectedTab() = "Papers"
+
+}

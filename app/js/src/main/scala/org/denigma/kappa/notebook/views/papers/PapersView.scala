@@ -28,8 +28,6 @@ class PapersView(val elem: Element, val selected: Var[String], hub: KappaHub) ex
   with ItemsMapView
   with TabItem{
 
-  val selectTab = Var("")
-
   override type Item = String
 
   override type Value = Bookmark
@@ -45,14 +43,14 @@ class PapersView(val elem: Element, val selected: Var[String], hub: KappaHub) ex
       el.id = name
       println("add view "+name)
       val location = this.items.now(name) //buggy but hope it will work
-      val v = new PublicationView(el, selectTab, Var(location), hub ).withBinder(v=>new CodeBinder(v))
-      selectTab() = name
+      val v = new PublicationView(el, hub.selectedPaper, Var(location), hub ).withBinder(v=>new CodeBinder(v))
+      hub.selectedPaper() = name
       v
   }
 
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, selectTab).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new TabHeaders(el, headers, hub.selectedPaper).withBinder(new GeneralBinder(_)))
 
   override protected def subscribeUpdates() = {
     template.hide()

@@ -22,12 +22,14 @@ class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
 
   self =>
 
+  lazy val selected = hub.selectedTab
+
   protected def defaultContent = ""
   protected def defaultLabel = ""
 
   type Item = Rx[common.TabItem]
 
-  val selected: Var[String] = Var("Simulations")
+
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
@@ -42,6 +44,12 @@ class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
         new ConsoleView(el, hub.console, selected).withBinder(new CodeBinder(_))
     }
     */
+
+    .register("Image") {
+      case (el, params) =>
+        new ImageView(el, selected, hub).withBinder(new CodeBinder(_))
+    }
+
     .register("Papers") {
       case (el, params) =>
         new PapersView(el, selected, hub).withBinder(new CodeBinder(_))

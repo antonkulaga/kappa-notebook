@@ -49,17 +49,17 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   lazy val padding: Double= 10
 
-  lazy val painter: AgentPainter = new AgentPainter(agentFontSize, padding, s)
+  //lazy val painter: SpritePainter = new SpritePainter(agentFontSize, padding, s)
 
-  val leftPattern = new WatchPattern(painter)
+  val leftPattern = new WatchPattern(s)
 
-  val rightPattern = new WatchPattern(painter)
+  val rightPattern = new WatchPattern(s)
 
   val direction: Var[KappaModel.Direction] = Var(KappaModel.Left2Right)
 
   //protected val graivityForce = new Gravity(ForceLayoutParams.default2D.attractionMult, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
 
-  protected val borderForce = new BorderForce(ForceLayoutParams.default2D.repulsionMult , 10, 0.9, ForceLayoutParams.default2D.center)
+  protected val borderForce = new BorderForce(ForceLayoutParams.default2D.repulsionMult, 10, 0.9, ForceLayoutParams.default2D.center)
 
   protected val forces: Vector[Force[KappaNode, KappaEdge]] = Vector(
     new Repulsion(ForceLayoutParams.default2D.repulsionMult),
@@ -107,18 +107,10 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       //searchForAgents(editor, line , num)
     }
   }
-  /*
-
-  val changeOptions: Dynamic[Option[(Editor, Seq[(Int, String)])]] = updates.map(upd=>upd.changedLinesOpt)
-  changeOptions.foreach{
-    case Some((editor, lines))=> changeHandler(editor, lines)
-    case other => //nothing
-  }
-  */
 
 
 }
-class WatchPattern(painter: AgentPainter) {
+class WatchPattern(s: SVG) {
 
   val pattern = Var(Pattern.empty)
 
@@ -128,13 +120,7 @@ class WatchPattern(painter: AgentPainter) {
 
   import org.denigma.kappa.notebook.extensions._
 
-  protected def agent2node(agent: KappaModel.Agent) = {
-    val sprite = painter.drawAgent(agent)
-    val sp = new HtmlSprite(sprite.render)
-    new KappaNode(agent, sp)
-  }
-
-
+  protected def agent2node(agent: KappaModel.Agent) = { new KappaNode(agent, s)  }
 
   val layouts: Var[Vector[GraphLayout]] = Var{Vector.empty}
 
@@ -154,9 +140,9 @@ class WatchPattern(painter: AgentPainter) {
       to <- mp.get(link.toAgent)
     }
       yield {
-        val sprite = painter.drawLink(link)
-        val sp = new HtmlSprite(sprite.render)
-        new KappaEdge(from, to, sp)
+        //val sprite = painter.drawLink(link)
+        //val sp = new HtmlSprite(sprite.render)
+        new KappaEdge(link, from, to, s = this.s)
       }).toVector
   }
 

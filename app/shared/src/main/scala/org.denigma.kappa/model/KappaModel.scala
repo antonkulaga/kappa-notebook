@@ -18,8 +18,10 @@ object KappaModel {
     }
   }
 
-  case class Link(fromAgent: Agent, toAgent: Agent, fromSide: Side, toSide: Side, label: String) extends KappaElement
+  case class Link(fromAgent: Agent, toAgent: Agent, fromSide: Side, toSide: Side, label: String) extends KappaNamedElement
   {
+    def name = label
+
     require(fromAgent.sideSet.contains(fromSide), s"from Agent($fromAgent) should contain fromSide($fromSide)")
 
     require(toAgent.sideSet.contains(toSide), s"from Agent($toAgent) should contain fromSide($toSide)")
@@ -61,7 +63,8 @@ object KappaModel {
 
   }
 
-  case class Rule(name: String, left: Pattern, right: Pattern, forward: Either[String, Double], backward: Option[Either[String, Double]] = None) {
+  case class Rule(name: String, left: Pattern, right: Pattern, forward: Either[String, Double], backward: Option[Either[String, Double]] = None) extends KappaNamedElement
+  {
     lazy val added = left.agents.diff(right.agents)
     lazy val removed = right.agents.diff(left.agents)
 
@@ -70,9 +73,13 @@ object KappaModel {
     //def atomic: Boolean = added.size==1 || removed.size == 1
   }
 
-  case class State(name: String) extends KappaElement
+  trait KappaNamedElement {
+    def name: String
+  }
 
-  case class Side(name: String, states: Set[State] = Set.empty, links: Set[String] = Set.empty) extends KappaElement {
+  case class State(name: String) extends KappaNamedElement
+
+  case class Side(name: String, states: Set[State] = Set.empty, links: Set[String] = Set.empty) extends KappaNamedElement {
     def ~(state: State): Side = {
       copy(states = states + state)
     }
@@ -87,7 +94,7 @@ object KappaModel {
     }
   }
 
-  case class Agent(name: String, sides: List[Side] = List.empty, extra: String = "") extends KappaElement
+  case class Agent(name: String, sides: List[Side] = List.empty, extra: String = "") extends KappaNamedElement
   {
     lazy val sideSet = sides.toSet
 

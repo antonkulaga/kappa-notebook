@@ -17,9 +17,9 @@ import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle
 import SvgBundle.all._
 import SvgBundle.all.attrs._
-import _root_.rx.Rx.Dynamic
 
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView with InitialCode
@@ -52,7 +52,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
     val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty) //collect updates of all editors together
 
-    val commentManager = new CommentsWatcher(editorsUpdates, hub.papers)
+    val commentManager = new CommentsWatcher(editorsUpdates, hub)
 
     lazy val s: SVG = {
       val t = svg(/*width :=  defaultWidth, height := defaultHeight*/).render

@@ -53,15 +53,15 @@ class Visualizer (val container: HTMLElement,
   }
 
   def removeObject(obj: Object3D) = {
-    scene.add(obj)
+    scene.remove(obj)
   }
 
 
-  def addSprite(htmlSprite: HtmlSprite) = {
+  def addSprite(htmlSprite: Object3D) = {
     cssScene.add(htmlSprite)
   }
 
-  def removeSprite(htmlSprite: HtmlSprite) = {
+  def removeSprite(htmlSprite: Object3D) = {
     cssScene.remove(htmlSprite)
   }
 

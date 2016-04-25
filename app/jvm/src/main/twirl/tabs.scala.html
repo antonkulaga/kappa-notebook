@@ -3,7 +3,7 @@
   <div class="ui top attached tabular menu">
     <a class="item" data-set-selected-on-click="Simulations" data-class-active-if="Simulations.active">Simulations</a>
     <a class="item" data-set-selected-on-click="Papers" data-class-active-if="Papers.active">Papers</a>
-    <a class="item" data-set-selected-on-click="UnderDevelopment" data-class-active-if="UnderDevelopment.active">Figures</a>
+    <a class="item" data-set-selected-on-click="Image" data-class-active-if="Image.active">Figures</a>
     <a class="item" data-set-selected-on-click="UnderDevelopment" data-class-active-if="UnderDevelopment.active">>Videos</a>
     <a class="item" data-set-selected-on-click="UnderDevelopment" data-class-active-if="UnderDevelopment.active">>Tasks</a>
     <!-- <a class="item" data-set-selected-on-click="Console" data-class-active-if="Console.active">Console</a>-->
@@ -11,6 +11,9 @@
   </div>
   @annotations.html.papers()
   @results.html.simulations()
+  <section class="ui bottom attached tab segment" data-view="Image" id="Image" data-class-active-if="active">
+    <img data-src="src" class="ui huge image">
+  </section>
   <section class="ui bottom attached tab segment" data-view="UnderDevelopment" id="UnderDevelopment" data-class-active-if="active">
   </section>
 </section>

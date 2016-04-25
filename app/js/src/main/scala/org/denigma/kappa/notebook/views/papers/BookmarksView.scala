@@ -25,6 +25,7 @@ class BookmarksView(val elem: Element, location: Var[Bookmark], textLayer: Eleme
   override val items: Var[List[Item]] = Var(List.empty)
 
   val paper = location.map(_.paper)
+
   val page = location.map(_.page)
 
   val selections = Var(List.empty[Range])

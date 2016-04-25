@@ -25,6 +25,7 @@ case class KappaChart(series: List[KappaSeries])
   def isEmpty: Boolean = series.isEmpty
 }
 
+
 object KappaSeries {
 
   import scala.util.Random

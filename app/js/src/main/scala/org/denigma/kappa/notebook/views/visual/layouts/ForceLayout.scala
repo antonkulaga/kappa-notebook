@@ -1,8 +1,8 @@
-package org.denigma.kappa.notebook.views.visual
+package org.denigma.kappa.notebook.views.visual.layouts
 
-import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.notebook.views.visual.LayoutMode.LayoutMode
+import org.denigma.kappa.notebook.views.visual._
 import org.denigma.kappa.notebook.views.visual.drawing.Rectangle
+import org.denigma.kappa.notebook.views.visual.layouts.LayoutMode.LayoutMode
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
 import rx._
 
@@ -34,14 +34,14 @@ object LayoutMode extends Enumeration {
   val ThreeD, TwoD = Value
 }
 
-class Repulsion(val repulsionMult: Double, EPSILON: Double = 0.00001) extends Force[KappaNode, KappaEdge] {
+class Repulsion(val repulsionMult: Double, EPSILON: Double = 0.00001) extends Force[AgentNode, KappaEdge] {
 
-  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[KappaNode], edges: Vector[KappaEdge], forceConstant: Double) = {
+  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[AgentNode], edges: Vector[KappaEdge], forceConstant: Double) = {
     val repulsion = repulsionMult * forceConstant
     for {i <- nodes.indices}
     {
       val no1 = nodes(i)
-      val n1 = no1.container
+      val n1 = no1.view
       val l1 = no1.layoutInfo
       if(i==0) l1.setOffsets(0, 0, 0)
 
@@ -50,7 +50,7 @@ class Repulsion(val repulsionMult: Double, EPSILON: Double = 0.00001) extends Fo
 
       for {j <- (i + 1) until  nodes.size; if i != j} {
         val no2 = nodes(j)
-        val n2 = no2.container
+        val n2 = no2.view
         val l2 = no2.layoutInfo
         l2.init(n2.position)
 
@@ -81,10 +81,10 @@ class Repulsion(val repulsionMult: Double, EPSILON: Double = 0.00001) extends Fo
 
 }
 
-class Attraction(val attractionMult: Double, EPSILON: Double = 0.00001) extends Force[KappaNode, KappaEdge] {
+class Attraction(val attractionMult: Double, EPSILON: Double = 0.00001) extends Force[AgentNode, KappaEdge] {
 
 
-  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[KappaNode], edges: Vector[KappaEdge], forceConstant: Double) = {
+  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[AgentNode], edges: Vector[KappaEdge], forceConstant: Double) = {
     val attraction = attractionMult * forceConstant
     for {i <- edges.indices} {
       val edge = edges(i)
@@ -116,7 +116,7 @@ class Attraction(val attractionMult: Double, EPSILON: Double = 0.00001) extends 
   }
 
 }
-
+/*
 class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double, center: Vector3) extends Force[KappaNode, KappaEdge] {
 
   def border(width: Double, height: Double) = Rectangle.fromCorners(center.x - width / 2, center.y - height / 2, center.x + width / 2, center.y + height / 2)
@@ -163,16 +163,62 @@ class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double
   }
 
 }
+*/
+class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double, center: Vector3) extends Force[AgentNode, KappaEdge] {
+
+  def border(width: Double, height: Double) = Rectangle.fromCorners(center.x - width / 2, center.y - height / 2, center.x + width / 2, center.y + height / 2)
+
+  def toHorBorders(rect: Rectangle, x: Double) = (x - rect.left, rect.right - x)
+
+  def toVerBorders(rect: Rectangle, y: Double) = (y - rect.top,  rect.bottom - y)
+
+  def toBorder: PartialFunction[(Double, Double), Double] = {
+    case (ld, rd) if (ld - threshold) < 0.0  =>
+      ld - threshold
+
+    case (ld, rd) if (rd - threshold) < 0.0  =>
+      Math.abs(rd - threshold)
+
+    case _ => 0
+  }
 
 
-class Gravity(val attractionMult: Double, val gravityMult: Double, center: Vector3,  EPSILON: Double = 0.00001) extends Force[KappaNode, KappaEdge] {
+  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[AgentNode], edges: Vector[KappaEdge], forceConstant: Double) = {
+    val repulsion = repulsionMult * forceConstant
+    val rect = border(width *  mult, height * mult)
+    for {
+      i <- nodes.indices
+    }
+    {
+      val no1 = nodes(i)
+      val l1 = no1.layoutInfo
+      if(i==0) l1.setOffsets(0, 0, 0)
 
-  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[KappaNode], edges: Vector[KappaEdge], forceConstant: Double) = {
+      val deltaX = toBorder(toHorBorders(rect, l1.pos.x))
+      val deltaY = toBorder(toVerBorders(rect, l1.pos.y))
+      val deltaZ = 0
+
+      val distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2))
+      if(distance > 0) {
+        val force =  (repulsion * repulsion) / Math.pow(distance, 2)
+        l1.force += force
+        l1.offset.x = l1.offset.x - (deltaX / distance) * force
+        l1.offset.y = l1.offset.y - (deltaY / distance) * force
+        l1.offset.z = 0
+      }
+    }
+  }
+
+}
+
+class Gravity(val attractionMult: Double, val gravityMult: Double, center: Vector3,  EPSILON: Double = 0.00001) extends Force[AgentNode, KappaEdge] {
+
+  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[AgentNode], edges: Vector[KappaEdge], forceConstant: Double) = {
       val attraction = attractionMult * forceConstant
       for {i <- nodes.indices}
       {
         val no1 = nodes(i)
-        val n1 = no1.container
+        val n1 = no1.view
         val l1 = no1.layoutInfo
         if(i==0) l1.setOffsets(0, 0, 0)
 
@@ -199,17 +245,17 @@ class Gravity(val attractionMult: Double, val gravityMult: Double, center: Vecto
 
 class ForceLayout(
 
-                   val graphNodes: Rx[Vector[KappaNode]],
+                   val graphNodes: Rx[Vector[AgentNode]],
                    val graphEdges: Rx[Vector[KappaEdge]],
                    val mode: LayoutMode,
-                   val forces: Vector[Force[KappaNode, KappaEdge]]
+                   val forces: Vector[Force[AgentNode, KappaEdge]]
                  ) extends GraphLayout  with Randomizable
 {
 
-  type Node = KappaNode
+  type Node = AgentNode
   type Edge = KappaEdge
 
-  def nodes: Vector[KappaNode] = graphNodes.now
+  def nodes: Vector[AgentNode] = graphNodes.now
   def edges: Vector[KappaEdge] = graphEdges.now
 
   def info(node: Node): LayoutInfo = node.layoutInfo
@@ -265,7 +311,7 @@ class ForceLayout(
   def position(nodes: Vector[Node]) = {
     for {i <- nodes.indices} {
       val node = nodes(i)//.view
-      val view = node.container
+      val view = node.view
       val l = info(node)
 
       val length = Math.max(EPSILON, l.offset.length())

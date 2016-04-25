@@ -65,8 +65,15 @@ object KappaModel {
 
   case class Rule(name: String, left: Pattern, right: Pattern, forward: Either[String, Double], backward: Option[Either[String, Double]] = None) extends KappaNamedElement
   {
-    lazy val added = left.agents.diff(right.agents)
-    lazy val removed = right.agents.diff(left.agents)
+    lazy val removed = left.agents.diff(right.agents) //includes also changed agents
+
+    lazy val added = right.agents.diff(left.agents)
+
+    lazy val changed: List[(Agent, Agent)] = for{
+      r <- removed
+      a <- added
+      if a.name == r.name
+    } yield (r, a)
 
     def direction: Direction = if(backward.isEmpty) KappaModel.Left2Right else KappaModel.BothDirections
     //lazy val kept = right

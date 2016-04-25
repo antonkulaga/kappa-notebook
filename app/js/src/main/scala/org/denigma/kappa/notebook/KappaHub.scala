@@ -62,7 +62,7 @@ case class KappaHub(
     case img => go2images()
   }
 
-  def go2images() =     selectedTab() = "Image"
-  def go2papers() =     selectedTab() = "Papers"
+  def go2images() = selectedTab() = "Image"
+  def go2papers() = selectedTab() = "Papers"
 
 }

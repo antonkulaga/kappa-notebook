@@ -5,7 +5,7 @@ import org.denigma.binding.extensions.sq
 import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.{AjaxSession, LoginView}
-import org.denigma.kappa.notebook.views.{NotebookView, SidebarView}
+import org.denigma.kappa.notebook.views.{NotebookView}
 import org.scalajs.dom
 import org.scalajs.dom.UIEvent
 import org.scalajs.dom.raw.{Element, HTMLElement}
@@ -51,8 +51,6 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
    * Register views
    */
   override lazy val injector = defaultInjector
-    // p.register("menu")( (el, args) => new MenuView(el).withBinder(new GeneralBinder(_)).withBinder(new NavigationBinder(_)))
-    .register("Sidebar")((el, args) => new SidebarView(el).withBinder(new GeneralBinder(_)))
     .register("Login")((el, args) => new LoginView(el, session).withBinder(new GeneralBinder(_)))
     .register("Notebook")((el, args) => new NotebookView(el, session).withBinder(n => new CodeBinder(n)))
     .register("Scroller") {

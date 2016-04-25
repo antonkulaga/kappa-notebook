@@ -123,6 +123,10 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
       val d = Pickle.intoBytes[KappaMessage](result)
       send(BinaryMessage(ByteString(d)))
 
+    case Disconnected(user, channel) =>
+      log.info(s"User $user disconnected from channel $channel")
+
+
 
   }
 

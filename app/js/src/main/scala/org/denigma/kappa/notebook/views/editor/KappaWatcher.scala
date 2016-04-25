@@ -13,6 +13,7 @@ import org.denigma.binding.extensions._
 import org.denigma.threejs.extras.HtmlSprite
 import rx.Rx.Dynamic
 import org.denigma.kappa.notebook.extensions._
+import org.denigma.kappa.notebook.views.visual.layouts._
 
 import scalatags.JsDom
 /*
@@ -61,7 +62,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   protected val borderForce = new BorderForce(ForceLayoutParams.default2D.repulsionMult, 10, 0.9, ForceLayoutParams.default2D.center)
 
-  protected val forces: Vector[Force[KappaNode, KappaEdge]] = Vector(
+  protected val forces: Vector[Force[AgentNode, KappaEdge]] = Vector(
     new Repulsion(ForceLayoutParams.default2D.repulsionMult),
     new Attraction(ForceLayoutParams.default2D.attractionMult),
     borderForce
@@ -76,7 +77,6 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
  }
   text.onChange(parseText)
 
-
   protected def parseText(line: String) = {
     if(line=="") {
 
@@ -84,15 +84,30 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       agentParser.parse(line).onSuccess{
         case result =>
           val value = Pattern(List(result))
-        leftPattern.refresh(value, forces)
+          leftPattern.refresh(value, forces)
 
       }.onFailure{
         input=>
           ruleParser.parse(input).onSuccess{
-            case result =>
-              leftPattern.refresh(result.left, forces)
-              rightPattern.refresh(result.right, forces)
-              direction() = result.direction
+            case rule =>
+              leftPattern.refresh(rule.left, forces)
+              rightPattern.refresh(rule.right, forces)
+              val (chLeft, chRight) = rule.changed.unzip
+              for{
+                r <- rule.removed
+                n <- leftPattern.nodes.now
+                if r == n.data
+              } {
+                if(chLeft.contains(r)) n.markChanged() else n.markDeleted()
+              }
+              for{
+                a <- rule.added
+                n <- rightPattern.nodes.now
+                if n.data == a
+              } {
+                if(chRight.contains(a)) n.markChanged() else n.markDeleted()
+              }
+              direction() = rule.direction
           }
       }
     }
@@ -120,16 +135,16 @@ class WatchPattern(s: SVG) {
 
   import org.denigma.kappa.notebook.extensions._
 
-  protected def agent2node(agent: KappaModel.Agent) = { new KappaNode(agent, s)  }
+  protected def agent2node(agent: KappaModel.Agent) = { new AgentNode(agent, s)  }
 
   val layouts: Var[Vector[GraphLayout]] = Var{Vector.empty}
 
 
-  val agentMap: Rx[Map[Agent, KappaNode]] = agents.map{
+  val agentMap: Rx[Map[Agent, AgentNode]] = agents.map{
     case ags => ags.map(a => a -> agent2node(a)).toMap
   }
 
-  val nodes: Rx[Vector[KappaNode]] = agentMap.map(mp => mp.values.toVector)//agents.toSyncVector(agent2node)((a, n)=> n.data == a)
+  val nodes: Rx[Vector[AgentNode]] = agentMap.map(mp => mp.values.toVector)//agents.toSyncVector(agent2node)((a, n)=> n.data == a)
 
   val edges = Rx{
     val mp = agentMap()
@@ -146,7 +161,7 @@ class WatchPattern(s: SVG) {
       }).toVector
   }
 
-  def refresh(value: Pattern, forces: Vector[Force[KappaNode, KappaEdge]] ): Unit =  if(value != pattern.now) {
+  def refresh(value: Pattern, forces: Vector[Force[AgentNode, KappaEdge]] ): Unit =  if(value != pattern.now) {
     layouts() = Vector.empty
     pattern() = value
     layouts() = Vector(new ForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces))

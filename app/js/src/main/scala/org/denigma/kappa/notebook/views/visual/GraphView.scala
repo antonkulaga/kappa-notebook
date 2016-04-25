@@ -14,7 +14,7 @@ import rx._
 import scala.collection.immutable
 
 class GraphView(val elem: Element,
-                val nodes: Rx[Vector[KappaNode]],
+                val nodes: Rx[Vector[AgentNode]],
                 val edges: Rx[Vector[KappaEdge]],
                 val layouts: Rx[Vector[GraphLayout]],
                 val containerName: String
@@ -42,22 +42,22 @@ class GraphView(val elem: Element,
     500.0
   )
 
-  protected def onAddNode(node: KappaNode) = {
-    viz.addSprite(node.render())
+  protected def onAddNode(node: AgentNode) = {
+    viz.addSprite(node.view)
   }
 
-  protected def onRemoveNode(node: KappaNode) = {
+  protected def onRemoveNode(node: AgentNode) = {
     viz.removeSprite(node.render())
   }
 
   protected def onAddEdge(edge: KappaEdge) = {
-    viz.addSprite(edge.render())
+    viz.addSprite(edge.view)
     viz.addObject(edge.arrow)
   }
 
   protected def onRemoveEdge(edge: KappaEdge) = {
     viz.removeObject(edge.arrow)
-    viz.removeSprite(edge.container)
+    viz.removeSprite(edge.view)
   }
 
   protected def subscribeUpdates() = {

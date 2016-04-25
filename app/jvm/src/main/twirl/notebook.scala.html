@@ -3,8 +3,6 @@
 <section class="ui equal width blue secondary segment celled grid"  id="Notebook" data-view="Notebook">
       <div class="ui equal width row">
           <section class="ui three wide column">
-              <h3 class="ui center aligned header" data-bind="currentLine">
-              </h3>
               <div class="ui blue segment">
 
               <div id = "LeftGraph" data-view="LeftGraph" data-param-container="left-container">
@@ -17,6 +15,16 @@
               </div>
               </div>
 
+              <div class="ui segment">
+                    <h6>Current line:</h6>
+                  <span class="ui center aligned header" data-bind="currentLine">
+                      <h6>Legend:</h6>
+                      <span class="ui red label">removed</span>,
+                      <span class="ui green label">added</span>,
+                      <span class="ui violet label">changed</span>
+
+                  </span>
+              </div>
           </section>
 
         @ide.html.editor()

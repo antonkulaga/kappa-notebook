@@ -59,7 +59,6 @@ class WebSimSuite extends BasicKappaSuite {
 
       probeToken.expectMsgPF(duration * 2) {
         case Left(token: Int) =>
-          //println(s"MODEL TOKEN IS " + token)
           server.getRunning().pipeTo(probeList.ref)
           probeList.expectMsgPF(duration * 3) {
             case arr: Array[Int] if arr.contains(token) => //println(s"tokens are : [${arr.toList.mkString(" ")}]")
@@ -76,12 +75,10 @@ class WebSimSuite extends BasicKappaSuite {
        .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
 
      val params = messages.RunModel(model, Some(1000), max_events = Some(10000))
-     val tokenFut: Future[Either[server.Token, Array[String]]] = server.launch(params).pipeTo(probeToken.ref)
+     val tokenFut = server.launch(params).pipeTo(probeToken.ref)
 
      probeToken.expectMsgPF(duration * 2) {
-       case Right(msg: Array[String]) =>
-         //println("cannot launch simulation with the following error:")
-         //println(msg.toList.mkString("\n"))
+       case Right(msg: List[String]) =>
      }
    }
 
@@ -89,7 +86,7 @@ class WebSimSuite extends BasicKappaSuite {
       val probeToken = TestProbe()
       val model = abc
       val params = messages.RunModel(model, Some(1000), max_events = Some(1000000))
-      val tokenFut: Future[Either[server.Token, Array[String]]] = server.launch(params).pipeTo(probeToken.ref)
+      val tokenFut = server.launch(params).pipeTo(probeToken.ref)
 
       val token = probeToken.expectMsgPF(duration * 2) {  case Left(t: Int) => t  }
       val source =  Source.single(token)
@@ -97,7 +94,6 @@ class WebSimSuite extends BasicKappaSuite {
       val s: Source[(flows.Token, SimulationStatus), NotUsed] = source.via(flows.simulationStatusFlow)
       val tok: Int = s.runWith(simSink).request(1).expectNextPF{
         case (t: Int, status: SimulationStatus ) =>
-          println(t -> status)
           t
       }
 
@@ -112,12 +108,11 @@ class WebSimSuite extends BasicKappaSuite {
       val del = flows.stopRequestFlow.via(flows.timePool).map(_._1)
       Source.single[Int](tok).via(del).runWith(delSink).request(1).expectNextPF {
         case res =>
-          println("result " + res)
       }
     }
 
     "run streamed" in {
-      val tokenSink = TestSink.probe[(Either[Int, Array[String]], RunModel)]
+      val tokenSink = TestSink.probe[(Either[Int, List[String]], RunModel)]
       val params = messages.RunModel(abc, Some(100), max_events = Some(5000))
       val launcher = Source.single(params).via(flows.tokenFlow).runWith(tokenSink)
       val (token, model) = launcher.request(1).expectNextPF{ case (Left(t: Int), mod) =>  t -> mod }
@@ -138,7 +133,6 @@ class WebSimSuite extends BasicKappaSuite {
        server.run(params).map(_._1).pipeTo(probe.ref)
        probe.expectMsgPF(1 second){
          case  Left( (token: Int, sim: SimulationStatus)) if sim.percentage>=100.0  =>
-           //println(sim)
        }
      }
  }

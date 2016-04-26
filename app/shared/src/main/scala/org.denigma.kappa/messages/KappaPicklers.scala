@@ -26,15 +26,21 @@ trait KappaPicklers {
       .addConcreteType[SimulationStatus]
       .addConcreteType[VersionInfo]
 
+
+    implicit val kappaPathPickler = compositePickler[KappaPath]
+        .addConcreteType[KappaFile]
+        .addConcreteType[KappaFolder]
+
+
     implicit val kappaMessagePickler = compositePickler[KappaMessage]
       .addConcreteType[SimulationResult]
       .addConcreteType[SyntaxErrors]
+      .addConcreteType[ServerErrors]
       .addConcreteType[Connected]
       .addConcreteType[Disconnected]
-      /*
-      .addConcreteType[KappaFolder]
       .addConcreteType[KappaFile]
-      */
+      .addConcreteType[KappaFolder]
+
 
   }
 
@@ -50,18 +56,17 @@ trait KappaPicklers {
     .addConcreteType[VersionInfo]
 
   implicit val kappaMessagePickler = compositePickler[KappaMessage]
-      .addConcreteType[Code]
+      //.addConcreteType[Code]
       .addConcreteType[Load]
+      .addConcreteType[KappaProject]
       .addConcreteType[LaunchModel]
       .addConcreteType[SimulationResult]
       .addConcreteType[SyntaxErrors]
+      .addConcreteType[ServerErrors]
       .addConcreteType[Connected]
       .addConcreteType[Disconnected]
-    /*
-      .addConcreteType[KappaFolder]
       .addConcreteType[KappaFile]
-      */
-
-
+      .addConcreteType[KappaFolder]
+      .addConcreteType[Loaded]
 
 }

@@ -90,12 +90,14 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
     case SocketMessages.IncomingMessage(channel, uname, message: BinaryMessage.Strict, time) =>
       Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer) match
       {
-        case Load(project) =>
+        case Load(pro) =>
 
-          val rep = fileManager.cd("repressilator").read("repress.ka")
-          val code = Code(rep)//Code(readResource("/examples/abc.ka").mkString("\n"))
+          //val rep = fileManager.cd("repressilator").read("repress.ka")
+          //val code = Code(rep)//Code(readResource("/examples/abc.ka").mkString("\n"))
+          val project = fileManager.loadProject(pro)
+          val list = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p).toList
 
-          val d = Pickle.intoBytes[KappaMessage](code)
+          val d = Pickle.intoBytes[KappaMessage](Loaded(project, list))
           send(BinaryMessage(ByteString(d)))
 
         case LaunchModel(server, parameters)=> run(parameters)

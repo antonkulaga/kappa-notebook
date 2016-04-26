@@ -71,7 +71,9 @@ trait SharedVersions
 
 	val productCollections = "1.4.2"
 
-	val scalaTest = "3.0.0-SNAP13"
+	val scalaTest = "3.0.0-M16-SNAP4"//"3.0.0-SNAP13"
+
+	val scalaTestMatchers = "3.0.0-SNAP13"
 
 	val fastparse = "0.3.7"
 

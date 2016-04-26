@@ -20,12 +20,8 @@ object KappaHub{
     )
 
   def empty: KappaHub = KappaHub(
-    //Var(KappaProject()),
-    Var("HelloWorld.ka"),
-    //Var(KappaPath.empty),
-    Var(KappaFolder.empty),
+    Var(Loaded.empty),
     Var(None),
-    Var(Defaults.code),
     Var(messages.Defaults.simulations),
     Var(messages.Defaults.runModel),
     Var(List.empty[String]),
@@ -37,11 +33,8 @@ object KappaHub{
   * Created by antonkulaga on 07/04/16.
   */
 case class KappaHub(
-                     name: Var[String],
-                     path: Var[KappaPath],
+                     loaded: Var[Loaded],
                      kappaCursor: Var[Option[(Editor, PositionLike)]],
-                     kappaCode: Var[Code],
-                     //kappaCode: Var[Map[String, WebSim.Code]],
                      simulations: Var[Map[(Int, RunModel), SimulationStatus]],
                      runParameters: Var[RunModel],
                      errors: Var[List[String]],
@@ -51,6 +44,8 @@ case class KappaHub(
                      selectedPaper: Var[String] = Var("/files/ossilator/Stricker08.pdf")
                    )
 {
+  lazy val name = loaded.map(l=>l.project.name)
+
   import org.denigma.binding.extensions._
   import rx.Ctx.Owner.Unsafe.Unsafe
   selectedImage.onChange {

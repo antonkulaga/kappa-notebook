@@ -77,6 +77,14 @@ trait KappaParentView extends KappaView {
 
   def children: List[ChildView]
 
+  lazy val childrenShift = new Vector3(0, 0, 1)
+
+
+  def setShift(pos: Vector3): Vector3 = {
+    pos.set(pos.x + childrenShift.x, pos.y + childrenShift.y, pos.z + childrenShift.z)
+  }
+
+
   protected def childrenLine(): (List[(ChildView, Rectangle)], Double) = {
     children.foldLeft(List.empty[(ChildView, Rectangle)], 0.0) {
       case ((list, cw), child) =>
@@ -152,7 +160,7 @@ trait KappaParentView extends KappaView {
   def drawHorSides(tuples: List[(ChildView, Rectangle)], y: Double, updateChildren: Boolean): Unit = {
     for ((child, box) <- tuples) {
       val obj = child.render()
-      obj.position.set(box.x, y, 0.0)
+      setShift(obj.position.set(box.x, y, 0.0))
       view.add(obj)
     }
   }
@@ -161,7 +169,7 @@ trait KappaParentView extends KappaView {
     for ((child, box) <- tuples) {
       val obj = child.render()
       val shift = if(left) - box.width / 2 else box.width / 2
-      obj.position.set(x + shift, box.y, 0.0)
+      setShift(obj.position.set(x + shift, box.y, 0.0))
       view.add(obj)
     }
   }

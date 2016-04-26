@@ -6,14 +6,16 @@ import akka.http.scaladsl.model.ws._
 import akka.stream._
 import akka.stream.scaladsl._
 import akka.stream.stage._
+import akka.util.ByteString
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.SocketMessages._
+import boopickle.Default._
 
 /**
   * Websocket transport that unplickles/pickles messages
   */
-class WebSocketManager(system: ActorSystem, fileManager: FileManager) {
+class WebSocketManager(system: ActorSystem, fileManager: FileManager) extends KappaPicklers {
 
   val allRoom = system.actorOf(Props(classOf[RoomActor], "all"))
 
@@ -56,8 +58,12 @@ class WebSocketManager(system: ActorSystem, fileManager: FileManager) {
     }.named("socket_flow")
 
     Flow.fromGraph(partial).recover { case ex =>
-      this.system.log.error(s"WS stream for $channel failed for $username with the following cause:\n  $ex")
-      throw ex
+      val message = s"WS stream for $channel failed for $username with the following cause:\n  $ex"
+      this.system.log.error(message)
+      val d = Pickle.intoBytes[KappaMessage](ServerErrors(List(message)))
+      BinaryMessage(ByteString(d))
+      //throw ex
+
     }
   }//.via(reportErrorsFlow(channel, username)) // ... then log any processing errors on stdin
 

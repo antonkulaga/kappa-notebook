@@ -123,7 +123,7 @@ THREE.CSS3DRenderer = function () {
 			epsilon( - elements[ 13 ] ) + ',' +
 			epsilon( elements[ 14 ] ) + ',' +
 			epsilon( elements[ 15 ] ) +
-			')';
+		')';
 
 	};
 
@@ -148,7 +148,7 @@ THREE.CSS3DRenderer = function () {
 			epsilon( elements[ 13 ] ) + ',' +
 			epsilon( elements[ 14 ] ) + ',' +
 			epsilon( elements[ 15 ] ) +
-			')';
+		')';
 
 	};
 

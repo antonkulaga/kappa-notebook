@@ -55,7 +55,14 @@ trait ServerMessage extends KappaMessage
 
 case class SimulationResult(server: String, simulationStatus: SimulationStatus, token:Int, initialParams: Option[RunModel] = None) extends ServerMessage
 
-case class SyntaxErrors(server: String, errors: Array[String], initialParams: Option[RunModel] = None) extends ServerMessage
+sealed trait ErrorMessage extends KappaMessage
+{
+  def errors: List[String]
+}
+
+case class SyntaxErrors(server: String, errors: List[String], initialParams: Option[RunModel] = None) extends ServerMessage with ErrorMessage
+
+case class ServerErrors(errors: List[String]) extends ErrorMessage
 
 case class LaunchModel(server: String, parameters: RunModel) extends ServerMessage
 
@@ -80,13 +87,29 @@ case class Code(text: String) extends KappaMessage
 
 case class Load(project: KappaProject = KappaProject.default)  extends KappaMessage
 
+object Loaded {
+  lazy val empty = Loaded(KappaProject.default)
+}
+
+case class Loaded(project: KappaProject, other: List[KappaProject] = Nil) extends KappaMessage
+
 import scala.collection.immutable.{List, Nil}
 
 object KappaProject {
-  lazy val default = KappaProject("repressilator", loaded = false)
+  lazy val default = KappaProject("repressilator")
+
+  implicit val ordering = new Ordering[KappaProject] {
+    override def compare(x: KappaProject, y: KappaProject): Int = x.name.compare(y.name) match {
+      case 0 => x.hashCode().compare(y.hashCode())
+      case other => other
+    }
+  }
 }
 
-case class KappaProject(name: String, loaded: Boolean/*, folder: KappaFolder = KappaFolder.empty*/) extends KappaMessage
+case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty) extends KappaMessage
+{
+  def loaded = folder != KappaFolder.empty
+}
 
 
 object KappaPath{
@@ -97,21 +120,23 @@ object KappaPath{
     }
   }
 
-  lazy val empty = KappaFolder("", SortedSet.empty,  active = false)
+  lazy val empty = KappaFolder("", Set.empty, Set.empty,  active = false)
 }
 
 object KappaFolder {
-  lazy val empty = KappaFolder("", SortedSet.empty, active = false)
+  lazy val empty = KappaFolder("", Set.empty, Set.empty, active = false)
 }
 
-case class KappaFolder(path: String, children: SortedSet[KappaPath] = SortedSet.empty, active: Boolean = false) extends KappaPath
+case class KappaFolder(path: String, folders: Set[KappaFolder] = Set.empty, files: Set[KappaFile], active: Boolean = false) extends KappaPath
 {
-  lazy val childFiles = children.collect{case f: KappaFile =>f}
+  //lazy val childFiles = children.collect{case f: KappaFile => f}
+  //lazy val childFolders = children.collect{case f: KappaFolder => f}
+
 }
 
 case class KappaFile(path: String, name: String, content: String, active: Boolean = false) extends KappaPath
 
-trait KappaPath extends KappaMessage
+sealed trait KappaPath extends KappaMessage
 {
   def path: String
   def active: Boolean

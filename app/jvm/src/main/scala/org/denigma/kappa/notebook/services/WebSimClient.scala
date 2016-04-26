@@ -54,7 +54,7 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
   def getVersion() = Source.single(Unit).via(flows.versionFlow).runWith(Sink.head)
 
 
-  def launch(model: RunModel): Future[Either[Token, Array[String]]] = {
+  def launch(model: RunModel): Future[Either[Token, List[String]]] = {
     val source = Source.single(model) //give one model
     source.via(flows.tokenFlow).map(_._1) runWith Sink.head
   }
@@ -64,7 +64,7 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
     source.via(flows.simulationStatusFlow).map(_._2) runWith Sink.head
   }
 
-  def run(model: RunModel): Future[(Either[(flows.Token, SimulationStatus), Array[String]], RunModel)] =  {
+  def run(model: RunModel): Future[(Either[(flows.Token, SimulationStatus), List[String]], RunModel)] =  {
     val source = Source.single(model)
     source.via(flows.syncSimulationResultStream).runWith(Sink.last)
   }
@@ -73,7 +73,7 @@ class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val sy
     runStreamed(model, Sink.last, updateInterval, parallelism)
   }
 
-  def runStreamed[T](model: RunModel, sink: Sink[(Either[(Int, SimulationStatus), Array[String]], RunModel), T], updateInterval: FiniteDuration, parallelism: Int = 1) =  {
+  def runStreamed[T](model: RunModel, sink: Sink[(Either[(Int, SimulationStatus), List[String]], RunModel), T], updateInterval: FiniteDuration, parallelism: Int = 1) =  {
     val source = Source.single(model)
     val withFlow = source.via(flows.simulationResultStream(updateInterval, parallelism))
     withFlow.runWith(sink)

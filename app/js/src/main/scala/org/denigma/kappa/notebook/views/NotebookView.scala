@@ -10,7 +10,6 @@ import org.denigma.kappa.messages.LaunchModel
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.Side
 import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor, KappaWatcher}
-import org.denigma.kappa.notebook.views.project.FilesView
 import org.denigma.kappa.notebook.views.visual._
 import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
 import org.scalajs.dom.raw.Element
@@ -20,6 +19,7 @@ import rx._
 import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle
 import SvgBundle.all._
 import SvgBundle.all.attrs._
+import org.denigma.kappa.notebook.views.project.{ProjectFilesView, ProjectsView}
 
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView with InitialCode
@@ -80,6 +80,8 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
    override lazy val injector = defaultInjector
      .register("KappaEditor")((el, args) => new KappaCodeEditor(el, hub, editorsUpdates).withBinder(n => new CodeBinder(n)))
      .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
+     .register("ProjectsView")((el, args) => new ProjectsView(el, hub).withBinder(n => new CodeBinder(n)))
+     .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, hub).withBinder(n => new CodeBinder(n)))
      .register("LeftGraph") {  (el, args) =>
        new GraphView(el,
          kappaWatcher.leftPattern.nodes,

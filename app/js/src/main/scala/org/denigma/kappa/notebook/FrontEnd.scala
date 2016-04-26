@@ -36,11 +36,11 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
       println(child.outerHTML + " "+target.scrollWidth)
       elem.style.overflowX = "scroll"
       elem.onscroll = {e: UIEvent =>
-        println("scrolllefft = "+ elem.scrollLeft)
+        //println("scrolllefft = "+ elem.scrollLeft)
         if(target.scrollLeft != elem.scrollLeft) target.scrollLeft = elem.scrollLeft
       }
       target.onscroll = {e: UIEvent =>
-        println("scrollleft =" + target.scrollLeft)
+        //println("scrollleft =" + target.scrollLeft)
         elem.scrollLeft = target.scrollLeft
       }
     }

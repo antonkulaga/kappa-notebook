@@ -21,9 +21,9 @@ class KappaServerActor extends Actor with ActorLogging {
 
     case RunAtServer(username, serverName, message: RunModel, userRef, interval) =>
       Source.single(message)
-      val sink: Sink[(Either[(Int, SimulationStatus), Array[String]], RunModel), Any] = Sink.foreach {
+      val sink: Sink[(Either[(Int, SimulationStatus), List[String]], RunModel), Any] = Sink.foreach {
         case (Left( (token, res: SimulationStatus)), model) =>  userRef ! SimulationResult(serverName, res, token, Some(model))
-        case (Right(errors: Array[String]), model) => userRef ! SyntaxErrors(serverName, errors, Some(model))
+        case (Right(errors), model) => userRef ! SyntaxErrors(serverName, errors, Some(model))
       }
       server.runStreamed(message, sink, interval)
         //.via(server.makeModelResultsFlow(1, interval))

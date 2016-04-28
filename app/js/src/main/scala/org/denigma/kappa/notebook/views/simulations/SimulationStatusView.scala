@@ -83,7 +83,7 @@ class SimulationsView(val elem: Element, val selected: Var[String], hub: KappaHu
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selectTab).withBinder(new GeneralBinder(_)))
-    .register("runner")((el, args) => new RunnerView(el, hub.name, hub).withBinder(n => new CodeBinder(n)))
+    .register("runner")((el, args) => new RunnerView(el, hub).withBinder(n => new CodeBinder(n)))
 
 }
 

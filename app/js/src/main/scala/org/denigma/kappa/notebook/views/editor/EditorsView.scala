@@ -44,7 +44,7 @@ trait EditorView extends BindableView with EditorMaker with WithMirrors{
 
   def doc: Doc = editor.getDoc()
 
-  def updates: Var[EditorUpdates] //used to subscribe editor to changes
+  def editorUpdates: Var[EditorUpdates] //used to subscribe editor to changes
 
 
   private var _editor: Editor = null
@@ -59,7 +59,7 @@ trait EditorView extends BindableView with EditorMaker with WithMirrors{
   }
 
   def onChanges(ed: Editor, ch: js.Array[EditorChangeLike]): Unit = {
-    updates() = EditorUpdates(Option(ed), ch.toList)
+    editorUpdates() = EditorUpdates(Option(ed), ch.toList)
   }
 
   protected def subscribeEditor(editor: Editor) = {

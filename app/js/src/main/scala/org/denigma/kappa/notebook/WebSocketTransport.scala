@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import boopickle.Default._
 import org.denigma.binding.extensions._
+import org.denigma.controls.papers.Bookmark
 import org.denigma.controls.sockets.{BinaryWebSocket, WebSocketSubscriber}
 import org.denigma.kappa.messages._
 import org.scalajs.dom
@@ -82,6 +83,20 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
 
   def receive: MessageHandler = {
 
+    case l: Loaded =>
+
+      kappaHub.loaded() = l
+      kappaHub.sources() = l.project.sources
+      val newPapers = l.project.papers.map{
+        case p=> p.name -> Bookmark(p.path, 0)
+      }.toMap
+      //kappaHub.papers() = newPapers
+      dom.console.log(
+        s"""
+          |sources are: ${kappaHub.sources.now}
+        """.stripMargin)
+
+
     case SyntaxErrors(server, errors, params) =>
       //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
 
@@ -94,18 +109,11 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
       if(kappaHub.errors.now.nonEmpty) kappaHub.errors() = List.empty
 
 
-    case message: Code =>
-      kappaHub.kappaCode() = message
-
     case message: Connected =>
       //case message: WebSim. => message.messages.foreach(receive)
 
-    case ServerErrors(errors) => kappaHub.errors() = errors
-
-    case Loaded(project: KappaProject, other) =>
-    //kappaHub.errors() = errors
-
-    //case message: WebSim. => message.messages.foreach(receive)
+    case ServerErrors(errors) =>
+      kappaHub.errors() = errors
 
     case other =>
       dom.console.error(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)

@@ -3,7 +3,6 @@ package org.denigma.kappa.messages
 import boopickle.Default._
 import org.denigma.controls.charts.{LineStyles, Point, Series}
 
-
 sealed trait KappaMessage
 
 import scala.collection.immutable._
@@ -66,6 +65,7 @@ case class ServerErrors(errors: List[String]) extends ErrorMessage
 
 case class LaunchModel(server: String, parameters: RunModel) extends ServerMessage
 
+/*
 
 object Code {
   def apply(lines: Seq[String]): Code = Code(lines.mkString("\n"))
@@ -84,6 +84,7 @@ case class Code(text: String) extends KappaMessage
     Code(lines.take(num) ++ newLines)  else Code(lines.take(num) ++ newLines ++ lines.drop(num))
 
 }
+*/
 
 case class Load(project: KappaProject = KappaProject.default)  extends KappaMessage
 
@@ -109,29 +110,53 @@ object KappaProject {
 case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty) extends KappaMessage
 {
   def loaded = folder != KappaFolder.empty
+
+  lazy val sources = folder.files.filter(f=> f.name.endsWith(".ka") || f.name.endsWith(".ttl"))
+  lazy val papers = folder.files.filter(f => f.name.endsWith(".pdf"))
+  lazy val images = folder.files.filter(f => f.name.endsWith(".svg") || f.name.endsWith(".gif") || f.name.endsWith(".jpg") || f.name.endsWith(".png") || f.name.endsWith(".webp"))
+
+
 }
 
 
 object KappaPath{
-  implicit val ordering = new Ordering[KappaPath] {
+  implicit val ordering: Ordering[KappaPath] = new Ordering[KappaPath] {
     override def compare(x: KappaPath, y: KappaPath): Int = x.path.compare(y.path) match {
       case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
       case other => other
     }
   }
 
-  lazy val empty = KappaFolder("", Set.empty, Set.empty,  active = false)
+  lazy val empty: KappaPath = KappaFolder.empty
 }
 
 object KappaFolder {
-  lazy val empty = KappaFolder("", Set.empty, Set.empty, active = false)
+
+  implicit val ordering: Ordering[KappaFolder] = new Ordering[KappaFolder] {
+    override def compare(x: KappaFolder, y: KappaFolder): Int = x.path.compare(y.path) match {
+      case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
+      case other => other
+    }
+  }
+
+  lazy val empty: KappaFolder = KappaFolder("", SortedSet.empty[KappaFolder], SortedSet.empty[KappaFile], active = false)
 }
 
-case class KappaFolder(path: String, folders: Set[KappaFolder] = Set.empty, files: Set[KappaFile], active: Boolean = false) extends KappaPath
+case class KappaFolder(path: String, folders: SortedSet[KappaFolder] = SortedSet.empty, files: SortedSet[KappaFile], active: Boolean = false) extends KappaPath
 {
   //lazy val childFiles = children.collect{case f: KappaFile => f}
   //lazy val childFolders = children.collect{case f: KappaFolder => f}
 
+}
+
+object KappaFile
+{
+  implicit val ordering: Ordering[KappaFile] with Object {def compare(x: KappaFile, y: KappaFile): Int} = new Ordering[KappaFile] {
+    override def compare(x: KappaFile, y: KappaFile): Int = x.path.compare(y.path) match {
+      case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
+      case other => other
+    }
+  }
 }
 
 case class KappaFile(path: String, name: String, content: String, active: Boolean = false) extends KappaPath

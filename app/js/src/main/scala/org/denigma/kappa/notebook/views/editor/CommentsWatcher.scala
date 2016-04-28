@@ -119,7 +119,7 @@ class CommentsWatcher(updates: Var[EditorUpdates], hub: KappaHub)  {
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        hub.selectedImage() = src
+        hub.selector.image() = src
     }
     html
   }

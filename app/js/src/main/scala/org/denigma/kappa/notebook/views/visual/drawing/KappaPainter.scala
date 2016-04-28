@@ -1,17 +1,11 @@
 package org.denigma.kappa.notebook.views.visual.drawing
-import org.denigma.kappa.model.KappaModel
-import rx._
-import org.denigma.kappa.model.KappaModel.{Agent, KappaNamedElement, _}
 import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all._
+import rx._
 import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all.attrs._
-import org.denigma.kappa.notebook.views.visual.drawing.{Rectangle, SideBorder, SvgBundle}
-import org.denigma.threejs.extras.HtmlSprite
-import org.denigma.threejs.{Side => _, _}
-import org.scalajs.dom
+import org.denigma.threejs.{Side => _}
 import org.scalajs.dom.raw.{SVGElement, SVGLocatable}
-import org.scalajs.dom.svg.{LinearGradient, SVG}
+import org.scalajs.dom.svg.SVG
 
-import scala.collection.immutable.::
 import scalatags.JsDom
 import scalatags.JsDom.TypedTag
 trait KappaPainter {

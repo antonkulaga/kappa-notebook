@@ -21,43 +21,63 @@ object KappaHub{
 
   def empty: KappaHub = KappaHub(
     Var(Loaded.empty),
+    Var(SortedSet.empty),
     Var(None),
     Var(messages.Defaults.simulations),
     Var(messages.Defaults.runModel),
     Var(List.empty[String]),
-    Var(testMap)
+    Var(testMap),
+    Selector.default
   )
 }
 
+object Selector {
+  lazy val default = Selector(
+    Var(""), Var("Simulations"), Var("presentation/people.jpg"),  Var("/files/ossilator/Stricker08.pdf")
+  )
+}
+case class Selector(
+                     source: Var[String],
+                     tab: Var[String],
+                     image: Var[String],
+                     paper: Var[String])
+{
+  import org.denigma.binding.extensions._
+  import rx.Ctx.Owner.Unsafe.Unsafe
+
+  def go2images() = tab() = "Image"
+
+  def go2papers() = tab() = "Papers"
+
+  image.onChange {
+    case "" =>
+    case img => go2images()
+  }
+
+  paper.onChange {
+    case "" =>
+    case img => go2images()
+  }
+
+}
 /**
   * Created by antonkulaga on 07/04/16.
   */
 case class KappaHub(
                      loaded: Var[Loaded],
+                     sources: Var[SortedSet[KappaFile]],
                      kappaCursor: Var[Option[(Editor, PositionLike)]],
                      simulations: Var[Map[(Int, RunModel), SimulationStatus]],
                      runParameters: Var[RunModel],
                      errors: Var[List[String]],
                      papers: Var[Map[String, Bookmark]],
-                     selectedTab: Var[String] = Var("Simulations"),
-                     selectedImage: Var[String] = Var("presentation/people.jpg"),
-                     selectedPaper: Var[String] = Var("/files/ossilator/Stricker08.pdf")
+                     selector: Selector
                    )
 {
+  import rx.Ctx.Owner.Unsafe.Unsafe
+
   lazy val name = loaded.map(l=>l.project.name)
 
-  import org.denigma.binding.extensions._
-  import rx.Ctx.Owner.Unsafe.Unsafe
-  selectedImage.onChange {
-    case "" =>
-    case img => go2images()
-  }
-  selectedPaper.onChange {
-    case "" =>
-    case img => go2images()
-  }
-
-  def go2images() = selectedTab() = "Image"
-  def go2papers() = selectedTab() = "Papers"
+  lazy val projects = loaded.map(l=>l.other)
 
 }

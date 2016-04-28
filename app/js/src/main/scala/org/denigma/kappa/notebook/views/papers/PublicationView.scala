@@ -25,11 +25,11 @@ import scalajs.concurrent.JSExecutionContext.Implicits.queue
 /**
   * Created by antonkulaga on 21/04/16.
   */
-class PublicationView(val elem: Element, selected: Var[String], val location: Var[Bookmark], hub: KappaHub)
-  extends Annotator with UpdatableView[Bookmark]
+class PublicationView(val elem: Element, val selected: Var[String], val location: Var[Bookmark], hub: KappaHub)
+  extends Annotator with UpdatableView[Bookmark] with TabItem
 {
 
-  val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
+  //val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
 
   scale.Internal.value = 1.4
 
@@ -112,7 +112,7 @@ class PublicationView(val elem: Element, selected: Var[String], val location: Va
       hub.kappaCursor.now match
       {
         case Some((ed, position)) =>
-          hub.kappaCode() = hub.kappaCode.now.withInsertion(position.line, comments.now)
+          //hub.kappaCode() = hub.kappaCode.now.withInsertion(position.line, comments.now)
         case None =>
       }
     }

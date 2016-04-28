@@ -60,9 +60,7 @@ trait KappaView extends KappaPainter {
   def render(): Object3D = {
     clearChildren()
     view.add(sprite.now)
-    view.renderDepth
     view
-    //container.children.foreach(c=>scene.remove(c))
   }
 
   def clearChildren() = {

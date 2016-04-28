@@ -57,14 +57,16 @@ class FileManager(val root: File) {
 
   def listFolder(file: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder = {
     val (folders: Iterator[File], files: Iterator[File]) = file.children.partition(f=>f.isDirectory)
-    val kFiles = files.map{
+    val fiter =  files.map{
       case ch if ch.isRegularFile && knownExtensions.contains(ch.pathAsString.substring(ch.pathAsString.indexOf(".")) +1) =>
         KappaFile(ch.pathAsString, ch.name, ch.contentAsString, active = true)
 
       case ch if ch.isRegularFile => KappaFile(ch.pathAsString, ch.name, "",  active = false)
-    }.toSet
-    val dirs: Set[KappaFolder] = folders.map{ case ch => listFolder(ch, knownExtensions) }.toSet
-    KappaFolder(file.pathAsString, dirs, kFiles)
+    }.toSeq
+    val diter = folders.map{ case ch => listFolder(ch, knownExtensions) }.toSeq
+    val fs = SortedSet(fiter:_*)
+    val dirs = SortedSet(diter:_*)
+    KappaFolder(file.pathAsString, dirs, fs)
   }
 /*
   def listFolder(kappaPath: KappaPath: File, parent: Option[File] = None, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder = {

@@ -1,5 +1,12 @@
 @()
 <section class="ui column" data-view="KappaEditor">
+
+  <div class="ui top attached tabular menu" data-view="headers">
+    <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
+  </div>
+  @ide.html.code()
+    <!--
+
   <div class="ui top attached tabular menu">
     <a class="active item" >Code</a>
   </div>
@@ -9,8 +16,8 @@
     <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
     <textarea data-editor="kappa" id="kappa"></textarea>
   </section>
-  <!--
-        <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
+
+  <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
   <div class="ui top attached pointing menu" data-view="headers">
     <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
   </div>

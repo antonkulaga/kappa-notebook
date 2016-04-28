@@ -6,12 +6,7 @@ import scala.collection.immutable._
 object Defaults
 {
   lazy val runModel: RunModel = RunModel(code = "", max_events = Some(10000), max_time = None)
-
-  //lazy val simulationStatus: SimulationStatus = SimulationStatus(None, None, None, None, None, None, None,false, None, None, None/*, Array.empty[FluxMap]*/)
-
   lazy val simulations = Map.empty[(Int, RunModel), SimulationStatus]
-
-  lazy val code: Code = Code("")
 }
 
 sealed trait WebSimMessage

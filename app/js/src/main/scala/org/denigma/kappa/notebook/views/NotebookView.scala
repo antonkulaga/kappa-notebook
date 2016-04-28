@@ -37,6 +37,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
       //connector.send(WebSim.Load("model.ka"))
     }
 
+  /*
     val code = Var(initialCode)
     code.onChange{ case txt=>
       hub.kappaCode() = hub.kappaCode.now.copy(text = txt)
@@ -46,6 +47,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
       if(v.isEmpty) code.set("") else code.set(v.text)
     }
 
+*/
     hub.runParameters.triggerLater{
       connector.send(LaunchModel("", hub.runParameters.now))
     }

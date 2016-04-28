@@ -2,44 +2,7 @@
 
 <section class="ui equal width blue secondary segment celled grid"  id="Notebook" data-view="Notebook">
       <div class="ui equal width row">
-          <section class="ui two wide column">
-              <div class="ui left floated segment">
-                  <span class="ui header">Left side:</span>
-              </div>
-              <div class="ui right floated segment">
-                  <i class="arrow up icon" data-show-if="right2left"></i><i class="arrow down icon" data-show-if="left2right"></i>
-              </div>
-              <div class="ui blue segment">
-                  <div id = "LeftGraph" data-view="LeftGraph" data-param-container="left-container">
-                      <div id="left-container" class="graph"></div>
-                  </div>
-              </div>
-                  <b>Current line: </b> <span class="ui center aligned header" data-bind="currentLine"></span>
-              <div class="ui blue segment"  data-view="ProjectsView">
-                <h5 class="ui header">Projects:</h5>
-              </div>
-
-          </section>
-
-          <section class="ui two wide column">
-              <div class="ui left floated segment">
-                  <span class="ui header">Right side:</span>
-              </div>
-              <div class="ui blue segment">
-                  <div id = "RightGraph" data-view="RightGraph"  data-param-container="right-container">
-                      <div id="right-container" class="graph"></div>
-                  </div>
-              </div>
-              <div class="ui segment">
-                  <h6 class="ui header">Legend:</h6>
-                  <span class="ui red label">removed</span>,
-                  <span class="ui green label">added</span>,
-                  <span class="ui violet label">changed</span>
-              </div>
-              <div class="ui blue segment" data-view="ProjectFilesView">
-                <h5 class="ui header">Files:</h5>
-              </div>
-          </section>
+          @toolbar()
         @ide.html.editor()
         @tabs()
     </div>

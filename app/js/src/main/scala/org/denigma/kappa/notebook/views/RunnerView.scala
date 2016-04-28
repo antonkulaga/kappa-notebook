@@ -11,7 +11,7 @@ import org.denigma.binding.macroses._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.kappa.notebook.KappaHub
 
-class RunnerView(val elem: Element, val name: Var[String], hub: KappaHub) extends BindableView
+class RunnerView(val elem: Element, hub: KappaHub) extends BindableView
 {
   self=>
 
@@ -40,7 +40,7 @@ class RunnerView(val elem: Element, val name: Var[String], hub: KappaHub) extend
     val p: Int = self.points()
     val s: Boolean = self.implicitSignature()
     val g = self.gluttony()
-    name() = fn
+    //name() = fn
     val popt = if(p<=0) None else Some(p)
     //println(s"params = g($g) and s($s)")
     //val newParams = parameters.now.copy( fn, optInt(ev), opt(t), p )
@@ -52,10 +52,10 @@ class RunnerView(val elem: Element, val name: Var[String], hub: KappaHub) extend
   val run = Var(org.denigma.binding.binders.Events.createMouseEvent)
   run.triggerLater{
     //dom.console.log("sending the code...")
-    hub.runParameters.Internal.value = parameters.now.copy(code = hub.kappaCode.now.text)
+    //hub.runParameters.Internal.value = parameters.now.copy(code = hub.kappaCode.now.text)
     hub.runParameters.propagate()
   }
 
-  name.onChange{  case n=>  if(fileName.now!=n) fileName() = n  }
+  //name.onChange{  case n=>  if(fileName.now!=n) fileName() = n  }
 
 }

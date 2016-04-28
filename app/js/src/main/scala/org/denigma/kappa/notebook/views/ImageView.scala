@@ -8,10 +8,8 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom.raw.Element
 
-class ImageView(val elem: Element, val selected: Var[String], hub: KappaHub) extends BindableView with TabItem
+class ImageView(val elem: Element, val selected: Var[String], val imageName: Rx[String]) extends BindableView with TabItem
 {
-
-  val imageName: Rx[String] = hub.selectedImage
 
   val src = imageName.map(i => "files/"+imageName)
 

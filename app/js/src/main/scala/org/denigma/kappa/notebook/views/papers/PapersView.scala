@@ -41,30 +41,19 @@ class PapersView(val elem: Element, val selected: Var[String], hub: KappaHub) ex
   override def newItemView(name: String): PublicationView = this.constructItemView(name){
     case (el, params)=>
       el.id = name
-      println("add view "+name)
+      //println("add view "+name)
       val location = this.items.now(name) //buggy but hope it will work
-      val v = new PublicationView(el, hub.selectedPaper, Var(location), hub ).withBinder(v=>new CodeBinder(v))
-      hub.selectedPaper() = name
+      val v = new PublicationView(el, hub.selector.paper, Var(location), hub ).withBinder(v=>new CodeBinder(v))
+      hub.selector.paper() = name
       v
   }
 
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, hub.selectedPaper).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new TabHeaders(el, headers, hub.selector.paper).withBinder(new GeneralBinder(_)))
 
   override protected def subscribeUpdates() = {
-    template.hide()
-    //this.items.now.foreach(i => this.addItemView(i, this.newItemView(i)) ) //initialization of views
-    updates.onChange(upd=>{
-      upd.added.foreach{
-        case (key, value)=>
-          val n = newItemView(key)
-          n.update(value)
-          this.addItemView(key, n)
-      }
-      upd.removed.foreach{ case (key, value ) => removeItemView(key)}
-      upd.updated.foreach{ case( key, (old, current))=> itemViews.now(key).update(current)}
-    })
+    super.subscribeUpdates()
     //TODO: move to scalajs binding
     for ( (key, value) <- items.now) {
       val n = newItemView(key)

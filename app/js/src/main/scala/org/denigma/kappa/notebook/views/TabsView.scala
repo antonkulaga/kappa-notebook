@@ -22,7 +22,7 @@ class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
 
   self =>
 
-  lazy val selected = hub.selectedTab
+  lazy val selected = hub.selector.tab
 
   protected def defaultContent = ""
   protected def defaultLabel = ""
@@ -47,7 +47,7 @@ class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
 
     .register("Image") {
       case (el, params) =>
-        new ImageView(el, selected, hub).withBinder(new CodeBinder(_))
+        new ImageView(el, selected, hub.selector.image).withBinder(new CodeBinder(_))
     }
 
     .register("Papers") {

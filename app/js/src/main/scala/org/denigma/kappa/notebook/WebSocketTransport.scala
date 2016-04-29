@@ -16,7 +16,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.scalajs.js.timers
 
 
-case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHub) extends KappaPicklers with BinaryWebSocket
+case class WebSocketTransport(subscriber: WebSocketSubscriber, errors: Var[List[String]])(onmessage: PartialFunction[KappaMessage, Unit]) extends KappaPicklers with BinaryWebSocket
 {
   type MessageHandler = PartialFunction[KappaMessage, Unit]
 
@@ -40,7 +40,7 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
       {
         val errorMessage = s"have not received an answer for the $message for $timeout duraction, please retry!"
         dom.console.error(errorMessage)
-        kappaHub.errors() = List(errorMessage)
+        errors() = List(errorMessage)
       }
     }
     send(message)
@@ -49,7 +49,7 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
   subscriber.onClose.triggerLater {
     val message = "Websocket server connection has been closed"
     dom.console.error(message)
-    kappaHub.errors() = message::kappaHub.errors.now
+    errors() = message::errors.now
   }
 
   /*
@@ -81,43 +81,6 @@ case class WebSocketTransport(subscriber: WebSocketSubscriber, kappaHub: KappaHu
 
   protected val expectations: Var[List[MessageHandler]] = Var(Nil)
 
-  def receive: MessageHandler = {
-
-    case l: Loaded =>
-
-      kappaHub.loaded() = l
-      kappaHub.sources() = l.project.sources
-      val newPapers = l.project.papers.map{
-        case p=> p.name -> Bookmark(p.path, 0)
-      }.toMap
-      //kappaHub.papers() = newPapers
-      dom.console.log(
-        s"""
-          |sources are: ${kappaHub.sources.now}
-        """.stripMargin)
-
-
-    case SyntaxErrors(server, errors, params) =>
-      //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
-
-      kappaHub.errors() = errors
-
-
-    case SimulationResult(server, status, token, params) =>
-      //println("CONSOLE: \n"+message.logMessages.getOrElse(""))
-      kappaHub.simulations() = kappaHub.simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
-      if(kappaHub.errors.now.nonEmpty) kappaHub.errors() = List.empty
-
-
-    case message: Connected =>
-      //case message: WebSim. => message.messages.foreach(receive)
-
-    case ServerErrors(errors) =>
-      kappaHub.errors() = errors
-
-    case other =>
-      dom.console.error(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)
-
-  }
+  lazy val receive: MessageHandler = onmessage
 
 }

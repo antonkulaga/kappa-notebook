@@ -40,6 +40,7 @@ trait KappaPicklers {
       .addConcreteType[Disconnected]
       .addConcreteType[KappaFile]
       .addConcreteType[KappaFolder]
+      .addConcreteType[KappaProject]
 
 
   }
@@ -67,6 +68,6 @@ trait KappaPicklers {
       .addConcreteType[Disconnected]
       .addConcreteType[KappaFile]
       .addConcreteType[KappaFolder]
-      .addConcreteType[Loaded]
+      //.addConcreteType[Loaded]
 
 }

@@ -123,6 +123,7 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
                 case Loaded(proj: KappaProject, one::two::Nil)=>
                   proj.name shouldEqual "big"
                   proj.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
+                  proj.folder.files.get
                   //println("something received: \n" + smth)
                   true
                 case other => println("failure with "+other)

@@ -38,7 +38,7 @@ class CodeTab(val elem: Element,
 
   println("CONTENT\n"+source.now)
 
-  val code = Var("")
+  val code = Var(source.now.content)
   code.onChange{
     case str =>
       source() = source.now.copy(content = str)

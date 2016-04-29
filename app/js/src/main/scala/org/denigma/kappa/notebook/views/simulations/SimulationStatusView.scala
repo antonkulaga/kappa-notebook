@@ -46,10 +46,13 @@ class SimulationsView(val elem: Element, val selected: Var[String], hub: KappaHu
 
   val output = Var("")
 
+
   val saveOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
+  /*
   saveOutput.triggerLater{
     saveAs(hub.name.now, output.now)
   }
+  */
 
   val activateChart: Var[MouseEvent] = Var(Events.createMouseEvent())
   activateChart.triggerLater{

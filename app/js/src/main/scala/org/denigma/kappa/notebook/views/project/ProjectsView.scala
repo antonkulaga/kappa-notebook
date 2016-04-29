@@ -9,7 +9,7 @@ import rx._
 
 import scala.collection.immutable.Seq
 
-class ProjectsView(val elem: Element, hub: KappaHub) extends ItemsSeqView {
+class ProjectsView(val elem: Element, val projectList: Rx[List[KappaProject]]) extends ItemsSeqView {
 
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
@@ -19,7 +19,7 @@ class ProjectsView(val elem: Element, hub: KappaHub) extends ItemsSeqView {
 
   override type Item = KappaProject
   override type ItemView = ProjectTitleView
-  override val items: Rx[Seq[KappaProject]] = hub.projects
+  override val items: Rx[Seq[KappaProject]] = projectList
 }
 
 class ProjectTitleView(val elem: Element, val name: Var[String]) extends BindableView {

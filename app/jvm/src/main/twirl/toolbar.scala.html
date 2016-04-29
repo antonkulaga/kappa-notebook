@@ -14,10 +14,9 @@
   <b>Current line: </b> <span class="ui center aligned header" data-bind="currentLine"></span>
   <div class="ui blue segment"  data-view="ProjectsView">
     <h5 class="ui header">Projects:</h5>
-    <div class="ui large vertical menu">
-
-    <div data-template="true" class="ui vertical menu item">
-      <span>
+    <div class="ui large vertical fluid menu">
+    <div data-template="true" class="ui item">
+      <span class="ui label">
         <i class="suitcase icon"></i><span data-bind="name"></span>
       </span>
     </div>
@@ -43,12 +42,18 @@
   </div>
   <div class="ui blue segment" data-view="ProjectFilesView">
     <h5 class="ui header">Files:</h5>
-    <div class="ui large vertical menu">
-      <div data-template="true" class="ui vertical menu item">
-        <span>
+    <div class="ui large fluid vertical menu">
+      <div data-template="true" class="ui item">
+        <span class="ui label">
           <i data-class="icon"></i><span data-bind="name"></span>
         </span>
       </div>
+    </div>
+    <div class="ui button" data-click="save">
+      <i class="ui save icon"></i>Save Project
+    </div>
+    <div class="ui button" data-click="download">
+      <i class="ui download icon"></i>Download Project
     </div>
   </div>
 </section>

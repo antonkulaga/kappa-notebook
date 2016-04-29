@@ -12,10 +12,9 @@ import scala.collection.immutable._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 
-class ProjectFilesView(val elem: Element, hub: KappaHub) extends ItemsSetView {
+class ProjectFilesView(val elem: Element, val currentProject: Var[KappaProject]) extends ItemsSetView {
 
-  val items: Rx[SortedSet[KappaFile]] = hub.loaded.map(l=>l.project.folder.files)
-
+  val items: Rx[SortedSet[KappaFile]] = currentProject.map(p=>p.folder.files)
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
     case (el, _) => new ProjectFileView(el,  item).withBinder(v=>new GeneralBinder(v))

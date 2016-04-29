@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers.Bookmark
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Var
+import rx.{Rx, Var}
 
 import scala.collection.immutable._
 import org.denigma.kappa.messages
@@ -20,12 +20,9 @@ object KappaHub{
     )
 
   def empty: KappaHub = KappaHub(
-    Var(Loaded.empty),
-    Var(SortedSet.empty),
     Var(None),
     Var(messages.Defaults.simulations),
     Var(messages.Defaults.runModel),
-    Var(List.empty[String]),
     Var(testMap),
     Selector.default
   )
@@ -64,20 +61,15 @@ case class Selector(
   * Created by antonkulaga on 07/04/16.
   */
 case class KappaHub(
-                     loaded: Var[Loaded],
-                     sources: Var[SortedSet[KappaFile]],
                      kappaCursor: Var[Option[(Editor, PositionLike)]],
                      simulations: Var[Map[(Int, RunModel), SimulationStatus]],
                      runParameters: Var[RunModel],
-                     errors: Var[List[String]],
                      papers: Var[Map[String, Bookmark]],
                      selector: Selector
                    )
 {
   import rx.Ctx.Owner.Unsafe.Unsafe
 
-  lazy val name = loaded.map(l=>l.project.name)
-
-  lazy val projects = loaded.map(l=>l.other)
+  //lazy val name = currentProject.map(p=>p.name)
 
 }

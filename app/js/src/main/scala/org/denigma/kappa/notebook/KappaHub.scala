@@ -14,7 +14,7 @@ import scala.Predef.Map
 object KappaHub{
 
   private val testMap: Map[String, Bookmark] = Map(
-    ("/files/ossilator/Stricker08.pdf", Bookmark("/files/ossilator/Stricker08.pdf", 1))/*,
+    /*("/files/ossilator/Stricker08.pdf", Bookmark("/files/ossilator/Stricker08.pdf", 1)),
      ( "/files/repressilator/Repressilator.pdf", Bookmark("/files/repressilator/Repressilator.pdf", 1)),
       ("/files/ossilator/nature07389-s01.pdf", Bookmark("/files/ossilator/nature07389-s01.pdf", 1))*/
     )
@@ -30,7 +30,10 @@ object KappaHub{
 
 object Selector {
   lazy val default = Selector(
-    Var(""), Var("Simulations"), Var("presentation/people.jpg"),  Var("/files/ossilator/Stricker08.pdf")
+    Var(""),
+    Var("Simulations"),
+    Var("presentation/people.jpg"),
+    Var("")//Var("/files/ossilator/Stricker08.pdf")
   )
 }
 case class Selector(

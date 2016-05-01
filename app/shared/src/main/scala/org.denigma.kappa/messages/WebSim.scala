@@ -40,9 +40,9 @@ case class SimulationStatus(
   def runParameters: RunModel = RunModel(code.getOrElse("### no code info"), nb_plot, max_events, max_time)
 }
 
-case class Observable(time: Double, values: Array[Double])  extends WebSimMessage
+case class Observable(time: Double, values: List[Double])  extends WebSimMessage
 
-case class KappaPlot(legend: Array[String], observables: Array[Observable]) extends WebSimMessage {
+case class KappaPlot(legend: List[String], observables: List[Observable]) extends WebSimMessage {
   //println("kappa plot: "+legend.toList)
   lazy val timePoints: List[Double] = observables.foldLeft(List.empty[Double])((acc, o)=> o.time::acc).reverse
 }

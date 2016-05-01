@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.views.visual
 import org.denigma.kappa.model.KappaModel
 import org.denigma.threejs.extensions.Container3D
 import org.denigma.threejs.extensions.controls.JumpCameraControls
-import org.denigma.threejs.{Object3D, PerspectiveCamera, Vector3}
+import org.denigma.threejs.{Object3D, PerspectiveCamera, Vector3, WebGLRendererParameters}
 import org.denigma.threejs.extras._
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw._
@@ -24,6 +24,35 @@ class Visualizer (val container: HTMLElement,
                  )
   extends Container3D
 {
+
+  override protected def initRenderer= {
+    val params = scalajs.js.Dynamic.literal(
+      antialias = true,
+      alpha = true
+      //canvas = container
+    ).asInstanceOf[ WebGLRendererParameters]
+    import org.denigma.threejs._
+    val vr = new WebGLRenderer(params)
+
+    vr.domElement.style.position = "absolute"
+    vr.domElement.style.left	  = "0"
+    vr.domElement.style.top	  = "0"
+    vr.domElement.style.margin	  = "0"
+    vr.domElement.style.padding  = "0"
+    vr.setSize(width,height)
+    vr
+  }
+
+  override protected def initCSSRenderer = {
+    val rendererCSS = new HtmlRenderer()
+    rendererCSS.setSize(width,height)
+    rendererCSS.domElement.style.position = "absolute"
+    rendererCSS.domElement.style.left	  = "0"
+    rendererCSS.domElement.style.top	  = "0"
+    rendererCSS.domElement.style.margin	  = "0"
+    rendererCSS.domElement.style.padding  = "0"
+    rendererCSS
+  }
 
   val layoutUpdates = layouts.removedInserted
 

@@ -1,9 +1,9 @@
 package org.denigma.kappa
 
 import better.files.File
-
 import java.io.{File => JFile}
 import java.nio.ByteBuffer
+
 import scala.collection.immutable._
 import akka.http.scaladsl.model.ws.BinaryMessage
 import akka.http.scaladsl.model.ws.BinaryMessage.Strict
@@ -23,6 +23,7 @@ import better.files._
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import org.denigma.kappa.messages.{KappaFile, KappaFolder, KappaPath, KappaProject}
+
 
 
 class FilesSuite extends BasicKappaSuite{
@@ -53,6 +54,11 @@ class FilesSuite extends BasicKappaSuite{
       val proj = fileManager.loadProject(toLoad)
       proj.folder.files.map(f=>f.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
       proj.loaded shouldEqual true
+      val cont = proj.folder.files.collectFirst{
+        case f if f.name.contains("big_0.ka")=> f.content
+      }.get
+
+      cont.contains("NA binding; ape:APE1 binding; xrc: XRCC1 binding") shouldBe true
     }
 
   }

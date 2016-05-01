@@ -10,18 +10,22 @@ import org.denigma.kappa.notebook.views.simulations.TabHeaders
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import org.denigma.binding.extensions._
+import org.scalajs.dom
 
 import scala.collection.immutable._
 
 
 class KappaCodeEditor(val elem: Element,
-                      val currentProject: Var[KappaProject],
+                      val items: Var[Map[String, KappaFile]],
                       val selector: Selector,
                       val errorsList: Var[List[String]],
                       val kappaCursor: Var[Option[(Editor, PositionLike)]],
                       val editorUpdates: Var[EditorUpdates]) extends BindableView
   with ItemsMapView
 {
+
+  override type Item = String
 
   val selected: Var[String] = Var("")
 
@@ -42,15 +46,25 @@ class KappaCodeEditor(val elem: Element,
     */
   override type Value = KappaFile
 
-  override def items: Rx[Map[String, KappaFile]] = currentProject.map(p=>p.sources)
-
   override type ItemView = CodeTab
+
+  protected def keyVar(key: Key) = {
+    require(items.now.contains(key), s"we are adding an Item view for key(${key}) that does not exist")
+    val initialValue = this.items.now(key)
+    val v = Var(initialValue)
+    v.onChange{
+      case value=>
+        items() = items.now.updated(key, value)
+    }
+    v
+    //note: killing should be done on unbinding
+  }
 
   override def newItemView(item: Item): ItemView = this.constructItemView(item) {
     case (el, _) =>
-      el.id = item
-      val value = this.items.now(item) //buggy but hope it will work
-      val view = new CodeTab(el, item, Var(value), selected, editorUpdates, kappaCursor).withBinder(v=>new CodeBinder(v))
+      el.id = item //dirty trick
+      val value = keyVar(item)
+      val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor).withBinder(v=>new CodeBinder(v))
       selected() = item
       //view.code() = va
       view
@@ -66,7 +80,4 @@ class KappaCodeEditor(val elem: Element,
       this.addItemView(key, n)
     }
   }
-
-
-  override type Item = String
 }

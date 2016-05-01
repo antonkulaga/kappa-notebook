@@ -34,7 +34,7 @@ class PapersView(val elem: Element, val selected: Var[String], hub: KappaHub) ex
 
   override type ItemView = PublicationView
 
-  val items = hub.papers
+  val items: Var[Map[String, Bookmark]] = hub.papers
 
   val headers = itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
 
@@ -42,7 +42,7 @@ class PapersView(val elem: Element, val selected: Var[String], hub: KappaHub) ex
     case (el, params)=>
       el.id = name
       //println("add view "+name)
-      val location = this.items.now(name) //buggy but hope it will work
+      val location: Bookmark = this.items.now(name) //buggy but hope it will work
       val v = new PublicationView(el, hub.selector.paper, Var(location), hub ).withBinder(v=>new CodeBinder(v))
       hub.selector.paper() = name
       v

@@ -16,11 +16,14 @@ import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle
 import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
 import org.scalajs.dom
+import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
+
+import scala.collection.immutable.SortedSet
 
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
@@ -34,14 +37,27 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   val loaded: Var[Loaded] = Var(Loaded.empty)
   loaded.onChange{
     case ld=>
-      currentProject() = ld.project
+      println("sourcemap = "+ld.project.sourceMap)
+      sourceMap.set(ld.project.sourceMap)
+      name() = ld.project.name
+      //currentProject() = ld.project
   }
 
-  val currentProject = Var(KappaProject.default)
 
-  val projectList: Dynamic[List[KappaProject]] = loaded.map(l=>l.other)
+  val name = Var("HelloWorld!")
+  val path = Var("files")
 
+  val sourceMap = Var(Map.empty[String, KappaFile])
+  //val sources: Var[SortedSet[KappaFile]] = Var(SortedSet.empty)
 
+  val currentProject = Rx.apply{
+    val sourceFiles = sourceMap().values.toSeq
+    val fls = SortedSet(sourceFiles:_*)
+    val folder = KappaFolder(path(), files = fls)
+    KappaProject(name(), folder)
+  }
+
+  val projectList: Rx[List[KappaProject]] = loaded.map(l=>l.other)
   val errors = Var(List.empty[String])
 
   subscriber.onOpen.triggerLater{
@@ -95,23 +111,16 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     loaded().project == currentProject()
   }
 
-  val save = Var(Events.createMouseEvent())
-  save.onChange{
-    case ev =>
-      connector.send(Save(currentProject.now))
-  }
-
-  val download = Var(Events.createMouseEvent())
-  download.onChange{
-    case ev =>
-  }
-
 
   override lazy val injector = defaultInjector
-     .register("KappaEditor")((el, args) => new KappaCodeEditor(el, currentProject, hub.selector, errors, hub.kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n)))
+     .register("KappaEditor"){
+       case (el, args) =>
+         val editor = new KappaCodeEditor(el, sourceMap, hub.selector, errors, hub.kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
+         editor
+     }
      .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
      .register("ProjectsView")((el, args) => new ProjectsView(el, projectList).withBinder(n => new CodeBinder(n)))
-     .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject).withBinder(n => new CodeBinder(n)))
+     .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject.map(p=>p.folder.files)).withBinder(n => new CodeBinder(n)))
      .register("LeftGraph") {  (el, args) =>
        new GraphView(el,
          kappaWatcher.leftPattern.nodes,

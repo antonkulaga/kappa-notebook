@@ -51,25 +51,34 @@ class FileManager(val root: File) {
 
   def loadProject(project: KappaProject): KappaProject = {
     val path = root / project.name
-    project.copy(folder = listFolder(path))
+    val dir = listFolder(path)
+    project.copy(folder = dir)
   }
 
 
   def listFolder(file: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder = {
     val (folders: Iterator[File], files: Iterator[File]) = file.children.partition(f=>f.isDirectory)
     val fiter =  files.map{
-      case ch if ch.isRegularFile && knownExtensions.contains(ch.pathAsString.substring(ch.pathAsString.indexOf(".")) +1) =>
+      case ch if ch.isRegularFile
+        && {
+        val p = ch.pathAsString
+        val ext = p.substring(ch.pathAsString.indexOf(".") +1)
+        //println("============")
+        //println("PATH IS " + p)
+        //println("EXT IS " + ext)
+        //println(p)
+        //println(p.substring(ch.pathAsString.indexOf(".")))
+        knownExtensions.contains(ext)
+      }  =>
+        //println("88888888888888888888888888888888888")
+        //println(" NAME of file is : " + ch.name)
+        //println(" content of file is : " + ch.contentAsString)
         KappaFile(ch.pathAsString, ch.name, ch.contentAsString, active = true)
-
       case ch if ch.isRegularFile => KappaFile(ch.pathAsString, ch.name, "",  active = false)
     }.toSeq
     val diter = folders.map{ case ch => listFolder(ch, knownExtensions) }.toSeq
-    //val fs = SortedSet(fiter:_*)
-    val filesMap = fiter.map{
-      case f => f.name -> f
-    }.toMap
     val dirs = SortedSet(diter:_*)
-    KappaFolder(file.pathAsString, dirs, filesMap)
+    KappaFolder(file.pathAsString, dirs, SortedSet(fiter:_*))
   }
 /*
   def listFolder(kappaPath: KappaPath: File, parent: Option[File] = None, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder = {

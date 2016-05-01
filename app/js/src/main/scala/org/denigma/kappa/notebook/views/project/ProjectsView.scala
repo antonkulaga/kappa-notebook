@@ -14,7 +14,6 @@ class ProjectsView(val elem: Element, val projectList: Rx[List[KappaProject]]) e
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
     case (el, _) => new ProjectTitleView(el,  Var(item.name)).withBinder(v=>new GeneralBinder(v))
-
   }
 
   override type Item = KappaProject

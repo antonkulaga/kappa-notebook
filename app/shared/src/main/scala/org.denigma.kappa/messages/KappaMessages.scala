@@ -1,6 +1,5 @@
 package org.denigma.kappa.messages
 
-import boopickle.Default._
 import org.denigma.controls.charts.{LineStyles, Point, Series}
 
 sealed trait KappaMessage
@@ -96,14 +95,13 @@ case class Loaded(project: KappaProject, other: List[KappaProject] = Nil) extend
 
 case class Save(project: KappaProject) extends KappaMessage
 
-import scala.collection.immutable.{List, Nil}
-
 object KappaProject {
-  lazy val default = KappaProject("repressilator")
+  lazy val default: KappaProject = KappaProject("repressilator")
 
   implicit val ordering = new Ordering[KappaProject] {
     override def compare(x: KappaProject, y: KappaProject): Int = x.name.compare(y.name) match {
-      case 0 => x.hashCode().compare(y.hashCode())
+      case 0 =>
+        x.hashCode().compare(y.hashCode())
       case other => other
     }
   }
@@ -113,13 +111,19 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty) e
 {
   def loaded = folder != KappaFolder.empty
 
-  lazy val sources = folder.files.filter{case (key, value) => key.endsWith(".ka") || key.endsWith(".ttl") }
+  lazy val sources: SortedSet[KappaFile] = folder.files.filter(f=> f.name.endsWith(".ka") || f.name.endsWith(".ttl") )
 
-  lazy val papers = folder.files.filter{case (key, value) => key.endsWith(".pdf") }
+  lazy val sourceMap: Map[String, KappaFile] = sources.map(f=> (f.name, f)).toMap
 
-  lazy val images = folder.files.filter{
-    case (key, value) => key.endsWith(".svg") ||  key.endsWith(".gif") || key.endsWith(".jpg") || key.endsWith(".png") || key.endsWith(".webp")
-  }
+  lazy val papers = folder.files.filter(f => f.name.endsWith(".pdf"))
+
+  lazy val images = folder.files.filter(f =>
+    f.name.endsWith(".svg") ||
+      f.name.endsWith(".gif") ||
+      f.name.endsWith(".jpg") ||
+      f.name.endsWith(".png") ||
+      f.name.endsWith(".webp")
+  )
 }
 
 
@@ -143,12 +147,12 @@ object KappaFolder {
     }
   }
 
-  lazy val empty: KappaFolder = KappaFolder("", SortedSet.empty[KappaFolder], Map.empty[String, KappaFile], active = false)
+  lazy val empty: KappaFolder = KappaFolder("", SortedSet.empty[KappaFolder], SortedSet.empty[KappaFile], active = false)
 }
 
 case class KappaFolder(path: String,
                        folders: SortedSet[KappaFolder] = SortedSet.empty,
-                       files: Map[String, KappaFile], active: Boolean = false) extends KappaPath
+                       files: SortedSet[KappaFile], active: Boolean = false) extends KappaPath
 {
   //lazy val childFiles = children.collect{case f: KappaFile => f}
   //lazy val childFolders = children.collect{case f: KappaFolder => f}

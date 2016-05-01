@@ -1,20 +1,19 @@
 package org.denigma.kappa.notebook.views.project
 
-import org.denigma.binding.binders.GeneralBinder
+import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView}
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.{KappaFile, KappaFolder, KappaPath, KappaProject}
+import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.KappaHub
+import org.scalajs.dom._
 import org.scalajs.dom.raw.Element
 import rx._
-
+import org.denigma.binding.extensions._
 import scala.collection.immutable._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 
-class ProjectFilesView(val elem: Element, val currentProject: Var[KappaProject]) extends ItemsSetView {
-
-  val items: Rx[SortedSet[KappaFile]] = currentProject.map(p=>p.folder.files)
+class ProjectFilesView(val elem: Element, val items: Rx[SortedSet[KappaFile]]) extends ItemsSetView {
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
     case (el, _) => new ProjectFileView(el,  item).withBinder(v=>new GeneralBinder(v))
@@ -23,6 +22,19 @@ class ProjectFilesView(val elem: Element, val currentProject: Var[KappaProject])
 
   override type Item = KappaFile
   override type ItemView = ProjectFileView
+
+
+  val save = Var(Events.createMouseEvent())
+  save.onChange{
+    case ev =>
+      //connector.send(Save(currentProject.now))
+  }
+
+  val download: Var[MouseEvent] = Var(Events.createMouseEvent())
+  download.onChange{
+    case ev =>
+  }
+
 
 }
 

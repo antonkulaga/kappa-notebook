@@ -1,27 +1,19 @@
 package org.denigma.kappa.notebook.views.papers
 
-import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.controls.code.CodeBinder
+import org.denigma.binding.binders.Events
+import org.denigma.binding.extensions._
+import org.denigma.binding.views.UpdatableView
 import org.denigma.controls.papers._
-import org.denigma.controls.pdf.{PDFPageViewport, TextLayerBuilder, TextLayerOptions}
-import org.querki.jquery.$
+import org.denigma.kappa.notebook.KappaHub
+import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
 import org.scalajs.dom.html.Canvas
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
-import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, ItemsMapView, ItemsSeqView, UpdatableView}
-import org.denigma.kappa.notebook.KappaHub
-import org.denigma.kappa.notebook.views.common.TabItem
-import org.denigma.kappa.notebook.views.simulations.TabHeaders
 
 import scala.annotation.tailrec
-import scala.collection.immutable
-import scala.scalajs.js
-import scala.util.{Failure, Success}
-import scalajs.concurrent.JSExecutionContext.Implicits.queue
 /**
   * Created by antonkulaga on 21/04/16.
   */

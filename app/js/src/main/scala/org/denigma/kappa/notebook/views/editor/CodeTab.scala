@@ -36,12 +36,12 @@ class CodeTab(val elem: Element,
 
   override def mode = "Kappa"
 
-  println("CONTENT\n"+source.now)
+  println("name = "+source.now.name+ " \n CONTENT:\n"+source.now.content)
 
   val code = Var(source.now.content)
   code.onChange{
     case str =>
-      source() = source.now.copy(content = str)
+      if(source.now.content!=str) source() = source.now.copy(content = str)
   }
   //val code = source.map(s=>s.content)
 
@@ -50,6 +50,10 @@ class CodeTab(val elem: Element,
     this
   }
 
+  override def unbindView() = {
+    super.unbindView()
+    source.kill()
+  }
   
   protected def onCursorActivity(ed: Editor) = {
     val c = doc.getCursor()
@@ -95,7 +99,7 @@ class CodeTab(val elem: Element,
 
   val save = Var(Events.createMouseEvent())
   save.triggerLater{
-    saveAs(name, code.now)
+    //saveAs(name, code.now)
   }
 
   val onUpload: Var[Event] = Var(Events.createEvent())

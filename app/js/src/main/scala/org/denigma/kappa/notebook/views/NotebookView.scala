@@ -45,6 +45,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
 
   val name = Var("HelloWorld!")
+
   val path = Var("files")
 
   val sourceMap = Var(Map.empty[String, KappaFile])
@@ -67,8 +68,10 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   val connector: WebSocketTransport = WebSocketTransport(subscriber, errors){
 
       case ld: Loaded => loaded() = ld
-      case SyntaxErrors(server, ers, params) => errors() = ers
+      case SyntaxErrors(server, ers, params) =>
+        errors() = ers
       case SimulationResult(server, status, token, params) =>
+        println("percent: "+ status.percentage)
         hub.simulations() = hub.simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
         if(errors.now.nonEmpty) errors() = List.empty
       case message: Connected => //nothing yet
@@ -77,7 +80,9 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   }
 
   hub.runParameters.triggerLater{
-    connector.send(LaunchModel("", hub.runParameters.now))
+    val launchParams = LaunchModel("", hub.runParameters.now)
+    println("RUNNING: "+launchParams)
+    connector.send(launchParams)
   }
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty) //collect updates of all editors together

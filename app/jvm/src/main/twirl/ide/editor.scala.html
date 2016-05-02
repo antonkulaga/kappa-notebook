@@ -5,7 +5,12 @@
     <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
   </div>
   @ide.html.code()
-    <!--
+  <section>
+    <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
+    <textarea data-editor="kappa" id="kappa"></textarea>
+  </section>
+
+  <!--
 
   <div class="ui top attached tabular menu">
     <a class="active item" >Code</a>

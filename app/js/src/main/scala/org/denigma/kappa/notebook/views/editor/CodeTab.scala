@@ -18,9 +18,8 @@ import scala.util._
 import scala.scalajs.js
 import rx.Ctx.Owner.Unsafe.Unsafe
 
-
 class CodeTab(val elem: Element,
-              val name: String,
+              name: String,
               val source: Var[KappaFile],
               val selected: Var[String],
               val editorUpdates: Var[EditorUpdates],
@@ -33,10 +32,14 @@ class CodeTab(val elem: Element,
     with TabItem
 {
 
+  override lazy val id: String = name
+
+  //override def id = name
+
 
   override def mode = "Kappa"
 
-  println("name = "+source.now.name+ " \n CONTENT:\n"+source.now.content)
+  //println("name = "+source.now.name+ " \n CONTENT:\n"+source.now.content)
 
   val code = Var(source.now.content)
   code.onChange{

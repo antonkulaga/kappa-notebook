@@ -160,7 +160,7 @@ class WatchPattern(s: SVG) {
         //val sp = new HtmlSprite(sprite.render)
         new KappaEdge(link, from, to, s = this.s)
       }).toVector
-    println("EDGES NUMBER = "+result.length)
+    //println("EDGES NUMBER = "+result.length)
     result
   }
 

@@ -66,6 +66,9 @@ class KappaCodeEditor(val elem: Element,
       val value = keyVar(item)
       val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor).withBinder(v=>new CodeBinder(v))
       selected() = item
+      println("selected = "+selected.now)
+      println("view active = "+view.active)
+
       //view.code() = va
       view
 

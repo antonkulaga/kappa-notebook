@@ -19,11 +19,20 @@ class KappaServerActor extends Actor with ActorLogging {
   val server = new WebSimClient()(system, materializer)
     override def receive: Receive = {
 
-    case RunAtServer(username, serverName, message: RunModel, userRef, interval) =>
+    case launch @ RunAtServer(username, serverName, message: RunModel, userRef, interval) =>
       Source.single(message)
       val sink: Sink[(Either[(Int, SimulationStatus), List[String]], RunModel), Any] = Sink.foreach {
-        case (Left( (token, res: SimulationStatus)), model) =>  userRef ! SimulationResult(serverName, res, token, Some(model))
-        case (Right(errors), model) => userRef ! SyntaxErrors(serverName, errors, Some(model))
+        case (Left( (token, res: SimulationStatus)), model) =>
+
+          val mess = SimulationResult(serverName, res, token, Some(model))
+          log.info("result is:\n "+mess)
+
+          userRef ! SimulationResult(serverName, res, token, Some(model))
+
+        case (Right(errors), model) =>
+          val mess = SyntaxErrors(serverName, errors, Some(model))
+          log.info("result is with errors "+mess)
+          userRef ! mess
       }
       server.runStreamed(message, sink, interval)
         //.via(server.makeModelResultsFlow(1, interval))

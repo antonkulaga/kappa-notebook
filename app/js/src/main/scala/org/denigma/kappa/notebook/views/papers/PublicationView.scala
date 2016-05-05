@@ -3,6 +3,7 @@ package org.denigma.kappa.notebook.views.papers
 import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.UpdatableView
+import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers._
 import org.denigma.kappa.notebook.KappaHub
 import org.denigma.kappa.notebook.views.common.TabItem
@@ -17,7 +18,10 @@ import scala.annotation.tailrec
 /**
   * Created by antonkulaga on 21/04/16.
   */
-class PublicationView(val elem: Element, val selected: Var[String], val location: Var[Bookmark], hub: KappaHub)
+class PublicationView(val elem: Element,
+                      val selected: Var[String],
+                      val location: Var[Bookmark],
+                      kappaCursor: Var[Option[(Editor, PositionLike)]])
   extends Annotator with UpdatableView[Bookmark] with TabItem
 {
 
@@ -101,7 +105,7 @@ class PublicationView(val elem: Element, val selected: Var[String], val location
       location() = location.now.copy(page = b.page - 1)
     }
     addNugget.triggerLater{
-      hub.kappaCursor.now match
+      kappaCursor.now match
       {
         case Some((ed, position)) =>
           //hub.kappaCode() = hub.kappaCode.now.withInsertion(position.line, comments.now)

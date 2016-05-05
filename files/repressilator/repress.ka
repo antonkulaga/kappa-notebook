@@ -30,7 +30,7 @@
 'tetR.degradation2' pTet(binding!1),TetR(dna!1) ->  pTet(binding) @ 'degrad2'
 'lacI.degradation' LacI(dna) ->  @ 'degrad1'
 'lacI.degradation2' pLac(binding!1),LacI(dna!1) ->  pLac(binding) @ 'degrad2'
-'pL.degradation' cl(dna) ->  @ 'degrad1'
+'cL.degradation' cl(dna) ->  @ 'degrad1'
 'pL.degradation' pL(binding!1),cl(dna!1) -> pL(binding) @ 'degrad2'
 
 %obs: 'LacI' LacI()

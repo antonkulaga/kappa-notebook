@@ -64,27 +64,6 @@ case class ServerErrors(errors: List[String]) extends ErrorMessage
 
 case class LaunchModel(server: String, parameters: RunModel) extends ServerMessage
 
-/*
-
-object Code {
-  def apply(lines: Seq[String]): Code = Code(lines.mkString("\n"))
-}
-
-case class Code(text: String) extends KappaMessage
-{
-  def isEmpty = text == ""
-
-  lazy val lines = text.split("\n").toList
-
-  def withInsertion(num: Int, part: String): Code = withInsertion(num, part.split("\n").toList)
-
-  def withInsertion(num: Int, newLines: Seq[String]): Code = if(num > lines.length)
-
-    Code(lines.take(num) ++ newLines)  else Code(lines.take(num) ++ newLines ++ lines.drop(num))
-
-}
-*/
-
 case class Load(project: KappaProject = KappaProject.default)  extends KappaMessage
 
 object Loaded {

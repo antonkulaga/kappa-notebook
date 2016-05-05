@@ -3,23 +3,26 @@ package org.denigma.kappa.notebook.views.simulations
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.views.{BindableView, ItemsSeqView}
 import org.denigma.controls.charts._
+import org.denigma.kappa.messages.{KappaPlot, KappaSeries}
 import org.scalajs.dom
 import org.scalajs.dom.ext._
 import org.scalajs.dom.raw.{Element, SVGElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 import rx._
 
+import scala.List
 import scala.collection.immutable._
 
 
 class ChartView(val elem: Element,
                 val title: Rx[String],
-                val items: Rx[Seq[Rx[Series]]]
+                val plot: Rx[KappaPlot]
                ) extends FlexibleLinearPlot {
 
-  protected def defaultWidth = Math.max(dom.window.innerWidth / 2.5, 300)
+  protected def defaultWidth: Double = Math.max(dom.window.innerWidth / 2.5, 300)
 
-  protected def defaultHeight = Math.max(dom.window.innerHeight / 2, 400)
+  protected def defaultHeight: Double = Math.max(dom.window.innerHeight / 2, 400)
 
   val scaleX: Var[LinearScale] = Var(LinearScale("Time", 0.0, 10, 2, defaultWidth))
 
@@ -27,7 +30,23 @@ class ChartView(val elem: Element,
 
   val halfWidth = Rx{ width() / 2.0 }
 
-  override def max(series: Series)(fun: Point=>Double): Point = if(series.points.nonEmpty) series.points.maxBy(fun) else Point(0.0, 0.0)
+  val legend = plot.map(p=>p.legend)
+
+  val legendList: Rx[List[(String, Int, LineStyles)]] = legend.map{ case l =>
+    println("legend changed = "+l)
+    l.zipWithIndex.map{ case (tlt, i) =>
+      (tlt, i, KappaSeries.randomLineStyle())
+    }
+  }
+
+  val items: Rx[List[Var[KappaSeries]]] = plot.map { case p =>
+    println("items changed")
+    legendList.now.map { case (tlt, i, style) =>
+      Var(KappaSeries(tlt, p.observables.map(o => Point(o.time, o.values(i))), style))
+    }
+  }
+
+  override def max(series: Series)(fun: Point => Double): Point = if(series.points.nonEmpty) series.points.maxBy(fun) else Point(0.0, 0.0)
 
   override val max: rx.Rx[Point] = items.map{case its=>
     val x = its.foldLeft(0.0){ case (acc, series)=> Math.max(acc, if(series.now.points.nonEmpty) series.now.points.maxBy(_.x).x else 0.0)}

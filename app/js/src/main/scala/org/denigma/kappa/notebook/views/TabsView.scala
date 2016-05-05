@@ -1,21 +1,13 @@
 package org.denigma.kappa.notebook.views
 
-import org.denigma.binding.binders.{GeneralBinder, ReactiveBinder}
-import org.denigma.binding.macroses._
 import org.denigma.binding.views._
-import org.denigma.controls.charts.Series
 import org.denigma.controls.code.CodeBinder
-import org.denigma.controls.tabs._
 import org.denigma.kappa.notebook.KappaHub
 import org.denigma.kappa.notebook.views.editor.EditorUpdates
 import org.denigma.kappa.notebook.views.papers.PapersView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
-import org.scalajs.dom._
 import org.scalajs.dom.raw.Element
 import rx._
-import rx.Ctx.Owner.Unsafe.Unsafe
-
-import scala.collection.immutable.Map
 
 
 class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
@@ -36,7 +28,7 @@ class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
   override lazy val injector = defaultInjector
     .register("Simulations") {
       case (el, params) =>
-        new SimulationsView(el, selected, hub).withBinder(new CodeBinder(_))
+        new SimulationsView(el, selected, hub.simulations, hub.launcher).withBinder(new CodeBinder(_))
     }
     /*
     .register("Console") {
@@ -52,7 +44,7 @@ class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
 
     .register("Papers") {
       case (el, params) =>
-        new PapersView(el, selected, hub).withBinder(new CodeBinder(_))
+        new PapersView(el, selected, hub.papers, hub.selector, hub.kappaCursor).withBinder(new CodeBinder(_))
     }
     .register("UnderDevelopment") {
       case (el, params) =>

@@ -37,7 +37,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   val loaded: Var[Loaded] = Var(Loaded.empty)
   loaded.onChange{
     case ld=>
-      println("sourcemap = "+ld.project.sourceMap)
       sourceMap.set(ld.project.sourceMap)
       name() = ld.project.name
       //currentProject() = ld.project
@@ -79,9 +78,16 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
       case other => dom.console.error(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)
   }
 
-  hub.runParameters.triggerLater{
-    val launchParams = LaunchModel("", hub.runParameters.now)
-    println("RUNNING: "+launchParams)
+  protected def concat() = {
+    sourceMap.now.values.foldLeft(""){
+      case (acc, e)=> acc + e.content
+    }
+  }
+
+  hub.launcher.triggerLater{
+    import com.softwaremill.quicklens._
+    val l: LaunchModel = hub.launcher.now
+    val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = concat()))
     connector.send(launchParams)
   }
 

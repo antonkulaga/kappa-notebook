@@ -39,8 +39,6 @@ class CodeTab(val elem: Element,
 
   override def mode = "Kappa"
 
-  //println("name = "+source.now.name+ " \n CONTENT:\n"+source.now.content)
-
   val code = Var(source.now.content)
   code.onChange{
     case str =>
@@ -125,7 +123,6 @@ class CodeTab(val elem: Element,
 
   protected def updateCursor() = {
     val cur: Position = doc.getCursor()
-    //println(kappaCursor.now + " => "+doc.getCursor())
     kappaCursor() = Some(this.editor -> new PositionLike{
       override val ch: Int = cur.ch.toInt
       override val line: Int = cur.line.toInt

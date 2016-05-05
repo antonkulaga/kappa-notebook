@@ -110,10 +110,7 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
   protected def onServerMessage: Receive = {
 
     case result: SimulationResult =>
-      //println("CONSOLE = "+ status.logMessages)
-      //println("received results")
-      //val text = status.asJson.noSpaces
-      //send(TextMessage.Strict(text), "all")
+      println("on server")
       val d = Pickle.intoBytes[KappaMessage](result)
       send(BinaryMessage(ByteString(d)))
 

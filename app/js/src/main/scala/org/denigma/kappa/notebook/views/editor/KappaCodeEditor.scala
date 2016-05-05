@@ -37,13 +37,7 @@ class KappaCodeEditor(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selector.source).withBinder(new GeneralBinder(_)))
-    //.register("code")((el, args) => new CodeTab(el, hub.selector.source).withBinder(new GeneralBinder(_))
 
-  /*
-    override def withBinder(fun: this.type => ViewBinder): this.type  = withBinders(fun(this)::binders)
-
-    override def withBinders(fun: this.type => List[ViewBinder]): this.type  = withBinders(fun(this) ++ binders)
-    */
   override type Value = KappaFile
 
   override type ItemView = CodeTab
@@ -64,12 +58,8 @@ class KappaCodeEditor(val elem: Element,
     case (el, _) =>
       el.id = item //dirty trick
       val value = keyVar(item)
-      val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor).withBinder(v=>new CodeBinder(v))
+      val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor).withBinder(v => new CodeBinder(v) )
       selected() = item
-      println("selected = "+selected.now)
-      println("view active = "+view.active)
-
-      //view.code() = va
       view
 
   }

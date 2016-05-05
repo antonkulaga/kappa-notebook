@@ -4,27 +4,22 @@ package org.denigma.kappa.notebook.views.simulations
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, ItemsMapView, ItemsSetView, UpdatableView}
+import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.KappaHub
 import org.denigma.kappa.notebook.views.RunnerView
 import org.denigma.kappa.notebook.views.common._
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
-import org.scalajs.dom.ext._
-import org.scalajs.dom.raw.{Element, Event, SVGElement}
+import org.scalajs.dom.raw.{Element, Event}
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
 import rx._
 
-import scala.List
-import scala.Predef.{Map, Set}
 import scala.collection.immutable._
 import scala.util._
 
 
-class SimulationsView(val elem: Element, val selected: Var[String], hub: KappaHub)
+class SimulationsView(val elem: Element, val selected: Var[String], val items: Rx[Map[(Int, RunModel), SimulationStatus]], launcher: Var[LaunchModel])
   extends BindableView with Uploader with TabItem with ItemsMapView //with ItemsSetView
 {
   self=>
@@ -74,19 +69,18 @@ class SimulationsView(val elem: Element, val selected: Var[String], hub: KappaHu
 
   def makeId(item: Item): String = "#"+item._1
 
-  override def items: Rx[Map[Key, SimulationStatus]] = hub.simulations
 
   override def newItemView(item: Key): SimulationStatusView = this.constructItemView(item)( {
     case (el, mp) =>
       el.id =  makeId(item) //bad practice
-      val view = new SimulationStatusView(el, item._1, item._2, selectTab, Var(None)).withBinder(new CodeBinder(_))
+      val view = new SimulationStatusView(el, item._1, item._2, selectTab, Var(SimulationStatus.empty)).withBinder(new CodeBinder(_))
       selectTab() = view.id
       view
   })
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selectTab).withBinder(new GeneralBinder(_)))
-    .register("runner")((el, args) => new RunnerView(el, hub).withBinder(n => new CodeBinder(n)))
+    .register("runner")((el, args) => new RunnerView(el, launcher).withBinder(n => new CodeBinder(n)))
 
 }
 
@@ -94,32 +88,27 @@ class SimulationStatusView(val elem: Element,
                            token: Int,
                            params: RunModel,
                            val selected: Var[String],
-                           val simulation: Var[Option[SimulationStatus]] = Var(None))
+                           val simulation: Var[SimulationStatus] = Var(SimulationStatus.empty))
   extends BindableView with UpdatableView[SimulationStatus] with TabItem
 {
 
   val console: Rx[String] = simulation.map{
-    case Some(s) => s.log_messages.fold("") {  case arr => arr.foldLeft("")((acc, el) => acc + el)  }
-    case None => ""
+    case s =>"" // s.log_messages.foldLeft("")((acc, el) => acc + el)
   }
 
-  val series: Rx[List[Var[KappaSeries]]] = simulation.map{
-    case Some(s)=>
-      s.plot.map(KappaChart.fromKappaPlot).getOrElse(KappaChart.empty).series.map(Var(_))
-    case None => KappaChart.empty.series.map(Var(_))
-  }
+  val plot: Rx[KappaPlot] = simulation.map(s=>s.plot.getOrElse(KappaPlot.empty))
+
 
   //val selected = simulation.map(s=>s.st)
   override def update(value: SimulationStatus) = {
-    simulation() = Some(value)
+    simulation() = value
     this
   }
 
 
-  //val title = hub.name.map(_.replace(".out",""))
   override lazy val injector = defaultInjector
     .register("Chart") {
       case (el, params) =>
-        new ChartView(el, Var(id), series).withBinder(new GeneralBinder(_))
+        new ChartView(el, Var(id), plot).withBinder(new GeneralBinder(_))
     }
 }

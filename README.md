@@ -1,5 +1,6 @@
 Kappa notebook
-#######################
+##############
+
 [![Gitter chat channel](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/denigma/denigma-libs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 This project is a webinterface that runs kappa models and displays the results.
@@ -30,12 +31,20 @@ In order to work Kappa-notebook has to be connected to a WebSim server.
 WebSim server is a version of [Kappa Simulation (KaSim)](https://github.com/Kappa-Dev/KaSim) with REST API.
 Right now there is not public release of WebSim so you have to build it yourself.
 
-In order to make it work, you need to :
-    * install opam : http://opam.ocaml.org/doc/Install.html
-    * install the dependency via the command ‘opam install yojson atdgen lwt cohttp’
+To build WebSim for Ubuntu/Mint and other Debian based distributions:
+
+    ```bash
+        #install opam by:
+        wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin
+        opam init #init opam
+        opam install yojson atdgen lwt cohttp depext #install main dependencies
+        opam depext conf-ncurses.1 #do it f there will be problems with ncurses and run installation of dependencies after it
+    ```
+
+
     * go into KaSim folder up to date in master branch and invoke ‘make WebSim.native’
     * ./WebSim.native launch it on port 8080
-    *   test it by asking http://localhost:8080/v1/version in your browser
+    * test it by asking http://localhost:8080/v1/version in your browser
     
-Note: sometimes building can be tricky. For instance the most common problem is when ocaml does not see dependencies installed by opam.
-That is why it is better to install opam from binaries ( http://opam.ocaml.org/doc/Install.html ) then from packages.
+Note: sometimes building can be tricky. The most common problem is when ocaml is installed from ubuntu/debian ocaml package and it does not see dependencies installed by opam.
+That is why I recommend to avoid installing ocaml from packages but to install binary version of opam and from it - install everything else.

@@ -5,7 +5,7 @@ import scala.collection.immutable._
 
 object Defaults
 {
-  lazy val runModel: RunModel = RunModel(code = "", max_events = Some(10000), max_time = None)
+  lazy val launcher: LaunchModel = LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None))
   lazy val simulations = Map.empty[(Int, RunModel), SimulationStatus]
 }
 
@@ -15,6 +15,12 @@ case class RunModel(code: String, nb_plot: Option[Int] = Some(250), max_events: 
 
 case class VersionInfo( build: String, version: String ) extends WebSimMessage
 
+
+object SimulationStatus {
+  lazy val empty = SimulationStatus(
+    None, None, None, None, None, None, None, is_running = false, None, Nil, None
+  )
+}
 case class SimulationStatus(
                              time_percentage: Option[Double],
                              event: Option[Int],
@@ -25,7 +31,7 @@ case class SimulationStatus(
                              max_events: Option[Int],
                              is_running: Boolean,
                              code: Option[String],
-                             log_messages: Option[List[String]],
+                             log_messages: List[String],
                              plot: Option[KappaPlot]
                              /*
                              debugJSON: Option[String] = None
@@ -42,6 +48,10 @@ case class SimulationStatus(
 
 case class Observable(time: Double, values: List[Double])  extends WebSimMessage
 
+
+object KappaPlot {
+  lazy val empty = KappaPlot(Nil, Nil)
+}
 case class KappaPlot(legend: List[String], observables: List[Observable]) extends WebSimMessage {
   //println("kappa plot: "+legend.toList)
   lazy val timePoints: List[Double] = observables.foldLeft(List.empty[Double])((acc, o)=> o.time::acc).reverse

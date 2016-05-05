@@ -22,7 +22,7 @@ object KappaHub{
   def empty: KappaHub = KappaHub(
     Var(None),
     Var(messages.Defaults.simulations),
-    Var(messages.Defaults.runModel),
+    Var(messages.Defaults.launcher),
     Var(testMap),
     Selector.default
   )
@@ -66,7 +66,7 @@ case class Selector(
 case class KappaHub(
                      kappaCursor: Var[Option[(Editor, PositionLike)]],
                      simulations: Var[Map[(Int, RunModel), SimulationStatus]],
-                     runParameters: Var[RunModel],
+                     launcher: Var[LaunchModel],
                      papers: Var[Map[String, Bookmark]],
                      selector: Selector
                    )

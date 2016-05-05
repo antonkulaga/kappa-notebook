@@ -8,14 +8,15 @@ import org.scalajs.dom.raw.{Element, HTMLInputElement, HTMLTextAreaElement}
 import rx._
 import org.denigma.binding.binders.{Events, ReactiveBinder}
 import org.denigma.binding.macroses._
+import org.denigma.kappa.messages.LaunchModel
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.kappa.notebook.KappaHub
 
-class RunnerView(val elem: Element, hub: KappaHub) extends BindableView
+class RunnerView(val elem: Element, launcher: Var[LaunchModel]) extends BindableView
 {
   self=>
 
-  val parameters = Var(hub.runParameters.now)
+  val parameters = Var(launcher.now.parameters)
 
   def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
 
@@ -53,7 +54,10 @@ class RunnerView(val elem: Element, hub: KappaHub) extends BindableView
   run.triggerLater{
     //dom.console.log("sending the code...")
     //hub.runParameters.Internal.value = parameters.now.copy(code = hub.kappaCode.now.text)
-    hub.runParameters.propagate()
+    //hub.runParameters.propagate()
+    launcher.Internal.value = launcher.now.copy(parameters = this.parameters.now)
+    launcher.propagate()
+
   }
 
   //name.onChange{  case n=>  if(fileName.now!=n) fileName() = n  }

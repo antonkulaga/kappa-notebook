@@ -10,7 +10,7 @@ import org.denigma.kappa.messages
 import org.denigma.kappa.messages.{KappaPath, _}
 
 import scala.Predef.Map
-
+/*
 object KappaHub{
 
   private val testMap: Map[String, Bookmark] = Map(
@@ -27,7 +27,20 @@ object KappaHub{
     Selector.default
   )
 }
+case class KappaHub(
+                     kappaCursor: Var[Option[(Editor, PositionLike)]],
+                     simulations: Var[Map[(Int, RunModel), SimulationStatus]],
+                     launcher: Var[LaunchModel],
+                     papers: Var[Map[String, Bookmark]],
+                     selector: Selector
+                   )
+{
+  import rx.Ctx.Owner.Unsafe.Unsafe
 
+  //lazy val name = currentProject.map(p=>p.name)
+
+}
+*/
 object Selector {
   lazy val default = Selector(
     Var(""),
@@ -63,16 +76,3 @@ case class Selector(
 /**
   * Created by antonkulaga on 07/04/16.
   */
-case class KappaHub(
-                     kappaCursor: Var[Option[(Editor, PositionLike)]],
-                     simulations: Var[Map[(Int, RunModel), SimulationStatus]],
-                     launcher: Var[LaunchModel],
-                     papers: Var[Map[String, Bookmark]],
-                     selector: Selector
-                   )
-{
-  import rx.Ctx.Owner.Unsafe.Unsafe
-
-  //lazy val name = currentProject.map(p=>p.name)
-
-}

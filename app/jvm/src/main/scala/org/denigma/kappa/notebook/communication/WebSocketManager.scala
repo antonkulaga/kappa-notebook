@@ -19,7 +19,6 @@ import com.typesafe.config.Config
   */
 class WebSocketManager(system: ActorSystem, fileManager: FileManager) extends KappaPicklers {
 
-
   val config: Config = system.settings.config
 
   val allRoom = system.actorOf(Props(classOf[RoomActor], "all"))

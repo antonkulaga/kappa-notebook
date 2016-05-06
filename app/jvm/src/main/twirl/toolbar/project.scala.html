@@ -1,0 +1,44 @@
+@()
+<section class="ui blue segment">
+  <div class="ui equal width grid">
+    <div class = "row">
+      <section class="column segment">
+        <div class="ui blue segment"  data-view="ProjectsView">
+          <h4 class="ui blue header">Project</h4>
+          <div class="ui large celled animated list">
+            <div class="item" data-template="true" >
+              <div class="right floated content">
+                <div class="ui mini button" data-click="loadClick" data-hide-if="current">load</div>
+              </div>
+              <i class="large suitcase icon"></i>
+              <div class="content">
+                <div data-bind="name" class="header"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="column segment">
+        <div class="ui blue segment" data-view="ProjectFilesView">
+          <h4 class="ui blue header">Current project:</h4>
+          <h4 class="ui inverted blue header"></h4>
+          <div class="ui large celled animated list">
+            <div class="item" data-template="true" >
+              <i class="label" data-class="icon"></i>
+              <div class="content">
+                <div data-bind="name" class="header"></div>
+              </div>
+            </div>
+          </div>
+          <div class="ui button">+</div>
+          <div class="ui button" data-click="save">
+            <i class="ui save icon"></i>Save Project
+          </div>
+          <div class="ui button" data-click="download">
+            <i class="ui download icon"></i>Download Project
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>

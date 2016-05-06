@@ -14,7 +14,7 @@ import rx._
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView, ItemsSeqView, UpdatableView}
 import org.denigma.codemirror.{Editor, PositionLike}
-import org.denigma.kappa.notebook.{KappaHub, Selector}
+import org.denigma.kappa.notebook.Selector
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.denigma.kappa.notebook.views.simulations.TabHeaders
 

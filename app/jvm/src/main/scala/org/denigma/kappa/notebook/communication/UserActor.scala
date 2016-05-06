@@ -91,11 +91,14 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
       Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer) match
       {
         case Load(pro) =>
+          //log.info("loaded+"+pro)
 
           //val rep = fileManager.cd("repressilator").read("repress.ka")
           //val code = Code(rep)//Code(readResource("/examples/abc.ka").mkString("\n"))
           val project = fileManager.loadProject(pro)
-          val list = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p).toList
+          val list: List[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p).toList
+          val response = Loaded(project, list)
+          //log.info("response+"+response)
 
           val d = Pickle.intoBytes[KappaMessage](Loaded(project, list))
           send(BinaryMessage(ByteString(d)))
@@ -110,7 +113,6 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
   protected def onServerMessage: Receive = {
 
     case result: SimulationResult =>
-      println("on server")
       val d = Pickle.intoBytes[KappaMessage](result)
       send(BinaryMessage(ByteString(d)))
 

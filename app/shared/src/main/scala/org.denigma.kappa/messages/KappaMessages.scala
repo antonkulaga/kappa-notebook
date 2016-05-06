@@ -4,38 +4,11 @@ import org.denigma.controls.charts.{LineStyles, Point, Series}
 
 sealed trait KappaMessage
 
+object EmptyKappaMessage extends KappaMessage
+
 import scala.collection.immutable._
 
-object KappaChart {
-  lazy val empty = KappaChart(List.empty)
 
-  implicit def fromKappaPlot(plot: KappaPlot): KappaChart = {
-    val series = plot.legend.zipWithIndex.map{ case (title, i) =>
-      //println("title: " + title)
-      KappaSeries(title, plot.observables.map(o=> Point(o.time, o.values(i))).toList) }
-    KappaChart(series.toList)
-  }
-}
-
-
-case class KappaChart(series: List[KappaSeries])
-{
-  def isEmpty: Boolean = series.isEmpty
-}
-
-
-object KappaSeries {
-
-  import scala.util.Random
-
-  def randomColor() = s"rgb(${Random.nextInt(255)},${Random.nextInt(255)},${Random.nextInt(255)})"
-
-  def randomLineStyle() = LineStyles(randomColor(), 4 ,"none" , 1.0)
-
-}
-
-
-case class KappaSeries(title: String, points: List[Point], style: LineStyles = KappaSeries.randomLineStyle()) extends Series
 case class KappaUser(name: String) extends KappaMessage
 
 case class Connected(username: String, channel: String, users: List[KappaUser], servers: ConnectedServers = ConnectedServers.empty) extends KappaMessage
@@ -43,122 +16,16 @@ case class Connected(username: String, channel: String, users: List[KappaUser], 
 case class Disconnected(username: String, channel: String /*, time: LocalDateTime = LocalDateTime.now()*/) extends KappaMessage
 
 trait ServerMessage extends KappaMessage
-{
-  def server: String
-}
 
-case class ServerConnection(name: String, port: Int, address: String) extends ServerMessage {
-  def server = name
-}
-
-object ConnectedServers {
-  lazy val empty: ConnectedServers = ConnectedServers(Nil)
-}
-case class ConnectedServers(servers: List[ServerConnection]) extends KappaMessage
-
-//case class Run(username: String, server: String, message: WebSim.RunModel, userRef: ActorRef, interval: FiniteDuration) extends ServerMessage
-
-case class SimulationResult(server: String, simulationStatus: SimulationStatus, token:Int, initialParams: Option[RunModel] = None) extends ServerMessage
-
-sealed trait ErrorMessage extends KappaMessage
+trait ErrorMessage extends KappaMessage
 {
   def errors: List[String]
 }
 
 case class SyntaxErrors(server: String, errors: List[String], initialParams: Option[RunModel] = None) extends ServerMessage with ErrorMessage
 
-case class ServerErrors(errors: List[String]) extends ErrorMessage
+case class SimulationResult(server: String, simulationStatus: SimulationStatus, token: Int, initialParams: Option[RunModel] = None) extends ServerMessage
 
 case class LaunchModel(server: String, parameters: RunModel) extends ServerMessage
 
-case class Load(project: KappaProject = KappaProject.default)  extends KappaMessage
-
-object Loaded {
-  lazy val empty: Loaded = Loaded(KappaProject.default)
-}
-
-case class Loaded(project: KappaProject, other: List[KappaProject] = Nil) extends KappaMessage
-
-case class Save(project: KappaProject) extends KappaMessage
-
-object KappaProject {
-  lazy val default: KappaProject = KappaProject("repressilator")
-
-  implicit val ordering = new Ordering[KappaProject] {
-    override def compare(x: KappaProject, y: KappaProject): Int = x.name.compare(y.name) match {
-      case 0 =>
-        x.hashCode().compare(y.hashCode())
-      case other => other
-    }
-  }
-}
-
-case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty) extends KappaMessage
-{
-  def loaded = folder != KappaFolder.empty
-
-  lazy val sources: SortedSet[KappaFile] = folder.files.filter(f=> f.name.endsWith(".ka") || f.name.endsWith(".ttl") )
-
-  lazy val sourceMap: Map[String, KappaFile] = sources.map(f=> (f.name, f)).toMap
-
-  lazy val papers = folder.files.filter(f => f.name.endsWith(".pdf"))
-
-  lazy val images = folder.files.filter(f =>
-    f.name.endsWith(".svg") ||
-      f.name.endsWith(".gif") ||
-      f.name.endsWith(".jpg") ||
-      f.name.endsWith(".png") ||
-      f.name.endsWith(".webp")
-  )
-}
-
-
-object KappaPath{
-  implicit val ordering: Ordering[KappaPath] = new Ordering[KappaPath] {
-    override def compare(x: KappaPath, y: KappaPath): Int = x.path.compare(y.path) match {
-      case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
-      case other => other
-    }
-  }
-
-  lazy val empty: KappaPath = KappaFolder.empty
-}
-
-object KappaFolder {
-
-  implicit val ordering: Ordering[KappaFolder] = new Ordering[KappaFolder] {
-    override def compare(x: KappaFolder, y: KappaFolder): Int = x.path.compare(y.path) match {
-      case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
-      case other => other
-    }
-  }
-
-  lazy val empty: KappaFolder = KappaFolder("", SortedSet.empty[KappaFolder], SortedSet.empty[KappaFile], active = false)
-}
-
-case class KappaFolder(path: String,
-                       folders: SortedSet[KappaFolder] = SortedSet.empty,
-                       files: SortedSet[KappaFile], active: Boolean = false) extends KappaPath
-{
-  //lazy val childFiles = children.collect{case f: KappaFile => f}
-  //lazy val childFolders = children.collect{case f: KappaFolder => f}
-
-}
-
-object KappaFile
-{
-  implicit val ordering: Ordering[KappaFile] with Object {def compare(x: KappaFile, y: KappaFile): Int} = new Ordering[KappaFile] {
-    override def compare(x: KappaFile, y: KappaFile): Int = x.path.compare(y.path) match {
-      case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
-      case other => other
-    }
-  }
-}
-
-case class KappaFile(path: String, name: String, content: String, active: Boolean = false) extends KappaPath
-
-sealed trait KappaPath extends KappaMessage
-{
-  def path: String
-  def active: Boolean
-}
+trait KappaFileMessage extends KappaMessage

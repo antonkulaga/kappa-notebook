@@ -4,7 +4,7 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream._
 import akka.stream.scaladsl._
-import org.denigma.kappa.messages.{RunModel, SimulationStatus}
+import org.denigma.kappa.messages.{RunModel, ServerConnection, SimulationStatus}
 
 import scala.collection.immutable.Seq
 import scala.concurrent.Future
@@ -22,7 +22,8 @@ case class Fit(parameter: String, min: Double, max: Double, runNum: Int)
 
 }
 
-class ParameterSearcher(host: String = "localhost", port: Int = 8080)(implicit system: ActorSystem, mat: ActorMaterializer) extends WebSimClient(host, port)(system, mat){
+class ParameterSearcher(host: String = "localhost", port: Int = 8080)(implicit system: ActorSystem, mat: ActorMaterializer)
+  extends WebSimClient(ServerConnection("test", host, port))(system, mat){
 
   /*
   def run(models: Seq[WebSim.RunModel]): Future[Seq[(TokenPoolMessage, SimulationStatus)]] =  {

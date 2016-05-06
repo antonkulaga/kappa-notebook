@@ -3,11 +3,6 @@ package org.denigma.kappa.messages
 import scala.List
 import scala.collection.immutable._
 
-object Defaults
-{
-  lazy val launcher: LaunchModel = LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None))
-  lazy val simulations = Map.empty[(Int, RunModel), SimulationStatus]
-}
 
 sealed trait WebSimMessage
 

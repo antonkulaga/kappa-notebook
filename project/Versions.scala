@@ -45,8 +45,6 @@ trait ScalaJSVersions {
 
 	val jqueryFacade = "0.11" //1.0-RC2
 
-	val semanticUIFacade = "0.0.1"
-
 	val dom = "0.9.0"
 
 	val codemirrorFacade = "5.11-0.7"

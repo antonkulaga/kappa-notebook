@@ -1,26 +1,22 @@
 package org.denigma.kappa.notebook.views
 
 
-import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
+import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.Session
-import org.denigma.controls.sockets.WebSocketSubscriber
+import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor, KappaWatcher}
 import org.denigma.kappa.notebook.views.project.{ProjectFilesView, ProjectsView}
 import org.denigma.kappa.notebook.views.visual._
-import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle
 import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all._
-import org.denigma.kappa.notebook.{KappaHub, WebSocketTransport}
-import org.scalajs.dom
-import org.scalajs.dom.MouseEvent
+import org.denigma.kappa.notebook.{Selector, WebSocketTransport}
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
 import rx._
 
 import scala.collection.immutable.SortedSet
@@ -30,18 +26,23 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
   self =>
 
-  lazy val subscriber = WebSocketSubscriber("notebook", "guest" + Math.random() * 1000)
+  val connector: WebSocketTransport = WebSocketTransport("notebook", "guest" + Math.random() * 1000)
 
-  val hub: KappaHub = KappaHub.empty
+  val input = connector.onKappaMessage
+
+  val output = connector.sendKappaMessage
+
+  val onopen = connector.onOpen
+
+  val papers: Var[Map[String, Bookmark]] = Var(Map.empty)
+
+  val selector = Selector.default
 
   val loaded: Var[Loaded] = Var(Loaded.empty)
-  loaded.onChange{
-    case ld=>
-      sourceMap.set(ld.project.sourceMap)
-      name() = ld.project.name
-      //currentProject() = ld.project
-  }
 
+  val projectList: Rx[List[KappaProject]] = loaded.map(l=>l.other)
+
+  val errors = Var(List.empty[String])
 
   val name = Var("HelloWorld!")
 
@@ -50,33 +51,52 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   val sourceMap = Var(Map.empty[String, KappaFile])
   //val sources: Var[SortedSet[KappaFile]] = Var(SortedSet.empty)
 
-  val currentProject = Rx.apply{
+  val currentProject: Rx[KappaProject] = Rx{
     val sourceFiles = sourceMap().values.toSeq
     val fls = SortedSet(sourceFiles:_*)
     val folder = KappaFolder(path(), files = fls)
+    println("FILES ARE: "+fls)
     KappaProject(name(), folder)
   }
 
-  val projectList: Rx[List[KappaProject]] = loaded.map(l=>l.other)
-  val errors = Var(List.empty[String])
 
-  subscriber.onOpen.triggerLater{
-    println("websocket opened")
-  }
-
-  val connector: WebSocketTransport = WebSocketTransport(subscriber, errors){
-
+  override def bindView() = {
+    super.bindView()
+    loaded.onChange{
+      case ld=>
+        sourceMap.set(ld.project.sourceMap)
+        name() = ld.project.name
+      //currentProject() = ld.project
+    }
+    connector.onOpen.triggerLater{
+      println("websocket opened")
+      output() = Load(KappaProject.default) //ask to load default project
+    }
+    connector.onKappaMessage.foreach{
       case ld: Loaded => loaded() = ld
-      case SyntaxErrors(server, ers, params) =>
-        errors() = ers
-      case SimulationResult(server, status, token, params) =>
-        println("percent: "+ status.percentage)
-        hub.simulations() = hub.simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
-        if(errors.now.nonEmpty) errors() = List.empty
-      case message: Connected => //nothing yet
+      case SyntaxErrors(server, ers, params) =>  errors() = ers
       case ServerErrors(ers) => errors() = ers
-      case other => dom.console.error(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)
+      case other => //do nothing
+    }
+    connector.open()
   }
+
+  /*
+  protected def onMessage(message: KappaMessage): Unit = message match {
+    case EmptyKappaMessage => //do nothing
+    case ld: Loaded => loaded() = ld
+    case SyntaxErrors(server, ers, params) =>  errors() = ers
+    case SimulationResult(server, status, token, params) =>
+      println("percent: "+ status.percentage)
+      simulations() = simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
+      if(errors.now.nonEmpty) errors() = List.empty
+    case message: Connected => //nothing yet
+    case ServerErrors(ers) => errors() = ers
+    case other => dom.console.error(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)
+  }
+  */
+
+
 
   protected def concat() = {
     sourceMap.now.values.foldLeft(""){
@@ -84,16 +104,10 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
   }
 
-  hub.launcher.triggerLater{
-    import com.softwaremill.quicklens._
-    val l: LaunchModel = hub.launcher.now
-    val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = concat()))
-    connector.send(launchParams)
-  }
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty) //collect updates of all editors together
 
-  val commentManager = new CommentsWatcher(editorsUpdates, hub)
+  val commentManager = new CommentsWatcher(editorsUpdates, papers, selector)
 
   lazy val s: SVG = {
     val t = svg(/*width :=  defaultWidth, height := defaultHeight*/).render
@@ -103,7 +117,11 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     t
   }
 
-  val kappaWatcher = new KappaWatcher(hub.kappaCursor, editorsUpdates, s)
+  val kappaCursor: Var[Option[(Editor, PositionLike)]] = Var(None)
+
+  val kappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates, s)
+
+
   val left2right: Rx[Boolean] = kappaWatcher.direction.map{
     case KappaModel.BothDirections | KappaModel.Left2Right=> true
     case _=> false
@@ -126,12 +144,15 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   override lazy val injector = defaultInjector
      .register("KappaEditor"){
        case (el, args) =>
-         val editor = new KappaCodeEditor(el, sourceMap, hub.selector, errors, hub.kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
+         val editor = new KappaCodeEditor(el, sourceMap, selector, errors, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
          editor
      }
-     .register("Tabs")((el, args) => new TabsView(el, hub).withBinder(n => new CodeBinder(n)))
-     .register("ProjectsView")((el, args) => new ProjectsView(el, projectList).withBinder(n => new CodeBinder(n)))
-     .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject.map(p=>p.folder.files)).withBinder(n => new CodeBinder(n)))
+     .register("Tabs")((el, args) => new TabsView(el, input, output, selector, papers, kappaCursor).withBinder(n => new CodeBinder(n)))
+
+     //.register("ProjectsPanel")((el, args) => new ProjectsPanelView(el, currentProject, projectList).withBinder(n => new CodeBinder(n)))
+
+     .register("ProjectsView")((el, args) => new ProjectsView(el, /*currentProject,*/ projectList).withBinder(n => new CodeBinder(n)))
+     .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject).withBinder(n => new CodeBinder(n)))
      .register("LeftGraph") {  (el, args) =>
        new GraphView(el,
          kappaWatcher.leftPattern.nodes,
@@ -145,5 +166,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
          kappaWatcher.rightPattern.layouts,
          args.getOrElse("container","graph-container").toString).withBinder(n => new CodeBinder(n)) }
      //.register("Files") {  (el, args) => new FilesView(el, hub.path).withBinder(n => new CodeBinder(n)) }
+
 
 }

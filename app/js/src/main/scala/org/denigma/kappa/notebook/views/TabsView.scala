@@ -1,20 +1,58 @@
 package org.denigma.kappa.notebook.views
 
 import org.denigma.binding.views._
+import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.notebook.KappaHub
+import org.denigma.controls.papers.Bookmark
+import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook.Selector
 import org.denigma.kappa.notebook.views.editor.EditorUpdates
 import org.denigma.kappa.notebook.views.papers.PapersView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.scalajs.dom.raw.Element
 import rx._
+import rx.Ctx.Owner.Unsafe.Unsafe
 
+class TabsView(
+               val elem: Element,
+               val input: Var[KappaMessage],
+               val out: Var[KappaMessage],
+               val selector: Selector,
+               val papers: Var[Map[String, Bookmark]],
+               val kappaCursor: Var[Option[(Editor, PositionLike)]]
+               /*
+               val simulations: Var[Map[(Int, RunModel), SimulationStatus]],
+               val launcher: Var[LaunchModel],
 
-class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
+               val selector: Selector,
+               val kappaCursor: Var[Option[(Editor, PositionLike)]]
+               */
+              ) extends BindableView {
 
   self =>
 
-  lazy val selected = hub.selector.tab
+  val simulations: Var[Map[(Int, RunModel), SimulationStatus]] = Var(Map.empty[(Int, RunModel), SimulationStatus])
+
+  val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
+
+  lazy val selected = selector.tab
+
+  override def bindView() = {
+    super.bindView()
+    val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
+    import com.softwaremill.quicklens._
+    val l: LaunchModel = launcher.now
+    //val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = concat()))
+    //out() = launchParams
+    input.foreach{
+      case SimulationResult(server, status, token, params) =>
+        println("percent: "+ status.percentage)
+        simulations() = simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
+        //if(errors.now.nonEmpty) errors() = List.empty
+      case other => //do nothing
+    }
+  }
+
 
   protected def defaultContent = ""
   protected def defaultLabel = ""
@@ -28,7 +66,7 @@ class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
   override lazy val injector = defaultInjector
     .register("Simulations") {
       case (el, params) =>
-        new SimulationsView(el, selected, hub.simulations, hub.launcher).withBinder(new CodeBinder(_))
+        new SimulationsView(el, selected, simulations, launcher).withBinder(new CodeBinder(_))
     }
     /*
     .register("Console") {
@@ -39,12 +77,12 @@ class TabsView(val elem: Element, hub: KappaHub) extends BindableView {
 
     .register("Image") {
       case (el, params) =>
-        new ImageView(el, selected, hub.selector.image).withBinder(new CodeBinder(_))
+        new ImageView(el, selected, selector.image).withBinder(new CodeBinder(_))
     }
 
     .register("Papers") {
       case (el, params) =>
-        new PapersView(el, selected, hub.papers, hub.selector, hub.kappaCursor).withBinder(new CodeBinder(_))
+        new PapersView(el, selected, papers, selector, kappaCursor).withBinder(new CodeBinder(_))
     }
     .register("UnderDevelopment") {
       case (el, params) =>

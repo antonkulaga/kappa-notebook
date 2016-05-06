@@ -4,7 +4,6 @@ import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.KappaHub
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Element
 import rx._
@@ -13,7 +12,9 @@ import scala.collection.immutable._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 
-class ProjectFilesView(val elem: Element, val items: Rx[SortedSet[KappaFile]]) extends ItemsSetView {
+class ProjectFilesView(val elem: Element, val currentProject: Rx[KappaProject]) extends ItemsSetView {
+
+  val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.folder.files)
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
     case (el, _) => new ProjectFileView(el,  item).withBinder(v=>new GeneralBinder(v))

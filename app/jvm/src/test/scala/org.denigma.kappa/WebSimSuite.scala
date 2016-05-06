@@ -8,7 +8,7 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.testkit.TestSubscriber.Probe
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestProbe
-import org.denigma.kappa.messages.{RunModel, SimulationStatus, VersionInfo}
+import org.denigma.kappa.messages.{RunModel, ServerConnection, SimulationStatus, VersionInfo}
 import org.denigma.kappa.notebook.services._
 
 import scala.collection.immutable.Seq
@@ -22,7 +22,7 @@ import scala.util._
   */
 class WebSimSuite extends BasicKappaSuite {
 
-  val server = new WebSimClient()
+  val server = new WebSimClient(ServerConnection.default)
   val flows = server.flows
 
   "WebSim" should {

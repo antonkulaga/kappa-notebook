@@ -14,31 +14,6 @@ object CloseCode extends Enumeration {
   val CLOSE_TOO_LARGE = Value(1009)
 }
 
-object WebSocketStorage {
-
-  var sockets: Map[String, WebSocket] = Map.empty[String, WebSocket]
-
-  def apply(url: String): WebSocket = sockets.getOrElse(url, add(url))
-
-  def init(url: String)(fun: (WebSocket => WebSocket)): WebSocket = sockets.getOrElse(url, fun(add(url)))
-
-  def add(url: String): WebSocket = {
-    val w: WebSocket = new WebSocket(url)
-    this.sockets = this.sockets.+(url -> w)
-    w
-  }
-
-  def remove(url: String): this.type = sockets.get(url) match {
-    case Some(w) =>
-      w.close(CloseCode.CLOSE_NORMAL.id, "logout")
-      this
-    case None =>
-      dom.console.log(s"nothing to remove with url $url")
-      this
-  }
-
-}
-
 /*
 *
 *

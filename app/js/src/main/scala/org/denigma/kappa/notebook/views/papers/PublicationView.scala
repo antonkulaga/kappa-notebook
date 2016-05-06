@@ -5,7 +5,6 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.UpdatableView
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers._
-import org.denigma.kappa.notebook.KappaHub
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
 import org.scalajs.dom.html.Canvas

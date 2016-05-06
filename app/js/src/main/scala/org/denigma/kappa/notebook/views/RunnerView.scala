@@ -2,15 +2,10 @@ package org.denigma.kappa.notebook.views
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
-import org.denigma.controls.code.CodeBinder
-import org.scalajs.dom.Event
-import org.scalajs.dom.raw.{Element, HTMLInputElement, HTMLTextAreaElement}
-import rx._
-import org.denigma.binding.binders.{Events, ReactiveBinder}
-import org.denigma.binding.macroses._
 import org.denigma.kappa.messages.LaunchModel
+import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.kappa.notebook.KappaHub
+import rx._
 
 class RunnerView(val elem: Element, launcher: Var[LaunchModel]) extends BindableView
 {

@@ -25,6 +25,8 @@ class KappaCodeEditor(val elem: Element,
   with ItemsMapView
 {
 
+  items.foreach(i=>println(" FILES: "+i))
+
   override type Item = String
 
   val selected: Var[String] = Var("")

@@ -25,7 +25,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util._
 import org.denigma.kappa.extensions._
-import org.denigma.kappa.messages.{RunModel, SimulationStatus}
+import org.denigma.kappa.messages.{RunModel, ServerConnection, SimulationStatus}
 
 import scala.Either
 
@@ -41,15 +41,15 @@ class WebSimClientFlows(host: String = "localhost", port: Int = 8080)(implicit v
 
 }
 
-class WebSimClient(host: String, port: Int)(implicit val system: ActorSystem, val mat: ActorMaterializer)
+class WebSimClient(connectionParameters: ServerConnection)(implicit val system: ActorSystem, val mat: ActorMaterializer)
 {
   //def stop(token: Int) =
 
   type Token = Int
 
-  val flows = new WebSimClientFlows(host, port)
+  val flows = new WebSimClientFlows(connectionParameters.host, connectionParameters.port)
 
-  protected lazy val ModelPool = Http().cachedHostConnectionPool[ModelPoolMessage](host, port)
+  protected lazy val ModelPool = Http().cachedHostConnectionPool[ModelPoolMessage](connectionParameters.host, connectionParameters.port)
 
   def getVersion() = Source.single(Unit).via(flows.versionFlow).runWith(Sink.head)
 

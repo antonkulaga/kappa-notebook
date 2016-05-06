@@ -1,7 +1,6 @@
 package org.denigma.kappa.notebook.views
 
 import org.denigma.binding.views.BindableView
-import org.denigma.kappa.notebook.KappaHub
 //import org.denigma.controls.tabs.TabItem
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe

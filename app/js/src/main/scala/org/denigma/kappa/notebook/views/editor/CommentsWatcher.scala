@@ -4,7 +4,7 @@ import fastparse.all._
 import org.denigma.codemirror.Editor
 import org.denigma.codemirror.extensions._
 import org.denigma.controls.papers.Bookmark
-import org.denigma.kappa.notebook.KappaHub
+import org.denigma.kappa.notebook.Selector
 import org.denigma.kappa.notebook.parsers.{CommentLinksParser, PaperParser}
 import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
@@ -15,9 +15,11 @@ import scalatags.JsDom.all._
 /**
   * Created by antonkulaga on 11/03/16.
   */
-class CommentsWatcher(updates: Var[EditorUpdates], hub: KappaHub)  {
+class CommentsWatcher(
+                       updates: Var[EditorUpdates],
+                       papers: Var[Map[String, Bookmark]],
+                       selector: Selector )  {
 
-  def papers = hub.papers
   updates.foreach(changeHandler) //subscription
 
   val commentsParser = new CommentLinksParser()
@@ -119,7 +121,7 @@ class CommentsWatcher(updates: Var[EditorUpdates], hub: KappaHub)  {
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        hub.selector.image() = src
+        selector.image() = src
     }
     html
   }

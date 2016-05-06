@@ -11,11 +11,16 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.SocketMessages._
 import boopickle.Default._
+import com.typesafe.config.Config
+
 
 /**
   * Websocket transport that unplickles/pickles messages
   */
 class WebSocketManager(system: ActorSystem, fileManager: FileManager) extends KappaPicklers {
+
+
+  val config: Config = system.settings.config
 
   val allRoom = system.actorOf(Props(classOf[RoomActor], "all"))
 
@@ -26,9 +31,18 @@ class WebSocketManager(system: ActorSystem, fileManager: FileManager) extends Ka
   protected val outgoingFlow = Flow[SocketMessages.OutgoingMessage].map{ case SocketMessages.OutgoingMessage(_, _, message, _) => message }
 
 
+  /**
+    * Creates a websocket flow to process
+    * @param channel name of a websocket channel to connect to
+    * @param username name of a user that connects
+    * @return
+    */
   def openChannel(channel: String, username: String = "guest"): Flow[Message, Message, Any] = {
     val partial: Graph[FlowShape[Message, Message], ActorRef] = GraphDSL.create(
-      Source.actorPublisher[OutgoingMessage](Props(classOf[UserActor], username, servers, fileManager))
+      Source.actorPublisher[OutgoingMessage](Props(classOf[UserActor],
+        username,
+        servers, //receives a reference to server actor
+        fileManager))
     )
     {
       implicit builder => user =>

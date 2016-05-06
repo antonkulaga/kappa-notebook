@@ -36,11 +36,9 @@ object KappaSeries {
 
 
 case class KappaSeries(title: String, points: List[Point], style: LineStyles = KappaSeries.randomLineStyle()) extends Series
+case class KappaUser(name: String) extends KappaMessage
 
-//sealed trait WebSocketMessage
-
-
-case class Connected(username: String, channel: String /*, time: LocalDateTime = LocalDateTime.now()*/) extends KappaMessage
+case class Connected(username: String, channel: String, users: List[KappaUser], servers: ConnectedServers = ConnectedServers.empty) extends KappaMessage
 
 case class Disconnected(username: String, channel: String /*, time: LocalDateTime = LocalDateTime.now()*/) extends KappaMessage
 
@@ -48,6 +46,15 @@ trait ServerMessage extends KappaMessage
 {
   def server: String
 }
+
+case class ServerConnection(name: String, port: Int, address: String) extends ServerMessage {
+  def server = name
+}
+
+object ConnectedServers {
+  lazy val empty: ConnectedServers = ConnectedServers(Nil)
+}
+case class ConnectedServers(servers: List[ServerConnection]) extends KappaMessage
 
 //case class Run(username: String, server: String, message: WebSim.RunModel, userRef: ActorRef, interval: FiniteDuration) extends ServerMessage
 

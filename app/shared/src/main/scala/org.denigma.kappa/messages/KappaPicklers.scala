@@ -41,7 +41,9 @@ trait KappaPicklers {
       .addConcreteType[KappaFile]
       .addConcreteType[KappaFolder]
       .addConcreteType[KappaProject]
-
+      .addConcreteType[KappaUser]
+      .addConcreteType[ServerConnection]
+      .addConcreteType[ConnectedServers]
 
   }
 

@@ -15,7 +15,6 @@ import scala.collection.immutable._
 import scala.concurrent.duration.FiniteDuration
 import scala.scalajs.js.timers
 
-
 case class WebSocketTransport(subscriber: WebSocketSubscriber, errors: Var[List[String]])(onmessage: PartialFunction[KappaMessage, Unit]) extends KappaPicklers with BinaryWebSocket
 {
   type MessageHandler = PartialFunction[KappaMessage, Unit]

@@ -41,7 +41,7 @@ class WebSimClientFlows(host: String = "localhost", port: Int = 8080)(implicit v
 
 }
 
-class WebSimClient(host: String = "localhost", port: Int = 8080)(implicit val system: ActorSystem, val mat: ActorMaterializer)
+class WebSimClient(host: String, port: Int)(implicit val system: ActorSystem, val mat: ActorMaterializer)
 {
   //def stop(token: Int) =
 

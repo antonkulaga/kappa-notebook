@@ -8,7 +8,7 @@ import akka.stream.ActorMaterializer
 import better.files._
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import org.denigma.kappa.messages.{KappaFile, KappaFolder, KappaPath, KappaProject}
+import org.denigma.kappa.messages.{KappaFile, KappaFolder, KappaProject}
 
 import scala.collection.immutable._
 
@@ -21,8 +21,6 @@ object Main extends App  {
 
   val server: HttpExt = Http(system)
   val config: Config = system.settings.config
-  println("###############################")
-  println("FILES ARE: "+config.as[Option[String]]("app.files"))
 
   val (host, port) = (config.getString("app.host"), config.getInt("app.port"))
   val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
@@ -30,9 +28,7 @@ object Main extends App  {
   root.createIfNotExists(asDirectory = true)
   val router = new Router(File(filePath))
   val bindingFuture = server.bindAndHandle(router.routes, host, port)(materializer)
-
-  println(s"starting server at $host:$port")
-
+  system.log.info(s"starting server at $host:$port")
 
 }
 
@@ -63,16 +59,8 @@ class FileManager(val root: File) {
         && {
         val p = ch.pathAsString
         val ext = p.substring(ch.pathAsString.indexOf(".") +1)
-        //println("============")
-        //println("PATH IS " + p)
-        //println("EXT IS " + ext)
-        //println(p)
-        //println(p.substring(ch.pathAsString.indexOf(".")))
         knownExtensions.contains(ext)
       }  =>
-        //println("88888888888888888888888888888888888")
-        //println(" NAME of file is : " + ch.name)
-        //println(" content of file is : " + ch.contentAsString)
         KappaFile(ch.pathAsString, ch.name, ch.contentAsString, active = true)
       case ch if ch.isRegularFile => KappaFile(ch.pathAsString, ch.name, "",  active = false)
     }.toSeq

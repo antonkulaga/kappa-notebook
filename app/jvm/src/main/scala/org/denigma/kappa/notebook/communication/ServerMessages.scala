@@ -11,13 +11,20 @@ import scala.util.Either
 
 class KappaServerActor extends Actor with ActorLogging {
 
-  ammonite.repl.Main.Config
-
   implicit def system: ActorSystem = context.system
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-  val server = new WebSimClient()(system, materializer)
-    override def receive: Receive = {
+  import net.ceedubs.ficus.readers.ArbitraryTypeReader._
+
+  import com.typesafe.config.Config
+  val config: Config = system.settings.config
+
+  //val connections = config.as[ServerConnection]("someCaseClass")
+  //val servers = Map.empty[String, WebSimClient]
+
+  val server = new WebSimClient("localhost", 8080)(system, materializer)
+
+  override def receive: Receive = {
 
     case launch @ RunAtServer(username, serverName, message: RunModel, userRef, interval) =>
       Source.single(message)

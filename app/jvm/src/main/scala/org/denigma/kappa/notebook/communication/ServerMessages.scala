@@ -50,7 +50,7 @@ class KappaServerActor extends Actor with ActorLogging {
 
         case (Right(errors), model) =>
           val mess = SyntaxErrors(serverName, errors, Some(model))
-          log.info("result is with errors "+mess)
+          //log.info("result is with errors "+mess)
           userRef ! mess
       }
       val server = servers(serverName)

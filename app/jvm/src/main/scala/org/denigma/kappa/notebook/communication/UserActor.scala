@@ -17,15 +17,10 @@ import akka.http.scaladsl.model._
 import org.denigma.kappa.messages._
 import better.files._
 import java.io.{File => JFile}
+import java.nio.ByteBuffer
 
 import org.denigma.kappa.notebook.FileManager
 
-
-/**
-  * This actor is creates for each user that connects via websocket
-  * @param username
-  * @param servers
-  */
 class UserActor(username: String, servers: ActorRef, fileManager: FileManager) extends KappaPicklers
   with Actor
   with akka.actor.ActorLogging
@@ -91,17 +86,31 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
       Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer) match
       {
         case Load(pro) =>
-          //log.info("loaded+"+pro)
+          fileManager.loadProject(pro) match {
+            case project: KappaProject if project.saved =>
+              val list: List[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p).toList
+              val response = Loaded(list)
+              val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+              send(d)
 
-          //val rep = fileManager.cd("repressilator").read("repress.ka")
-          //val code = Code(rep)//Code(readResource("/examples/abc.ka").mkString("\n"))
-          val project = fileManager.loadProject(pro)
-          val list: List[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p).toList
-          val response = Loaded(project, list)
-          //log.info("response+"+response)
+            case project =>
+              val error = ServerErrors(List(s"folder of ${pro.name} does not exist!"))
+              val d = Pickle.intoBytes[KappaMessage](error)
+              send(d)
 
-          val d = Pickle.intoBytes[KappaMessage](Loaded(project, list))
-          send(BinaryMessage(ByteString(d)))
+          }
+
+        case Remove(name) =>
+          fileManager.remove(name)
+          //log.info("********************************\nREMOVED = "+ fileManager.loadProjectSet())
+
+
+        case Create(project,rewriteIfExists) =>
+          //fileManager.remove(name)
+          //log.info("REMOVED = "+ fileManager.loadProjectSet())
+
+        //Aubrey_de_Grey
+
 
         case LaunchModel(server, parameters)=> run(parameters)
 
@@ -114,15 +123,15 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
 
     case result: SimulationResult =>
       val d = Pickle.intoBytes[KappaMessage](result)
-      send(BinaryMessage(ByteString(d)))
+      send(d)
 
     case s: SyntaxErrors=>
       val d = Pickle.intoBytes[KappaMessage](s)
-      send(BinaryMessage(ByteString(d)))
+      send(d)
 
     case result: Connected =>
       val d = Pickle.intoBytes[KappaMessage](result)
-      send(BinaryMessage(ByteString(d)))
+      send(d)
 
     case Disconnected(user, channel) =>
       log.info(s"User $user disconnected from channel $channel")
@@ -155,9 +164,13 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
     deliver(message)
   }
 
-  def send(binaryMessage: BinaryMessage, channel: String = "all") = {
+  def sendBinary(binaryMessage: BinaryMessage, channel: String = "all") = {
     val message = SocketMessages.OutgoingMessage(channel, username, binaryMessage, LocalDateTime.now)
     deliver(message)
+  }
+
+  def send(d: ByteBuffer, channel: String = "all"): Unit = {
+    sendBinary(BinaryMessage(ByteString(d)), channel)
   }
 
 

@@ -22,12 +22,12 @@ object KappaFolder {
     }
   }
 
-  lazy val empty: KappaFolder = KappaFolder("", SortedSet.empty[KappaFolder], SortedSet.empty[KappaFile], active = false)
+  lazy val empty: KappaFolder = KappaFolder("", SortedSet.empty[KappaFolder], SortedSet.empty[KappaFile])
 }
 
 case class KappaFolder(path: String,
                        folders: SortedSet[KappaFolder] = SortedSet.empty,
-                       files: SortedSet[KappaFile], active: Boolean = false) extends KappaPath
+                       files: SortedSet[KappaFile], saved: Boolean = false) extends KappaPath
 {
   //lazy val childFiles = children.collect{case f: KappaFile => f}
   //lazy val childFolders = children.collect{case f: KappaFolder => f}
@@ -44,17 +44,18 @@ object KappaFile
   }
 }
 
-case class KappaFile(path: String, name: String, content: String, active: Boolean = false) extends KappaPath
+case class KappaFile(path: String, name: String, content: String, saved: Boolean = false) extends KappaPath
 
 sealed trait KappaPath extends KappaFileMessage
 {
   def path: String
-  def active: Boolean
+  def saved: Boolean
 }
 
 
 object KappaProject {
-  lazy val default: KappaProject = KappaProject("repressilator")
+
+  lazy val default: KappaProject = KappaProject("repressilator", saved = false)
 
   implicit val ordering = new Ordering[KappaProject] {
     override def compare(x: KappaProject, y: KappaProject): Int = x.name.compare(y.name) match {
@@ -66,7 +67,7 @@ object KappaProject {
 }
 
 
-case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty) extends KappaFileMessage
+case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, saved: Boolean = false) extends KappaFileMessage
 {
   def loaded = folder != KappaFolder.empty
 
@@ -85,13 +86,19 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty) e
   )
 }
 
+//case class Update(project: KappaProject, insertions) extends KappaFileMessage
+case class Remove(projectName: String, done: Boolean = false) extends KappaFileMessage
+case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
+case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
 
-case class Load(project: KappaProject = KappaProject.default)  extends KappaFileMessage
 
 object Loaded {
-  lazy val empty: Loaded = Loaded(KappaProject.default)
+  lazy val empty: Loaded = Loaded(Nil)
 }
 
-case class Loaded(project: KappaProject, other: List[KappaProject] = Nil) extends KappaFileMessage
+case class Loaded(projects: List[KappaProject] = Nil) extends KappaFileMessage {
+  lazy val projectOpt: Option[KappaProject] = projects.headOption
+  lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
+}
 
 case class Save(project: KappaProject) extends KappaFileMessage

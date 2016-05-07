@@ -40,7 +40,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val loaded: Var[Loaded] = Var(Loaded.empty)
 
-  val projectList: Rx[List[KappaProject]] = loaded.map(l=>l.other)
+  val projectList: Rx[List[KappaProject]] = loaded.map(l=>l.projects)
 
   val errors = Var(List.empty[String])
 
@@ -137,7 +137,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   }
 
   lazy val projectChanged = Rx{
-    loaded().project == currentProject()
+    loaded().projectOpt == Some(currentProject())
   }
 
 

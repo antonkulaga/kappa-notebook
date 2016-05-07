@@ -12,11 +12,6 @@ trait KappaPicklers {
 
   object Single{
 /*
-    implicit val kappaPathPickler = compositePickler[KappaPath]
-        .addConcreteType[KappaFile]
-        .addConcreteType[KappaFolder]
-*/
-
     implicit val webSimMessagePickler = compositePickler[WebSimMessage]//compositePickle[WebSimMessage]
       .addConcreteType[RunModel]
       .addConcreteType[Observable]
@@ -44,7 +39,7 @@ trait KappaPicklers {
       .addConcreteType[KappaUser]
       .addConcreteType[ServerConnection]
       .addConcreteType[ConnectedServers]
-
+*/
   }
 
   import Single._
@@ -71,5 +66,8 @@ trait KappaPicklers {
       .addConcreteType[KappaFile]
       .addConcreteType[KappaFolder]
       .addConcreteType[Loaded]
+      .addConcreteType[Remove]
+      .addConcreteType[Create]
+      .addConcreteType[Save]
 
 }

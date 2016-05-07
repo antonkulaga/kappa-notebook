@@ -16,7 +16,7 @@ import org.denigma.kappa.notebook.communication.WebSocketManager
 import org.denigma.kappa.notebook.pages.WebSockets
 import scala.collection.immutable._
 
-class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
+class WebSocketSuite extends BasicKappaSuite with KappaPicklers {
 
   val (host, port) = (config.getString("app.host"), config.getInt("app.port"))
   val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
@@ -68,13 +68,7 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
       WS("/channel/notebook?username=tester2", wsClient.flow) ~>  routes ~>
         check {
           // check response for WS Upgrade headers
-          isWebSocketUpgrade shouldEqual true
-          wsClient.inProbe.request(1).expectNextPF{
-            case BinaryMessage.Strict(bytes) if {
-              Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
-                case c: Connected=>  true
-                case _ => false} } =>
-          }
+          checkConnection(wsClient)
 
           val model = abc
             .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
@@ -104,38 +98,84 @@ class WebSocketSuite extends BasicKappaSuite with KappaPicklers{
       val wsClient = WSProbe()
       WS("/channel/notebook?username=tester3", wsClient.flow) ~>  routes ~>
         check {
-          // check response for WS Upgrade headers
-          isWebSocketUpgrade shouldEqual true
-
-          wsClient.inProbe.request(1).expectNextPF{
-            case BinaryMessage.Strict(bytes) if {
-              Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
-                case c: Connected=>  true
-                case _ => false} } =>
-          }
-
-          val message: ByteBuffer = Pickle.intoBytes[KappaMessage](Load(KappaProject("big")))
-          wsClient.sendMessage(pack(message))
-
-          wsClient.inProbe.request(1).expectNextPF{
-            case BinaryMessage.Strict(bytes) if {
-              Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
-                case Loaded(proj: KappaProject, one::two::Nil)=>
-                  proj.name shouldEqual "big"
-                  proj.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
-                  //proj.folder.files.get
-                  //println("something received: \n" + smth)
-                  true
-                case other => println("failure with "+other)
-                  false}
-            } =>
-          }
+          checkConnection(wsClient)
+          checkTestProjects(wsClient)
 
         }
         wsClient.sendCompletion()
+        //wsClient.expectCompletion()
     }
+
+
+    "update projects" in {
+      val wsClient = WSProbe()
+      WS("/channel/notebook?username=tester3", wsClient.flow) ~>  routes ~>
+        check {
+          // check response for WS Upgrade headers
+          checkConnection(wsClient)
+          val Loaded(proj :: two :: Nil) = checkTestProjects(wsClient)
+          val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](Remove("big"))
+          wsClient.sendMessage(pack(rem))
+          val str: String = checkProjects(wsClient, KappaProject("big")){
+            case ServerErrors(head::Nil) =>
+              println("############################################################")
+              head
+
+          }
+          /*
+          val add: ByteBuffer = Pickle.intoBytes[KappaMessage](Create(proj))
+          checkTestProjects(wsClient)
+          */
+          wsClient.sendCompletion()
+      //wsClient.expectCompletion()
+      }
+    }
+
 
   }
 
+  def checkProjects[T](wsClient: WSProbe, message: ByteBuffer)(partial: PartialFunction[KappaMessage, T]): T = {
+    wsClient.sendMessage(pack(message))
+    wsClient.inProbe.request(1).expectNextPF {
+      case BinaryMessage.Strict(bytes) if {
+        Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
+          case l =>
+            if(partial.isDefinedAt(l)) true else {
+            println("checkProjects failed with: " + l)
+            false
+            }
+        }
+      } =>
+        val value = Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer)
+        partial(value)
+    }
+  }
 
+  def checkProjects[T](wsClient: WSProbe, projectToLoad: KappaProject)(partial: PartialFunction[KappaMessage, T]): T =
+  {
+    val bytes = Pickle.intoBytes[KappaMessage](Load(projectToLoad))
+    checkProjects[T](wsClient, bytes)(partial)
+  }
+
+
+  def checkTestProjects(wsClient: WSProbe): Loaded = checkProjects(wsClient, KappaProject("big")){
+    case l @ Loaded(proj :: two :: Nil) =>
+      //println("LOADED = "+ l)
+      proj.name shouldEqual "big"
+      proj.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
+      l
+  }
+
+  def checkConnection(wsClient: WSProbe): Unit = {
+    isWebSocketUpgrade shouldEqual true
+
+    wsClient.inProbe.request(1).expectNextPF {
+      case BinaryMessage.Strict(bytes) if {
+        Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
+          case c: Connected => true
+          case _ => false
+        }
+      } =>
+    }
+  }
 }

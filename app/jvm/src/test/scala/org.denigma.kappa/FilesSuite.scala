@@ -24,8 +24,6 @@ import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
 import org.denigma.kappa.messages.{KappaFile, KappaFolder, KappaPath, KappaProject}
 
-
-
 class FilesSuite extends BasicKappaSuite{
 
   val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
@@ -45,7 +43,7 @@ class FilesSuite extends BasicKappaSuite{
 
     "load default project" in {
       val toLoad = KappaProject("big")
-      println("////////////////////////////////////////")
+      //println("////////////////////////////////////////")
       println(config.as[Option[String]]("app.files"))
       println("path is " + fileManager.root.pathAsString)
       println("folders are " + fileManager.root.children.foldLeft("[")((acc, el)=>acc + " " + el.name) + "]")

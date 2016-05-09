@@ -106,11 +106,11 @@ object FileRequests {
 }
 object FileResponses {
   object Loaded {
+    def apply(projects: List[KappaProject]): Loaded = Loaded(None, projects)
     lazy val empty: Loaded = Loaded(Nil)
   }
 
-  case class Loaded(projects: List[KappaProject] = Nil) extends KappaFileMessage {
-    lazy val projectOpt: Option[KappaProject] = projects.headOption
+  case class Loaded(projectOpt: Option[KappaProject], projects: List[KappaProject] = Nil) extends KappaFileMessage {
     lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
   }
 

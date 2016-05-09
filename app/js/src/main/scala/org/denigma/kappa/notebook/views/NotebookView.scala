@@ -64,17 +64,25 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     super.bindView()
     loaded.onChange{
       case ld=>
-        sourceMap.set(ld.project.sourceMap)
+        //println("LOQDED =\n"+ld+"\n")
+        val proj = ld.project
+        val fls = proj.sourceMap
+        println("FILES ARE: "+fls)
+        sourceMap.set(fls)
         name() = ld.project.name
       //currentProject() = ld.project
     }
     connector.onOpen.triggerLater{
       println("websocket opened")
-      output() = FileRequests.Load(KappaProject.default) //ask to load default project
+      val toLoad = FileRequests.Load(KappaProject.default)
+      output() = toLoad //ask to load default project
     }
     connector.onKappaMessage.foreach{
-      case ld: FileResponses.Loaded => loaded() = ld
+      case ld: FileResponses.Loaded =>
+        //println("LOQDED = "+ld)
+        loaded() = ld
       case SyntaxErrors(server, ers, params) =>  errors() = ers
+      case Failed(operation, ers, username) =>  errors() = ers
       case ServerErrors(ers) => errors() = ers
       case other => //do nothing
     }
@@ -136,9 +144,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     case _=> false
   }
 
-  lazy val projectChanged = Rx{
-    loaded().projectOpt == Some(currentProject())
-  }
+  lazy val projectChanged = Rx(loaded().projectOpt.contains(currentProject()))
 
 
   override lazy val injector = defaultInjector

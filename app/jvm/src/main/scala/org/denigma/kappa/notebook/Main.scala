@@ -76,7 +76,7 @@ class FileManager(val root: File) {
     val path: File = root / project.name
     val p = if (createIfNotExists) path.createDirectory() else path
     val dir = listFolder(p)
-    project.copy(folder = dir, saved = p.exists)
+    project.copy(folder = dir, saved = p.exists())
   }
 
   /**

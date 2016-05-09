@@ -84,14 +84,17 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
           fileManager.loadProject(pro) match {
             case project: KappaProject if project.saved =>
               val list: List[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p).toList
-              val response = FileResponses.Loaded(list)
+              val response = FileResponses.Loaded(Some(project), list)
               val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+              //log.info("################################"+response)
               send(d)
 
             case project =>
               //val error = ServerErrors(List(s"folder of ${pro.name} does not exist!"))
               val error = Failed(project, List(s"folder of ${pro.name} does not exist!"), username)
               val d = Pickle.intoBytes[KappaMessage](error)
+
+              //log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!"+error)
               send(d)
           }
 
@@ -121,7 +124,7 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
           }
 
         case upl @ FileRequests.ZipUpload(projectName, data, rewriteIfExist)=>
-          fileManager.uploadProject(upl)
+         // fileManager.uploadProject(upl)
 
         case LaunchModel(server, parameters)=> run(parameters)
 

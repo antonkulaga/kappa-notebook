@@ -36,7 +36,7 @@ trait OtherJVM {
 
 	val breeze = "0.12"
 
-	val ficus: String = "1.2.3"
+	val ficus: String = "1.2.4"
 
 }
 

@@ -2,8 +2,18 @@ package org.denigma.kappa.messages
 
 import scala.List
 import scala.collection.immutable._
+import boopickle.Default._
 
-
+object WebSimMessage {
+  implicit val webSimMessagePickler = compositePickler[WebSimMessage]//compositePickle[WebSimMessage]
+    .addConcreteType[RunModel]
+    .addConcreteType[Observable]
+    .addConcreteType[KappaPlot]
+    .addConcreteType[FluxData]
+    .addConcreteType[FluxMap]
+    .addConcreteType[SimulationStatus]
+    .addConcreteType[VersionInfo]
+}
 sealed trait WebSimMessage
 
 case class RunModel(code: String, nb_plot: Option[Int] = Some(250), max_events: Option[Int], max_time: Option[Double] = None) extends WebSimMessage

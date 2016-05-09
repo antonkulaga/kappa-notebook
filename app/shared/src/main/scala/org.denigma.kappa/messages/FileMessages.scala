@@ -1,5 +1,7 @@
 package org.denigma.kappa.messages
 
+import boopickle.Default._
+
 import scala.collection.immutable._
 
 object KappaPath{
@@ -11,6 +13,16 @@ object KappaPath{
   }
 
   lazy val empty: KappaPath = KappaFolder.empty
+
+  implicit val kappaPathPickler = compositePickler[KappaPath]
+    .addConcreteType[KappaFile]
+    .addConcreteType[KappaFolder]
+}
+
+sealed trait KappaPath extends KappaFileMessage
+{
+  def path: String
+  def saved: Boolean
 }
 
 object KappaFolder {
@@ -46,11 +58,7 @@ object KappaFile
 
 case class KappaFile(path: String, name: String, content: String, saved: Boolean = false) extends KappaPath
 
-sealed trait KappaPath extends KappaFileMessage
-{
-  def path: String
-  def saved: Boolean
-}
+
 
 
 object KappaProject {
@@ -87,7 +95,7 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
 }
 
 //case class Update(project: KappaProject, insertions) extends KappaFileMessage
-case class Remove(projectName: String, done: Boolean = false) extends KappaFileMessage
+case class Remove(projectName: String) extends KappaFileMessage
 case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
 case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
 

@@ -1,25 +1,20 @@
 package org.denigma.kappa.notebook.communication
 
-import java.io.InputStream
+import java.io.{InputStream, File => JFile}
+import java.nio.ByteBuffer
+import java.time._
 
 import akka.actor.{Actor, ActorRef}
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.stream.actor.{ActorPublisher, ActorPublisherMessage}
 import akka.util.ByteString
-import boopickle.Default._
+import boopickle.DefaultBasic._
+import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.SocketMessages.OutgoingMessage
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
-import java.time._
-
-import akka.http.scaladsl.model._
-import org.denigma.kappa.messages._
-import better.files._
-import java.io.{File => JFile}
-import java.nio.ByteBuffer
-
-import org.denigma.kappa.notebook.FileManager
 
 class UserActor(username: String, servers: ActorRef, fileManager: FileManager) extends KappaPicklers
   with Actor
@@ -94,23 +89,24 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
               send(d)
 
             case project =>
-              val error = ServerErrors(List(s"folder of ${pro.name} does not exist!"))
+              //val error = ServerErrors(List(s"folder of ${pro.name} does not exist!"))
+              val error = Failed(project, List(s"folder of ${pro.name} does not exist!"), username)
               val d = Pickle.intoBytes[KappaMessage](error)
               send(d)
-
           }
 
-        case Remove(name) =>
+        case r @ Remove(name) =>
           fileManager.remove(name)
-          //log.info("********************************\nREMOVED = "+ fileManager.loadProjectSet())
+          val response = Done(r, username)
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+          send(d)
 
 
-        case Create(project,rewriteIfExists) =>
-          //fileManager.remove(name)
-          //log.info("REMOVED = "+ fileManager.loadProjectSet())
-
-        //Aubrey_de_Grey
-
+        case c @ Create(project, rewriteIfExists) =>
+          fileManager.create(project)
+          val response = Done(c, username)
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+          send(d)
 
         case LaunchModel(server, parameters)=> run(parameters)
 
@@ -172,6 +168,5 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
   def send(d: ByteBuffer, channel: String = "all"): Unit = {
     sendBinary(BinaryMessage(ByteString(d)), channel)
   }
-
 
 }

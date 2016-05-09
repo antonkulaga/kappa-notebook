@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook
 
 import java.nio.ByteBuffer
 
-import boopickle.Default._
+import boopickle.DefaultBasic._
 import org.denigma.binding.extensions._
 import org.denigma.controls.papers.Bookmark
 import org.denigma.controls.sockets.{BinaryWebSocket, WebSocketStorage, WebSocketSubscriber}

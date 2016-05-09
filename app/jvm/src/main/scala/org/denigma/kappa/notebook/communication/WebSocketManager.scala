@@ -10,7 +10,7 @@ import akka.util.ByteString
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.SocketMessages._
-import boopickle.Default._
+import boopickle.DefaultBasic._
 import com.typesafe.config.Config
 
 

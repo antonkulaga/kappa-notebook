@@ -8,7 +8,7 @@ import akka.stream.ActorMaterializer
 import better.files._
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import org.denigma.kappa.messages.{KappaFile, KappaFolder, KappaProject}
+import org.denigma.kappa.messages.{KappaFile, KappaFolder, KappaPath, KappaProject}
 
 import scala.Seq
 import scala.collection.immutable._
@@ -39,6 +39,10 @@ object FileManager {
 
 class FileManager(val root: File) {
 
+  def create(project: KappaProject, rewriteIfExists: Boolean = false) = {
+    write(project.folder)
+  }
+
   def remove(name: String) = {
     val path: File = root / name
     path.delete()
@@ -58,6 +62,24 @@ class FileManager(val root: File) {
     project.copy(folder = dir, saved = p.exists)
   }
 
+  /**
+    * Writes KappaFile to the disk
+    * @param p
+    * @return
+    */
+  def write(p: KappaPath): File = p match {
+    case KappaFolder(path, folders, files, _) =>
+      val dir = File(root.path.resolve(path)).createDirectories()
+      for(f <- files) write(f)
+      for(f <- folders) write(f)
+      dir
+
+    case KappaFile(path, name, content, _) =>
+      val f = File(root.path.resolve(path))
+      f < content
+      f
+
+  }
 
   def listFolder(file: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder =
   if(file.exists)
@@ -77,25 +99,9 @@ class FileManager(val root: File) {
     val dirs = SortedSet(diter:_*)
     KappaFolder(file.pathAsString, dirs, SortedSet(fiter:_*))
   } else KappaFolder(file.pathAsString, SortedSet.empty, SortedSet.empty, saved = false)
-/*
-  def listFolder(kappaPath: KappaPath: File, parent: Option[File] = None, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder = {
-    KappaFolder.empty.copy(name)
-    val lst = file.children.map{
-      case ch if ch.isDirectory => listFolder(ch, Some(file))
-      case ch if ch.isRegularFile && knownExtensions.contains(ch.pathAsString.substring(ch.pathAsString.indexOf(".")) +1) =>
-        KappaFile(ch.pathAsString, ch.name, ch.contentAsString, None, false)
-      case ch if ch.isRegularFile => KappaFile(ch.pathAsString, ch.name, "", None, false)
-    }.toSeq
-    val children = SortedSet(lst:_*)
-    KappaFolder(file.pathAsString, children, parent.map(f => KappaPath(f.pathAsString)))
-  }
-  */
-
 
   def read(relativePath: String): String = (root / relativePath).contentAsString
 
   def cd(relativePath: String): FileManager = new FileManager(root / relativePath)
-
-  def read(file: File) =  file.contentAsString
 
 }

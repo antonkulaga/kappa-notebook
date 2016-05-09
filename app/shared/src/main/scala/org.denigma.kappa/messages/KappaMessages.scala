@@ -1,10 +1,34 @@
 package org.denigma.kappa.messages
 
-import org.denigma.controls.charts.{LineStyles, Point, Series}
+import boopickle.CompositePickler
+
+object KappaMessage{
+  //import boopickle.DefaultBasic._
+
+  import boopickle.Default._
+  implicit val simpleMessagePickler: CompositePickler[KappaMessage] = compositePickler[KappaMessage]
+    .addConcreteType[Load]
+    .addConcreteType[KappaProject]
+    .addConcreteType[LaunchModel]
+    .addConcreteType[SimulationResult]
+    .addConcreteType[SyntaxErrors]
+    .addConcreteType[ServerErrors]
+    .addConcreteType[Connected]
+    .addConcreteType[Disconnected]
+    .addConcreteType[KappaFile]
+    .addConcreteType[KappaFolder]
+    .addConcreteType[Loaded]
+    .addConcreteType[Remove]
+    .addConcreteType[Create]
+    .addConcreteType[Save]
+    .addConcreteType[Done]
+    .addConcreteType[Failed]
+
+}
 
 sealed trait KappaMessage
 
-object EmptyKappaMessage extends KappaMessage
+case object EmptyKappaMessage extends KappaMessage
 
 import scala.collection.immutable._
 
@@ -29,3 +53,7 @@ case class SimulationResult(server: String, simulationStatus: SimulationStatus, 
 case class LaunchModel(server: String, parameters: RunModel) extends ServerMessage
 
 trait KappaFileMessage extends KappaMessage
+
+case class Done(operation: KappaMessage, user: String) extends KappaMessage
+
+case class Failed(operation: KappaMessage, error: List[String], user: String) extends KappaMessage

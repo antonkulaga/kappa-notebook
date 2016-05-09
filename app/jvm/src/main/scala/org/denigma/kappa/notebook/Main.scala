@@ -33,11 +33,21 @@ object Main extends App  {
 
 }
 
-object FileManager {
-
-}
-
 class FileManager(val root: File) {
+
+  /*
+  def upload(data: Upload) = {
+
+  }
+  */
+
+  def uploadProject() = {
+
+  }
+
+  def downloadProject() = {
+
+  }
 
   def create(project: KappaProject, rewriteIfExists: Boolean = false) = {
     write(project.folder)

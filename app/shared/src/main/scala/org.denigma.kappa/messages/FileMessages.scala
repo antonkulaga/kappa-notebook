@@ -98,6 +98,9 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
 case class Remove(projectName: String) extends KappaFileMessage
 case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
 case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
+//case class Upload() extends KappaFileMessage
+case class Upload(projectName: String, filename: String, data: Array[Byte]) extends KappaFileMessage
+case class ZipUpload(projectName: String, filename: String, data: Array[Byte], createProject: Boolean = false) extends KappaFileMessage
 
 
 object Loaded {

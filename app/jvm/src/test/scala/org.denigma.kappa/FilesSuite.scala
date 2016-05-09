@@ -44,7 +44,7 @@ class FilesSuite extends BasicKappaSuite{
     "load default project" in {
       val toLoad = KappaProject("big")
       //println("////////////////////////////////////////")
-      println(config.as[Option[String]]("app.files"))
+      //println(config.as[Option[String]]("app.files"))
       println("path is " + fileManager.root.pathAsString)
       println("folders are " + fileManager.root.children.foldLeft("[")((acc, el)=>acc + " " + el.name) + "]")
 

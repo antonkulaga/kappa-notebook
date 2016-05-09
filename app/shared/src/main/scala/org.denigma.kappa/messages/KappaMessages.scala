@@ -23,6 +23,9 @@ object KappaMessage{
     .addConcreteType[Save]
     .addConcreteType[Done]
     .addConcreteType[Failed]
+    .addConcreteType[Upload]
+    .addConcreteType[ZipUpload]
+
 
 }
 

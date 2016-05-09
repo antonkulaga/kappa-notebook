@@ -38,7 +38,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val selector = Selector.default
 
-  val loaded: Var[Loaded] = Var(Loaded.empty)
+  val loaded: Var[FileResponses.Loaded] = Var(FileResponses.Loaded.empty)
 
   val projectList: Rx[List[KappaProject]] = loaded.map(l=>l.projects)
 
@@ -70,10 +70,10 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     connector.onOpen.triggerLater{
       println("websocket opened")
-      output() = Load(KappaProject.default) //ask to load default project
+      output() = FileRequests.Load(KappaProject.default) //ask to load default project
     }
     connector.onKappaMessage.foreach{
-      case ld: Loaded => loaded() = ld
+      case ld: FileResponses.Loaded => loaded() = ld
       case SyntaxErrors(server, ers, params) =>  errors() = ers
       case ServerErrors(ers) => errors() = ers
       case other => //do nothing

@@ -54,7 +54,7 @@ abstract class BasicWebSocketSuite extends BasicKappaSuite with KappaPicklers {
 
   def checkMessage[T](wsClient: WSProbe, projectToLoad: KappaProject)(partial: PartialFunction[KappaMessage, T]): T =
   {
-    val bytes = Pickle.intoBytes[KappaMessage](Load(projectToLoad))
+    val bytes = Pickle.intoBytes[KappaMessage](FileRequests.Load(projectToLoad))
     checkMessage[T](wsClient, bytes)(partial)
   }
 

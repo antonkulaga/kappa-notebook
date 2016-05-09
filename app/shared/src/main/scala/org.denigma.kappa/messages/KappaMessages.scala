@@ -7,7 +7,6 @@ object KappaMessage{
 
   import boopickle.Default._
   implicit val simpleMessagePickler: CompositePickler[KappaMessage] = compositePickler[KappaMessage]
-    .addConcreteType[Load]
     .addConcreteType[KappaProject]
     .addConcreteType[LaunchModel]
     .addConcreteType[SimulationResult]
@@ -17,16 +16,18 @@ object KappaMessage{
     .addConcreteType[Disconnected]
     .addConcreteType[KappaFile]
     .addConcreteType[KappaFolder]
-    .addConcreteType[Loaded]
-    .addConcreteType[Remove]
-    .addConcreteType[Create]
-    .addConcreteType[Save]
+    .addConcreteType[FileRequests.Load]
+    .addConcreteType[FileResponses.Loaded]
+    .addConcreteType[FileRequests.Remove]
+    .addConcreteType[FileRequests.Create]
+    .addConcreteType[FileRequests.Save]
+    .addConcreteType[FileRequests.Upload]
+    .addConcreteType[FileRequests.Download]
+    .addConcreteType[FileRequests.ZipUpload]
+    .addConcreteType[FileResponses.Downloaded]
+    .addConcreteType[FileResponses.UploadStatus]
     .addConcreteType[Done]
     .addConcreteType[Failed]
-    .addConcreteType[Upload]
-    .addConcreteType[ZipUpload]
-
-
 }
 
 sealed trait KappaMessage

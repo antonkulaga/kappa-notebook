@@ -93,23 +93,36 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
       f.name.endsWith(".webp")
   )
 }
+object FileRequests {
+  //case class Update(project: KappaProject, insertions) extends KappaFileMessage
+  case class Remove(projectName: String) extends KappaFileMessage
+  case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
+  case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
+  //case class Upload() extends KappaFileMessage
+  case class Download(projectName: String) extends KappaFileMessage
+  case class Save(project: KappaProject) extends KappaFileMessage
+  case class Upload(projectName: String, filename: String, data: Array[Byte]) extends KappaFileMessage
+  case class ZipUpload(projectName: String, data: Array[Byte], rewriteIfExist: Boolean = false) extends KappaFileMessage
+}
+object FileResponses {
+  object Loaded {
+    lazy val empty: Loaded = Loaded(Nil)
+  }
 
-//case class Update(project: KappaProject, insertions) extends KappaFileMessage
-case class Remove(projectName: String) extends KappaFileMessage
-case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
-case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
-//case class Upload() extends KappaFileMessage
-case class Upload(projectName: String, filename: String, data: Array[Byte]) extends KappaFileMessage
-case class ZipUpload(projectName: String, filename: String, data: Array[Byte], createProject: Boolean = false) extends KappaFileMessage
+  case class Loaded(projects: List[KappaProject] = Nil) extends KappaFileMessage {
+    lazy val projectOpt: Option[KappaProject] = projects.headOption
+    lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
+  }
 
+  case class Downloaded(folderName: String, data: Array[Byte]) extends KappaFileMessage
+  case class UploadStatus(projectName: String, hash: Int, rewriteIfExist: Boolean) extends KappaFileMessage
 
-object Loaded {
-  lazy val empty: Loaded = Loaded(Nil)
 }
 
-case class Loaded(projects: List[KappaProject] = Nil) extends KappaFileMessage {
-  lazy val projectOpt: Option[KappaProject] = projects.headOption
-  lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
-}
 
-case class Save(project: KappaProject) extends KappaFileMessage
+
+
+
+
+
+

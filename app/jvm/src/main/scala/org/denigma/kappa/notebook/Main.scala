@@ -8,7 +8,8 @@ import akka.stream.ActorMaterializer
 import better.files._
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import org.denigma.kappa.messages.{KappaFile, KappaFolder, KappaPath, KappaProject}
+import org.denigma.kappa.messages.FileResponses.UploadStatus
+import org.denigma.kappa.messages._
 
 import scala.Seq
 import scala.collection.immutable._
@@ -35,15 +36,13 @@ object Main extends App  {
 
 class FileManager(val root: File) {
 
-  /*
-  def upload(data: Upload) = {
 
+  /*
+  def uploadProject(upload: FileRequests.ZipUpload): Option[UploadStatus] = {
+
+    ???
   }
   */
-
-  def uploadProject() = {
-
-  }
 
   def downloadProject() = {
 
@@ -64,6 +63,14 @@ class FileManager(val root: File) {
       case child if child.isDirectory => KappaProject(child.name)//loadProject(child.path)
     }.toSet
   }
+
+  protected def projectExists(path: String): Boolean = (root / path).exists
+
+  def loadZiped(projectName: String) =  if(projectExists(projectName)){
+    val zp = (root / projectName).zip()
+    Some(FileResponses.Downloaded(projectName, zp.byteArray))
+  } else None
+
 
   def loadProject(project: KappaProject, createIfNotExists: Boolean = false): KappaProject = {
     val path: File = root / project.name

@@ -80,11 +80,11 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
     case SocketMessages.IncomingMessage(channel, uname, message: BinaryMessage.Strict, time) =>
       Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer) match
       {
-        case Load(pro) =>
+        case FileRequests.Load(pro) =>
           fileManager.loadProject(pro) match {
             case project: KappaProject if project.saved =>
               val list: List[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p).toList
-              val response = Loaded(list)
+              val response = FileResponses.Loaded(list)
               val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
               send(d)
 
@@ -95,18 +95,33 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
               send(d)
           }
 
-        case r @ Remove(name) =>
+        case r @ FileRequests.Remove(name) =>
           fileManager.remove(name)
           val response = Done(r, username)
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
           send(d)
 
 
-        case c @ Create(project, rewriteIfExists) =>
+        case c @ FileRequests.Create(project, rewriteIfExists) =>
           fileManager.create(project)
           val response = Done(c, username)
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
           send(d)
+
+        case dn @ FileRequests.Download(projectName)=>
+          fileManager.loadZiped(projectName) match
+          {
+            case Some(response: FileResponses.Downloaded) =>
+              val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+              send(d)
+            case None =>
+              val response = Failed(dn, List(s"project $projectName does not exist"), username)
+              val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+              send(d)
+          }
+
+        case upl @ FileRequests.ZipUpload(projectName, data, rewriteIfExist)=>
+          fileManager.uploadProject(upl)
 
         case LaunchModel(server, parameters)=> run(parameters)
 

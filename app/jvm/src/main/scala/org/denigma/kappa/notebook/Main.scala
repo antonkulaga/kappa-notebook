@@ -58,10 +58,10 @@ class FileManager(val root: File) {
   }
 
 
-  def loadProjectSet(): Set[KappaProject] = {
-    root.children.collect{
+  def loadProjectSet(): SortedSet[KappaProject] = {
+    SortedSet(root.children.collect{
       case child if child.isDirectory => KappaProject(child.name)//loadProject(child.path)
-    }.toSet
+    }.toSeq:_*)
   }
 
   protected def projectExists(path: String): Boolean = (root / path).exists

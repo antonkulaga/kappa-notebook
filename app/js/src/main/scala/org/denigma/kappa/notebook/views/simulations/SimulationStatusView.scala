@@ -7,7 +7,6 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.views.RunnerView
 import org.denigma.kappa.notebook.views.common._
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent

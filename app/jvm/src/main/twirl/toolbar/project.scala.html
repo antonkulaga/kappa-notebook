@@ -10,8 +10,8 @@
               <div class="right floated content">
                 <div class="ui mini button" data-click="loadClick" data-hide-if="current">load</div>
               </div>
-              <i class="large suitcase icon"></i>
-              <div class="content">
+              <i class="large suitcase icon" data-class-blue-if="current"></i>
+              <div class="project content" data-click="loadClick">
                 <div data-bind="name" class="header"></div>
               </div>
             </div>
@@ -20,7 +20,7 @@
       </section>
       <section class="column segment">
         <div class="ui blue segment" data-view="ProjectFilesView">
-          <h4 class="ui blue header">Current project:</h4>
+          <h4 class="ui blue header">Current project: <b data-bind="name"></b></h4>
           <h4 class="ui inverted blue header"></h4>
           <div class="ui large celled animated list">
             <div class="item" data-template="true" >

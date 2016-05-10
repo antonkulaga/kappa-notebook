@@ -14,6 +14,7 @@ import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.SocketMessages.OutgoingMessage
 
 import scala.annotation.tailrec
+import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
 
 class UserActor(username: String, servers: ActorRef, fileManager: FileManager) extends KappaPicklers
@@ -55,6 +56,7 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
 
   def run(params: RunModel): Unit = {
     val toServer = RunAtServer(username, "localhost", params, self, 100 millis)
+    //println("RUN QT SERVER: "+toServer)
     servers ! toServer
   }
 
@@ -83,7 +85,7 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
         case FileRequests.Load(pro) =>
           fileManager.loadProject(pro) match {
             case project: KappaProject if project.saved =>
-              val list: List[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p).toList
+              val list: SortedSet[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p)
               val response = FileResponses.Loaded(Some(project), list)
               val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
               //log.info("################################"+response)
@@ -126,7 +128,9 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
         case upl @ FileRequests.ZipUpload(projectName, data, rewriteIfExist)=>
          // fileManager.uploadProject(upl)
 
-        case LaunchModel(server, parameters)=> run(parameters)
+        case LaunchModel(server, parameters)=>
+
+          run(parameters)
 
         case other => log.error(s"unexpected $other")
       }

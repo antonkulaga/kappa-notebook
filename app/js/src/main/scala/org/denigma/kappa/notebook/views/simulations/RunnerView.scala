@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views
+package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
@@ -52,7 +52,6 @@ class RunnerView(val elem: Element, launcher: Var[LaunchModel]) extends Bindable
     //hub.runParameters.propagate()
     launcher.Internal.value = launcher.now.copy(parameters = this.parameters.now)
     launcher.propagate()
-
   }
 
   //name.onChange{  case n=>  if(fileName.now!=n) fileName() = n  }

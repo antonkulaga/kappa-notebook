@@ -6,8 +6,9 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.Selector
+import org.denigma.kappa.notebook.views.annotations.{ImageView, VideosView}
 import org.denigma.kappa.notebook.views.editor.EditorUpdates
-import org.denigma.kappa.notebook.views.papers.PapersView
+import org.denigma.kappa.notebook.views.annotations.papers.PapersView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.scalajs.dom.raw.Element
 import rx._
@@ -19,14 +20,8 @@ class TabsView(
                val out: Var[KappaMessage],
                val selector: Selector,
                val papers: Var[Map[String, Bookmark]],
-               val kappaCursor: Var[Option[(Editor, PositionLike)]]
-               /*
-               val simulations: Var[Map[(Int, RunModel), SimulationStatus]],
-               val launcher: Var[LaunchModel],
-
-               val selector: Selector,
-               val kappaCursor: Var[Option[(Editor, PositionLike)]]
-               */
+               val kappaCursor: Var[Option[(Editor, PositionLike)]],
+               val sourceMap: Rx[Map[String, KappaFile]]
               ) extends BindableView {
 
   self =>
@@ -37,13 +32,21 @@ class TabsView(
 
   lazy val selected = selector.tab
 
+  protected def concat() = {
+    sourceMap.now.values.foldLeft(""){
+      case (acc, e)=> acc + "\n"+ e.content
+    }
+  }
+
   override def bindView() = {
     super.bindView()
-    val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
     import com.softwaremill.quicklens._
-    val l: LaunchModel = launcher.now
-    //val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = concat()))
-    //out() = launchParams
+    launcher.triggerLater{
+      val l: LaunchModel = launcher.now
+      val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = concat()))
+      println("PARAMS TO THE SERVER = "+launchParams)
+      out() = launchParams
+    }
     input.foreach{
       case SimulationResult(server, status, token, params) =>
         println("percent: "+ status.percentage)
@@ -75,11 +78,15 @@ class TabsView(
     }
     */
 
-    .register("Image") {
+    .register("Images") {
       case (el, params) =>
         new ImageView(el, selected, selector.image).withBinder(new CodeBinder(_))
     }
-
+    .register("Videos") {
+      case (el, params) =>
+        el.id = "Videos"
+        new VideosView(el, selected, selector.image).withBinder(new CodeBinder(_))
+    }
     .register("Papers") {
       case (el, params) =>
         new PapersView(el, selected, papers, selector, kappaCursor).withBinder(new CodeBinder(_))

@@ -4,29 +4,6 @@
   <div class="ui top attached tabular menu" data-view="headers">
     <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
   </div>
-  @ide.html.code()
-  <section>
-    <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
-    <textarea data-editor="kappa" id="kappa"></textarea>
-  </section>
-
-  <!--
-
-  <div class="ui top attached tabular menu">
-    <a class="active item" >Code</a>
-  </div>
-  <button class="ui button" data-event-click="save">Download code</button>
-  <input id="the-file-input" type="file" title="Upload model" data-event-change="onUpload">
-  <section>
-    <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
-    <textarea data-editor="kappa" id="kappa"></textarea>
-  </section>
-
   <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
-  <div class="ui top attached pointing menu" data-view="headers">
-    <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
-  </div>
-  <div  data-template="true" class="ui bottom attached segment tab page" data-class-active-if="active">
-  </div>
-  -->
+  @ide.html.code()
 </section>

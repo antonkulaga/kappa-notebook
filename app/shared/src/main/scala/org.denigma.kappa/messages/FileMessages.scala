@@ -79,19 +79,23 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
 {
   def loaded = folder != KappaFolder.empty
 
-  lazy val sources: SortedSet[KappaFile] = folder.files.filter(f=> f.name.endsWith(".ka") || f.name.endsWith(".ttl") )
+  protected def sourceFilter(f: KappaFile) =  f.name.endsWith(".ka") || f.name.endsWith(".ttl")
+
+  protected def imageFilter(f: KappaFile) =   f.name.endsWith(".svg") ||
+    f.name.endsWith(".gif") ||
+    f.name.endsWith(".jpg") ||
+    f.name.endsWith(".png") ||
+    f.name.endsWith(".webp")
+
+  lazy val sources: SortedSet[KappaFile] = folder.files.filter(sourceFilter)
 
   lazy val sourceMap: Map[String, KappaFile] = sources.map(f=> (f.name, f)).toMap
 
   lazy val papers = folder.files.filter(f => f.name.endsWith(".pdf"))
 
-  lazy val images = folder.files.filter(f =>
-    f.name.endsWith(".svg") ||
-      f.name.endsWith(".gif") ||
-      f.name.endsWith(".jpg") ||
-      f.name.endsWith(".png") ||
-      f.name.endsWith(".webp")
-  )
+  lazy val images = folder.files.filter(imageFilter)
+
+  lazy val nonsourceFiles = folder.files.filterNot(sourceFilter)
 }
 object FileRequests {
   //case class Update(project: KappaProject, insertions) extends KappaFileMessage
@@ -106,11 +110,11 @@ object FileRequests {
 }
 object FileResponses {
   object Loaded {
-    def apply(projects: List[KappaProject]): Loaded = Loaded(None, projects)
+    def apply(projects: List[KappaProject]): Loaded = Loaded(None, SortedSet(projects:_*))
     lazy val empty: Loaded = Loaded(Nil)
   }
 
-  case class Loaded(projectOpt: Option[KappaProject], projects: List[KappaProject] = Nil) extends KappaFileMessage {
+  case class Loaded(projectOpt: Option[KappaProject], projects: SortedSet[KappaProject] = SortedSet.empty) extends KappaFileMessage {
     lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
   }
 

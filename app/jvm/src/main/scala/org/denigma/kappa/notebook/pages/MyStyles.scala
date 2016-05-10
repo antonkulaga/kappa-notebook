@@ -88,6 +88,10 @@ object MyStyles extends TextLayerStyles{
   "#RightGraph" -(
     padding(0 px)
     )
+
+  ".project.content" -{
+    cursor.pointer
+  }
 }
 
 trait TextLayerStyles extends StyleSheet.Standalone {

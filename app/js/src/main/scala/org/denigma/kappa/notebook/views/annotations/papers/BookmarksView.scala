@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views.papers
+package org.denigma.kappa.notebook.views.annotations.papers
 
 import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._

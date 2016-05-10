@@ -40,7 +40,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val loaded: Var[FileResponses.Loaded] = Var(FileResponses.Loaded.empty)
 
-  val projectList: Rx[List[KappaProject]] = loaded.map(l=>l.projects)
+  val projectList: Rx[SortedSet[KappaProject]] = loaded.map(l=>l.projects)
 
   val errors = Var(List.empty[String])
 
@@ -48,14 +48,13 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val path = Var("files")
 
-  val sourceMap = Var(Map.empty[String, KappaFile])
-  //val sources: Var[SortedSet[KappaFile]] = Var(SortedSet.empty)
+  val sourceMap: Var[Map[String, KappaFile]] = Var(Map.empty[String, KappaFile])
+  val otherFiles = Var(SortedSet.empty[KappaFile])
 
   val currentProject: Rx[KappaProject] = Rx{
     val sourceFiles = sourceMap().values.toSeq
-    val fls = SortedSet(sourceFiles:_*)
+    val fls = SortedSet(sourceFiles:_*) ++ otherFiles()
     val folder = KappaFolder(path(), files = fls)
-    println("FILES ARE: "+fls)
     KappaProject(name(), folder)
   }
 
@@ -65,12 +64,16 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     loaded.onChange{
       case ld=>
         //println("LOQDED =\n"+ld+"\n")
+        println(
+          s"""
+            |PROJECT LIST: \n${ld.projects.map(p=>p.name)mkString("\n")}
+          """.stripMargin)
         val proj = ld.project
-        val fls = proj.sourceMap
-        println("FILES ARE: "+fls)
-        sourceMap.set(fls)
         name() = ld.project.name
-      //currentProject() = ld.project
+        otherFiles() = proj.nonsourceFiles
+        val sources = proj.sourceMap
+        sourceMap.set(sources)
+
     }
     connector.onOpen.triggerLater{
       println("websocket opened")
@@ -88,23 +91,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     connector.open()
   }
-
-  /*
-  protected def onMessage(message: KappaMessage): Unit = message match {
-    case EmptyKappaMessage => //do nothing
-    case ld: Loaded => loaded() = ld
-    case SyntaxErrors(server, ers, params) =>  errors() = ers
-    case SimulationResult(server, status, token, params) =>
-      println("percent: "+ status.percentage)
-      simulations() = simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
-      if(errors.now.nonEmpty) errors() = List.empty
-    case message: Connected => //nothing yet
-    case ServerErrors(ers) => errors() = ers
-    case other => dom.console.error(s"UNKNOWN KAPPA MESSAGE RECEIVED! "+other)
-  }
-  */
-
-
 
   protected def concat() = {
     sourceMap.now.values.foldLeft(""){
@@ -153,11 +139,9 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
          val editor = new KappaCodeEditor(el, sourceMap, selector, errors, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
          editor
      }
-     .register("Tabs")((el, args) => new TabsView(el, input, output, selector, papers, kappaCursor).withBinder(n => new CodeBinder(n)))
-
+     .register("Tabs")((el, args) => new TabsView(el, input, output, selector, papers, kappaCursor, sourceMap).withBinder(n => new CodeBinder(n)))
      //.register("ProjectsPanel")((el, args) => new ProjectsPanelView(el, currentProject, projectList).withBinder(n => new CodeBinder(n)))
-
-     .register("ProjectsView")((el, args) => new ProjectsView(el, /*currentProject,*/ projectList).withBinder(n => new CodeBinder(n)))
+     .register("ProjectsView")((el, args) => new ProjectsView(el, loaded, output).withBinder(n => new CodeBinder(n)))
      .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject).withBinder(n => new CodeBinder(n)))
      .register("LeftGraph") {  (el, args) =>
        new GraphView(el,

@@ -18,13 +18,12 @@ class ProjectFilesView(val elem: Element, val currentProject: Rx[KappaProject]) 
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
     case (el, _) => new ProjectFileView(el,  item).withBinder(v=>new GeneralBinder(v))
-
   }
 
   override type Item = KappaFile
   override type ItemView = ProjectFileView
 
-
+  val name = currentProject.map(proj => proj.name)
   val save = Var(Events.createMouseEvent())
   save.onChange{
     case ev =>

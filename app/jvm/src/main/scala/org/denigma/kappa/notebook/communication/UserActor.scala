@@ -114,19 +114,27 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
           send(d)
 
         case dn @ FileRequests.Download(projectName)=>
+          //log.info("DOWNLOADED STARTED "+projectName)
+
           fileManager.loadZiped(projectName) match
           {
             case Some(response: FileResponses.Downloaded) =>
+              log.info("RESPONDE = "+response)
               val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
               send(d)
+
             case None =>
               val response = Failed(dn, List(s"project $projectName does not exist"), username)
+              println(response)
               val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
               send(d)
           }
 
         case upl @ FileRequests.ZipUpload(projectName, data, rewriteIfExist)=>
-         // fileManager.uploadProject(upl)
+
+
+        case sv @ FileRequests.Save(project)=>
+          println("SAVING IS NOT YET IMPLEMENTED!")
 
         case LaunchModel(server, parameters)=>
 

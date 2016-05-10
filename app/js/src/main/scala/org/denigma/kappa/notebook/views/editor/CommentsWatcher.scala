@@ -18,6 +18,9 @@ import scalatags.JsDom.all._
 class CommentsWatcher(
                        updates: Var[EditorUpdates],
                        papers: Var[Map[String, Bookmark]],
+                       /*vids: Var[Map[String, String]],
+                       images: Var[Map[String, String]],
+                       */
                        selector: Selector )  {
 
   updates.foreach(changeHandler) //subscription

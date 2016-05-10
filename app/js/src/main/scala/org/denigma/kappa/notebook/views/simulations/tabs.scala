@@ -2,18 +2,11 @@ package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.views.{BindableView, ItemsSetView}
-import org.scalajs.dom
-import org.scalajs.dom.MouseEvent
-import org.scalajs.dom.ext._
-import org.scalajs.dom.raw.{Element, Event, SVGElement}
+import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
 import rx._
 
-import scala.List
-import scala.Predef.{Map, Set}
 import scala.collection.immutable._
-import scala.util._
 
 class TabHeaders(val elem: Element, val items: Rx[SortedSet[String]], val selected: Var[String]) extends ItemsSetView {
 

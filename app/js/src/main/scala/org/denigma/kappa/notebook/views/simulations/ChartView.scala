@@ -1,17 +1,14 @@
 package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.binding.views.{BindableView, ItemsSeqView}
 import org.denigma.controls.charts._
 import org.denigma.kappa.messages.{KappaPlot, KappaSeries}
 import org.scalajs.dom
-import org.scalajs.dom.ext._
 import org.scalajs.dom.raw.{Element, SVGElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
 import rx._
+import org.scalajs.dom.ext._
 
-import scala.List
 import scala.collection.immutable._
 
 
@@ -33,14 +30,14 @@ class ChartView(val elem: Element,
   val legend = plot.map(p=>p.legend)
 
   val legendList: Rx[List[(String, Int, LineStyles)]] = legend.map{ case l =>
-    println("legend changed = "+l)
+    //println("legend changed = "+l)
     l.zipWithIndex.map{ case (tlt, i) =>
       (tlt, i, KappaSeries.randomLineStyle())
     }
   }
 
   val items: Rx[List[Var[KappaSeries]]] = plot.map { case p =>
-    println("items changed")
+    //println("items changed")
     legendList.now.map { case (tlt, i, style) =>
       Var(KappaSeries(tlt, p.observables.map(o => Point(o.time, o.values(i))), style))
     }

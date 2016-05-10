@@ -8,7 +8,7 @@ import akka.stream.ActorMaterializer
 import better.files._
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import org.denigma.kappa.messages.FileResponses.UploadStatus
+import org.denigma.kappa.messages.FileResponses.{Downloaded, UploadStatus}
 import org.denigma.kappa.messages._
 
 import scala.Seq
@@ -66,7 +66,7 @@ class FileManager(val root: File) {
 
   protected def projectExists(path: String): Boolean = (root / path).exists
 
-  def loadZiped(projectName: String) =  if(projectExists(projectName)){
+  def loadZiped(projectName: String): Option[Downloaded] =  if(projectExists(projectName)){
     val zp = (root / projectName).zip()
     Some(FileResponses.Downloaded(projectName, zp.byteArray))
   } else None

@@ -118,6 +118,9 @@ object FileResponses {
     lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
   }
 
+  object Downloaded {
+    lazy val empty = Downloaded("", Array())
+  }
   case class Downloaded(folderName: String, data: Array[Byte]) extends KappaFileMessage
   case class UploadStatus(projectName: String, hash: Int, rewriteIfExist: Boolean) extends KappaFileMessage
 

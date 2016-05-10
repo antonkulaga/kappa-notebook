@@ -1,28 +1,13 @@
 package org.denigma.kappa
 
-import better.files.File
 import java.io.{File => JFile}
-import java.nio.ByteBuffer
+
+import better.files.File
+import net.ceedubs.ficus.Ficus._
+import org.denigma.kappa.messages.KappaProject
+import org.denigma.kappa.notebook.FileManager
 
 import scala.collection.immutable._
-import akka.http.scaladsl.model.ws.BinaryMessage
-import akka.http.scaladsl.model.ws.BinaryMessage.Strict
-import akka.http.scaladsl.testkit.WSProbe
-import akka.util.ByteString
-import better.files.File
-import boopickle.Default._
-import net.ceedubs.ficus.Ficus._
-import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.FileManager
-import org.denigma.kappa.notebook.communication.WebSocketManager
-import org.denigma.kappa.notebook.pages.WebSockets
-import akka.actor.ActorSystem
-import akka.http.scaladsl.{Http, HttpExt}
-import akka.stream.ActorMaterializer
-import better.files._
-import com.typesafe.config.Config
-import net.ceedubs.ficus.Ficus._
-import org.denigma.kappa.messages.{KappaFile, KappaFolder, KappaPath, KappaProject}
 
 class FilesSuite extends BasicKappaSuite{
 

@@ -142,7 +142,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
      .register("Tabs")((el, args) => new TabsView(el, input, output, selector, papers, kappaCursor, sourceMap).withBinder(n => new CodeBinder(n)))
      //.register("ProjectsPanel")((el, args) => new ProjectsPanelView(el, currentProject, projectList).withBinder(n => new CodeBinder(n)))
      .register("ProjectsView")((el, args) => new ProjectsView(el, loaded, output).withBinder(n => new CodeBinder(n)))
-     .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject).withBinder(n => new CodeBinder(n)))
+     .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject, input, output).withBinder(n => new CodeBinder(n)))
      .register("LeftGraph") {  (el, args) =>
        new GraphView(el,
          kappaWatcher.leftPattern.nodes,

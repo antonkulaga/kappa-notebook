@@ -14,6 +14,8 @@ import org.scalajs.dom.raw.Element
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 
+import scala.collection.immutable.SortedSet
+
 class TabsView(
                val elem: Element,
                val input: Var[KappaMessage],
@@ -30,6 +32,8 @@ class TabsView(
 
   val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
 
+  val vids = Var(Map.empty[String, String])
+
   lazy val selected = selector.tab
 
   protected def concat() = {
@@ -44,7 +48,7 @@ class TabsView(
     launcher.triggerLater{
       val l: LaunchModel = launcher.now
       val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = concat()))
-      println("PARAMS TO THE SERVER = "+launchParams)
+      //println("PARAMS TO THE SERVER = "+launchParams)
       out() = launchParams
     }
     input.foreach{
@@ -85,7 +89,7 @@ class TabsView(
     .register("Videos") {
       case (el, params) =>
         el.id = "Videos"
-        new VideosView(el, selected, selector.image).withBinder(new CodeBinder(_))
+        new VideosView(el, vids, selector.image).withBinder(new CodeBinder(_))
     }
     .register("Papers") {
       case (el, params) =>

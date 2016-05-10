@@ -131,6 +131,8 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
           }
 
         case upl @ FileRequests.ZipUpload(projectName, data, rewriteIfExist)=>
+          fileManager
+          println("ZIP UPLOAD WORKS WELL")
 
 
         case sv @ FileRequests.Save(project)=>

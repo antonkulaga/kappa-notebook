@@ -8,6 +8,7 @@ import akka.stream.ActorMaterializer
 import better.files._
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
+import org.denigma.kappa.messages.FileRequests.ZipUpload
 import org.denigma.kappa.messages.FileResponses.{Downloaded, UploadStatus}
 import org.denigma.kappa.messages._
 
@@ -70,6 +71,20 @@ class FileManager(val root: File) {
     val zp = (root / projectName).zip()
     Some(FileResponses.Downloaded(projectName, zp.byteArray))
   } else None
+
+  def uploadZiped(upload: ZipUpload) =  {
+    val r: File = root / upload.projectName
+    if(r.exists) {
+      if(upload.rewriteIfExist) {
+        r.delete()
+      } else {
+        
+      }
+
+    }
+
+
+  }
 
 
   def loadProject(project: KappaProject, createIfNotExists: Boolean = false): KappaProject = {

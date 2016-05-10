@@ -122,6 +122,7 @@ object FileResponses {
     lazy val empty = Downloaded("", Array())
   }
   case class Downloaded(folderName: String, data: Array[Byte]) extends KappaFileMessage
+
   case class UploadStatus(projectName: String, hash: Int, rewriteIfExist: Boolean) extends KappaFileMessage
 
 }

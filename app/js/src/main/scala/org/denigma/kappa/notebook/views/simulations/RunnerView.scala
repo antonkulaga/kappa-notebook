@@ -51,6 +51,7 @@ class RunnerView(val elem: Element, launcher: Var[LaunchModel]) extends Bindable
     //hub.runParameters.Internal.value = parameters.now.copy(code = hub.kappaCode.now.text)
     //hub.runParameters.propagate()
     launcher.Internal.value = launcher.now.copy(parameters = this.parameters.now)
+    println("propagate!")
     launcher.propagate()
   }
 

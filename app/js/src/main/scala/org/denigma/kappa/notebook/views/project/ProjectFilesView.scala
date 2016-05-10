@@ -16,13 +16,8 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 
 import scala.scalajs.js
-/*
-@js.native
-object Functions extends js.GlobalScope{ //note - override
+import scala.scalajs.js.typedarray.Uint8Array
 
-  def encodeURIComponent(text: String): String = js.native
-}
-*/
 class ProjectFilesView(val elem: Element, val currentProject: Rx[KappaProject], input: Var[KappaMessage], output: Var[KappaMessage]) extends ItemsSetView {
 
   val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.folder.files)
@@ -65,8 +60,8 @@ class ProjectFilesView(val elem: Element, val currentProject: Rx[KappaProject], 
     val pom = dom.document.createElement("a")
     pom.setAttribute("id","pom")
     val options = BlobPropertyBag("octet/stream")
-    val arr= data.toJSArray
-    val blob = new Blob(arr.asInstanceOf[js.Array[js.Any]], options)
+    val arr= new Uint8Array(data.toJSArray)
+    val blob = new Blob(js.Array(arr), options)
     //val url = dom.window.dyn.URL.createObjectURL(blob)
     val reader = new FileReader()
     def onLoadEnd(ev: ProgressEvent): Any = {

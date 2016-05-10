@@ -10,7 +10,7 @@ import akka.util.ByteString
 import better.files.File
 import boopickle.DefaultBasic._
 import net.ceedubs.ficus.Ficus._
-import org.denigma.kappa.messages.FileResponses.Downloaded
+import org.denigma.kappa.messages.FileResponses.{Downloaded, UploadStatus}
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.WebSocketManager
@@ -54,7 +54,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           // check response for WS Upgrade headers
           checkConnection(wsClient)
           val big = KappaProject("big")
-          val FileResponses.Loaded(proj :: two :: Nil) = checkTestProjects(wsClient)
+          val FileResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
           val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](FileRequests.Remove("big"))
           checkMessage(wsClient, rem){
             case Done(FileRequests.Remove(_), _) =>
@@ -83,7 +83,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           fl.exists() shouldEqual true
 
           val big = KappaProject("big")
-          val FileResponses.Loaded(proj :: two :: Nil) = checkTestProjects(wsClient)
+          val FileResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
 
           val downloadWrong: ByteBuffer = Pickle.intoBytes[KappaMessage](FileRequests.Download("big_wrong"))
           checkMessage(wsClient, downloadWrong){
@@ -102,17 +102,19 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           }
 
           fl.exists() shouldEqual false
-          /*
+
+          checkMessage(wsClient, big){
+            case Failed(/*KappaProject("big", _, _)*/_, _, _) =>
+          }
 
           val upl = FileRequests.ZipUpload("big", dat)
 
           val upload: ByteBuffer = Pickle.intoBytes[KappaMessage](upl)
-          */
-          /*
-          checkMessage(wsClient, upload){
-            //case Done("uploaded", _) =>
+          checkMessage(wsClient, big){
+            case Done(upd: UploadStatus, _) =>
           }
-          */
+
+          checkTestProjects(wsClient)
 
 
           //val fl = files / "big"
@@ -147,7 +149,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
   }
 
   def checkTestProjects(wsClient: WSProbe): FileResponses.Loaded = checkMessage(wsClient, KappaProject("big")){
-    case l @ FileResponses.Loaded(proj :: two :: Nil) =>
+    case l @ FileResponses.Loaded(Some(proj), projects) =>
       //println("LOADED = "+ l)
       proj.name shouldEqual "big"
       proj.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")

@@ -60,7 +60,7 @@ class ProjectFilesView(val elem: Element, val currentProject: Rx[KappaProject], 
     val pom = dom.document.createElement("a")
     pom.setAttribute("id","pom")
     val options = BlobPropertyBag("octet/stream")
-    val arr= new Uint8Array(data.toJSArray)
+    val arr = new Uint8Array(data.toJSArray)
     val blob = new Blob(js.Array(arr), options)
     //val url = dom.window.dyn.URL.createObjectURL(blob)
     val reader = new FileReader()

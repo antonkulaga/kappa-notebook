@@ -17,6 +17,7 @@ object KappaMessage{
     .addConcreteType[KappaFile]
     .addConcreteType[KappaFolder]
     .addConcreteType[FileRequests.Load]
+    .addConcreteType[FileRequests.LoadFile]
     .addConcreteType[FileResponses.Loaded]
     .addConcreteType[FileRequests.Remove]
     .addConcreteType[FileRequests.Create]
@@ -26,6 +27,7 @@ object KappaMessage{
     .addConcreteType[FileRequests.ZipUpload]
     .addConcreteType[FileResponses.Downloaded]
     .addConcreteType[FileResponses.UploadStatus]
+    .addConcreteType[DataMessage]
     .addConcreteType[Done]
     .addConcreteType[Failed]
 }
@@ -41,7 +43,7 @@ case class KappaUser(name: String) extends KappaMessage
 
 case class Connected(username: String, channel: String, users: List[KappaUser], servers: ConnectedServers = ConnectedServers.empty) extends KappaMessage
 
-case class Disconnected(username: String, channel: String /*, time: LocalDateTime = LocalDateTime.now()*/) extends KappaMessage
+case class Disconnected(username: String, channel: String, users: List[KappaUser] /*, time: LocalDateTime = LocalDateTime.now()*/) extends KappaMessage
 
 trait ServerMessage extends KappaMessage
 
@@ -58,6 +60,9 @@ case class LaunchModel(server: String, parameters: RunModel) extends ServerMessa
 
 trait KappaFileMessage extends KappaMessage
 
+case class DataMessage(source: KappaMessage, data: Array[Byte]) extends KappaFileMessage
+
 case class Done(operation: KappaMessage, user: String) extends KappaMessage
 
 case class Failed(operation: KappaMessage, error: List[String], user: String) extends KappaMessage
+

@@ -5,7 +5,7 @@ import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.Selector
+import org.denigma.kappa.notebook.{Selector, WebSocketTransport}
 import org.denigma.kappa.notebook.views.annotations.{ImageView, VideosView}
 import org.denigma.kappa.notebook.views.editor.EditorUpdates
 import org.denigma.kappa.notebook.views.annotations.papers.PapersView
@@ -18,8 +18,7 @@ import scala.collection.immutable.SortedSet
 
 class TabsView(
                val elem: Element,
-               val input: Var[KappaMessage],
-               val out: Var[KappaMessage],
+               val connector: WebSocketTransport,
                val selector: Selector,
                val papers: Var[Map[String, Bookmark]],
                val kappaCursor: Var[Option[(Editor, PositionLike)]],
@@ -49,9 +48,9 @@ class TabsView(
       val l: LaunchModel = launcher.now
       val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = concat()))
       //println("PARAMS TO THE SERVER = "+launchParams)
-      out() = launchParams
+      connector.output() = launchParams
     }
-    input.foreach{
+    connector.input.foreach{
       case SimulationResult(server, status, token, params) =>
         println("percent: "+ status.percentage)
         simulations() = simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
@@ -93,7 +92,7 @@ class TabsView(
     }
     .register("Papers") {
       case (el, params) =>
-        new PapersView(el, selected, papers, selector, kappaCursor).withBinder(new CodeBinder(_))
+        new PapersView(el, connector, selected, papers, selector, kappaCursor).withBinder(new CodeBinder(_))
     }
     .register("UnderDevelopment") {
       case (el, params) =>

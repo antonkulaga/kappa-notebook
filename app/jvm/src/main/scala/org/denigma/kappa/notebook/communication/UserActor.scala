@@ -82,6 +82,18 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
     case SocketMessages.IncomingMessage(channel, uname, message: BinaryMessage.Strict, time) =>
       Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer) match
       {
+
+        case mess @ FileRequests.LoadFile(path) =>
+          fileManager.readBytes(path) match {
+            case Some(bytes)=>
+              println("bytes received "+bytes.length)
+              val m = DataMessage(mess, bytes)
+              val d = Pickle.intoBytes[KappaMessage](m)
+              send(d)
+
+            case None =>
+          }
+
         case FileRequests.Load(pro) =>
           fileManager.loadProject(pro) match {
             case project: KappaProject if project.saved =>
@@ -161,7 +173,7 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
       val d = Pickle.intoBytes[KappaMessage](result)
       send(d)
 
-    case Disconnected(user, channel) =>
+    case Disconnected(user, channel, list) =>
       log.info(s"User $user disconnected from channel $channel")
 
 

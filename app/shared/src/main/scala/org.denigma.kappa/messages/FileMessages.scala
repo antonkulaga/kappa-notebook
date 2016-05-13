@@ -102,6 +102,8 @@ object FileRequests {
   case class Remove(projectName: String) extends KappaFileMessage
   case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
   case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
+  case class LoadFile(path: String) extends KappaFileMessage
+
   //case class Upload() extends KappaFileMessage
   case class Download(projectName: String) extends KappaFileMessage
   case class Save(project: KappaProject) extends KappaFileMessage

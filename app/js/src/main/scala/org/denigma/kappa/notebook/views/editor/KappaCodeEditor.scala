@@ -65,14 +65,4 @@ class KappaCodeEditor(val elem: Element,
       view
 
   }
-
-  override protected def subscribeUpdates() = {
-    super.subscribeUpdates()
-    //TODO: move to scalajs binding
-    for ( (key, value) <- items.now) {
-      val n = newItemView(key)
-      n.update(value)
-      this.addItemView(key, n)
-    }
-  }
 }

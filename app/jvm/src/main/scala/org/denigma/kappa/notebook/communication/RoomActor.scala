@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.communication
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
-import org.denigma.kappa.messages.{Connected, Disconnected}
+import org.denigma.kappa.messages.{Connected, Disconnected, KappaUser}
 
 class RoomActor(channel: String) extends Actor with ActorLogging{
 
@@ -13,14 +13,14 @@ class RoomActor(channel: String) extends Actor with ActorLogging{
       //broadcast(SystemMessage(s"User $name joined channel..."))
       //self ! RoomMessages.Broadcast(_, message, name, true)
       log.info(s"User $name joined channel[$channel]")
-      actorRef ! Connected(name, channel, Nil)
+      actorRef ! Connected(name, channel, participants.keys.map(u=>KappaUser(u)).toList)
 
 
     case SocketMessages.UserLeft(name, _, time) =>
       //broadcast(SystemMessage(s"User $name left channel[$roomId]"))
       participants.get(name) match {
         case Some(ref)=>
-          ref ! Disconnected(name, channel)
+          ref ! Disconnected(name, channel, participants.keys.map(u=>KappaUser(u)).toList)
           participants -= name
           log.info(s"User $name left channel[$channel]")
 

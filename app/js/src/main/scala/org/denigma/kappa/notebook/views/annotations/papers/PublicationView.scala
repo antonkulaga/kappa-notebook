@@ -5,25 +5,72 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.UpdatableView
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers._
+import org.denigma.kappa.messages.DataMessage
+import org.denigma.kappa.messages.FileRequests.LoadFile
+import org.denigma.kappa.notebook.WebSocketTransport
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
+import org.scalajs.dom._
 import org.scalajs.dom.html.Canvas
-import org.scalajs.dom.raw._
+import org.scalajs.dom.raw.{Blob, BlobPropertyBag, Element, FileReader, _}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 
 import scala.annotation.tailrec
+import scala.collection.immutable.{Map, _}
+import scala.concurrent.duration._
+import scala.concurrent.{Future, Promise}
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.scalajs.js
+import scala.scalajs.js.typedarray.{ArrayBuffer, Uint8Array}
+
+case class WebSocketPaperLoader(subscriber: WebSocketTransport,
+                                loadedPapers: Var[Map[String, Paper]])
+  extends PaperLoader {
+
+  override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
+    this.subscriber.ask[Future[ArrayBuffer]](LoadFile(path), timeout){
+      case  DataMessage(source, bytes) =>
+        bytes2Arr(bytes)
+    }.flatMap{case arr=>arr}.flatMap{ case arr=>  super.getPaper(path, arr) }
+
+  import js.JSConverters._
+
+  def bytes2Arr(data: Array[Byte]): Future[ArrayBuffer] = {
+    val p = Promise[ArrayBuffer]
+    val options = BlobPropertyBag("octet/stream")
+    val arr: Uint8Array = new Uint8Array(data.toJSArray)
+    val blob = new Blob(js.Array(arr), options)
+    //val url = dom.window.dyn.URL.createObjectURL(blob)
+    val reader = new FileReader()
+    def onLoadEnd(ev: ProgressEvent): Any = {
+      p.success(reader.result.asInstanceOf[ArrayBuffer])
+    }
+    reader.onloadend = onLoadEnd _
+    reader.readAsArrayBuffer(blob)
+    p.future
+  }
+
+  subscriber.open()
+
+}
+
 /**
   * Created by antonkulaga on 21/04/16.
   */
 class PublicationView(val elem: Element,
+                      val subscriber: WebSocketTransport,
                       val selected: Var[String],
                       val location: Var[Bookmark],
-                      kappaCursor: Var[Option[(Editor, PositionLike)]])
+                      kappaCursor: Var[Option[(Editor, PositionLike)]]
+                     )
   extends Annotator with UpdatableView[Bookmark] with TabItem
 {
 
+  lazy val loadedPapers = Var(Map.empty[String, Paper])
+
+  lazy val paperLoader: PaperLoader = WebSocketPaperLoader(subscriber, loadedPapers)
   //val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
 
   scale.Internal.value = 1.4
@@ -44,7 +91,7 @@ class PublicationView(val elem: Element,
   val paper = location.map(_.paper)
   val page = location.map(_.page)
 
-  val selections = Var(List.empty[Range])
+  val selections = Var(List.empty[org.scalajs.dom.raw.Range])
 
   val currentSelection = selections.map{ case sel =>
     sel.foldLeft("")((acc, el)=>acc + "\n" + el.cloneContents().textContent)
@@ -121,7 +168,7 @@ class PublicationView(val elem: Element,
     textLayerDiv.parentNode.addEventListener(Events.mouseleave, fixSelection _)
   }
 
-  protected def rangeToTextSelection(range: Range) = {
+  protected def rangeToTextSelection(range: org.scalajs.dom.raw.Range) = {
     val fragment = range.cloneContents()
     /*
     val div = dom.document.createElement("div") //the trick to get inner html of the selection

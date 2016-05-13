@@ -37,14 +37,6 @@ object Main extends App  {
 
 class FileManager(val root: File) {
 
-
-  /*
-  def uploadProject(upload: FileRequests.ZipUpload): Option[UploadStatus] = {
-
-    ???
-  }
-  */
-
   def downloadProject() = {
 
   }
@@ -84,6 +76,14 @@ class FileManager(val root: File) {
     }
 
 
+  }
+
+
+  def readBytes(relativePath: String): Option[Array[Byte]] = {
+    val file = (root / relativePath)
+    if(file.exists && file.isRegularFile) {
+      Some(file.loadBytes)
+    } else None
   }
 
 

@@ -4,9 +4,9 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val kappaNotebook = "0.0.6"
 
-	val binding = "0.8.6"
+	val binding = "0.8.7"
 
-	val bindingControls = "0.0.14"
+	val bindingControls = "0.0.15"
 
 	val betterFiles = "2.15.0"
 

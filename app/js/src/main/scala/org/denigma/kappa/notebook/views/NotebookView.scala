@@ -28,10 +28,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val connector: WebSocketTransport = WebSocketTransport("notebook", "guest" + Math.random() * 1000)
 
-  val input = connector.onKappaMessage
-
-  val output = connector.sendKappaMessage
-
   val onopen = connector.onOpen
 
   val papers: Var[Map[String, Bookmark]] = Var(Map.empty)
@@ -78,9 +74,9 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     connector.onOpen.triggerLater{
       println("websocket opened")
       val toLoad = FileRequests.Load(KappaProject.default)
-      output() = toLoad //ask to load default project
+      connector.output() = toLoad //ask to load default project
     }
-    connector.onKappaMessage.foreach{
+    connector.input.foreach{
       case ld: FileResponses.Loaded =>
         //println("LOQDED = "+ld)
         loaded() = ld
@@ -139,10 +135,10 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
          val editor = new KappaCodeEditor(el, sourceMap, selector, errors, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
          editor
      }
-     .register("Tabs")((el, args) => new TabsView(el, input, output, selector, papers, kappaCursor, sourceMap).withBinder(n => new CodeBinder(n)))
+     .register("Tabs")((el, args) => new TabsView(el, connector, selector, papers, kappaCursor, sourceMap).withBinder(n => new CodeBinder(n)))
      //.register("ProjectsPanel")((el, args) => new ProjectsPanelView(el, currentProject, projectList).withBinder(n => new CodeBinder(n)))
-     .register("ProjectsView")((el, args) => new ProjectsView(el, loaded, output).withBinder(n => new CodeBinder(n)))
-     .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject, input, output).withBinder(n => new CodeBinder(n)))
+     .register("ProjectsView")((el, args) => new ProjectsView(el, loaded, connector.output).withBinder(n => new CodeBinder(n)))
+     .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject, connector.input, connector.output).withBinder(n => new CodeBinder(n)))
      .register("LeftGraph") {  (el, args) =>
        new GraphView(el,
          kappaWatcher.leftPattern.nodes,

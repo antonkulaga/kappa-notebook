@@ -6,7 +6,7 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.{Selector, WebSocketTransport}
-import org.denigma.kappa.notebook.views.annotations.{ImageView, VideosView}
+import org.denigma.kappa.notebook.views.annotations.{ImagesView, VideosView}
 import org.denigma.kappa.notebook.views.editor.EditorUpdates
 import org.denigma.kappa.notebook.views.annotations.papers.PapersView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
@@ -21,6 +21,8 @@ class TabsView(
                val connector: WebSocketTransport,
                val selector: Selector,
                val papers: Var[Map[String, Bookmark]],
+               val images: Var[Map[String, String]],
+               val videos: Var[Map[String, String]],
                val kappaCursor: Var[Option[(Editor, PositionLike)]],
                val sourceMap: Rx[Map[String, KappaFile]]
               ) extends BindableView {
@@ -83,12 +85,12 @@ class TabsView(
 
     .register("Images") {
       case (el, params) =>
-        new ImageView(el, selected, selector.image).withBinder(new CodeBinder(_))
+        new ImagesView(el, selected, selector, images).withBinder(new CodeBinder(_))
     }
     .register("Videos") {
       case (el, params) =>
         el.id = "Videos"
-        new VideosView(el, vids, selector.image).withBinder(new CodeBinder(_))
+        new VideosView(el, vids, selector.video).withBinder(new CodeBinder(_))
     }
     .register("Papers") {
       case (el, params) =>

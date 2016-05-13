@@ -3,18 +3,22 @@
   <div class="ui top attached tabular menu">
     <a class="item" data-set-selected-on-click="Simulations" data-class-active-if="Simulations.active">Simulations</a>
     <a class="item" data-set-selected-on-click="Papers" data-class-active-if="Papers.active">Papers</a>
-    <a class="item" data-set-selected-on-click="Images" data-class-active-if="Images.active">Figures</a>
-    <a class="item" data-set-selected-on-click="Videos" data-class-active-if="Videos.active">>Videos</a>
-    <a class="item" data-set-selected-on-click="UnderDevelopment" data-class-active-if="UnderDevelopment.active">>Tasks</a>
-    <!-- <a class="item" data-set-selected-on-click="Console" data-class-active-if="Console.active">Console</a>-->
-    <!--<a class="item" data-set-selected-on-click="SBOLEditor" data-class-active-if="SBOLEditor.active">SBOL</a>-->
+    <a class="item" data-set-selected-on-click="Images" data-class-active-if="Images.active">Images</a>
+    <a class="item" data-set-selected-on-click="Videos" data-class-active-if="Videos.active">Videos</a>
+
+    <!--
+    <a class="item" data-set-selected-on-click="Videos" data-class-active-if="Videos.active">Videos</a>
+    <a class="item" data-set-selected-on-click="UnderDevelopment" data-class-active-if="UnderDevelopment.active">Collaboration</a>
+      -->
+      <!-- <a class="item" data-set-selected-on-click="Console" data-class-active-if="Console.active">Console</a>-->
+      <!--<a class="item" data-set-selected-on-click="SBOLEditor" data-class-active-if="SBOLEditor.active">SBOL</a>-->
   </div>
   @results.html.simulations()
   @annotations.html.papers()
-  <section class="ui bottom attached tab segment" data-view="Images" id="Images" data-class-active-if="active">
-    <img data-src="src" class="ui huge image">
-  </section>
+  @annotations.html.images()
+  <!--
   @annotations.html.videos()
   <section class="ui bottom attached tab segment" data-view="UnderDevelopment" id="UnderDevelopment" data-class-active-if="active">
   </section>
+  -->
 </section>

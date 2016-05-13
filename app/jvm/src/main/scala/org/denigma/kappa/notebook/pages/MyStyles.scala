@@ -53,7 +53,7 @@ object MyStyles extends TextLayerStyles{
     )//-(overflowX.auto,overflowY.hidden)
 
   ".breakpoints" - (
-    width( 2 em)
+    width( 3 em)
     )
 
   ".focused" - (

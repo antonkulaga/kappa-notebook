@@ -22,7 +22,8 @@ class PapersView(val elem: Element,
                  val kappaCursor: Var[Option[(Editor, PositionLike)]]) extends
   BindableView
   with ItemsMapView
-  with TabItem{
+  with TabItem
+{
 
   override type Item = String
 
@@ -30,9 +31,7 @@ class PapersView(val elem: Element,
 
   override type ItemView = PublicationView
 
-  val headers = itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
-
-  override def newItemView(name: String): PublicationView = this.constructItemView(name){
+  override def newItemView(name: String): ItemView= this.constructItemView(name){
     case (el, params)=>
       el.id = name
       //println("add view "+name)
@@ -42,6 +41,8 @@ class PapersView(val elem: Element,
       v
   }
 
+
+  val headers = itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selector.paper).withBinder(new GeneralBinder(_)))

@@ -56,7 +56,7 @@ case class SyntaxErrors(server: String, errors: List[String], initialParams: Opt
 
 case class SimulationResult(server: String, simulationStatus: SimulationStatus, token: Int, initialParams: Option[RunModel] = None) extends ServerMessage
 
-case class LaunchModel(server: String, parameters: RunModel) extends ServerMessage
+case class LaunchModel(server: String, parameters: RunModel, counter: Int = 0) extends ServerMessage
 
 trait KappaFileMessage extends KappaMessage
 

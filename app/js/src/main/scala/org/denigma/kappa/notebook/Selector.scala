@@ -8,60 +8,39 @@ import rx.{Rx, Var}
 import scala.collection.immutable._
 import org.denigma.kappa.messages
 import org.denigma.kappa.messages.{KappaPath, _}
+import org.scalajs.dom
 
-import scala.Predef.Map
-/*
-object KappaHub{
-
-  private val testMap: Map[String, Bookmark] = Map(
-    /*("/files/ossilator/Stricker08.pdf", Bookmark("/files/ossilator/Stricker08.pdf", 1)),
-     ( "/files/repressilator/Repressilator.pdf", Bookmark("/files/repressilator/Repressilator.pdf", 1)),
-      ("/files/ossilator/nature07389-s01.pdf", Bookmark("/files/ossilator/nature07389-s01.pdf", 1))*/
-    )
-
-  def empty: KappaHub = KappaHub(
-    Var(None),
-    Var(messages.Defaults.simulations),
-    Var(messages.Defaults.launcher),
-    Var(testMap),
-    Selector.default
-  )
-}
-case class KappaHub(
-                     kappaCursor: Var[Option[(Editor, PositionLike)]],
-                     simulations: Var[Map[(Int, RunModel), SimulationStatus]],
-                     launcher: Var[LaunchModel],
-                     papers: Var[Map[String, Bookmark]],
-                     selector: Selector
-                   )
-{
-  import rx.Ctx.Owner.Unsafe.Unsafe
-
-  //lazy val name = currentProject.map(p=>p.name)
-
-}
-*/
 object Selector {
   lazy val default = Selector(
-    Var(""),
     Var("Simulations"),
+    Var(""),
     Var("presentation/people.jpg"),
-    Var("")//Var("/files/ossilator/Stricker08.pdf")
+    Var(""),//Var("/files/ossilator/Stricker08.pdf"),
+    Var("")
   )
 }
+
 case class Selector(
-                     source: Var[String],
                      tab: Var[String],
+                     source: Var[String],
                      image: Var[String],
-                     paper: Var[String])
+                     paper: Var[String],
+                     video: Var[String]
+                   )
 {
   import org.denigma.binding.extensions._
   import rx.Ctx.Owner.Unsafe.Unsafe
 
-  def go2images() = tab() = "Image"
+  def go2simulations() = tab() = "Simulations"
+
+
+  def go2images() = tab() = "Images"
 
   def go2papers() = tab() = "Papers"
 
+  def go2videos() = tab() = "Videos"
+
+  /*
   image.onChange {
     case "" =>
     case img => go2images()
@@ -71,8 +50,10 @@ case class Selector(
     case "" =>
     case img => go2images()
   }
+  */
 
 }
+
 /**
   * Created by antonkulaga on 07/04/16.
   */

@@ -63,7 +63,7 @@ case class KappaFile(path: String, name: String, content: String, saved: Boolean
 
 object KappaProject {
 
-  lazy val default: KappaProject = KappaProject("repressilator", saved = false)
+  lazy val default: KappaProject = KappaProject("presentation", saved = false)
 
   implicit val ordering = new Ordering[KappaProject] {
     override def compare(x: KappaProject, y: KappaProject): Int = x.name.compare(y.name) match {
@@ -87,6 +87,13 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
     f.name.endsWith(".png") ||
     f.name.endsWith(".webp")
 
+
+  protected def videoFilter(f: KappaFile) =   f.name.endsWith(".avi") ||
+    f.name.endsWith(".mp4") ||
+    f.name.endsWith(".flv") ||
+    f.name.endsWith(".mpeg")
+
+
   lazy val sources: SortedSet[KappaFile] = folder.files.filter(sourceFilter)
 
   lazy val sourceMap: Map[String, KappaFile] = sources.map(f=> (f.name, f)).toMap
@@ -94,6 +101,8 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
   lazy val papers = folder.files.filter(f => f.name.endsWith(".pdf"))
 
   lazy val images = folder.files.filter(imageFilter)
+
+  lazy val videos = folder.files.filter(videoFilter)
 
   lazy val nonsourceFiles = folder.files.filterNot(sourceFilter)
 }

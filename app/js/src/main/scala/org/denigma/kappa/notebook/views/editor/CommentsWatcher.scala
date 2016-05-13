@@ -5,7 +5,7 @@ import org.denigma.codemirror.Editor
 import org.denigma.codemirror.extensions._
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.notebook.Selector
-import org.denigma.kappa.notebook.parsers.{CommentLinksParser, PaperParser}
+import org.denigma.kappa.notebook.parsers.{CommentLinksParser, ImageParser, PaperParser}
 import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
 import rx._
@@ -17,10 +17,6 @@ import scalatags.JsDom.all._
   */
 class CommentsWatcher(
                        updates: Var[EditorUpdates],
-                       papers: Var[Map[String, Bookmark]],
-                       /*vids: Var[Map[String, String]],
-                       images: Var[Map[String, String]],
-                       */
                        selector: Selector )  {
 
   updates.foreach(changeHandler) //subscription
@@ -28,18 +24,7 @@ class CommentsWatcher(
   val commentsParser = new CommentLinksParser()
   def linkParser = commentsParser.link
   val paperParser = new PaperParser()
-
-  protected def searchForLinks(editor: Editor, line: String, num: Int) = {
-    linkParser.parse(line) match {
-      case Parsed.Success(result, index) =>
-        //println("LINK FOUND!!!!")
-        val marker = this.makeURIMarker(result)
-        editor.setGutterMarker(num, "breakpoints", marker)
-
-      case Parsed.Failure(parser, index, extra) =>
-        //editor.setGutterMarker(num, "breakpoints", null) //test setting null
-    }
-  }
+  val imageParser = new ImageParser()
 
   protected def mergeComments(num: Int, ed: Editor, text: List[(Int,String)] = Nil): List[(Int, String)]  = if(num >= 0)  {
     val line = ed.getDoc().getLine(num)
@@ -54,10 +39,12 @@ class CommentsWatcher(
   protected def searchInComments(editor: Editor, num: Int) = {
     val comments: List[(Int, String)] = mergeComments(num , editor)
     //println("search comments works, COMMENTS are: \n" + comments.mkString("\n"))
-    searchForPages(editor, comments, num)
+    semanticSearch(editor, comments, num)
   }
 
-  protected def searchForPages(editor: Editor, lines: List[(Int, String)], currentNum: Int) = {
+  protected def semanticSearch(editor: Editor, lines: List[(Int, String)], currentNum: Int) = {
+    //for( (i, str) <- lines)  editor.setGutterMarker(i,  "breakpoints", null)
+
     val pages: List[((Int, String), Int)] = lines.map{ case (num, line)=> (num, line) -> paperParser.page.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
@@ -67,64 +54,73 @@ class CommentsWatcher(
     val links = lines.map{ case (num, line)=> (num, line) -> linkParser.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
+
+    val images = lines.map{ case (num, line)=> (num, line) -> imageParser.image.parse(line) }.collect{
+      case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
+    }
+    /*
+    val videos = lines.map{ case (num, line)=> (num, line) -> videosParser.parse(line) }.collect{
+      case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
+    }
+    */
+
     links.collectFirst{
       case ((n, line), result) if n == currentNum =>
         val marker = makeURIMarker(result)
         editor.setGutterMarker(n, "breakpoints", marker)
     }
-
-    /*
-    for( (paper, page) <- papers.zip(pages.map(_.))){
-      val marker = makePageMarker(paper, page)
-      editor.setGutterMarker(, "breakpoints", marker)
+    images.collectFirst{
+      case ((n, line), result) if n == currentNum =>
+        val marker = makeImageMarker(result)
+        editor.setGutterMarker(n, "breakpoints", marker)
     }
-    */
+
     //TODO: fix this bad code
     if(papers.nonEmpty) {
-      val paper: String = papers.lastOption.map{ case (key, v)=>v}.get
-      val pg: Int = if(pages.nonEmpty) pages.lastOption.map(_._2).getOrElse(1) else 1
+      val paper: String = papers.collect{case ((n, line), result) if n == currentNum=> ((n, line), result)}.lastOption.map{ case (key, v)=>v }.get
+      val pg: Int = if(pages.nonEmpty) pages.collect{case ((n, line), result) if n == currentNum=> ((n, line), result)}.lastOption.map(_._2).getOrElse(1) else 1
       val marker = this.makePageMarker(paper, pg)
       editor.setGutterMarker(currentNum, "breakpoints", marker)
     }
   }
 
   protected def makeURIMarker(link: String): Anchor = {
-    val tag = a(href := link,
-      i(`class` := "link outline icon")
+    val tag = a(href := link, target := "blank",
+      i(`class` := "label File Code Outline large icon", id :="class_icon"+Math.random()),
+      " "
     )
-    //println("TAG IS "+tag)
     tag.render
   }
 
-  protected def makePageMarker(paper: String, num: Int) = {
-    val tag = button(`class` := "ui icon button", i(`class` := "file pdf outline icon", onclick := {
-      //println(s"mouse down on $num")
-
-      /*
-      for( pap <- papers.now.keySet.collectFirst{ case p if p.contains(paper) => p} )
-        {
-
-        }
-      location() = location.now.copy(page = num)
-      */
-      }))
-    val html = tag.render
-    html.onclick = {
-      event: MouseEvent => //println(s"click on $num")
-          println("papers work")
-        //location() = location.now.copy(page = num)
-    }
-    html
-  }
-
-  protected def makeImageMarker(src: String) = {
-    val tag = button(`class` := "ui icon button", i(`class` := "file image outline icon", onclick := {
+  protected def makeImageMarker(image: String) = {
+    val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline large icon", onclick := {
       //println(s"mouse down on $num")
     }))
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        selector.image() = src
+        println("image = "+ image.trim)
+        println("SELECTOR = "+selector.image)
+        println("SELECOT == "+selector.image==image.trim)
+        selector.image() = image.trim
+        selector.go2images()
+    }
+    html
+  }
+
+  protected def makePageMarker(paper: String, num: Int) = {
+    val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline large icon", onclick := {
+      //println(s"mouse down on $num")
+      }))
+    val html = tag.render
+    html.onclick = {
+      event: MouseEvent => //println(s"click on $num")
+        //  println("papers work")
+        //location() = location.now.copy(page = num)
+        //selector.paper() =
+        println("paper"+ paper)
+        selector.paper() = paper
+        selector.go2papers()
     }
     html
   }

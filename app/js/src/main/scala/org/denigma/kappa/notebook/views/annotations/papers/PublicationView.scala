@@ -5,7 +5,7 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.UpdatableView
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.DataMessage
+import org.denigma.kappa.messages.{DataMessage, KappaMessage}
 import org.denigma.kappa.messages.FileRequests.LoadFile
 import org.denigma.kappa.notebook.WebSocketTransport
 import org.denigma.kappa.notebook.views.common.TabItem
@@ -31,7 +31,8 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport,
 
   override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
     this.subscriber.ask[Future[ArrayBuffer]](LoadFile(path), timeout){
-      case  DataMessage(source, bytes) =>
+      case  DataMessage(LoadFile(source), bytes) if source == path =>
+        println("LOAD: "+source)
         bytes2Arr(bytes)
     }.flatMap{case arr=>arr}.flatMap{ case arr=>  super.getPaper(path, arr) }
 

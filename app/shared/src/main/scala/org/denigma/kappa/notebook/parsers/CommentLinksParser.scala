@@ -21,12 +21,16 @@ class CommentLinksParser extends BasicParser
   val comment = notComment.rep  ~ commentSign ~ AnyChar.rep.!
   val link: P[String] = P(optSpaces ~ "<".? ~ (protocol ~ notBracketsOrSpace.rep).! ~ ">".? ) //map(_.toString)
   val linkAfterComment: Parser[String] = P( notComment.rep  ~ commentSign ~ optSpaces ~ link )
-  //val page = P( notComment.rep  ~ commentSign ~ optSpaces ~  ":on_page" ~ spaces ~ CharIn('0' to '9').rep.!.map(v=>v.toInt) )
-
 
 }
 
+class ImageParser extends BasicParser {
+  val image = P( optSpaces ~  ":image" ~ spaces ~AnyChar.rep.! )
+  //val img = P( optSpaces ~  ":image" ~ spaces ~AnyChar.! )
+}
+
+
 class PaperParser extends BasicParser {
   val page = P( optSpaces ~  ":on_page" ~ spaces ~ CharIn('0' to '9').rep.!.map(v=>v.toInt) )
-  val paper = P( optSpaces ~  ":in_paper" ~ spaces ~AnyChar.! )
+  val paper = P( optSpaces ~  ":in_paper" ~ spaces ~AnyChar.rep.! )
 }

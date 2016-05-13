@@ -150,7 +150,7 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
         case sv @ FileRequests.Save(project)=>
           println("SAVING IS NOT YET IMPLEMENTED!")
 
-        case LaunchModel(server, parameters)=>
+        case LaunchModel(server, parameters, counter)=>
 
           run(parameters)
 

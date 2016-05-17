@@ -106,28 +106,38 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
 
   lazy val nonsourceFiles = folder.files.filterNot(sourceFilter)
 }
+object ProjectRequests {
+  case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
+  case class Save(project: KappaProject) extends KappaFileMessage
+
+}
+
+object ProjectResponses {
+  case class Loaded(projectOpt: Option[KappaProject], projects: SortedSet[KappaProject] = SortedSet.empty) extends KappaFileMessage {
+    lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
+  }
+}
+
 object FileRequests {
   //case class Update(project: KappaProject, insertions) extends KappaFileMessage
   case class Remove(projectName: String) extends KappaFileMessage
   case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
-  case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
   case class LoadFile(path: String) extends KappaFileMessage
 
   //case class Upload() extends KappaFileMessage
   case class Download(projectName: String) extends KappaFileMessage
-  case class Save(project: KappaProject) extends KappaFileMessage
-  case class Upload(projectName: String, filename: String, data: Array[Byte]) extends KappaFileMessage
-  case class ZipUpload(projectName: String, data: Array[Byte], rewriteIfExist: Boolean = false) extends KappaFileMessage
+
+  case class Upload(projectName: String, files: List[DataMessage]) extends KappaFileMessage
+
+  case class ZipUpload(projectName: String, zip: DataMessage, rewriteIfExist: Boolean = false) extends KappaFileMessage
 }
+
 object FileResponses {
   object Loaded {
     def apply(projects: List[KappaProject]): Loaded = Loaded(None, SortedSet(projects:_*))
     lazy val empty: Loaded = Loaded(Nil)
   }
 
-  case class Loaded(projectOpt: Option[KappaProject], projects: SortedSet[KappaProject] = SortedSet.empty) extends KappaFileMessage {
-    lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
-  }
 
   object Downloaded {
     lazy val empty = Downloaded("", Array())

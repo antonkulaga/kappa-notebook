@@ -72,6 +72,24 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
         }
     }
 
+    "upload/remove files" in {
+      val wsClient = WSProbe()
+      WS("/channel/notebook?username=tester5", wsClient.flow) ~>  routes ~>
+        check {
+          // check response for WS Upgrade headers
+          checkConnection(wsClient)
+
+          val fl = files / "big"
+          fl.exists() shouldEqual true
+
+          val big = KappaProject("big")
+          val FileResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
+
+          FileRequests.Upload
+
+        }
+    }
+
     "download, remove and upload project" in {
       val wsClient = WSProbe()
       WS("/channel/notebook?username=tester5", wsClient.flow) ~>  routes ~>

@@ -75,6 +75,12 @@ class CommentsWatcher(
         editor.setGutterMarker(n, "breakpoints", marker)
     }
 
+    papers.collectFirst{
+      case ((n, line), result) if n == currentNum =>
+        val marker = makePageMarker(result)
+        editor.setGutterMarker(n, "breakpoints", marker)
+    }
+    /*
     //TODO: fix this bad code
     if(papers.nonEmpty) {
       val paper: String = papers.collect{case ((n, line), result) if n == currentNum=> ((n, line), result)}.lastOption.map{ case (key, v)=>v }.get
@@ -82,6 +88,7 @@ class CommentsWatcher(
       val marker = this.makePageMarker(paper, pg)
       editor.setGutterMarker(currentNum, "breakpoints", marker)
     }
+    */
   }
 
   protected def makeURIMarker(link: String): Anchor = {
@@ -108,7 +115,7 @@ class CommentsWatcher(
     html
   }
 
-  protected def makePageMarker(paper: String, num: Int) = {
+  protected def makePageMarker(paper: String) = {
     val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline large icon", onclick := {
       //println(s"mouse down on $num")
       }))

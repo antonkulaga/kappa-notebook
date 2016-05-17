@@ -126,7 +126,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val kappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates, s)
 
-
   val left2right: Rx[Boolean] = kappaWatcher.direction.map{
     case KappaModel.BothDirections | KappaModel.Left2Right=> true
     case _=> false

@@ -60,7 +60,7 @@ case class LaunchModel(server: String, parameters: RunModel, counter: Int = 0) e
 
 trait KappaFileMessage extends KappaMessage
 
-case class DataMessage(source: KappaMessage, data: Array[Byte]) extends KappaFileMessage
+case class DataMessage(name: String, data: Array[Byte]) extends KappaFileMessage
 
 case class Done(operation: KappaMessage, user: String) extends KappaMessage
 

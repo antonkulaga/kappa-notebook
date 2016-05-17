@@ -1,6 +1,7 @@
 ##################################################
 ### Internship of Anton Kulaga
 ### ==========================
+# at Institute of fundamental research in Informatics
 #
 ### Kappa is a wonderful language to model protein-protein and gene-protein interactions, BUT
 #   it lacks user interfaces (UIs), tools and services to become useful and become used by a wide biological community
@@ -21,7 +22,6 @@
 
 #### Signatures
 
-#^ :image plasmid.png
 #^ :image plasmid.png
 
 
@@ -80,7 +80,7 @@
 ##################################################
 
 ### SLIDE 4: How to go away from ODE (ordinary differential equations) nightmare into a better biomodelling world
-#^ :in_paper Robin.pdf
+#^ :in_paper intro.pdf
 #^ :on_page 4
 
 ##################################################

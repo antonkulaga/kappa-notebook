@@ -14,7 +14,7 @@ object Selector {
   lazy val default = Selector(
     Var("Simulations"),
     Var(""),
-    Var("presentation/people.jpg"),
+    Var(""),
     Var(""),//Var("/files/ossilator/Stricker08.pdf"),
     Var("")
   )

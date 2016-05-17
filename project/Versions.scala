@@ -8,7 +8,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val bindingControls = "0.0.15"
 
-	val betterFiles = "2.15.0"
+	val betterFiles = "2.16.0"
 
 }
 
@@ -20,7 +20,7 @@ trait OtherJVM {
 
 	val apacheCodec = "1.10"
 
-	val akkaHttpExtensions = "0.0.10"
+	val akkaHttpExtensions = "0.0.12"
 
 	val retry = "0.2.1"
 
@@ -28,7 +28,7 @@ trait OtherJVM {
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.4"
+	val akka = "2.4.5"
 
 	val circeHttp = "1.6.0"
 
@@ -36,7 +36,7 @@ trait OtherJVM {
 
 	val breeze = "0.12"
 
-	val ficus: String = "1.2.4"
+	val ficus: String = "1.2.5"
 
 }
 
@@ -75,7 +75,7 @@ trait SharedVersions
 
 	val fastparse = "0.3.7"
 
-	val quicklens = "1.4.6"
+	val quicklens = "1.4.7"
 }
 
 

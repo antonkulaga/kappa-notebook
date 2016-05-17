@@ -9,6 +9,7 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.stream.actor.{ActorPublisher, ActorPublisherMessage}
 import akka.util.ByteString
 import boopickle.DefaultBasic._
+import org.denigma.kappa.messages.FileResponses.FileNotFound
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.SocketMessages.OutgoingMessage
@@ -83,22 +84,34 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
       Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer) match
       {
 
-        case mess @ FileRequests.LoadFile(path) =>
+        case mess @ FileRequests.LoadFileSync(path) =>
           fileManager.readBytes(path) match {
             case Some(bytes)=>
               println("bytes received "+bytes.length)
-              val m = DataMessage(mess, bytes)
+              val m = DataMessage(mess.path, bytes)
               val d = Pickle.intoBytes[KappaMessage](m)
               send(d)
 
             case None =>
+              val notFound = FileNotFound(path)
+              val d = Pickle.intoBytes(notFound)
+              send(d)
           }
 
-        case FileRequests.Load(pro) =>
+        case mess @ FileRequests.LoadFile(path) =>
+          fileManager.getJavaFile(path) match {
+            case Some(fl) =>
+            case None =>
+              val failed = Failed(mess, username, error = List(s"Path $path does not exist"))
+              val d = Pickle.intoBytes(failed)
+              send(d)
+          }
+
+        case ProjectRequests.Load(pro) =>
           fileManager.loadProject(pro) match {
             case project: KappaProject if project.saved =>
               val list: SortedSet[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p)
-              val response = FileResponses.Loaded(Some(project), list)
+              val response = ProjectResponses.Loaded(Some(project), list)
               val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
               //log.info("################################"+response)
               send(d)
@@ -142,12 +155,21 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
               send(d)
           }
 
-        case upl @ FileRequests.ZipUpload(projectName, data, rewriteIfExist)=>
-          fileManager
-          println("ZIP UPLOAD WORKS WELL")
+        case upl @ FileRequests.ZipUpload(projectName, data, rewriteIfExist) =>
+
+          val d: ByteBuffer = fileManager.uploadZiped(upl).map{
+            case r =>
+              Pickle.intoBytes[KappaMessage](Done(r, username))
+          }
+            .getOrElse( Pickle.intoBytes[KappaMessage]{
+              val resp = FileResponses.UploadStatus(projectName, data.hashCode(), rewriteIfExist)
+              Failed(resp, List("Does not exist"), username)
+            })
+          //.map(r=>Done(r, username)).getOrElse(Failed())
+          send(d)
 
 
-        case sv @ FileRequests.Save(project)=>
+        case sv @ ProjectRequests.Save(project)=>
           println("SAVING IS NOT YET IMPLEMENTED!")
 
         case LaunchModel(server, parameters, counter)=>

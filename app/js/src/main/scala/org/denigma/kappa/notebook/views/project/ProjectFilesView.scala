@@ -43,13 +43,13 @@ class ProjectFilesView(val elem: Element, val currentProject: Rx[KappaProject], 
   val save = Var(Events.createMouseEvent())
   save.onChange{
     case ev =>
-      output() = FileRequests.Save(currentProject.now)
+      output() = ProjectRequests.Save(currentProject.now)
       //connector.send(Save(currentProject.now))
   }
 
   val download: Var[MouseEvent] = Var(Events.createMouseEvent())
   download.triggerLater{
-      val mes = FileRequests.Download(currentProject.now.name)
+      val mes = ProjectRequests.Download(currentProject.now.name)
       //println("download ="+mes)
       output() = mes
   }

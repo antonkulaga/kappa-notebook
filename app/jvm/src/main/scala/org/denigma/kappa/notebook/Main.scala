@@ -25,7 +25,11 @@ object Main extends App  {
   val server: HttpExt = Http(system)
   val config: Config = system.settings.config
 
-  val (host, port) = (config.getString("app.host"), config.getInt("app.port"))
+  val host = config.getString("app.host")
+  val port = config.getInt("app.port")
+  //val key = config.as[Option[String]]("app.key").getOrElse("files/")
+  //val keyFiles =
+
   val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
   val root = File(filePath)
   root.createIfNotExists(asDirectory = true)
@@ -37,9 +41,6 @@ object Main extends App  {
 
 class FileManager(val root: File) {
 
-  def downloadProject() = {
-
-  }
 
   def create(project: KappaProject, rewriteIfExists: Boolean = false) = {
     write(project.folder)
@@ -66,13 +67,27 @@ class FileManager(val root: File) {
 
   def uploadZiped(upload: ZipUpload) =  {
     val r: File = root / upload.projectName
-    if(r.exists) {
-      if(upload.rewriteIfExist) {
-        r.delete()
-      } else {
-        
-      }
+    if(r.exists && !upload.rewriteIfExist)
+    {
+      None
+    } else {
+      if( r.exists && upload.rewriteIfExist) r.delete()
+      val dir = r.createDirectory()
+      val tmp = File.newTemporaryFile().write(upload.zip.data)(better.files.File.OpenOptions.default)
+      tmp.unzipTo(dir)
+      Some(
+        FileResponses.UploadStatus(
+          upload.projectName,
+          upload.zip.data.hashCode(),
+          upload.rewriteIfExist))
     }
+  }
+
+  def getJavaFile(relativePath: String) = {
+    val file = root / relativePath
+    if(file.exists && file.isRegularFile) {
+      Some(file.toJava)
+    } else None
   }
 
 
@@ -129,7 +144,7 @@ class FileManager(val root: File) {
     KappaFolder(file.pathAsString, dirs, SortedSet(fiter:_*))
   } else KappaFolder(file.pathAsString, SortedSet.empty, SortedSet.empty, saved = false)
 
-  def read(relativePath: String): String = (root / relativePath).contentAsString
+  def readText(relativePath: String): String = (root / relativePath).contentAsString
 
   def cd(relativePath: String): FileManager = new FileManager(root / relativePath)
 

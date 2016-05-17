@@ -2,8 +2,7 @@ package org.denigma.kappa.notebook.views.project
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView}
-import org.denigma.kappa.messages.FileResponses.Loaded
-import org.denigma.kappa.messages.{FileRequests, KappaMessage, KappaProject}
+import org.denigma.kappa.messages._
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw.Element
 import rx.Rx.Dynamic
@@ -13,12 +12,12 @@ import org.denigma.binding.extensions._
 
 import scala.collection.immutable.{Seq, SortedSet}
 
-class ProjectsView(val elem: Element, val loaded: Rx[Loaded], val sender: Var[KappaMessage]) extends ItemsSetView {
+class ProjectsView(val elem: Element, val loaded: Rx[ProjectResponses.Loaded], val sender: Var[KappaMessage]) extends ItemsSetView {
 
   val selectProject = Var(loaded.now.project)
   selectProject.onChange{
     case proj =>
-      sender() = FileRequests.Load(proj)
+      sender() = ProjectRequests.Load(proj)
   }
 
   val currentProject = loaded.map{

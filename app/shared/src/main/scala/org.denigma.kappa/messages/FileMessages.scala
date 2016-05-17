@@ -2,6 +2,7 @@ package org.denigma.kappa.messages
 
 import boopickle.Default._
 
+import scala.List
 import scala.collection.immutable._
 
 object KappaPath{
@@ -109,10 +110,19 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
 object ProjectRequests {
   case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
   case class Save(project: KappaProject) extends KappaFileMessage
+  case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
+  case class Detete(project: KappaProject) extends KappaFileMessage
+  case class Download(projectName: String) extends KappaFileMessage
+
 
 }
 
 object ProjectResponses {
+  object Loaded {
+    def apply(projects: List[KappaProject]): Loaded = Loaded(None, SortedSet(projects:_*))
+    lazy val empty: Loaded = Loaded(Nil)
+  }
+
   case class Loaded(projectOpt: Option[KappaProject], projects: SortedSet[KappaProject] = SortedSet.empty) extends KappaFileMessage {
     lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
   }
@@ -121,11 +131,10 @@ object ProjectResponses {
 object FileRequests {
   //case class Update(project: KappaProject, insertions) extends KappaFileMessage
   case class Remove(projectName: String) extends KappaFileMessage
-  case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
-  case class LoadFile(path: String) extends KappaFileMessage
+  case class LoadFileSync(path: String) extends KappaFileMessage
+  case class LoadFile(projectName: String, path: String, chunkSize: Double = -1) extends KappaFileMessage
 
   //case class Upload() extends KappaFileMessage
-  case class Download(projectName: String) extends KappaFileMessage
 
   case class Upload(projectName: String, files: List[DataMessage]) extends KappaFileMessage
 
@@ -133,11 +142,6 @@ object FileRequests {
 }
 
 object FileResponses {
-  object Loaded {
-    def apply(projects: List[KappaProject]): Loaded = Loaded(None, SortedSet(projects:_*))
-    lazy val empty: Loaded = Loaded(Nil)
-  }
-
 
   object Downloaded {
     lazy val empty = Downloaded("", Array())
@@ -146,6 +150,11 @@ object FileResponses {
 
   case class UploadStatus(projectName: String, hash: Int, rewriteIfExist: Boolean) extends KappaFileMessage
 
+  /*
+  case class FileNotFound(path: String) extends KappaFileMessage with ErrorMessage {
+    override def errors: List[String] = List(s"File '${path}' not found!")
+  }
+  */
 }
 
 

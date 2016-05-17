@@ -16,20 +16,26 @@ object KappaMessage{
     .addConcreteType[Disconnected]
     .addConcreteType[KappaFile]
     .addConcreteType[KappaFolder]
-    .addConcreteType[FileRequests.Load]
+    .addConcreteType[ProjectRequests.Create]
+    .addConcreteType[ProjectRequests.Download]
+
+    .addConcreteType[ProjectRequests.Load]
+    .addConcreteType[ProjectRequests.Save]
+    .addConcreteType[ProjectResponses.Loaded]
+
     .addConcreteType[FileRequests.LoadFile]
-    .addConcreteType[FileResponses.Loaded]
+    .addConcreteType[FileRequests.LoadFileSync]
     .addConcreteType[FileRequests.Remove]
-    .addConcreteType[FileRequests.Create]
-    .addConcreteType[FileRequests.Save]
     .addConcreteType[FileRequests.Upload]
-    .addConcreteType[FileRequests.Download]
     .addConcreteType[FileRequests.ZipUpload]
+
     .addConcreteType[FileResponses.Downloaded]
     .addConcreteType[FileResponses.UploadStatus]
+    //.addConcreteType[FileResponses.FileNotFound]
     .addConcreteType[DataMessage]
     .addConcreteType[Done]
     .addConcreteType[Failed]
+
 }
 
 sealed trait KappaMessage

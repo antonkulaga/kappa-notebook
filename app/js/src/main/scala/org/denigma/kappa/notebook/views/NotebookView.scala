@@ -43,8 +43,11 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   val path = Var("files")
 
   val sourceMap: Var[Map[String, KappaFile]] = Var(Map.empty[String, KappaFile])
+
   val papers: Var[Map[String, Bookmark]] = Var(Map.empty)
+
   val images = Var(Map.empty[String,String])
+
   val videos = Var(Map.empty[String, String])
 
   val otherFiles = Var(SortedSet.empty[KappaFile])
@@ -55,7 +58,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     val folder = KappaFolder(path(), files = fls)
     KappaProject(name(), folder)
   }
-
 
   override def bindView() = {
     super.bindView()

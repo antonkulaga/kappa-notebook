@@ -113,7 +113,7 @@ object ProjectRequests {
   case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
   case class Detete(project: KappaProject) extends KappaFileMessage
   case class Download(projectName: String) extends KappaFileMessage
-
+  case class Remove(projectName: String) extends KappaFileMessage
 
 }
 
@@ -130,9 +130,9 @@ object ProjectResponses {
 
 object FileRequests {
   //case class Update(project: KappaProject, insertions) extends KappaFileMessage
-  case class Remove(projectName: String) extends KappaFileMessage
+  case class Remove(projectName: String, filename: String) extends KappaFileMessage
   case class LoadFileSync(path: String) extends KappaFileMessage
-  case class LoadFile(projectName: String, path: String, chunkSize: Double = -1) extends KappaFileMessage
+  case class LoadFile(projectName: String, path: String, chunkSize: Int = 8192/*-1*/) extends KappaFileMessage
 
   //case class Upload() extends KappaFileMessage
 

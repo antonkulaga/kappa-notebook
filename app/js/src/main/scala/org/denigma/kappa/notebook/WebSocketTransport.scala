@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook
 import java.nio.ByteBuffer
 
 import boopickle.DefaultBasic._
-import org.denigma.controls.sockets.{BinaryWebSocket, WebSocketStorage, WebSocketSubscriber, WebSocketTransport1}
+import org.denigma.controls.sockets._
 import org.scalajs.dom
 import org.scalajs.dom.raw.WebSocket
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -11,6 +11,27 @@ import rx.Var
 import org.denigma.binding.extensions._
 import org.denigma.kappa.messages.{Connected, Disconnected, EmptyKappaMessage, KappaMessage}
 
+import scala.concurrent.Future
+import scala.concurrent.duration._
+/*
+case class TimeoutExpectation[Input, Output](input: Rx[Input], timeout: FiniteDuration)
+                                            (val partialFunction: PartialFunction[Input, Output])
+  extends Expectation[Input, Output]{
+
+  import scala.scalajs.js.timers._
+
+  setTimeout(timeout){
+    if(!promise.isCompleted){
+      println("timeout passed")
+      promise.failure(
+        TimeoutException("Expectation timeout has passed", timeout)
+      )
+    }
+
+  }
+
+}
+*/
 case class WebSocketTransport(channel: String, username: String) extends WebSocketTransport1
 {
 
@@ -22,6 +43,15 @@ case class WebSocketTransport(channel: String, username: String) extends WebSock
   input.triggerLater{
     onInput(input.now)
   }
+  /*
+
+  def collect[Result](message: Output, until: Input=> Boolean)(zero: Result)(foldLeft: PartialFunction): Future[Result] = {
+    //println("ask is used for message "+message)
+    val expectation = TimeoutExpectation[Input, Result](input, timeout)(partial)
+    output() = message
+    expectation.future
+  }
+*/
 
   protected def onInput(inp: Input) = inp match {
     case Connected(uname, ch, list, servers) if uname==username //&& ch == channel

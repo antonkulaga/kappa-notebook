@@ -1,20 +1,16 @@
 package org.denigma.kappa.notebook.views.project
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView}
-import org.denigma.controls.code.CodeBinder
+import org.denigma.binding.extensions._
+import org.denigma.binding.views.{BindableView, ItemsSetView}
 import org.denigma.kappa.messages._
+import org.scalajs.dom
 import org.scalajs.dom._
 import org.scalajs.dom.raw.{BlobPropertyBag, Element}
+import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import org.denigma.binding.extensions._
-import org.denigma.kappa.messages.FileRequests.{Download, ZipUpload}
-import org.scalajs.dom
 
 import scala.collection.immutable._
-import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
-
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 

@@ -22,6 +22,7 @@ object KappaMessage{
     .addConcreteType[ProjectRequests.Load]
     .addConcreteType[ProjectRequests.Save]
     .addConcreteType[ProjectResponses.Loaded]
+    .addConcreteType[ProjectRequests.Remove]
 
     .addConcreteType[FileRequests.LoadFile]
     .addConcreteType[FileRequests.LoadFileSync]
@@ -31,7 +32,7 @@ object KappaMessage{
 
     .addConcreteType[FileResponses.Downloaded]
     .addConcreteType[FileResponses.UploadStatus]
-    //.addConcreteType[FileResponses.FileNotFound]
+    .addConcreteType[DataChunk]
     .addConcreteType[DataMessage]
     .addConcreteType[Done]
     .addConcreteType[Failed]
@@ -65,6 +66,11 @@ case class SimulationResult(server: String, simulationStatus: SimulationStatus, 
 case class LaunchModel(server: String, parameters: RunModel, counter: Int = 0) extends ServerMessage
 
 trait KappaFileMessage extends KappaMessage
+
+case class DataChunk(id: String, path: String, data: Array[Byte], downloaded: Int, total: Int, completed: Boolean = false) extends KappaFileMessage
+{
+  lazy val percent = downloaded / total
+}
 
 case class DataMessage(name: String, data: Array[Byte]) extends KappaFileMessage
 

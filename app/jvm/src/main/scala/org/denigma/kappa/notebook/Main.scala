@@ -1,10 +1,12 @@
 package org.denigma.kappa.notebook
 
 import java.io.{File => JFile}
+import java.nio.file.Path
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.ActorMaterializer
+import better.files.File.OpenOptions
 import better.files._
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
@@ -14,6 +16,7 @@ import org.denigma.kappa.messages._
 
 import scala.Seq
 import scala.collection.immutable._
+import scala.util.Try
 
 
 object Main extends App  {
@@ -41,9 +44,13 @@ object Main extends App  {
 
 class FileManager(val root: File) {
 
-
   def create(project: KappaProject, rewriteIfExists: Boolean = false) = {
     write(project.folder)
+  }
+
+  def remove(project: String, name: String) = {
+    val path: File = root / project / name
+    path.delete()
   }
 
   def remove(name: String) = {
@@ -83,13 +90,26 @@ class FileManager(val root: File) {
     }
   }
 
-  def getJavaFile(relativePath: String) = {
+  def getJavaPath(relativePath: String): Option[(Path, Int)] = {
     val file = root / relativePath
     if(file.exists && file.isRegularFile) {
-      Some(file.toJava)
+      Some(file.path, file.toJava.length.toInt)
     } else None
   }
 
+  def getJavaPath(relativePath: String, filename: String): Option[(Path, Int)] = {
+    val file = root / relativePath / filename
+    if(file.exists && file.isRegularFile) {
+      Some(file.path, file.toJava.length.toInt)
+    } else None
+  }
+
+
+
+  def writeBytes(relativePath: String, name: String, bytes: Array[Byte]): Try[Unit] = Try {
+    val f = root / relativePath / name
+    f.write(bytes)(OpenOptions.default)
+  }
 
   def readBytes(relativePath: String): Option[Array[Byte]] = {
     val file = (root / relativePath)
@@ -108,6 +128,7 @@ class FileManager(val root: File) {
 
   /**
     * Writes KappaFile to the disk
+    *
     * @param p
     * @return
     */

@@ -46,7 +46,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val papers: Var[Map[String, Bookmark]] = Var(Map.empty)
 
-  val images = Var(Map.empty[String,String])
+  val images = Var(Map.empty[String, String])
 
   val videos = Var(Map.empty[String, String])
 

@@ -2,7 +2,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 {
 	val scala = "2.11.8"
 
-	val kappaNotebook = "0.0.6"
+	val kappaNotebook = "0.0.7"
 
 	val binding = "0.8.7"
 
@@ -28,7 +28,7 @@ trait OtherJVM {
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.5"
+	val akka = "2.4.6"
 
 	val circeHttp = "1.6.0"
 

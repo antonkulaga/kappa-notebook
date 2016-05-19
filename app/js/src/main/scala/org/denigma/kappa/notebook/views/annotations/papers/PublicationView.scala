@@ -5,8 +5,7 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.UpdatableView
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.{DataMessage, KappaMessage}
-import org.denigma.kappa.messages.FileRequests.LoadFileSync
+import org.denigma.kappa.messages.{DataMessage, FileRequests, KappaMessage}
 import org.denigma.kappa.notebook.WebSocketTransport
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
@@ -30,11 +29,22 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport,
   extends PaperLoader {
 
   override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
-    this.subscriber.ask[Future[ArrayBuffer]](LoadFileSync(path), timeout){
+  {
+    this.subscriber.ask[Future[ArrayBuffer]](FileRequests.LoadFileSync(path), timeout){
       case  DataMessage(source, bytes) if source == path =>
         println("LOAD: "+source)
         bytes2Arr(bytes)
     }.flatMap{case arr=>arr}.flatMap{ case arr=>  super.getPaper(path, arr) }
+    /*
+    this.subscriber.ask[Future[ArrayBuffer]](FileRequests.LoadFileSync(path), timeout){
+      case  DataMessage(source, bytes) if source == path =>
+        println("LOAD: "+source)
+        bytes2Arr(bytes)
+    }.flatMap{case arr=>arr}.flatMap{ case arr=>  super.getPaper(path, arr) }
+
+     */
+  }
+
 
   import js.JSConverters._
 

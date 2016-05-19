@@ -148,7 +148,7 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
           val folding: Future[Int] = FileIO.fromPath(fl, chunkSize).runFold[Int](0){
             case (acc, chunk) =>
               val downloaded = acc + chunk.length
-              val mes = DataChunk(id, path, chunk.toByteBuffer.array(), downloaded, size)//DataMessage(path, chunk.toByteBuffer.array())
+              val mes = DataChunk(mess, path, chunk.toByteBuffer.array(), downloaded, size)//DataMessage(path, chunk.toByteBuffer.array())
               val d = Pickle.intoBytes[KappaMessage](mes)
               send(d)
               downloaded
@@ -156,7 +156,7 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
           //.run(Sink.ignore)
           folding.onComplete{
             case Success(res) =>
-              val mes = DataChunk(id, path, Array(), size, size, completed = true)
+              val mes = DataChunk(mess, path, Array(), size, size, completed = true)
               val d = Pickle.intoBytes[KappaMessage](mes)
               send(d)
 

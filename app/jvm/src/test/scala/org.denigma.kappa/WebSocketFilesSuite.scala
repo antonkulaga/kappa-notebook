@@ -178,7 +178,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           val d = Pickle.intoBytes[KappaMessage](load)
           wsClient.sendMessage(pack(d))
           waitPartialKappaMessage(wsClient.inProbe, 2 seconds){
-            case d @ DataChunk(_,_,_,downloaded,total,true)=>
+            case d @ DataChunk(_, _, _, downloaded, total, true)=>
           }
 
           //for(wsClient.inProbe.requestNext())

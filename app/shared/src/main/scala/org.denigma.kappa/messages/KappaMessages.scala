@@ -67,7 +67,7 @@ case class LaunchModel(server: String, parameters: RunModel, counter: Int = 0) e
 
 trait KappaFileMessage extends KappaMessage
 
-case class DataChunk(id: String, path: String, data: Array[Byte], downloaded: Int, total: Int, completed: Boolean = false) extends KappaFileMessage
+case class DataChunk(id: KappaMessage, path: String, data: Array[Byte], downloaded: Int, total: Int, completed: Boolean = false) extends KappaFileMessage
 {
   lazy val percent = downloaded / total
 }

@@ -29,7 +29,7 @@ class ProjectFilesView(val elem: Element, val currentProject: Rx[KappaProject], 
   }
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
-    case (el, _) => new ProjectFileView(el,  item).withBinder(v => new GeneralBinder(v))
+    case (el, _) => new ProjectFileView(el,  item, name, output).withBinder(v => new GeneralBinder(v))
   }
 
   override type Item = KappaFile
@@ -72,9 +72,11 @@ class ProjectFilesView(val elem: Element, val currentProject: Rx[KappaProject], 
   }
 
 
+
+
 }
 
-class ProjectFileView(val elem: Element, val file: KappaFile) extends BindableView {
+class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[String], output: Var[KappaMessage]) extends BindableView {
 
   val name = Var(file.name)
   val icon: Rx[String] = name.map{
@@ -84,6 +86,11 @@ class ProjectFileView(val elem: Element, val file: KappaFile) extends BindableVi
     case n if n.endsWith(".svg") | n.endsWith(".png") | n.endsWith(".jpg") | n.endsWith(".gif") => "File Image Outline" + " large icon"
     case n if n.endsWith(".avi") => "File Video Outline" + " large icon"
     case other => "File Outline"
+  }
+
+  val removeCLick = Var(Events.createMouseEvent())
+  removeCLick.triggerLater{
+    output() = FileRequests.Remove(parentName.now, file.name)
   }
 
 

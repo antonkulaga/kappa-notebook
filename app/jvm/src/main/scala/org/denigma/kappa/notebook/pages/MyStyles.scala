@@ -9,13 +9,15 @@ import scalacss.Defaults._
 object MyStyles extends TextLayerStyles{
   import dsl._
 
+  val totalWidth = 3200.0 px
+
   "#Notebook" -(
     maxHeight(95 vh),
-    minWidth(2500.0 px)
+    minWidth(totalWidth)
     )
 
   "#Scroller" -(
-    minWidth(2500.0 px)
+    minWidth(totalWidth)
     )
 
   "#main" -(

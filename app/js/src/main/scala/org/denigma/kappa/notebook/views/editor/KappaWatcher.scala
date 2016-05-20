@@ -94,7 +94,20 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
               direction() = rule.direction
               leftPattern.refresh(rule.left, forces)
               rightPattern.refresh(rule.right, forces)
-              val (chLeft, chRight) = rule.changed.unzip
+              for {
+                n <- leftPattern.nodes.now
+              }
+                if(rule.removed.contains(n.data)) n.markDeleted()
+                else if(rule.added.contains(n.data)) n.markAdded()
+
+              for {
+                n <- rightPattern.nodes.now
+              }
+                if(rule.added.contains(n.data)) n.markAdded()
+                else
+                if(rule.modified.contains(n.data)) n.markChanged()
+              /*
+              val (chLeft, chRight) = rule
               for{
                 r <- rule.removed
                 n <- leftPattern.nodes.now
@@ -109,6 +122,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
               } {
                 if(chRight.contains(a)) n.markChanged() else n.markDeleted()
               }
+              */
           }
       }
     }

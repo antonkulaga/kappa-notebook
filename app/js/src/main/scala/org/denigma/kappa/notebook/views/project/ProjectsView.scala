@@ -14,7 +14,7 @@ import scala.collection.immutable.{Seq, SortedSet}
 
 class ProjectsView(val elem: Element, val loaded: Rx[ProjectResponses.Loaded], val sender: Var[KappaMessage]) extends ItemsSetView {
 
-  val selectProject = Var(loaded.now.project)
+  val selectProject = Var(loaded.now.projectOpt.getOrElse(KappaProject.default))
   selectProject.onChange{
     case proj =>
       sender() = ProjectRequests.Load(proj)
@@ -22,8 +22,9 @@ class ProjectsView(val elem: Element, val loaded: Rx[ProjectResponses.Loaded], v
 
   val currentProject = loaded.map{
     case lds=>
-      selectProject() = lds.project
-      lds.project
+      val p = lds.projectOpt.getOrElse(KappaProject.default)
+      selectProject() = p
+      p
   }
 
   override def newItemView(item: Item): ItemView = constructItemView(item){

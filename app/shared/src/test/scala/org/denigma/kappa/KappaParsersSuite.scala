@@ -84,6 +84,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       }
     }
 
+    /*
     "differentiate agents in rules" in {
       //'ab.c' A(x!_,c),C(x1~u) ->A(x!_,c!2),C(x1~u!2) @ 'on_rate' #AB binds C
       import KappaModel._
@@ -105,6 +106,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
 
       //TreeSet(Agent(A,List(Side(x,Set(),Set()), Side(c,Set(),Set()))), Agent(C,List(Side(x1,Set(State(p)),Set()), Side(x2,Set(State(u)),Set()))))
     }
+    */
   }
 
 }

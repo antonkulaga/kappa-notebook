@@ -124,7 +124,7 @@ object ProjectResponses {
   }
 
   case class Loaded(projectOpt: Option[KappaProject], projects: SortedSet[KappaProject] = SortedSet.empty) extends KappaFileMessage {
-    lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
+    //lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
   }
 }
 
@@ -132,7 +132,7 @@ object FileRequests {
   //case class Update(project: KappaProject, insertions) extends KappaFileMessage
   case class Remove(projectName: String, filename: String) extends KappaFileMessage
   case class LoadFileSync(path: String) extends KappaFileMessage
-  case class LoadFile(projectName: String, path: String, chunkSize: Int = 8192/*-1*/) extends KappaFileMessage
+  case class LoadFile(projectName: String, path: String, chunkSize: Int = 8192 * 4/*-1*/) extends KappaFileMessage
 
   //case class Upload() extends KappaFileMessage
 

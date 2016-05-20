@@ -88,8 +88,8 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
     case other => "File Outline"
   }
 
-  val removeCLick = Var(Events.createMouseEvent())
-  removeCLick.triggerLater{
+  val removeClick: Var[MouseEvent] = Var(Events.createMouseEvent())
+  removeClick.triggerLater{
     output() = FileRequests.Remove(parentName.now, file.name)
   }
 

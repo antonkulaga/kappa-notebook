@@ -13,6 +13,8 @@ import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.scalajs.dom.raw.Element
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import org.denigma.binding.extensions._
+import rx.Rx.Dynamic
 
 import scala.collection.immutable.SortedSet
 
@@ -20,20 +22,48 @@ class TabsView(
                val elem: Element,
                val connector: WebSocketTransport,
                val selector: Selector,
-               val papers: Var[Map[String, Bookmark]],
-               val images: Var[Map[String, String]],
-               val videos: Var[Map[String, String]],
+               val loaded: Rx[ProjectResponses.Loaded],
                val kappaCursor: Var[Option[(Editor, PositionLike)]],
                val sourceMap: Rx[Map[String, KappaFile]]
               ) extends BindableView {
 
   self =>
 
+  //val currentProject =  loaded.map(_.projectOpt.getOrElse(KappaProject.default))
+
+
+  val papers: Var[Map[String, Bookmark]] = Var(Map.empty)
+
+  val images: Var[Map[String, String]] = Var(Map.empty)
+
+  val videos: Var[Map[String, String]] = Var(Map.empty)
+
+
+  val currentProjOpt: Rx[Option[KappaProject]] = loaded.map(_.projectOpt)
+
+  currentProjOpt.onChange{
+    case Some(proj)=>
+      images() = proj.images.map{
+        case i=>
+          val p = proj.name + "/" +i.name
+          i.name -> p
+        }.toMap
+
+      videos() = proj.videos.map(i=> i.name -> i.path).toMap
+
+      papers() = proj.papers.map{case
+        p=>
+        println("proj folder path = "+proj.folder.path)
+        //val n = p.name.replace(proj.folder.path, "")
+        p.name -> Bookmark(p.path, 1)
+      }.toMap
+
+    case None =>
+  }
+
   val simulations: Var[Map[(Int, RunModel), SimulationStatus]] = Var(Map.empty[(Int, RunModel), SimulationStatus])
 
   val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
-
-  val vids = Var(Map.empty[String, String])
 
   lazy val selected = selector.tab
 
@@ -90,11 +120,11 @@ class TabsView(
     .register("Videos") {
       case (el, params) =>
         el.id = "Videos"
-        new VideosView(el, vids, selector.video).withBinder(new CodeBinder(_))
+        new VideosView(el, videos, selector.video).withBinder(new CodeBinder(_))
     }
     .register("Papers") {
       case (el, params) =>
-        new PapersView(el, connector, selected, papers, selector, kappaCursor).withBinder(new CodeBinder(_))
+        new PapersView(el, loaded.map(l=>l.projectOpt.map(_.name).getOrElse("")), connector, selected, papers, selector, kappaCursor).withBinder(new CodeBinder(_))
     }
     .register("UnderDevelopment") {
       case (el, params) =>

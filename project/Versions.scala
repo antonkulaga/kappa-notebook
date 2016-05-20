@@ -10,6 +10,8 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val betterFiles = "2.16.0"
 
+	val reach = "1.2.2"
+
 }
 
 trait OtherJVM {
@@ -37,6 +39,8 @@ trait OtherJVM {
 	val breeze = "0.12"
 
 	val ficus: String = "1.2.5"
+
+	val paxtools = "4.3.1"
 
 }
 

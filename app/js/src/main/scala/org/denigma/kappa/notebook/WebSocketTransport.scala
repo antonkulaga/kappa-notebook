@@ -63,71 +63,68 @@ case class WebSocketTransport(channel: String, username: String) extends WebSock
   def collect[Output](partialFunction: PartialFunction[Input, Output])(until: PartialFunction[Input, Boolean]) = {
     new Collecter[Input, Output](input)(partialFunction)(until).future
   }
-/*
-def collect[Output](until: Input => Boolean)(partialFunction: PartialFunction[Input, Output]) = {
-  new Collecter[Input, Output](input, until)(partialFunction).future
-}
-
-dellect[Result](message: Output, until: Input=> Boolean)(zero: Result)(foldLeft: PartialFunction): Future[Result] = {
-  //println("ask is used for message "+message)
-  val expectation = TimeoutExpectation[Input, Result](input, timeout)(partial)
-  output() = message
-  expectation.future
-}
-*/
-
-protected def onInput(inp: Input) = inp match {
-  case Connected(uname, ch, list, servers) if uname==username //&& ch == channel
-  =>
-    println(s"connection of user $username to $channel established")
-    connected() = true
-  case Disconnected(uname, ch, list) if uname==username
-    //&& ch == channel
-  =>
-    println(s"user $username diconnected from $channel")
-    connected() = false
-
-  case _=> //do nothing
-}
-
-override def send(message: Output): Unit = if(connected.now) {
-  val mes = bytes2message(pickle(message))
-  send(mes)
-} else {
-  connected.triggerOnce{
-    case true =>
-      send(message)
-    case false =>
+  /*
+  def collect[Output](until: Input => Boolean)(partialFunction: PartialFunction[Input, Output]) = {
+    new Collecter[Input, Output](input, until)(partialFunction).future
   }
-}
+
+  dellect[Result](message: Output, until: Input=> Boolean)(zero: Result)(foldLeft: PartialFunction): Future[Result] = {
+    //println("ask is used for message "+message)
+    val expectation = TimeoutExpectation[Input, Result](input, timeout)(partial)
+    output() = message
+    expectation.future
+  }
+  */
+
+  protected def onInput(inp: Input) = inp match {
+    case Connected(uname, ch, list, servers) if uname==username /*&& ch == channel*/ =>
+      println(s"connection of user $username to $channel established")
+      connected() = true
+    case Disconnected(uname, ch, list) if uname==username /* && ch == channel */ =>
+      println(s"user $username diconnected from $channel")
+      connected() = false
+
+    case _=> //do nothing
+  }
+
+  override def send(message: Output): Unit = if(connected.now) {
+    val mes = bytes2message(pickle(message))
+    send(mes)
+  } else {
+    connected.triggerOnce{
+      case true =>
+        send(message)
+      case false =>
+    }
+  }
 
 
-override protected def closeHandler() = {
-  println("websocket closed")
-  connected() = false
-  opened() = false
-}
+  override protected def closeHandler() = {
+    println("websocket closed")
+    connected() = false
+    opened() = false
+  }
 
-override def getWebSocketUri(username: String): String = {
-  val wsProtocol = if (dom.document.location.protocol == "https:") "wss" else "ws"
-  s"$wsProtocol://${dom.document.location.host}/channel/$channel?username=$username"
-}
+  override def getWebSocketUri(username: String): String = {
+    val wsProtocol = if (dom.document.location.protocol == "https:") "wss" else "ws"
+    s"$wsProtocol://${dom.document.location.host}/channel/$channel?username=$username"
+  }
 
-def open(): Unit = {
-  urlOpt() = Option(getWebSocketUri(username))
-}
+  def open(): Unit = {
+    urlOpt() = Option(getWebSocketUri(username))
+  }
 
-override def initWebSocket(url: String): WebSocket = WebSocketStorage(url)
+  override def initWebSocket(url: String): WebSocket = WebSocketStorage(url)
 
-override def emptyInput: KappaMessage = EmptyKappaMessage
+  override def emptyInput: KappaMessage = EmptyKappaMessage
 
-override protected def pickle(message: Output): ByteBuffer = {
-  Pickle.intoBytes(message)
-}
+  override protected def pickle(message: Output): ByteBuffer = {
+    Pickle.intoBytes(message)
+  }
 
-override protected def unpickle(bytes: ByteBuffer): KappaMessage = {
-  Unpickle[Input].fromBytes(bytes)
-}
+  override protected def unpickle(bytes: ByteBuffer): KappaMessage = {
+    Unpickle[Input].fromBytes(bytes)
+  }
 }
 /*
 import java.nio.ByteBuffer

@@ -23,39 +23,8 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
-class UserActor(username: String, servers: ActorRef, fileManager: FileManager) extends KappaPicklers
-  with Actor
-  with akka.actor.ActorLogging
-  with ActorPublisher[SocketMessages.OutgoingMessage]{
-
-  implicit def ctx = context.dispatcher
-
-  implicit val materializer = ActorMaterializer()
-
-
-  val MaxBufferSize = 100
-  var buf = Vector.empty[OutgoingMessage]
-
-  @tailrec final def deliverBuf(): Unit =
-    if (totalDemand > 0) {
-      /*
-      * totalDemand is a Long and could be larger than
-      * what buf.splitAt can accept
-      */
-      if (totalDemand <= Int.MaxValue) {
-        val (use, keep) = buf.splitAt(totalDemand.toInt)
-        buf = keep
-        use foreach onNext
-      } else {
-        val (use, keep) = buf.splitAt(Int.MaxValue)
-        buf = keep
-        use foreach onNext
-        deliverBuf()
-      }
-    }
-
-  //val servers: Map[String, WebSimClient] = Map("default", new WebSimClient()(this.context.system, ActorMaterializer())) //note: will be totally rewritten
-
+class UserActor(val username: String, servers: ActorRef, val fileManager: FileManager) extends FileMessenger
+{
 
   def readResource(path: String): Iterator[String] = {
     val stream: InputStream = getClass.getResourceAsStream(path)
@@ -124,102 +93,8 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
 
   }
 
-
-  protected def fileMessages: PartialFunction[KappaMessage, Unit] = {
-    case mess @ FileRequests.LoadFileSync(path) =>
-      fileManager.readBytes(path) match {
-        case Some(bytes)=>
-          println("bytes received "+bytes.length)
-          val m = DataMessage(mess.path, bytes)
-          val d = Pickle.intoBytes[KappaMessage](m)
-          send(d)
-
-        case None =>
-          val notFound = Failed(mess, List(path), username)
-          val d = Pickle.intoBytes[KappaMessage](notFound)
-          send(d)
-      }
-
-    case mess @ FileRequests.LoadFile(projectName, path, chunkSize) =>
-      log.info(s"***********+${mess}*****************")
-      fileManager.getJavaPath(projectName, path) match {
-        case Some((fl, size)) =>
-          val id: String = java.util.UUID.randomUUID().toString
-          val folding: Future[Int] = FileIO.fromPath(fl, chunkSize).runFold[Int](0){
-            case (acc, chunk) =>
-              val downloaded = acc + chunk.length
-              val mes = DataChunk(mess, path, chunk.toByteBuffer.array(), downloaded, size)//DataMessage(path, chunk.toByteBuffer.array())
-              val d = Pickle.intoBytes[KappaMessage](mes)
-              send(d)
-              downloaded
-          }
-          //.run(Sink.ignore)
-          folding.onComplete{
-            case Success(res) =>
-              val mes = DataChunk(mess, path, Array(), size, size, completed = true)
-              val d = Pickle.intoBytes[KappaMessage](mes)
-              send(d)
-
-            case Failure(th) =>
-              val d = Pickle.intoBytes[KappaMessage](Failed(mess, List(th.toString), username))
-              send(d)
-
-          }
-
-        case None =>
-          val failed = Failed(mess, error = List(s"Path $path does not exist"), username)
-          val d = Pickle.intoBytes[KappaMessage](failed)
-          send(d)
-      }
-
-    case r @ FileRequests.Remove(projectName, filename) =>
-      fileManager.remove(projectName, filename)
-      val response = org.denigma.kappa.messages.Done(r, username)
-      val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
-      send(d)
-
-    case upl @ FileRequests.Upload(projectName, files) =>
-      files.foreach{
-        case DataMessage(name, bytes) =>
-          fileManager.writeBytes(projectName, name, bytes)
-      }
-
-
-      /*
-      val d: ByteBuffer = fileManager.uploadZiped(upl).map{
-        case r =>
-          Pickle.intoBytes[KappaMessage](org.denigma.kappa.messages.Done(r, username))
-      }
-        .getOrElse( Pickle.intoBytes[KappaMessage]{
-          val resp = FileResponses.UploadStatus(projectName, data.hashCode(), rewriteIfExist)
-          Failed(resp, List("Does not exist"), username)
-        })
-      //.map(r=>Done(r, username)).getOrElse(Failed())
-      send(d)
-      */
-
-    case upl @ FileRequests.ZipUpload(projectName, data, rewriteIfExist) =>
-
-      val d: ByteBuffer = fileManager.uploadZiped(upl).map{
-        case r =>
-          Pickle.intoBytes[KappaMessage](org.denigma.kappa.messages.Done(r, username))
-      }
-        .getOrElse( Pickle.intoBytes[KappaMessage]{
-          val resp = FileResponses.UploadStatus(projectName, data.hashCode(), rewriteIfExist)
-          Failed(resp, List("Does not exist"), username)
-        })
-      //.map(r=>Done(r, username)).getOrElse(Failed())
-      send(d)
-
-
-    case sv @ ProjectRequests.Save(project)=>
-      println("SAVING IS NOT YET IMPLEMENTED!")
-  }
-
   protected def simulationMessages: Receive  = {
-    case LaunchModel(server, parameters, counter)=>
-
-      run(parameters)
+    case LaunchModel(server, parameters, counter)=> run(parameters)
   }
 
   protected def otherKappaMessages: Receive  = {
@@ -264,27 +139,5 @@ class UserActor(username: String, servers: ActorRef, fileManager: FileManager) e
 
   override def receive: Receive =  onTextMessage.orElse(onBinaryMessage).orElse(onServerMessage).orElse(onOtherMessage)
 
-  def deliver(mess: OutgoingMessage) = {
-    if (buf.isEmpty && totalDemand > 0)
-      onNext(mess)
-    else {
-      buf :+= mess
-      deliverBuf()
-    }
-  }
-
-  def send(textMessage: TextMessage, channel: String): Unit = {
-    val message = SocketMessages.OutgoingMessage(channel, username, textMessage, LocalDateTime.now)
-    deliver(message)
-  }
-
-  def sendBinary(binaryMessage: BinaryMessage, channel: String = "all") = {
-    val message = SocketMessages.OutgoingMessage(channel, username, binaryMessage, LocalDateTime.now)
-    deliver(message)
-  }
-
-  def send(d: ByteBuffer, channel: String = "all"): Unit = {
-    sendBinary(BinaryMessage(ByteString(d)), channel)
-  }
 
 }

@@ -86,7 +86,11 @@ object Dependencies {
 
 		"com.iheart" %% "ficus" % Versions.ficus,
 
-		"com.github.pathikrit"  %% "better-files-akka"  % Versions.betterFiles
+		"com.github.pathikrit"  %% "better-files-akka"  % Versions.betterFiles,
+
+		"org.biopax.paxtools" % "paxtools" % Versions.paxtools
+
+		//"org.clulab" %% "reach" % Versions.reach
 
 	))
 

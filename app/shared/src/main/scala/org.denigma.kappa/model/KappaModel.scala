@@ -61,19 +61,29 @@ object KappaModel {
         key -> KappaModel.Link(agent1, agent2, side1, side2, key)
     }
 
+    private def sameAgent(one: Agent, two: Agent): Boolean = {
+      one.name==two.name && one.sideNames == two.sideNames
+    }
+
+    def sameAgents(pat: Pattern): List[(Agent, Agent)] = agents.zip(pat.agents).takeWhile(ab=>sameAgent(ab._1, ab._2))
+
   }
 
   case class Rule(name: String, left: Pattern, right: Pattern, forward: Either[String, Double], backward: Option[Either[String, Double]] = None) extends KappaNamedElement
   {
-    lazy val removed = left.agents.diff(right.agents) //includes also changed agents
+    lazy val same = left.sameAgents(right)
 
-    lazy val added = right.agents.diff(left.agents)
+    lazy val removed = if(same.length==left.agents.length) Nil else left.agents.takeRight(left.agents.length - same.length)
 
-    lazy val changed: List[(Agent, Agent)] = for{
-      r <- removed
-      a <- added
-      if a.name == r.name
-    } yield (r, a)
+    lazy val added = if(same.length==right.agents.length) Nil else right.agents.takeRight(right.agents.length - same.length)
+
+    lazy val modified = same.filter{
+      case (one, two)=> one.sideSet != two.sideSet
+    }
+
+    lazy val modifiedLeft = modified.map(_._1)
+
+    lazy val modifiedRight = modified.map(_._1)
 
     def direction: Direction = if(backward.isEmpty) KappaModel.Left2Right else KappaModel.BothDirections
     //lazy val kept = right
@@ -104,6 +114,8 @@ object KappaModel {
   case class Agent(name: String, sides: List[Side] = List.empty, extra: String = "") extends KappaNamedElement
   {
     lazy val sideSet = sides.toSet
+
+    lazy val sideNames = sides.map(s=>s.name)
 
     lazy val links: List[(String, Side)] = for {
         s <- sides

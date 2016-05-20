@@ -15,6 +15,7 @@ import rx._
 import scala.collection.immutable
 
 class PapersView(val elem: Element,
+                 val currentProjectName: Rx[String],
                  val subscriber: WebSocketTransport,
                  val selected: Var[String],
                  val items: Var[Map[String, Bookmark]],
@@ -37,7 +38,7 @@ class PapersView(val elem: Element,
       el.id = name
       //println("add view "+name)
       val location: Bookmark = this.items.now(name) //buggy but hope it will work
-      val v = new PublicationView(el, subscriber, selector.paper, Var(location), kappaCursor).withBinder(v=>new CodeBinder(v))
+      val v = new PublicationView(el,  currentProjectName, subscriber, selector.paper, Var(location), kappaCursor).withBinder(v=>new CodeBinder(v))
       selector.paper() = name
       v
   }

@@ -5,17 +5,18 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.UpdatableView
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.{DataMessage, FileRequests, KappaMessage}
+import org.denigma.kappa.messages.FileRequests.LoadFile
+import org.denigma.kappa.messages.{DataChunk, FileRequests}
 import org.denigma.kappa.notebook.WebSocketTransport
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
-import org.scalajs.dom._
 import org.scalajs.dom.html.Canvas
 import org.scalajs.dom.raw.{Blob, BlobPropertyBag, Element, FileReader, _}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 
+import scala.List
 import scala.annotation.tailrec
 import scala.collection.immutable.{Map, _}
 import scala.concurrent.duration._
@@ -24,17 +25,19 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.{ArrayBuffer, Uint8Array}
 
-case class WebSocketPaperLoader(subscriber: WebSocketTransport,
+case class WebSocketPaperLoader(subscriber: WebSocketTransport, projectName: Rx[String],
                                 loadedPapers: Var[Map[String, Paper]])
   extends PaperLoader {
 
   override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
   {
+    /*
     this.subscriber.ask[Future[ArrayBuffer]](FileRequests.LoadFileSync(path), timeout){
       case  DataMessage(source, bytes) if source == path =>
         println("LOAD: "+source)
         bytes2Arr(bytes)
     }.flatMap{case arr=>arr}.flatMap{ case arr=>  super.getPaper(path, arr) }
+    */
     /*
     this.subscriber.ask[Future[ArrayBuffer]](FileRequests.LoadFileSync(path), timeout){
       case  DataMessage(source, bytes) if source == path =>
@@ -43,6 +46,28 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport,
     }.flatMap{case arr=>arr}.flatMap{ case arr=>  super.getPaper(path, arr) }
 
      */
+    val tosend: LoadFile = FileRequests.LoadFile(projectName.now, path)
+    subscriber.send(tosend)
+    val fut: Future[List[DataChunk]] = subscriber.collect{
+      case d @ DataChunk(message, _, _, _, _,  _) => d
+    }{
+      case DataChunk(message, _, _, _, _,  true) if message == tosend => true
+    }
+    val data = fut.map{ case list=>
+      println(s"CHUNKS = "+list.length)
+      println(s"LAST CHUNK DOWNLOADED = "+list.last.downloaded+"FROM TOTAL"+list.last.total)
+      //val arr = new Array[Byte](0)
+      list.foldLeft(new Array[Byte](0)){
+        case (acc, el)=>
+          acc ++ el.data
+      }
+      //list.foldLeft(new Array[Byte])(a, b)=>a.data ++ b.data) }
+      }
+    data.flatMap(bytes=>bytes2Arr(bytes)).flatMap{
+      arr=>
+        println(s"ARRAY FOR $path IS LOADED = "+arr.byteLength)
+        super.getPaper(path, arr)
+    }
   }
 
 
@@ -71,6 +96,7 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport,
   * Created by antonkulaga on 21/04/16.
   */
 class PublicationView(val elem: Element,
+                      val currentProjectName: Rx[String],
                       val subscriber: WebSocketTransport,
                       val selected: Var[String],
                       val location: Var[Bookmark],
@@ -81,7 +107,7 @@ class PublicationView(val elem: Element,
 
   lazy val loadedPapers = Var(Map.empty[String, Paper])
 
-  lazy val paperLoader: PaperLoader = WebSocketPaperLoader(subscriber, loadedPapers)
+  lazy val paperLoader: PaperLoader = WebSocketPaperLoader(subscriber, currentProjectName, loadedPapers)
   //val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
 
   scale.Internal.value = 1.4
@@ -100,6 +126,7 @@ class PublicationView(val elem: Element,
   //val paperName = paperManager.currentPaper.map(_.name)
 
   val paper = location.map(_.paper)
+
   val page = location.map(_.page)
 
   val selections = Var(List.empty[org.scalajs.dom.raw.Range])

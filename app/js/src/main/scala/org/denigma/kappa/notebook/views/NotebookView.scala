@@ -44,12 +44,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val sourceMap: Var[Map[String, KappaFile]] = Var(Map.empty[String, KappaFile])
 
-  val papers: Var[Map[String, Bookmark]] = Var(Map.empty)
-
-  val images = Var(Map.empty[String, String])
-
-  val videos = Var(Map.empty[String, String])
-
   val otherFiles = Var(SortedSet.empty[KappaFile])
 
   val currentProject: Rx[KappaProject] = Rx{
@@ -64,29 +58,20 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     loaded.onChange{
       case ld=>
         //println("LOQDED =\n"+ld+"\n")
+        /*
         println(
           s"""
             |PROJECT LIST: \n${ld.projects.map(p=>p.name)mkString("\n")}
           """.stripMargin)
-        val proj = ld.project
-        name() = ld.project.name
-        images() = proj.images.map{case
-          i=>
-          val p = ld.project.name + "/"+i.name
-          i.name -> p
-        }.toMap
-        println("IMQGES ="+images.now)
-        videos() = proj.videos.map(i=> i.name -> i.path).toMap
-        papers() = proj.papers.map{case
-          p=>
-            println("proj folder path = "+proj.folder.path)
-            //val n = p.name.replace(proj.folder.path, "")
-            p.name -> Bookmark(p.path, 1)
-        }.toMap
-        otherFiles() = proj.nonsourceFiles
-        val sources = proj.sourceMap
-        sourceMap.set(sources)
-
+        */
+        ld.projectOpt match {
+          case Some(proj)=>
+            name() = proj.name
+            otherFiles() = proj.nonsourceFiles
+            val sources = proj.sourceMap
+            sourceMap.set(sources)
+          case None =>
+        }
     }
     connector.onOpen.triggerLater{
       println("websocket opened")
@@ -151,10 +136,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
          val editor = new KappaCodeEditor(el, sourceMap, selector, errors, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
          editor
      }
-     .register("Tabs")((el, args) => new TabsView(el,
-       connector, selector,
-       papers, images, videos,
-       kappaCursor, sourceMap).withBinder(n => new CodeBinder(n)))
+     .register("Tabs")((el, args) => new TabsView(el,  connector, selector, loaded, kappaCursor, sourceMap).withBinder(n => new CodeBinder(n)))
      //.register("ProjectsPanel")((el, args) => new ProjectsPanelView(el, currentProject, projectList).withBinder(n => new CodeBinder(n)))
      .register("ProjectsView")((el, args) => new ProjectsView(el, loaded, connector.output).withBinder(n => new CodeBinder(n)))
      .register("ProjectFilesView")((el, args) => new ProjectFilesView(el, currentProject, connector.input, connector.output).withBinder(n => new CodeBinder(n)))

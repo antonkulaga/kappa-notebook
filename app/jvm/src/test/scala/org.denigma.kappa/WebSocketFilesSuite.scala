@@ -14,6 +14,8 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.WebSocketManager
 import org.denigma.kappa.notebook.pages.WebSockets
+
+import scala.List
 import scala.concurrent.duration._
 import scala.collection.immutable._
 import scala.concurrent.{Await, Future}
@@ -104,14 +106,21 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           checkMessage(wsClient, downloadWrong){
             case Failed(_,List("project big_wrong does not exist"), _) =>
           }
+
           val downloadRight: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big"))
           val dat: Array[Byte] = checkMessage(wsClient, downloadRight){
-            case Downloaded("big", data) =>
+            case FileResponses.Downloaded("big", data) =>
+
               val zp = fl.zip().byteArray
+              //val some = fileManager.loadZiped("big").get
+              //val zp2 = fileManager.loadZiped("big").get.data
               //println("========================================")
+              //println("SOMETHING RECEIVED "+smt)
               //println("data size = "+data.length)
               //println("zp   size = "+zp.length)
-              data shouldEqual zp
+              //data.sameElements(zp) shouldEqual true
+              data.sameElements(zp) shouldEqual true
+              //data shouldEqual zp
               data
           }
 
@@ -177,11 +186,17 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           val load = FileRequests.LoadFile("big", paperName)
           val d = Pickle.intoBytes[KappaMessage](load)
           wsClient.sendMessage(pack(d))
-          waitPartialKappaMessage(wsClient.inProbe, 2 seconds){
-            case d @ DataChunk(_, _, _, downloaded, total, true)=>
+
+          val dataList: List[Array[Byte]] = collectPartialKappaMessage(wsClient.inProbe, 4 seconds){
+            case d @ DataChunk(_, _, data, downloaded, total, false) => data
+          }{
+            case d @ DataChunk(_, _, _, downloaded, total, true) =>
+              //println("COMPLETED, BYTES TOTAL ARE "+total)
+              true
           }
 
-          //for(wsClient.inProbe.requestNext())
+          val bytes = dataList.reduce(_ ++ _)
+          bytes.sameElements(paper.byteArray) shouldEqual(true)
 
           val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](FileRequests.Remove("big", paperName))
           checkMessage(wsClient, rem){

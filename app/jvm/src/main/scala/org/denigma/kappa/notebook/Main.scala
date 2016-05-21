@@ -5,7 +5,7 @@ import java.nio.file.Path
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{Http, HttpExt}
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
 import better.files.File.OpenOptions
 import better.files._
 import com.typesafe.config.Config
@@ -22,7 +22,11 @@ import scala.util.Try
 object Main extends App  {
 
   implicit val system = ActorSystem("my-system")
-  implicit val materializer = ActorMaterializer()
+  implicit val materializer = ActorMaterializer(ActorMaterializerSettings(system)
+    .withInputBuffer(
+      initialSize = 64,
+      maxSize = 512))
+
   implicit val executionContext = system.dispatcher
 
   val server: HttpExt = Http(system)

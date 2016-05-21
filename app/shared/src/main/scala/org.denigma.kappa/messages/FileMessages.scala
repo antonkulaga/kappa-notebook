@@ -131,8 +131,10 @@ object ProjectResponses {
 object FileRequests {
   //case class Update(project: KappaProject, insertions) extends KappaFileMessage
   case class Remove(projectName: String, filename: String) extends KappaFileMessage
+
   case class LoadFileSync(path: String) extends KappaFileMessage
-  case class LoadFile(projectName: String, path: String, chunkSize: Int = 8192 * 4/*-1*/) extends KappaFileMessage
+
+  case class LoadFile(projectName: String, path: String, chunkSize: Int = 8192 * 16/*-1*/) extends KappaFileMessage
 
   //case class Upload() extends KappaFileMessage
 

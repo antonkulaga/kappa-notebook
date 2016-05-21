@@ -53,7 +53,7 @@ trait FileMessenger extends Messenger{
             case Success(res) =>
               val mes = DataChunk(mess, path, Array(), res, size, completed = true)
               val d = Pickle.intoBytes[KappaMessage](mes)
-              log.info("\nSEND COMPLETE mess"+mess)
+              //log.info("\nSEND COMPLETE mess"+mess)
               send(d)
 
             case Failure(th) =>

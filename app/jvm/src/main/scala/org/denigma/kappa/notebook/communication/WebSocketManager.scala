@@ -46,7 +46,6 @@ class WebSocketManager(system: ActorSystem, fileManager: FileManager) extends Ka
     {
       implicit builder => user =>
       import GraphDSL.Implicits._
-
         val fromWebsocket: FlowShape[Message, IncomingMessage] = builder.add( makeIncomingFlow(channel, username) )
         val backToWebsocket: FlowShape[OutgoingMessage, Message] = builder.add( outgoingFlow )
         val actorAsSource: PortOps[SocketMessages.ChannelMessage] = builder.materializedValue.map{ case actor =>  SocketMessages.UserJoined(username, channel, actor) }

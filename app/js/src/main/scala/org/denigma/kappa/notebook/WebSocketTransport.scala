@@ -22,7 +22,6 @@ class Collecter[Input, Output]
   (collect: PartialFunction[Input, Output])
   (until: PartialFunction[Input, Boolean])
   {
-
     protected val promise = Promise[List[Output]]
 
     val collection: Rx[List[Output]] = input.fold(List.empty[Output]){

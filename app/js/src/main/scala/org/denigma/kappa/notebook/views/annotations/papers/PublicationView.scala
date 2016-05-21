@@ -31,31 +31,16 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport, projectName: Rx[
 
   override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
   {
-    /*
-    this.subscriber.ask[Future[ArrayBuffer]](FileRequests.LoadFileSync(path), timeout){
-      case  DataMessage(source, bytes) if source == path =>
-        println("LOAD: "+source)
-        bytes2Arr(bytes)
-    }.flatMap{case arr=>arr}.flatMap{ case arr=>  super.getPaper(path, arr) }
-    */
-    /*
-    this.subscriber.ask[Future[ArrayBuffer]](FileRequests.LoadFileSync(path), timeout){
-      case  DataMessage(source, bytes) if source == path =>
-        println("LOAD: "+source)
-        bytes2Arr(bytes)
-    }.flatMap{case arr=>arr}.flatMap{ case arr=>  super.getPaper(path, arr) }
-
-     */
     val tosend: LoadFile = FileRequests.LoadFile(projectName.now, path)
     subscriber.send(tosend)
     val fut: Future[List[DataChunk]] = subscriber.collect{
-      case d @ DataChunk(message, _, _, _, _,  _) => d
+      case d @ DataChunk(message, _, _, _, _,  false) if message == tosend => d
     }{
       case DataChunk(message, _, _, _, _,  true) if message == tosend => true
     }
     val data = fut.map{ case list=>
-      println(s"CHUNKS = "+list.length)
-      println(s"LAST CHUNK DOWNLOADED = "+list.last.downloaded+"FROM TOTAL"+list.last.total)
+      //println(s"CHUNKS = "+list.length)
+      //println(s"LAST CHUNK DOWNLOADED = "+list.last.downloaded+"FROM TOTAL"+list.last.total)
       //val arr = new Array[Byte](0)
       list.foldLeft(new Array[Byte](0)){
         case (acc, el)=>
@@ -65,7 +50,7 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport, projectName: Rx[
       }
     data.flatMap(bytes=>bytes2Arr(bytes)).flatMap{
       arr=>
-        println(s"ARRAY FOR $path IS LOADED = "+arr.byteLength)
+        //println(s"ARRAY FOR $path IS LOADED = "+arr.byteLength)
         super.getPaper(path, arr)
     }
   }

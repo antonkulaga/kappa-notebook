@@ -34,11 +34,11 @@ trait OtherJVM {
 
 	val circeHttp = "1.6.0"
 
-	val libSBOLj = "2.0.0"
+	val libSBOLj = "2.1.0"
 
 	val breeze = "0.12"
 
-	val ficus: String = "1.2.5"
+	val ficus: String = "1.2.6"
 
 	val paxtools = "4.3.1"
 
@@ -85,7 +85,7 @@ trait SharedVersions
 
 trait WebJarsVersions{
 
-	val jquery =  "2.2.3"
+	val jquery =  "2.2.4"
 
 	val semanticUI = "2.1.8"
 

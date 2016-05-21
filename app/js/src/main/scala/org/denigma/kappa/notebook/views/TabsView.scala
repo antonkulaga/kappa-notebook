@@ -3,12 +3,12 @@ package org.denigma.kappa.notebook.views
 import org.denigma.binding.views._
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
-import org.denigma.controls.papers.Bookmark
+import org.denigma.controls.papers.{Bookmark, Paper, PaperLoader}
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.{Selector, WebSocketTransport}
 import org.denigma.kappa.notebook.views.annotations.{ImagesView, VideosView}
 import org.denigma.kappa.notebook.views.editor.EditorUpdates
-import org.denigma.kappa.notebook.views.annotations.papers.PapersView
+import org.denigma.kappa.notebook.views.annotations.papers.{PapersView, WebSocketPaperLoader}
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.scalajs.dom.raw.Element
 import rx._
@@ -32,7 +32,9 @@ class TabsView(
   //val currentProject =  loaded.map(_.projectOpt.getOrElse(KappaProject.default))
 
 
-  val papers: Var[Map[String, Bookmark]] = Var(Map.empty)
+  //val papers: Var[Map[String, Bookmark]] = Var(Map.empty)
+
+  val papers = Var(SortedSet.empty[String])
 
   val images: Var[Map[String, String]] = Var(Map.empty)
 
@@ -51,12 +53,14 @@ class TabsView(
 
       videos() = proj.videos.map(i=> i.name -> i.path).toMap
 
+      /*
       papers() = proj.papers.map{case
         p=>
-        println("proj folder path = "+proj.folder.path)
+        //println("proj folder path = "+proj.folder.path)
         //val n = p.name.replace(proj.folder.path, "")
         p.name -> Bookmark(p.path, 1)
       }.toMap
+      */
 
     case None =>
   }
@@ -91,13 +95,20 @@ class TabsView(
     }
   }
 
-
   protected def defaultContent = ""
+
   protected def defaultLabel = ""
 
   type Item = Rx[common.TabItem]
 
+  lazy val currentProject = currentProjOpt.map{
+    case Some(p) => p
+    case None => KappaProject.default
+  }
 
+  lazy val currentProjectName: Rx[String] = currentProject.map(p=>p.name)
+
+  lazy val paperLoader: PaperLoader = WebSocketPaperLoader(connector, projectName =  currentProjectName)
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
@@ -124,7 +135,7 @@ class TabsView(
     }
     .register("Papers") {
       case (el, params) =>
-        new PapersView(el, loaded.map(l=>l.projectOpt.map(_.name).getOrElse("")), connector, selected, papers, selector, kappaCursor).withBinder(new CodeBinder(_))
+        new PapersView(el, selected, paperLoader, papers, selector, kappaCursor).withBinder(new CodeBinder(_))
     }
     .register("UnderDevelopment") {
       case (el, params) =>

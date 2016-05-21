@@ -37,8 +37,6 @@ trait FileMessenger extends Messenger{
       //log.info(s"***********+${mess}*****************")
       fileManager.getJavaPath(projectName, path) match {
         case Some((fl, size)) =>
-          println("FILE NALME ==\n"+fl.getFileName+" and SIZE = "+size)
-          //val id: String = java.util.UUID.randomUUID().toString
           val folding: Future[Int] = FileIO.fromPath(fl, chunkSize).runFold[Int](0){
             case (acc, chunk) =>
               val downloaded = acc + chunk.length

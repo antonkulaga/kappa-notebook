@@ -11,23 +11,26 @@ import org.denigma.kappa.notebook.views.simulations.TabHeaders
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import scala.concurrent.duration._
 
 import scala.collection.immutable
+import scala.collection.immutable.SortedSet
 
 class PapersView(val elem: Element,
-                 val currentProjectName: Rx[String],
-                 val subscriber: WebSocketTransport,
                  val selected: Var[String],
-                 val items: Var[Map[String, Bookmark]],
+                 val paperLoader: PaperLoader,
+                 val papers: Var[SortedSet[String]],
                  val selector: Selector,
                  val kappaCursor: Var[Option[(Editor, PositionLike)]]) extends
   BindableView
   with ItemsMapView
   with TabItem{
 
+  val items: Var[Map[String, Paper]] = paperLoader.loadedPapers
+
   override type Item = String
 
-  override type Value = Bookmark
+  override type Value = Paper//Bookmark
 
   override type ItemView = PublicationView
 
@@ -37,15 +40,26 @@ class PapersView(val elem: Element,
     case (el, params)=>
       el.id = name
       //println("add view "+name)
-      val location: Bookmark = this.items.now(name) //buggy but hope it will work
-      val v = new PublicationView(el,  currentProjectName, subscriber, selector.paper, Var(location), kappaCursor).withBinder(v=>new CodeBinder(v))
+      val location: Paper = this.items.now(name) //buggy but hope it will work
+      //val v = new PublicationView(el,  currentProjectName, subscriber, selector.paper, Var(location), kappaCursor).withBinder(v=>new CodeBinder(v))
       selector.paper() = name
-      v
+      ???
   }
 
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selector.paper).withBinder(new GeneralBinder(_)))
+
+  override def bindView() = {
+    super.bindView()
+    papers.foreach{
+      case ps=>
+        ps.foreach{
+          case paper =>
+            paperLoader.getPaper(paper, 10 seconds) //TODO: deal with side effects
+        }
+    }
+  }
 
 }
 

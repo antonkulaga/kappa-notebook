@@ -2,16 +2,15 @@ package org.denigma.kappa.notebook.views.annotations.papers
 
 import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.UpdatableView
+import org.denigma.binding.views.{BindableView, UpdatableView}
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.FileRequests.LoadFile
-import org.denigma.kappa.messages.{DataChunk, FileRequests}
+import org.denigma.controls.pdf.{PDFPageViewport, TextLayerBuilder, TextLayerOptions}
 import org.denigma.kappa.notebook.WebSocketTransport
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
 import org.scalajs.dom.html.Canvas
-import org.scalajs.dom.raw.{Blob, BlobPropertyBag, Element, FileReader, _}
+import org.scalajs.dom.raw.{Element, _}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
@@ -19,67 +18,134 @@ import rx._
 import scala.List
 import scala.annotation.tailrec
 import scala.collection.immutable.{Map, _}
-import scala.concurrent.duration._
-import scala.concurrent.{Future, Promise}
-import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.{ArrayBuffer, Uint8Array}
+import scala.util.{Failure, Success}
+import scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-case class WebSocketPaperLoader(subscriber: WebSocketTransport, projectName: Rx[String],
-                                loadedPapers: Var[Map[String, Paper]])
-  extends PaperLoader {
 
-  override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
-  {
-    val tosend: LoadFile = FileRequests.LoadFile(projectName.now, path)
-    subscriber.send(tosend)
-    val fut: Future[List[DataChunk]] = subscriber.collect{
-      case d @ DataChunk(message, _, _, _, _,  false) if message == tosend => d
-    }{
-      case DataChunk(message, _, _, _, _,  true) if message == tosend => true
+class PublicationView(val elem: Element,
+                      val selected: Var[String],
+                      val paper: Paper,
+                      val page: Var[Int] = Var(1),
+                      kappaCursor: Var[Option[(Editor, PositionLike)]]
+                     )
+  extends  LoadedPaperView with TabItem
+{
+
+  val canvas: Canvas  = elem.getElementsByClassName("canvas")(0).asInstanceOf[Canvas]
+
+  val textLayerDiv: Element = elem.getElementsByClassName("textLayer")(0).asInstanceOf[HTMLElement]//dom.document.getElementById(textLayer)//.asInstanceOf[HTMLElement]
+
+  def subscribePapers(): Unit = {
+    nextPage.triggerLater{
+      val pg = page.now
+      page() = pg + 1
     }
-    val data = fut.map{ case list=>
-      //println(s"CHUNKS = "+list.length)
-      //println(s"LAST CHUNK DOWNLOADED = "+list.last.downloaded+"FROM TOTAL"+list.last.total)
-      //val arr = new Array[Byte](0)
-      list.foldLeft(new Array[Byte](0)){
-        case (acc, el)=>
-          acc ++ el.data
+    previousPage.triggerLater{
+      val pg = page.now
+      page() = pg - 1
+    }
+    addNugget.triggerLater{
+      kappaCursor.now match
+      {
+        case Some((ed, position)) =>
+        //hub.kappaCode() = hub.kappaCode.now.withInsertion(position.line, comments.now)
+        case None =>
       }
-      //list.foldLeft(new Array[Byte])(a, b)=>a.data ++ b.data) }
-      }
-    data.flatMap(bytes=>bytes2Arr(bytes)).flatMap{
-      arr=>
-        //println(s"ARRAY FOR $path IS LOADED = "+arr.byteLength)
-        super.getPaper(path, arr)
     }
-  }
 
-
-  import js.JSConverters._
-
-  def bytes2Arr(data: Array[Byte]): Future[ArrayBuffer] = {
-    val p = Promise[ArrayBuffer]
-    val options = BlobPropertyBag("octet/stream")
-    val arr: Uint8Array = new Uint8Array(data.toJSArray)
-    val blob = new Blob(js.Array(arr), options)
-    //val url = dom.window.dyn.URL.createObjectURL(blob)
-    val reader = new FileReader()
-    def onLoadEnd(ev: ProgressEvent): Any = {
-      p.success(reader.result.asInstanceOf[ArrayBuffer])
+    scale.onChange{
+      case sc=> refreshPage()
     }
-    reader.onloadend = onLoadEnd _
-    reader.readAsArrayBuffer(blob)
-    p.future
-  }
 
-  subscriber.open()
+    super.subscribePapers()
+    //dom.document.addEventListener("selectionchange", onSelectionChange _)
+    //textLayerDiv.parentNode.addEventListener(Events.mouseleave, fixSelection _)
+  }
 
 }
 
-/**
-  * Created by antonkulaga on 21/04/16.
-  */
+trait LoadedPaperView extends BindableView {
+
+  lazy val page: Var[Int] = Var(1)
+
+  lazy val scale = Var(1.4)
+
+  def paper: Paper
+
+  def canvas: Canvas
+
+  val textLayerDiv: Element
+
+  val currentPage: Var[Option[Page]] = Var(None)
+
+  val hasNextPage: Rx[Boolean] = Rx{
+    val page = currentPage()
+    page.isDefined && paper.hasPage(page.get.num + 1)
+  }
+
+  val hasPreviousPage: Rx[Boolean] = Rx{
+    val page = currentPage()
+    page.isDefined && paper.hasPage(page.get.num - 1)
+  }
+
+  val nextPage = Var(Events.createMouseEvent())
+  val previousPage = Var(Events.createMouseEvent())
+  val addNugget= Var(Events.createMouseEvent())
+
+  protected def alignTextLayer(viewport: PDFPageViewport) = {
+    textLayerDiv.style.height = viewport.height + "px"
+    textLayerDiv.style.width = viewport.width + "px"
+    textLayerDiv.style.top = canvas.offsetTop + "px"
+    textLayerDiv.style.left = canvas.offsetLeft + "px"
+  }
+
+  protected def onPageChange(pageOpt: Option[Page]): Unit =  pageOpt match
+  {
+    case Some(page) =>
+      //println(s"page option change with ${page}")
+      val viewport: PDFPageViewport = page.viewport(scale.now)
+      var context = canvas.getContext("2d")//("webgl")
+      canvas.height = viewport.height.toInt
+      canvas.width =  viewport.width.toInt
+      page.render(js.Dynamic.literal(
+        canvasContext = context,
+        viewport = viewport
+      ))
+      val textContentFut = page.textContentFut.onComplete{
+        case Success(textContent) =>
+          alignTextLayer(viewport)
+          textLayerDiv.innerHTML = ""
+          val textLayerOptions = new TextLayerOptions(textLayerDiv, 1, viewport)
+          val textLayer = new TextLayerBuilder(textLayerOptions)
+          textLayer.setTextContent(textContent)
+          //println(textContent+"!!! is TEXT")
+          textLayer.render()
+          //updateSelection(textLayerDiv)
+
+        case Failure(th) =>
+          //dom.console.error(s"cannot load the text layer for ${location.now}")
+      }
+    case None =>
+      //println("nothing changes")
+      textLayerDiv.innerHTML = ""
+  }
+
+  def refreshPage() = if(this.currentPage.now.nonEmpty){
+    paper.getPage(currentPage.now.get.num).onSuccess{
+      case pg: Page => onPageChange(Some(pg))
+    }
+  }
+
+
+  protected def subscribePapers(): Unit ={
+    currentPage.onChange(onPageChange)
+    //location.foreach(onLocationUpdate)
+    scale.onChange{ case sc=> refreshPage()  }
+  }
+
+}
+/*
 class PublicationView(val elem: Element,
                       val currentProjectName: Rx[String],
                       val subscriber: WebSocketTransport,
@@ -93,7 +159,6 @@ class PublicationView(val elem: Element,
   lazy val loadedPapers = Var(Map.empty[String, Paper])
 
   lazy val paperLoader: PaperLoader = WebSocketPaperLoader(subscriber, currentProjectName, loadedPapers)
-  //val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
 
   scale.Internal.value = 1.4
 
@@ -245,3 +310,4 @@ class PublicationView(val elem: Element,
     this
   }
 }
+*/

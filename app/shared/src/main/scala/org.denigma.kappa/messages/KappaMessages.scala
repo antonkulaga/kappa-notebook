@@ -45,7 +45,6 @@ case object EmptyKappaMessage extends KappaMessage
 
 import scala.collection.immutable._
 
-
 case class KappaUser(name: String) extends KappaMessage
 
 case class Connected(username: String, channel: String, users: List[KappaUser], servers: ConnectedServers = ConnectedServers.empty) extends KappaMessage

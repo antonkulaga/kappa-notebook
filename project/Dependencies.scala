@@ -54,6 +54,8 @@ object Dependencies {
 
 		"org.webjars" % "jquery" % Versions.jquery,
 
+		"org.webjars" % "jquery-svg" % Versions.jquerySVG,
+
 		"org.webjars" % "three.js" % Versions.threeJS
 
 	))

@@ -26,17 +26,16 @@ import scalajs.concurrent.JSExecutionContext.Implicits.queue
 class PublicationView(val elem: Element,
                       val selected: Var[String],
                       val paper: Paper,
-                      val page: Var[Int] = Var(1),
                       kappaCursor: Var[Option[(Editor, PositionLike)]]
                      )
-  extends  LoadedPaperView with TabItem
+  extends  LoadedPaperView with TabItem with UpdatableView[Paper]
 {
 
   val canvas: Canvas  = elem.getElementsByClassName("canvas")(0).asInstanceOf[Canvas]
 
   val textLayerDiv: Element = elem.getElementsByClassName("textLayer")(0).asInstanceOf[HTMLElement]//dom.document.getElementById(textLayer)//.asInstanceOf[HTMLElement]
 
-  def subscribePapers(): Unit = {
+  override def subscribePapers(): Unit = {
     nextPage.triggerLater{
       val pg = page.now
       page() = pg + 1
@@ -63,6 +62,10 @@ class PublicationView(val elem: Element,
     //textLayerDiv.parentNode.addEventListener(Events.mouseleave, fixSelection _)
   }
 
+  override def update(value: Paper): PublicationView.this.type = {
+    println("update is not implemented")
+    this
+  }
 }
 
 trait LoadedPaperView extends BindableView {

@@ -15,6 +15,7 @@ import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
 import rx.Rx.Dynamic
+import scala.concurrent.duration._
 
 import scala.collection.immutable.SortedSet
 
@@ -52,15 +53,8 @@ class TabsView(
         }.toMap
 
       videos() = proj.videos.map(i=> i.name -> i.path).toMap
-
-      /*
-      papers() = proj.papers.map{case
-        p=>
-        //println("proj folder path = "+proj.folder.path)
-        //val n = p.name.replace(proj.folder.path, "")
-        p.name -> Bookmark(p.path, 1)
-      }.toMap
-      */
+      val pps = proj.papers.map(p=>p.name)
+      papers() = pps
 
     case None =>
   }
@@ -77,23 +71,7 @@ class TabsView(
     }
   }
 
-  override def bindView() = {
-    super.bindView()
-    import com.softwaremill.quicklens._
-    launcher.triggerLater{
-      val l: LaunchModel = launcher.now
-      val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = concat()))
-      //println("PARAMS TO THE SERVER = "+launchParams)
-      connector.output() = launchParams
-    }
-    connector.input.foreach{
-      case SimulationResult(server, status, token, params) =>
-        println("percent: "+ status.percentage)
-        simulations() = simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
-        //if(errors.now.nonEmpty) errors() = List.empty
-      case other => //do nothing
-    }
-  }
+
 
   protected def defaultContent = ""
 
@@ -111,6 +89,31 @@ class TabsView(
   lazy val paperLoader: PaperLoader = WebSocketPaperLoader(connector, projectName =  currentProjectName)
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
+
+  override def bindView() = {
+    super.bindView()
+    import com.softwaremill.quicklens._
+    papers.foreach{
+      case ps=>
+        for(paper <- ps)
+        {
+          paperLoader.getPaper(paper, 10 seconds) //TODO: deal with sideeffects
+        }
+    }
+    launcher.triggerLater{
+      val l: LaunchModel = launcher.now
+      val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = concat()))
+      //println("PARAMS TO THE SERVER = "+launchParams)
+      connector.output() = launchParams
+    }
+    connector.input.foreach{
+      case SimulationResult(server, status, token, params) =>
+        println("percent: "+ status.percentage)
+        simulations() = simulations.now.updated((token, params.getOrElse(status.runParameters)), status)
+      //if(errors.now.nonEmpty) errors() = List.empty
+      case other => //do nothing
+    }
+  }
 
   override lazy val injector = defaultInjector
     .register("Simulations") {
@@ -135,7 +138,7 @@ class TabsView(
     }
     .register("Papers") {
       case (el, params) =>
-        new PapersView(el, selected, paperLoader, papers, selector, kappaCursor).withBinder(new CodeBinder(_))
+        new PapersView(el, selected, paperLoader, selector, kappaCursor).withBinder(new CodeBinder(_))
     }
     .register("UnderDevelopment") {
       case (el, params) =>

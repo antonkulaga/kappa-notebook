@@ -28,8 +28,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val connector: WebSocketTransport = WebSocketTransport("notebook", "guest" + Math.random() * 1000)
 
-  val onopen = connector.onOpen
-
   val selector = Selector.default
 
   val loaded: Var[ProjectResponses.Loaded] = Var(ProjectResponses.Loaded.empty)

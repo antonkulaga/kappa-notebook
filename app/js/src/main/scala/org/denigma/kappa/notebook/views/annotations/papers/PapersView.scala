@@ -19,7 +19,6 @@ import scala.collection.immutable.SortedSet
 class PapersView(val elem: Element,
                  val selected: Var[String],
                  val paperLoader: PaperLoader,
-                 val papers: Var[SortedSet[String]],
                  val selector: Selector,
                  val kappaCursor: Var[Option[(Editor, PositionLike)]]) extends
   BindableView
@@ -40,26 +39,15 @@ class PapersView(val elem: Element,
     case (el, params)=>
       el.id = name
       //println("add view "+name)
-      val location: Paper = this.items.now(name) //buggy but hope it will work
-      //val v = new PublicationView(el,  currentProjectName, subscriber, selector.paper, Var(location), kappaCursor).withBinder(v=>new CodeBinder(v))
+      val paper: Paper = this.items.now(name) //buggy but hope it will work
+      val v = new PublicationView(el, selector.paper, paper, kappaCursor).withBinder(v=>new CodeBinder(v))
       selector.paper() = name
-      ???
+      v
   }
 
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selector.paper).withBinder(new GeneralBinder(_)))
-
-  override def bindView() = {
-    super.bindView()
-    papers.foreach{
-      case ps=>
-        ps.foreach{
-          case paper =>
-            paperLoader.getPaper(paper, 10 seconds) //TODO: deal with side effects
-        }
-    }
-  }
 
 }
 

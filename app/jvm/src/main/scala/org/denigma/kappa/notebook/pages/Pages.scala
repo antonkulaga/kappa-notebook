@@ -13,9 +13,14 @@ class Pages extends Directives with PJax{
   }
 
   def index: Route =  pathSingleSlash{ ctx=>
-    ctx.materializer.executionContext
     ctx.complete {
       HttpResponse(  entity = HttpEntity(MediaTypes.`text/html`.withCharset(HttpCharsets.`UTF-8`), html.index(defaultPage).body  ))
+    }
+  }
+
+  def brat: Route = pathPrefix("brat" ~ Slash) { ctx=>
+    ctx.complete {
+      HttpResponse(  entity = HttpEntity(MediaTypes.`text/html`.withCharset(HttpCharsets.`UTF-8`), html.brat().body  ))
     }
   }
 
@@ -30,7 +35,7 @@ class Pages extends Directives with PJax{
     }
 
 
-  def routes: Route = index ~ test
+  def routes: Route = index ~ test ~ brat
 
 
 }

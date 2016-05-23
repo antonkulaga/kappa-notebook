@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.annotations.papers
 
 import org.denigma.controls.papers._
 import org.denigma.kappa.messages.FileRequests.LoadFile
-import org.denigma.kappa.messages.{DataChunk, FileRequests}
+import org.denigma.kappa.messages.{DataChunk, DataMessage, FileRequests}
 import org.denigma.kappa.notebook.WebSocketTransport
 import org.scalajs.dom.raw.{Blob, BlobPropertyBag, FileReader, _}
 import rx._
@@ -18,25 +18,37 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport, projectName: Rx[
                                 loadedPapers: Var[Map[String, Paper]] = Var(Map.empty[String, Paper]))
   extends PaperLoader {
 
-  override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
+  override def getPaper(path: String, timeout: FiniteDuration = 25 seconds) =
   {
+    /*
     val tosend: LoadFile = FileRequests.LoadFile(projectName.now, path)
     subscriber.send(tosend)
-    val fut: Future[List[DataChunk]] = subscriber.collect{
-      case d @ DataChunk(message, _, _, _, _,  false) if message == tosend => d
+    val fut = subscriber.collect{
+      case d @ DataChunk(message, _, _, _, _,  false) if message == tosend =>
+        //println("data")
+        d.data
     }{
       case DataChunk(message, _, _, _, _,  true) if message == tosend => true
     }
-    val data = fut.map{ case list=>
-      list.foldLeft(new Array[Byte](0)){
-        case (acc, el)=>
-          acc ++ el.data
-      }
-    }
+    val data = fut.map{ case list=> list.reduce(_ ++ _) }
     data.flatMap(bytes=>bytes2Arr(bytes)).flatMap{
       arr=>
+        //println("get paper "+path)
         super.getPaper(path, arr)
     }
+    */
+
+    val tosend = FileRequests.LoadFileSync(projectName.now, path)
+    val result: Future[ArrayBuffer] = subscriber.ask(tosend, 10 seconds){
+      case DataMessage(p, bytes) if p.contains(path)=>
+        println("RESPONSE!!!!")
+        bytes
+        } flatMap(bytes=>bytes2Arr(bytes))
+    result.flatMap{
+      case arr =>
+        super.getPaper(path, arr)
+    }
+
   }
 
   import js.JSConverters._

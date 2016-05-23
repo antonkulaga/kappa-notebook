@@ -19,10 +19,11 @@ trait FileMessenger extends Messenger{
   def fileManager: FileManager
 
   protected def fileMessages: PartialFunction[KappaMessage, Unit] = {
-    case mess @ FileRequests.LoadFileSync(path) =>
-      fileManager.readBytes(path) match {
+    case mess @ FileRequests.LoadFileSync(currentProject, path) =>
+      fileManager.readBytes(currentProject, path) match {
         case Some(bytes)=>
-          println("bytes received "+bytes.length)
+          //println("bytes received "+bytes.length)
+          //println("path = "+path)
           val m = DataMessage(mess.path, bytes)
           val d = Pickle.intoBytes[KappaMessage](m)
           send(d)
@@ -40,7 +41,7 @@ trait FileMessenger extends Messenger{
           val folding: Future[Int] = FileIO.fromPath(fl, chunkSize).runFold[Int](0){
             case (acc, chunk) =>
               val downloaded = acc + chunk.length
-              val mes = DataChunk(mess, path, chunk.toByteBuffer.array(), downloaded, size)//DataMessage(path, chunk.toByteBuffer.array())
+              val mes = DataChunk(mess, path, chunk.toArray, downloaded, size)//DataMessage(path, chunk.toByteBuffer.array())
               val d = Pickle.intoBytes[KappaMessage](mes)
               //log.info("\nsend chunk for mess"+mess)
               send(d)
@@ -51,7 +52,7 @@ trait FileMessenger extends Messenger{
             case Success(res) =>
               val mes = DataChunk(mess, path, Array(), res, size, completed = true)
               val d = Pickle.intoBytes[KappaMessage](mes)
-              //log.info("\nSEND COMPLETE mess"+mess)
+              log.info(s"\nSEND COMPLETE: \npath = ${fl.toAbsolutePath} \nsize = $size \nmess = "+mess)
               send(d)
 
             case Failure(th) =>

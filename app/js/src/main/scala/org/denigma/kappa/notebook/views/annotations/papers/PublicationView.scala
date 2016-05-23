@@ -5,7 +5,7 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, UpdatableView}
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.papers._
-import org.denigma.controls.pdf.{PDFPageViewport, TextLayerBuilder, TextLayerOptions}
+import org.denigma.controls.pdf.{PDFPageProxy, PDFPageViewport, TextLayerBuilder, TextLayerOptions}
 import org.denigma.kappa.notebook.WebSocketTransport
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
@@ -21,22 +21,41 @@ import scala.collection.immutable.{Map, _}
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 import scalajs.concurrent.JSExecutionContext.Implicits.queue
-
+import org.denigma.controls.pdf.extensions._
 
 class PublicationView(val elem: Element,
                       val selected: Var[String],
                       val paper: Paper,
-                      val page: Var[Int] = Var(1),
                       kappaCursor: Var[Option[(Editor, PositionLike)]]
                      )
-  extends  LoadedPaperView with TabItem
+  extends  LoadedPaperView with TabItem with UpdatableView[Paper]
 {
+
+  val paperURI = Var(paper.name)
 
   val canvas: Canvas  = elem.getElementsByClassName("canvas")(0).asInstanceOf[Canvas]
 
   val textLayerDiv: Element = elem.getElementsByClassName("textLayer")(0).asInstanceOf[HTMLElement]//dom.document.getElementById(textLayer)//.asInstanceOf[HTMLElement]
 
-  def subscribePapers(): Unit = {
+  val currentPageNum: Rx[Int] = currentPage.map{
+    case None=> 0
+    case Some(num) => num.num
+  }
+
+
+  val selections = Var(List.empty[org.scalajs.dom.raw.Range])
+
+  val currentSelection = selections.map{ case sel =>
+    sel.foldLeft("")((acc, el)=>acc + "\n" + el.cloneContents().textContent)
+  }
+
+  val lastSelections: Var[List[TextSelection]] = Var(List.empty[TextSelection])
+
+  val hasSelection: Dynamic[Boolean] = Rx{
+    lastSelections().nonEmpty || currentSelection().nonEmpty
+  }
+
+  override def subscribePapers(): Unit = {
     nextPage.triggerLater{
       val pg = page.now
       page() = pg + 1
@@ -63,6 +82,17 @@ class PublicationView(val elem: Element,
     //textLayerDiv.parentNode.addEventListener(Events.mouseleave, fixSelection _)
   }
 
+
+  override def bindView() = {
+    super.bindView()
+    subscribePapers()
+
+  }
+
+  override def update(value: Paper): PublicationView.this.type = {
+    println("update is not implemented")
+    this
+  }
 }
 
 trait LoadedPaperView extends BindableView {
@@ -102,18 +132,20 @@ trait LoadedPaperView extends BindableView {
 
   protected def onPageChange(pageOpt: Option[Page]): Unit =  pageOpt match
   {
-    case Some(page) =>
+    case Some(pg) =>
+      println("PAGE CHANGED!!!")
       //println(s"page option change with ${page}")
-      val viewport: PDFPageViewport = page.viewport(scale.now)
+      val viewport: PDFPageViewport = pg.viewport(scale.now)
       var context = canvas.getContext("2d")//("webgl")
       canvas.height = viewport.height.toInt
       canvas.width =  viewport.width.toInt
-      page.render(js.Dynamic.literal(
+      pg.render(js.Dynamic.literal(
         canvasContext = context,
         viewport = viewport
       ))
-      val textContentFut = page.textContentFut.onComplete{
+      val textContentFut = pg.textContentFut.onComplete{
         case Success(textContent) =>
+          println("TEXT CONTENT")
           alignTextLayer(viewport)
           textLayerDiv.innerHTML = ""
           val textLayerOptions = new TextLayerOptions(textLayerDiv, 1, viewport)
@@ -127,12 +159,22 @@ trait LoadedPaperView extends BindableView {
           //dom.console.error(s"cannot load the text layer for ${location.now}")
       }
     case None =>
+      println("CANNOT FIND A CHANGE")
       //println("nothing changes")
       textLayerDiv.innerHTML = ""
   }
 
-  def refreshPage() = if(this.currentPage.now.nonEmpty){
-    paper.getPage(currentPage.now.get.num).onSuccess{
+  def refreshPage() = {
+    if(currentPage.now.isDefined) {
+     loadPage(currentPage.now.get.num)
+    } else {
+      "the paper is empty!"
+    }
+
+  }
+
+  protected def loadPage(num: Int) = {
+    paper.getPage(num).onSuccess{
       case pg: Page => onPageChange(Some(pg))
     }
   }
@@ -142,7 +184,9 @@ trait LoadedPaperView extends BindableView {
     currentPage.onChange(onPageChange)
     //location.foreach(onLocationUpdate)
     scale.onChange{ case sc=> refreshPage()  }
+    if(paper.numPages > 0) loadPage(1)
   }
+
 
 }
 /*

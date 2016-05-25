@@ -71,25 +71,6 @@ abstract class BasicWebSocketSuite extends BasicKappaSuite with KappaPicklers {
     //probeCollectLoop(probe, probe.requestNext(), fun)
   }
 
-
-/*
-  protected def collectPartialKappaMessageUntil[T]
-    (probe: TestSubscriber.Probe[Message], timeout: FiniteDuration = 5000 millis)
-    (collect: PartialFunction[Message, T])
-    (until: PartialFunction[Message, Boolean]): T =
-    {
-      until: PartialFunction[Message, Boolean]
-    }
-*/
-  /*
-
-  protected def collectPartialKappaMessageUntil[T]
-    (probe: TestSubscriber.Probe[Message], timeout: FiniteDuration = 5000 millis)
-    (partial: PartialFunction[KappaMessage, T]): T =
-    waitPartialMessage(probe, timeout)(partial)
-*/
-
-
   protected def waitPartialKappaMessage[T](probe: TestSubscriber.Probe[Message], timeout: FiniteDuration = 5000 millis)(partial: PartialFunction[KappaMessage, T]) =
     waitPartialMessage(probe, timeout)(partial)
 

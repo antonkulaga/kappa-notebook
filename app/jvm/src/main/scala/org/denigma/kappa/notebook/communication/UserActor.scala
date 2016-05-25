@@ -2,26 +2,16 @@ package org.denigma.kappa.notebook.communication
 
 import java.io.{InputStream, File => JFile}
 import java.nio.ByteBuffer
-import java.time._
-import java.util.UUID
 
-import akka.Done
-import akka.actor.{Actor, ActorRef}
+import akka.actor.ActorRef
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
-import akka.stream.{ActorMaterializer, IOResult}
-import akka.stream.actor.{ActorPublisher, ActorPublisherMessage}
-import akka.stream.scaladsl.{FileIO, Sink, Source}
-import akka.util.ByteString
+import akka.stream.actor.ActorPublisherMessage
 import boopickle.DefaultBasic._
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
-import org.denigma.kappa.notebook.communication.SocketMessages.OutgoingMessage
 
-import scala.annotation.tailrec
 import scala.collection.immutable.SortedSet
-import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
 
 class UserActor(val username: String, servers: ActorRef, val fileManager: FileManager) extends FileMessenger
 {

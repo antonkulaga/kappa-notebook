@@ -5,9 +5,11 @@ import org.denigma.binding.views.{BindableView, ItemsMapView}
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
+import org.denigma.kappa.notebook.views.annotations.NLP
 import org.denigma.kappa.notebook.{Selector, WebSocketTransport}
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.denigma.kappa.notebook.views.simulations.TabHeaders
+import org.denigma.nlp.communication.WebSocketNLPTransport
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -45,9 +47,12 @@ class PapersView(val elem: Element,
       v
   }
 
+  val transportNLP = WebSocketNLPTransport("notebook", "guest" + Math.random() * 1000)
+
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selector.paper).withBinder(new GeneralBinder(_)))
+    .register("annotator")((el, args) => new NLP(el, transportNLP).withBinder(new GeneralBinder(_)))
 
 }
 

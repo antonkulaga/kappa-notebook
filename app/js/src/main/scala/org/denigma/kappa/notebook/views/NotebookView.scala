@@ -20,7 +20,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
 import scala.collection.immutable.SortedSet
-
+import scala.concurrent.Future
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
 {

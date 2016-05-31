@@ -4,6 +4,21 @@
     <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
   </div>
   <div  data-template="true" class="ui bottom attached segment tab page" data-class-active-if="active">
+    <section class="ui comments column" data-view="annotator">
+      <h3 class="ui dividing header">Annotation:</h3>
+      <div id="annotation">
+
+      </div>
+      <div class="ui reply form">
+        <h6>Text to send for annotation:</h6>
+        <div class="field">
+          <textarea  data-bind="text" title="Text to send for annotation:"></textarea>
+        </div>
+        <button class="ui blue labeled icon button" data-event-click="send" data-show-if="ready">
+          <i class="icon edit"></i> Send message
+        </button>
+      </div>
+    </section>
     @publication()
   </div>
 </section>

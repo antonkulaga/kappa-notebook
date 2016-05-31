@@ -65,6 +65,8 @@ trait ScalaJSVersions {
 trait SharedVersions
 {
 
+	val annotator = "0.0.2"
+
 	val circe = "0.4.1"
 
 	val scalaTags = "0.5.4"
@@ -93,7 +95,7 @@ trait WebJarsVersions{
 
 	val codemirror = "5.13.2"
 
-	val threeJS = "r74"
+	val threeJS = "r77"
 
 	val webcomponents = "0.7.12"
 

@@ -122,7 +122,6 @@ class FileManager(val root: File) {
       val f = File(root.path.resolve(path))
       f < content
       f
-
   }
 
   def listFolder(file: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder =

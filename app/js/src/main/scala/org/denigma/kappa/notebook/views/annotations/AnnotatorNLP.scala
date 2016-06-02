@@ -5,6 +5,7 @@ import org.denigma.nlp.annotator.AnnotatorView
 import org.denigma.nlp.communication.WebSocketNLPTransport
 import org.scalajs.dom
 import org.scalajs.dom.Element
+import rx._
 /*
 case class NLPService(host: String, channel: String, username: String) extends WebSocketNLPTransport() {
   override def getWebSocketUri(username: String): String = {
@@ -14,8 +15,10 @@ case class NLPService(host: String, channel: String, username: String) extends W
 }
 */
 
-class NLP(elem: Element, connector: WebSocketNLPTransport) extends AnnotatorView(elem: Element, connector: WebSocketNLPTransport){
+class AnnotatorNLP(elem: Element, connector: WebSocketNLPTransport) extends AnnotatorView(elem: Element, connector: WebSocketNLPTransport){
 
     import org.scalajs.dom.raw.Element
+
+    val server: Var[String] = Var(s"${connector.protocol}://${connector.host}/channel/${connector.channel}")
 
 }

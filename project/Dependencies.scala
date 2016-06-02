@@ -43,9 +43,7 @@ object Dependencies {
 
 		"org.denigma" %%% "threejs-facade" % Versions.threejsFacade,
 
-		"io.circe" %%% "circe-scalajs" % Versions.circe,
-
-		"org.denigma" %%% "annotator" % Versions.annotator
+		"io.circe" %%% "circe-scalajs" % Versions.circe
 	))
 
 	//dependencies on javascript libs
@@ -78,7 +76,9 @@ object Dependencies {
 
 		"io.circe" %%% "circe-parser" % Versions.circe,
 
-		"com.softwaremill.quicklens" %%% "quicklens" % Versions.quicklens
+		"com.softwaremill.quicklens" %%% "quicklens" % Versions.quicklens,
+
+		"org.denigma" %%% "annotator" % Versions.annotator
 	))
 
 	val otherJvm = Def.setting(Seq(

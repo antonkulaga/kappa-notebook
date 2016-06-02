@@ -45,9 +45,21 @@ class Collecter[Input, Output]
     }
 }
 
+object WebSocketTransport {
+  def apply(protocol: String, host: String, channel: String, username: String): WebSocketTransport = new  WebSocketTransport(protocol, host, channel, username)
 
+  def apply(host: String, channel: String, username: String): WebSocketTransport = {
+    val wsProtocol = if (dom.document.location.protocol == "https:") "wss" else "ws"
+    apply(wsProtocol, host, channel, username)
+  }
 
-case class WebSocketTransport(channel: String, username: String) extends WebSocketTransport1
+  def apply(channel: String, username: String): WebSocketTransport = {
+    val host = dom.document.location.host
+    apply(host, channel, username)
+  }
+}
+
+class WebSocketTransport(val protocol: String, val host: String, val channel: String, username: String) extends WebSocketTransport1
 {
 
   type Input = KappaMessage
@@ -105,8 +117,7 @@ case class WebSocketTransport(channel: String, username: String) extends WebSock
   }
 
   override def getWebSocketUri(username: String): String = {
-    val wsProtocol = if (dom.document.location.protocol == "https:") "wss" else "ws"
-    s"$wsProtocol://${dom.document.location.host}/channel/$channel?username=$username"
+    s"$protocol://$host/channel/$channel?username=$username"
   }
 
   def open(): Unit = {

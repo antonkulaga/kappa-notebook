@@ -57,6 +57,7 @@ class PublicationView(val elem: Element,
 
   override def subscribePapers(): Unit = {
     nextPage.triggerLater{
+      println("NEXT PAGE WORKS")
       val pg = page.now
       page() = pg + 1
     }
@@ -151,6 +152,7 @@ trait LoadedPaperView extends BindableView {
           val textLayerOptions = new TextLayerOptions(textLayerDiv, 1, viewport)
           val textLayer = new TextLayerBuilder(textLayerOptions)
           textLayer.setTextContent(textContent)
+          val p = new TextBuilder(textLayerDiv, 1, viewport)
           //println(textContent+"!!! is TEXT")
           textLayer.render()
           //updateSelection(textLayerDiv)
@@ -158,6 +160,7 @@ trait LoadedPaperView extends BindableView {
         case Failure(th) =>
           //dom.console.error(s"cannot load the text layer for ${location.now}")
       }
+
     case None =>
       println("CANNOT FIND A CHANGE")
       //println("nothing changes")
@@ -175,12 +178,14 @@ trait LoadedPaperView extends BindableView {
 
   protected def loadPage(num: Int) = {
     paper.getPage(num).onSuccess{
-      case pg: Page => onPageChange(Some(pg))
+      case pg: Page =>
+        currentPage() = Some(pg)//onPageChange(Some(pg))
     }
   }
 
 
   protected def subscribePapers(): Unit ={
+    page.onChange(p=>loadPage(p))
     currentPage.onChange(onPageChange)
     //location.foreach(onLocationUpdate)
     scale.onChange{ case sc=> refreshPage()  }

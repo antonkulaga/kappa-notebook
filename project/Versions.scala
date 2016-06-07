@@ -2,15 +2,13 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 {
 	val scala = "2.11.8"
 
-	val kappaNotebook = "0.0.7"
+	val kappaNotebook = "0.0.8"
 
-	val binding = "0.8.7"
+	val binding = "0.8.8"
 
-	val bindingControls = "0.0.15"
+	val bindingControls = "0.0.16"
 
 	val betterFiles = "2.16.0"
-
-	val reach = "1.2.2"
 
 }
 
@@ -18,11 +16,11 @@ trait OtherJVM {
 
 	val bcrypt = "2.4"
 
-	val ammonite = "0.5.7"
+	val ammonite = "0.6.0"
 
 	val apacheCodec = "1.10"
 
-	val akkaHttpExtensions = "0.0.12"
+	val akkaHttpExtensions = "0.0.13"
 
 	val retry = "0.2.1"
 
@@ -30,7 +28,7 @@ trait OtherJVM {
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.6"
+	val akka = "2.4.7"
 
 	val circeHttp = "1.6.0"
 
@@ -65,7 +63,7 @@ trait ScalaJSVersions {
 trait SharedVersions
 {
 
-	val annotator = "0.0.2"
+	val annotator = "0.0.3"
 
 	val circe = "0.4.1"
 
@@ -75,7 +73,7 @@ trait SharedVersions
 
 	val productCollections = "1.4.2"
 
-	val scalaTest = "3.0.0-M16-SNAP4"//"3.0.0-SNAP13"
+	val scalaTest = "3.0.0-RC1"//"3.0.0-SNAP13"
 
 	val scalaTestMatchers = "3.0.0-SNAP13"
 

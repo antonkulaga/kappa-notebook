@@ -124,12 +124,6 @@ trait LoadedPaperView extends BindableView {
   val previousPage = Var(Events.createMouseEvent())
   val addNugget= Var(Events.createMouseEvent())
 
-  protected def alignTextLayer(viewport: PDFPageViewport) = {
-    textLayerDiv.style.height = viewport.height + "px"
-    textLayerDiv.style.width = viewport.width + "px"
-    textLayerDiv.style.top = canvas.offsetTop + "px"
-    textLayerDiv.style.left = canvas.offsetLeft + "px"
-  }
 
   protected def onPageChange(pageOpt: Option[Page]): Unit =  pageOpt match
   {

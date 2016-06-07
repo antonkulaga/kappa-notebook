@@ -6,7 +6,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.6") // packaging 
 
 addSbtPlugin("com.vmunier" % "sbt-play-scalajs" % "0.3.0")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.1.1") // templates
+addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.2.0") // templates
 
 addSbtPlugin("com.gilt" % "sbt-dependency-graph-sugar" % "0.7.5-1") // visual dependency management
 

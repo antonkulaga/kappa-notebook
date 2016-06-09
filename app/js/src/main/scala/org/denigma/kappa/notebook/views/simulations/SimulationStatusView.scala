@@ -16,10 +16,15 @@ import rx._
 
 import scala.collection.immutable._
 import scala.util._
+import com.softwaremill.quicklens._
 
 
-class SimulationsView(val elem: Element, val selected: Var[String], val items: Rx[Map[(Int, RunModel), SimulationStatus]], launcher: Var[LaunchModel])
-  extends BindableView with Uploader with TabItem with ItemsMapView //with ItemsSetView
+class SimulationsView(val elem: Element,
+                      val sourceMap: Var[Map[String, KappaFile]],
+                      val input: Rx[KappaMessage],
+                      val output: Var[KappaMessage])
+
+  extends BindableView with Uploader /*with TabItem*/ with ItemsMapView //with ItemsSetView
 {
   self=>
 
@@ -38,15 +43,46 @@ class SimulationsView(val elem: Element, val selected: Var[String], val items: R
 
   val outputActive = Var(true)
 
-  val output = Var("")
+  val consoleOutput = Var("")
+
+  protected def concat() = {
+    sourceMap.now.values.foldLeft(""){
+      case (acc, e)=> acc + "\n"+ e.content
+    }
+  }
+
+
+  val items: Var[Map[(Int, RunModel), SimulationStatus]] = Var(Map.empty[(Int, RunModel), SimulationStatus])
+
+  val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
+
+
+  input.foreach{
+    case SimulationResult(server, status, token, params) =>
+      //println("percent: "+ status.percentage)
+      items() = items.now.updated((token, params.getOrElse(status.runParameters)), status)
+    //if(errors.now.nonEmpty) errors() = List.empty
+    case other => //do nothing
+  }
+
+  override def bindView() = {
+    super.bindView()
+    launcher.triggerLater{
+      val l: LaunchModel = launcher.now
+      val code = concat()
+      val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = code))
+      //println("PARAMS TO THE SERVER = "+launchParams)
+      output() = launchParams
+    }
+  }
 
 
   val saveOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
-  /*
+
   saveOutput.triggerLater{
-    saveAs(hub.name.now, output.now)
+    saveAs("log.txt", consoleOutput.now)
   }
-  */
+
 
   val activateChart: Var[MouseEvent] = Var(Events.createMouseEvent())
   activateChart.triggerLater{
@@ -61,7 +97,7 @@ class SimulationsView(val elem: Element, val selected: Var[String], val items: R
   val onUpload: Var[Event] = Var(Events.createEvent())
   onUpload.onChange(ev =>
     this.uploadHandler(ev){
-      case Success((file, text))=> output.set(text)
+      case Success((file, text))=> consoleOutput.set(text)
       case Failure(th) => dom.console.error(s"File upload failure: ${th.toString}")
     })
 

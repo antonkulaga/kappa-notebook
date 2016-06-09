@@ -13,7 +13,7 @@ import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
 import rx._
 import org.scalajs.dom
 import org.scalajs.dom.Event
-
+import org.denigma.binding.extensions._
 import scala.util._
 import scala.scalajs.js
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -51,6 +51,13 @@ class CodeTab(val elem: Element,
     this
   }
 
+  override def bindView: Unit ={
+    if(active.now==false) {
+      active.
+    }
+    super.bindView()
+  }
+
   override def unbindView() = {
     super.unbindView()
     source.kill()
@@ -78,6 +85,7 @@ class CodeTab(val elem: Element,
 
   override def addEditor(name: String, element: ViewElement, codeMode: String): Unit = element match {
     case area: HTMLTextAreaElement =>
+      println("let us add editor!")
       //val text = if (area.value == "") defaultText else area.value
       editor = this.makeEditor(area, code.now, codeMode)
       code.foreach{ case text =>

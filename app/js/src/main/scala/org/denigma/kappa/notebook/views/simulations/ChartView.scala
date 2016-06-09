@@ -17,7 +17,7 @@ class ChartView(val elem: Element,
                 val plot: Rx[KappaPlot]
                ) extends FlexibleLinearPlot {
 
-  protected def defaultWidth: Double = Math.max(dom.window.innerWidth / 2.5, 300)
+  protected def defaultWidth: Double = Math.max(dom.window.innerWidth / 2, 400)
 
   protected def defaultHeight: Double = Math.max(dom.window.innerHeight / 2, 400)
 

@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views.simulations
+package org.denigma.kappa.notebook.views.common
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.views.{BindableView, ItemsSetView}

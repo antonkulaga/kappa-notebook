@@ -1,4 +1,5 @@
 @()
+@*
 <section class="ui column" data-view="Tabs">
   <div class="ui top attached tabular menu">
     <a class="item" data-set-selected-on-click="Simulations" data-class-active-if="Simulations.active">Simulations</a>
@@ -13,8 +14,8 @@
       <!-- <a class="item" data-set-selected-on-click="Console" data-class-active-if="Console.active">Console</a>-->
       <!--<a class="item" data-set-selected-on-click="SBOLEditor" data-class-active-if="SBOLEditor.active">SBOL</a>-->
   </div>
-  @results.html.simulations()
-  @annotations.html.papers()
+  @results.html.index()
+  @annotations.html.index()
   @annotations.html.images()
   <!--
 
@@ -22,3 +23,4 @@
   </section>
   -->
 </section>
+*@

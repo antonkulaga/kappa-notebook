@@ -71,22 +71,6 @@ class WebSocketTransport(val protocol: String, val host: String, val channel: St
     onInput(input.now)
   }
 
-  def collect[Output](partialFunction: PartialFunction[Input, Output])(until: PartialFunction[Input, Boolean]) = {
-    new Collecter[Input, Output](input)(partialFunction)(until).future
-  }
-  /*
-  def collect[Output](until: Input => Boolean)(partialFunction: PartialFunction[Input, Output]) = {
-    new Collecter[Input, Output](input, until)(partialFunction).future
-  }
-
-  dellect[Result](message: Output, until: Input=> Boolean)(zero: Result)(foldLeft: PartialFunction): Future[Result] = {
-    //println("ask is used for message "+message)
-    val expectation = TimeoutExpectation[Input, Result](input, timeout)(partial)
-    output() = message
-    expectation.future
-  }
-  */
-
   protected def onInput(inp: Input) = inp match {
     case Connected(uname, ch, list, servers) if uname==username /*&& ch == channel*/ =>
       println(s"connection of user $username to $channel established")

@@ -1,9 +1,11 @@
 @()
-<section class="ui bottom attached tab page segment" data-view="Papers" id="Papers" data-class-active-if="active">
+<section class="ui four wide column page segment" data-view="Papers" id="Papers">
+  <h2 class="ui header"  data-show-if="empty">
+    This block is used to show papers. Currently no papers are loaded.
+  </h2>
   <div class="ui top attached pointing menu" data-view="headers">
     <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
   </div>
-  @annotator()
   <div  data-template="true" class="ui bottom attached segment tab page" data-class-active-if="active">
     @publication()
   </div>

@@ -43,7 +43,9 @@ object Dependencies {
 
 		"org.denigma" %%% "threejs-facade" % Versions.threejsFacade,
 
-		"io.circe" %%% "circe-scalajs" % Versions.circe
+		"io.circe" %%% "circe-scalajs" % Versions.circe,
+
+		"org.denigma" %%% "pdf-js-facade" % Versions.pdfJSFacade
 	))
 
 	//dependencies on javascript libs

@@ -31,7 +31,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
 
   "WebSockets" should {
 
-    "get run messages and start simulations" in {
+    "get run messages and start index" in {
       val wsClient = WSProbe()
       // WS creates a WebSocket request for testing
       WS("/channel/notebook?username=tester1", wsClient.flow) ~> routes ~>

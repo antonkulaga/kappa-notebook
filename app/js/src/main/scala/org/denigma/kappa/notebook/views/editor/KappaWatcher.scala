@@ -52,9 +52,9 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   //lazy val painter: SpritePainter = new SpritePainter(agentFontSize, padding, s)
 
-  val leftPattern = new WatchPattern(s)
+  val leftPattern: WatchPattern = new WatchPattern(s)
 
-  val rightPattern = new WatchPattern(s)
+  val rightPattern: WatchPattern = new WatchPattern(s)
 
   val direction: Var[KappaModel.Direction] = Var(KappaModel.Left2Right)
 
@@ -75,7 +75,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       val t = ed.getDoc().getLine(lines.line)
       t
  }
-  text.onChange(parseText)
+  text.onChange(t=>parseText(t))
 
   protected def parseText(line: String) = {
     if(line=="") {
@@ -140,6 +140,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
 
 }
+
 class WatchPattern(s: SVG) {
 
   val pattern = Var(Pattern.empty)

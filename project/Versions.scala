@@ -55,6 +55,8 @@ trait ScalaJSVersions {
 
 	val d3jsFacade = "0.3.1"
 
+	val pdfJSFacade = "0.8.0-0.0.2"
+
 
 
 }

@@ -1,14 +1,15 @@
 package org.denigma.kappa.notebook.views
-
+/*
 import org.denigma.binding.views._
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers.{Bookmark, Paper, PaperLoader}
 import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook.views.figures.{ImagesView, VideosView}
 import org.denigma.kappa.notebook.{Selector, WebSocketTransport}
-import org.denigma.kappa.notebook.views.annotations.{ImagesView, VideosView}
+import org.denigma.kappa.notebook.views.annotations.ImagesView
 import org.denigma.kappa.notebook.views.editor.EditorUpdates
-import org.denigma.kappa.notebook.views.annotations.papers.{PapersView, WebSocketPaperLoader}
+import org.denigma.kappa.notebook.views.papers.{PapersView, WebSocketPaperLoader}
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.scalajs.dom.raw.Element
 import rx._
@@ -152,6 +153,8 @@ class TabsView(
     }
     */
 }
+
 class UnderDevelopment(val elem: Element, val selected: Var[String]) extends BindableView with common.TabItem {
 
 }
+*/

@@ -64,7 +64,7 @@ case class KappaFile(path: String, name: String, content: String, saved: Boolean
 
 object KappaProject {
 
-  lazy val default: KappaProject = KappaProject("presentation", saved = false)
+  lazy val default: KappaProject = KappaProject(/*"presentation"*/"repressilator", saved = false)
 
   implicit val ordering = new Ordering[KappaProject] {
     override def compare(x: KappaProject, y: KappaProject): Int = x.name.compare(y.name) match {

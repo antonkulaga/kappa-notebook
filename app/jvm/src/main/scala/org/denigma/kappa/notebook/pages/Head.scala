@@ -2,6 +2,7 @@ package org.denigma.kappa.notebook.pages
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.{Directives, Route}
+import org.denigma.kappa.notebook.styles.MyStyles
 import scalacss.Defaults._
 
 class Head extends Directives

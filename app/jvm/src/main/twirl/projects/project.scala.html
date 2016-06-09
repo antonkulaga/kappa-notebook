@@ -1,5 +1,5 @@
 @()
-<section class="ui blue segment">
+<section class="ui blue column">
   <div class="ui equal width grid">
     <div class = "row">
       <section class="column segment">
@@ -26,8 +26,8 @@
             <div class="item" data-template="true" >
               <i class="label" data-class="icon"></i>
               <div class="content">
-                <div data-bind="name" class="header"></div>
-                <i class="label" class="remove icon" data-click="removeClick"></i>
+                <div data-bind="name" class="header" style="cursor: pointer" data-click="openClick"></div>
+                <i class="remove icon" style="cursor: pointer" data-click="removeClick"></i>
               </div>
             </div>
           </div>
@@ -36,7 +36,7 @@
             <div class="ui button">+</div>
           </div>
           <div class="ui button" data-click="download">
-            <i class="ui download icon"></i>Download Project
+            <i class="ui download icon"></i>Download
           </div>
         </div>
       </section>

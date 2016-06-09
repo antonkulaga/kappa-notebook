@@ -40,6 +40,8 @@ case class EditorUpdates(editorOpt: Option[Editor], updates: List[EditorChangeLi
 
 trait EditorView extends BindableView with EditorMaker with WithMirrors{
 
+  self=>
+
   def mode: String = "Kappa"
 
   def doc: Doc = editor.getDoc()
@@ -79,7 +81,7 @@ trait EditorView extends BindableView with EditorMaker with WithMirrors{
     true
   }
 
-  withBinder(new EditorsBinder(_, mode))
+  withBinder(v=>new EditorsBinder(v, mode))
 
 }
 
@@ -104,7 +106,6 @@ trait EditorMaker {
       .viewportMargin(Integer.MAX_VALUE)
       .gutters(js.Array("CodeMirror-linenumbers", "breakpoints"))
     //  gutters: ["CodeMirror-linenumbers", "breakpoints"]
-
     CodeMirror.fromTextArea(area, params)
   }
 
@@ -112,7 +113,6 @@ trait EditorMaker {
 
 class EditorsBinder(view: WithMirrors, defaultMode: String = "htmlmixed") extends ReactiveBinder
 {
-
   override def bindAttributes(el: Element, attributes: Map[String, String]): Boolean= {
     val ats = this.dataAttributesOnly(attributes)
     val fun: PartialFunction[(String, String), Unit] = elementPartial(el, ats).orElse{ case other =>}
@@ -123,7 +123,7 @@ class EditorsBinder(view: WithMirrors, defaultMode: String = "htmlmixed") extend
   override def elementPartial(el: Element, ats: Map[String, String]): PartialFunction[(String, String), Unit] = {
     case ("editor", v) if !view.contains(v) =>
       import scala.scalajs.js.timers._
-      //println(v+"   ======================")
+      println(v+"   =============ADD EDITOR=========")
       //println(el.outerHTML)
       //setTimeout(200)
       //{

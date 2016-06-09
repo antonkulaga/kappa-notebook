@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views.annotations.papers
+package org.denigma.kappa.notebook.views.papers
 
 import org.denigma.controls.papers._
 import org.denigma.kappa.messages.FileRequests.LoadFile
@@ -18,34 +18,17 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport, projectName: Rx[
                                 loadedPapers: Var[Map[String, Paper]] = Var(Map.empty[String, Paper]))
   extends PaperLoader {
 
-  override def getPaper(path: String, timeout: FiniteDuration = 25 seconds) =
+  override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
   {
-    /*
-    val tosend: LoadFile = FileRequests.LoadFile(projectName.now, path)
-    subscriber.send(tosend)
-    val fut = subscriber.collect{
-      case d @ DataChunk(message, _, _, _, _,  false) if message == tosend =>
-        //println("data")
-        d.data
-    }{
-      case DataChunk(message, _, _, _, _,  true) if message == tosend => true
-    }
-    val data = fut.map{ case list=> list.reduce(_ ++ _) }
-    data.flatMap(bytes=>bytes2Arr(bytes)).flatMap{
-      arr=>
-        //println("get paper "+path)
-        super.getPaper(path, arr)
-    }
-    */
 
     val tosend = FileRequests.LoadFileSync(projectName.now, path)
     val result: Future[ArrayBuffer] = subscriber.ask(tosend, 10 seconds){
       case DataMessage(p, bytes) if p.contains(path)=>
-        println("RESPONSE!!!!")
         bytes
-        } flatMap(bytes=>bytes2Arr(bytes))
+        }.flatMap(bytes=>bytes2Arr(bytes))
     result.flatMap{
       case arr =>
+        println("paper is going to be here soon!")
         super.getPaper(path, arr)
     }
 

@@ -13,8 +13,18 @@ case class NLPService(host: String, channel: String, username: String) extends W
 }
 */
 
-class AnnotatorNLP(elem: Element, connector: WebSocketNLPTransport) extends AnnotatorView(elem: Element, connector: WebSocketNLPTransport){
+class AnnotatorNLP(elem: Element) extends AnnotatorView(elem: Element, WebSocketNLPTransport("localhost:1112", "notebook", "guest" + Math.random() * 1000))
+{
+
+    //lazy val connector = WebSocketNLPTransport("localhost:1112", "notebook", "guest" + Math.random() * 1000)
 
     val server: Var[String] = Var(s"${connector.protocol}://${connector.host}/channel/${connector.channel}")
+
+    val connected: Var[Boolean] = connector.connected
+
+    override def bindView() = {
+        super.bindView()
+        connector.open()
+    }
 
 }

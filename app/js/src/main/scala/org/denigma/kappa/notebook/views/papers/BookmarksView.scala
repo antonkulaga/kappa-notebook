@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views.annotations.papers
+package org.denigma.kappa.notebook.views.papers
 
 import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
@@ -9,6 +9,7 @@ import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import scala.concurrent.duration._
 import rx._
 
 import scala.annotation.tailrec
@@ -28,29 +29,21 @@ class BookmarksView(val elem: Element, location: Var[Bookmark], textLayer: Eleme
 
   val page = location.map(_.page)
 
-  val selections = Var(List.empty[Range])
+  val selectionRanges = Var(List.empty[org.scalajs.dom.raw.Range])
 
-  val currentSelection = selections.map{ case sel =>
-    sel.foldLeft("")((acc, el)=>acc + "\n" + el.cloneContents().textContent)
-  }
-
-  val lastSelections: Var[List[TextSelection]] = Var(List.empty[TextSelection])
+  val lastSelections: Var[List[TextLayerSelection]] = Var(List.empty[TextLayerSelection])
 
   val comments = Rx{
-
-    val opt = lastSelections.now.headOption
-    /*
-    if(opt.isDefined) {
-      val r = opt.get
-      println(r.text)
-      js.debugger()
-    }
-    */
     "\n#^ :in_paper "+paper() +
-    "\n#^ :on_page "+ page() + lastSelections().foldLeft(""){
-      case (acc, el) => acc + "\n#^ :has_text " + el.text
+      "\n#^ :on_page "+ page() + lastSelections().foldLeft(""){
+      case (acc, sel) => acc +
+        "\n#^ :from_chunk " + sel.fromChunk
+        "\n#^ :from_token_num " + sel.fromToken
+        "\n#^ :to_chunk " + sel.toChunk
+        "\n#^ :to_token_num " + sel.toToken
     }
   }
+
 
   override def newItemView(item: Item): ItemView  = this.constructItemView(item){
     case (el, mp) =>
@@ -79,7 +72,7 @@ class BookmarksView(val elem: Element, location: Var[Bookmark], textLayer: Eleme
      inTextLayer(selection.anchorNode) || inTextLayer(selection.focusNode)  match {
       case true =>
          if (count > 0) {
-          selections() = {
+           selectionRanges() = {
             for{
               i <- 0 until count
               range = selection.getRangeAt(i)
@@ -93,58 +86,30 @@ class BookmarksView(val elem: Element, location: Var[Bookmark], textLayer: Eleme
 
   }
 
-  protected def rangeToTextSelection(range: Range) = {
-    val fragment = range.cloneContents()
-    /*
-    val div = dom.document.createElement("div") //the trick to get inner html of the selection
-    val nodes = fragment.childNodes.toList
-    nodes.foreach(div.appendChild)
-    val txt = div.innerHTML
-    */
-    val txt = fragment.textContent
-    TextSelection(txt)
-  }
-
-  protected def fixSelection(event: Event): Unit = {
-    //println("mouseleave")
-    if(currentSelection.now != "") {
-      val ss = selections.now.map(rangeToTextSelection)
-      //println(ss)
-      lastSelections() = ss
-      selections() = List.empty
-      //currentSelection() = ""
-    }
-  }
-
   override protected def subscribeUpdates() = {
     template.hide()
     this.items.now.foreach(i => this.addItemView(i, this.newItemView(i)))
-    val upd = updates
+    val upd: Rx[SequenceUpdate[Var[Bookmark]]] = updates
     upd.onChange(upd => {
-      println(s"change happenz!:\n+++++++++++++++++" +
-        s"\nADDED: \n${upd.added.mkString("\n")}" +
-        s"\nREMOVED: \n${upd.removed.mkString("\n")}" +
-        s"\nMOVED: \n${upd.moved.mkString("\n")}" +
-        s"\n ----------------------------")
       upd.added.foreach(onInsert)
       upd.removed.foreach(onRemove)
       upd.moved.foreach(onMove)
     })
+    selectionRanges.afterLastChange(500 millis){
+      case sels=>
+        lastSelections() = sels.map{
+          case s=>
+            val textSelection: TextLayerSelection = TextLayerSelection.fromRange("", s)
+            textSelection
+        }
+    }
   }
-
-/*
-  lazy val codemirror = {
-    this.binders.collectFirst{
-      case cb: CodeBinder => cb.editors.head
-    }.get //VERY UGLY AND BAD CODE
-  }
-*/
 
   override def bindView() = {
     super.bindView()
     dom.window.document.onselectionchange = onSelectionChange _
     addSelection.onChange(addSelectionHandler)
-    textLayer.parentNode.addEventListener(Events.mouseleave, fixSelection _)
   }
+
 
 }

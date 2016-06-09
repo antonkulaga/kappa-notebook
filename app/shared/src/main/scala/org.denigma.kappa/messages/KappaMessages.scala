@@ -36,14 +36,65 @@ object KappaMessage{
     .addConcreteType[DataMessage]
     .addConcreteType[Done]
     .addConcreteType[Failed]
+    .addConcreteType[KappaMessageContainer]
+    .join(UIMessage.UIMessagePickler)
 
 }
 
 sealed trait KappaMessage
+/*
+object KappaFileMessage {
+  import boopickle.DefaultBasic._
+  implicit val simpleMessagePickler: CompositePickler[KappaFileMessage] = compositePickler[KappaFileMessage]
+    .addConcreteType[ProjectRequests.Create]
+    .addConcreteType[ProjectRequests.Download]
+
+    .addConcreteType[ProjectRequests.Load]
+    .addConcreteType[ProjectRequests.Save]
+    .addConcreteType[ProjectResponses.Loaded]
+    .addConcreteType[ProjectRequests.Remove]
+
+    .addConcreteType[FileRequests.LoadFile]
+    .addConcreteType[FileRequests.LoadFileSync]
+    .addConcreteType[FileRequests.Remove]
+    .addConcreteType[FileRequests.Upload]
+    .addConcreteType[FileRequests.ZipUpload]
+
+    .addConcreteType[FileResponses.Downloaded]
+    .addConcreteType[FileResponses.UploadStatus]
+    .addConcreteType[DataChunk]
+    .addConcreteType[DataMessage]
+}
+*/
+trait KappaFileMessage extends KappaMessage
+
 
 case object EmptyKappaMessage extends KappaMessage
 
 import scala.collection.immutable._
+
+object GoToSource {
+  import boopickle.DefaultBasic._
+
+  implicit val sourcePickler = boopickle.Default.generatePickler[GoToSource]
+}
+
+case class GoToSource(filename: String, begin: Int = 0, end: Int = 0) extends UIMessage
+
+
+object UIMessage {
+  import boopickle.DefaultBasic._
+
+  implicit val UIMessagePickler: CompositePickler[UIMessage] = compositePickler[UIMessage]
+    //.addConcreteType[GoToPaper]
+    .addConcreteType[GoToSource]
+
+}
+
+
+trait UIMessage extends KappaMessage
+
+case class KappaMessageContainer(messages: List[KappaMessage]) extends KappaMessage
 
 case class KappaUser(name: String) extends KappaMessage
 
@@ -64,7 +115,6 @@ case class SimulationResult(server: String, simulationStatus: SimulationStatus, 
 
 case class LaunchModel(server: String, parameters: RunModel, counter: Int = 0) extends ServerMessage
 
-trait KappaFileMessage extends KappaMessage
 
 case class DataChunk(id: KappaMessage, path: String, data: Array[Byte], downloaded: Int, total: Int, completed: Boolean = false) extends KappaFileMessage
 {

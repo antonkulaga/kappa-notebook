@@ -1,11 +1,10 @@
-package org.denigma.kappa.notebook.views.annotations
-
+package org.denigma.kappa.notebook.views.figures
+/*
 import org.denigma.binding.binders.GeneralBinder
-import org.denigma.binding.views.{BindableView, ItemsMapView, ItemsSetView, UpdatableView}
+import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.notebook.Selector
-import org.denigma.kappa.notebook.views.common.TabItem
-import org.denigma.kappa.notebook.views.simulations.TabHeaders
+import org.denigma.kappa.notebook.views.common.{TabHeaders, TabItem}
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -51,3 +50,4 @@ class ImgView(val elem: Element, val selected: Var[String], val image: Var[Strin
     this
   }
 }
+*/

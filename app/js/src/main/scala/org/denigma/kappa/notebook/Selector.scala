@@ -9,7 +9,7 @@ import scala.collection.immutable._
 import org.denigma.kappa.messages
 import org.denigma.kappa.messages.{KappaPath, _}
 import org.scalajs.dom
-
+/*
 object Selector {
   lazy val default = Selector(
     Var("Simulations"),
@@ -53,7 +53,7 @@ case class Selector(
   */
 
 }
-
+*/
 /**
   * Created by antonkulaga on 07/04/16.
   */

@@ -1,15 +1,13 @@
-package org.denigma.kappa.notebook.views.annotations
-
+package org.denigma.kappa.notebook.views.figures
+/*
 import org.denigma.binding.binders.GeneralBinder
-import org.denigma.binding.views.{BindableView, ItemsMapView, ItemsSetView, UpdatableView}
-import org.denigma.kappa.notebook.views.common.TabItem
-import org.denigma.kappa.notebook.views.simulations.TabHeaders
+import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
+import org.denigma.kappa.notebook.views.common.{TabHeaders, TabItem}
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
 import scala.collection.immutable
-import scala.collection.immutable.SortedSet
 
 /**
   * Created by antonkulaga on 5/10/16.
@@ -65,3 +63,4 @@ class VidView(val elem: Element, val selected: Var[String], val src: Var[String]
     this
   }
 }
+*/

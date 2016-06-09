@@ -4,7 +4,6 @@ import fastparse.all._
 import org.denigma.codemirror.Editor
 import org.denigma.codemirror.extensions._
 import org.denigma.controls.papers.Bookmark
-import org.denigma.kappa.notebook.Selector
 import org.denigma.kappa.notebook.parsers.{CommentLinksParser, ImageParser, PaperParser}
 import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
@@ -16,8 +15,8 @@ import scalatags.JsDom.all._
   * Created by antonkulaga on 11/03/16.
   */
 class CommentsWatcher(
-                       updates: Var[EditorUpdates],
-                       selector: Selector )  {
+                       val updates: Var[EditorUpdates],
+                       val location: Var[Bookmark] )  {
 
   updates.foreach(changeHandler) //subscription
 
@@ -107,10 +106,12 @@ class CommentsWatcher(
     html.onclick = {
       event: MouseEvent =>
         println("image = "+ image.trim)
+        /*
         println("SELECTOR = "+selector.image)
         println("SELECOT == "+selector.image==image.trim)
         selector.image() = image.trim
         selector.go2images()
+        */
     }
     html
   }
@@ -125,9 +126,11 @@ class CommentsWatcher(
         //  println("papers work")
         //location() = location.now.copy(page = num)
         //selector.paper() =
+        /*
         println("paper"+ paper)
         selector.paper() = paper
         selector.go2papers()
+        */
     }
     html
   }

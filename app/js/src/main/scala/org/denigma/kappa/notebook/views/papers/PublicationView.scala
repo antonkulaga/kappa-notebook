@@ -1,6 +1,6 @@
 package org.denigma.kappa.notebook.views.papers
 
-import org.denigma.binding.binders.Events
+import org.denigma.binding.binders.{GeneralBinder, Events}
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{UpdatableView, BindableView}
 import org.denigma.codemirror.{PositionLike, Editor}
@@ -20,7 +20,7 @@ import scala.scalajs.js
 import scala.util.{Failure, Success}
 
 class PublicationView(val elem: Element,
-                      val location: Rx[Bookmark],
+                      val location: Var[Bookmark],
                       val paper: Paper,
                       kappaCursor: Var[Option[(Editor, PositionLike)]]
                      )
@@ -89,6 +89,10 @@ class PublicationView(val elem: Element,
     println("update is not implemented")
     this
   }
+
+  override lazy val injector = defaultInjector
+    .register("Bookmarks")((el, args) => new BookmarksView(el, location, null).withBinder(new GeneralBinder(_)))
+
 }
 
 trait LoadedPaperView extends BindableView {
@@ -188,4 +192,5 @@ trait LoadedPaperView extends BindableView {
     scale.onChange{ case sc=> refreshPage()  }
     if(paper.numPages > 0) loadPage(1)
   }
+
 }

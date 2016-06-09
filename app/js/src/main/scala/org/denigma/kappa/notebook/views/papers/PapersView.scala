@@ -8,6 +8,7 @@ import org.denigma.controls.papers._
 import org.denigma.kappa.messages.GoToPaper
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.views.common.TabHeaders
+import org.scalajs.dom
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -15,6 +16,7 @@ import org.denigma.binding.extensions._
 import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.util.{Failure, Success}
 
 class PapersView(val elem: Element,
                  val location: Var[Bookmark],
@@ -23,7 +25,7 @@ class PapersView(val elem: Element,
                  val kappaCursor: Var[Option[(Editor, PositionLike)]]) extends BindableView
   with ItemsMapView {
 
-  lazy val paperLoader: WebSocketPaperLoader = WebSocketPaperLoader(connector, projectName = currentProjectName)
+  val paperLoader: WebSocketPaperLoader = WebSocketPaperLoader(connector, projectName = currentProjectName)
 
   val items: Var[Map[String, Paper]] = paperLoader.loadedPapers
 
@@ -40,10 +42,13 @@ class PapersView(val elem: Element,
   location.foreach{
     case loc if loc.paper!="" =>
       println("LOAD :"+loc.paper)
-      paperLoader.getPaper(loc.paper, 10 seconds).onSuccess{
-        case pp =>
-          println("LOADED PAPER :"+loc.paper)
-          selected() = pp.name
+      paperLoader.getPaper(loc.paper, 10 seconds).onComplete{
+        case Success(pp) =>
+          paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(pp.name, pp)
+          println("test")
+
+          //selected() = pp.name
+        case Failure(th)=> dom.console.error(s"Cannot load paper ${loc.paper}: "+th)
       }
     case _ => //do nothing
   }

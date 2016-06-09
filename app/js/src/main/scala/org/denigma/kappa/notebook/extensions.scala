@@ -6,9 +6,30 @@ import scala.Vector
 import scala.collection.immutable._
 import fastparse.all.Parsed
 import fastparse.core.{Mutable, ParseCtx, Parser}
-
+import rx.Ctx.Owner.Unsafe.Unsafe
 
 object extensions {
+
+  implicit class AnyKappaRx[T](source: Rx[T]) {
+
+    def triggerN(num: Int)(fun: T => Unit): Obs = {
+      var counter = num
+      def triggerN(obs: =>Obs)(fun: T => Unit): Unit =  {
+        counter = counter - 1
+        if(counter <=0) {
+          fun(source.now)
+          obs.kill()
+        } else fun(source.now)
+      }
+      lazy val obs: Obs = source.triggerLater {
+        triggerN(obs)(fun)
+      }
+      obs
+    }
+
+    def triggerOnce(fun: T => Unit): Unit = triggerN(1)(fun)
+  }
+
 
   implicit class ParsedExt[T](source: Parsed[T]) {
 

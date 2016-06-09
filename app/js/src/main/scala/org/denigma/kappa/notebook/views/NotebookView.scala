@@ -78,8 +78,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   lazy val currentProjectName: Rx[String] = currentProject.map(p=>p.name)
 
-  lazy val paperLoader: PaperLoader = WebSocketPaperLoader(connector, projectName =  currentProjectName)
-
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
   override def bindView() = {

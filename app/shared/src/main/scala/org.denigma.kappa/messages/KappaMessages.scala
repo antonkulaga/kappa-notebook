@@ -3,6 +3,18 @@ package org.denigma.kappa.messages
 import boopickle.CompositePickler
 
 object KappaMessage{
+
+  object Container {
+    import boopickle.DefaultBasic._
+
+    implicit val classPickler = boopickle.Default.generatePickler[Container]
+
+    def apply(messages: KappaMessage*): Container = Container(messages.toList)
+  }
+  case class Container(messages: List[KappaMessage]) extends KappaMessage
+  {
+    def andThen(message: KappaMessage): Container = copy(messages :+ message)
+  }
   //import boopickle.DefaultBasic._
 
   import boopickle.Default._
@@ -24,10 +36,10 @@ object KappaMessage{
     .addConcreteType[ProjectResponses.Loaded]
     .addConcreteType[ProjectRequests.Remove]
 
-    .addConcreteType[FileRequests.LoadFile]
+    .addConcreteType[FileRequests.LoadBinaryFile]
     .addConcreteType[FileRequests.LoadFileSync]
     .addConcreteType[FileRequests.Remove]
-    .addConcreteType[FileRequests.Upload]
+    .addConcreteType[FileRequests.UploadBinary]
     .addConcreteType[FileRequests.ZipUpload]
 
     .addConcreteType[FileResponses.Downloaded]
@@ -36,7 +48,7 @@ object KappaMessage{
     .addConcreteType[DataMessage]
     .addConcreteType[Done]
     .addConcreteType[Failed]
-    .addConcreteType[KappaMessageContainer]
+    .addConcreteType[Container]
     .join(UIMessage.UIMessagePickler)
 
 }
@@ -73,28 +85,18 @@ case object EmptyKappaMessage extends KappaMessage
 
 import scala.collection.immutable._
 
-object GoToSource {
-  import boopickle.DefaultBasic._
-
-  implicit val sourcePickler = boopickle.Default.generatePickler[GoToSource]
-}
-
-case class GoToSource(filename: String, begin: Int = 0, end: Int = 0) extends UIMessage
-
-
 object UIMessage {
   import boopickle.DefaultBasic._
 
   implicit val UIMessagePickler: CompositePickler[UIMessage] = compositePickler[UIMessage]
     //.addConcreteType[GoToPaper]
-    .addConcreteType[GoToSource]
-
+    .addConcreteType[Go.ToSource]
+    .addConcreteType[Go.ToTab]
+    .addConcreteType[MoveTo.Tab]
 }
 
 
 trait UIMessage extends KappaMessage
-
-case class KappaMessageContainer(messages: List[KappaMessage]) extends KappaMessage
 
 case class KappaUser(name: String) extends KappaMessage
 

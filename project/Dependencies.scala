@@ -10,11 +10,11 @@ object Dependencies {
 
 	//libs for testing
   lazy val testing = Def.setting(Seq(
-		"org.scalatest" %%% "scalatest" % Versions.scalaTest % Test,
+		"org.scalatest" %%% "scalatest" % Versions.scalaTest % Test/*,
 
 		"org.scalatest" %%% "scalatest-matchers" % Versions.scalaTestMatchers % Test,
 
-		"org.scalatest" %%% "scalatest-wordspec" % Versions.scalaTestMatchers % Test
+		"org.scalatest" %%% "scalatest-wordspec" % Versions.scalaTestMatchers % Test*/
   ))
 
 	//akka-related libs

@@ -1,0 +1,20 @@
+@()
+<div class="ui blue segment"  data-view="ProjectsView">
+  <h4 class="ui blue header">Project</h4>
+  <div class="ui large celled animated list">
+
+    <div class="item" data-template="true" >
+      <div class="right floated content">
+        <div class="ui mini button" data-click="loadClick" data-hide-if="current">load</div>
+      </div>
+      <i class="large suitcase icon" data-class-blue-if="current"></i>
+      <div class="project content" data-click="loadClick">
+        <div data-bind="name" class="header"></div>
+      </div>
+    </div>
+    <div>
+      <input placeholder="create project"><button data-event-click="createProjectClick" class="ui positive button">create project</button>
+    </div>
+
+  </div>
+</div>

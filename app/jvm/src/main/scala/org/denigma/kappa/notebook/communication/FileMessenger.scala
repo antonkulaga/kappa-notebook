@@ -34,7 +34,7 @@ trait FileMessenger extends Messenger{
           send(d)
       }
 
-    case mess @ FileRequests.LoadFile(projectName, path, chunkSize) =>
+    case mess @ FileRequests.LoadBinaryFile(projectName, path, chunkSize) =>
       //log.info(s"***********+${mess}*****************")
       fileManager.getJavaPath(projectName, path) match {
         case Some((fl, size)) =>
@@ -73,7 +73,7 @@ trait FileMessenger extends Messenger{
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
       send(d)
 
-    case upl @ FileRequests.Upload(projectName, files) =>
+    case upl @ FileRequests.UploadBinary(projectName, files) =>
       files.foreach{
         case DataMessage(name, bytes) =>
           fileManager.writeBytes(projectName, name, bytes)

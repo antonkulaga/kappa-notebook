@@ -5,6 +5,7 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsSetView}
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook.views.MainTabs
 import org.scalajs.dom
 import org.scalajs.dom._
 import org.scalajs.dom.raw.{BlobPropertyBag, Element}
@@ -16,7 +17,22 @@ import scala.collection.immutable._
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
-class ProjectFilesView(val elem: Element, val currentProject: Rx[KappaProject], input: Var[KappaMessage], output: Var[KappaMessage]) extends ItemsSetView {
+class CurrentProjectView(val elem: Element, currentProject: Rx[KappaProject], val sourceMap: Var[Map[String, KappaFile]],  input: Var[KappaMessage], output: Var[KappaMessage]) extends ItemsSetView {
+
+  val projectName = currentProject.map(p=>p.name)
+  val newFileName = Var("")
+  val hasNewFile = newFileName.map(f=>f.length > 1)
+  val fileName = newFileName.map{
+    case f if f.endsWith(".ka")=>f
+    case other => other
+  }
+
+  val unsaved: Dynamic[Map[String, KappaFile]] = sourceMap.map{ sm=> sm.collect{ case (key, value) if !value.saved => key -> value } }
+
+  val addFileClick = Var(Events.createMouseEvent())
+  addFileClick.triggerLater{
+    //output() = //org.denigma.kappa.messages.FileRequests.Save(projectName.now, List())
+  }
 
   val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.folder.files)
 
@@ -103,9 +119,17 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
   val openClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   openClick.triggerLater{
     fileType.now match {
-      case FileType.pdf => input() = /*KappaMessageContainer(List( */GoToPaper(Bookmark(file.name, 1))//))
-      case FileType.source => input() = /*KappaMessageContainer(List(*/GoToSource(filename = file.name)//))
-/*
+      case FileType.pdf => input() =
+        KappaMessage.Container()
+        .andThen(Go.ToTab(MainTabs.Papers))
+        .andThen(GoToPaper(Bookmark(file.name, 1)))
+
+      case FileType.source => input() =
+        KappaMessage.Container()
+          .andThen(Go.ToTab(MainTabs.Editor))
+          .andThen(Go.ToSource(filename = file.name))
+
+      /*
       case FileType.txt =>
       case FileType.image => "File Image Outline" + " large icon"
       case FileType.video => "File Video Outline" + " large icon"
@@ -117,6 +141,16 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
   val removeClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   removeClick.triggerLater{
     output() = FileRequests.Remove(parentName.now, file.name)
+  }
+
+  val saveClick: Var[MouseEvent] = Var(Events.createMouseEvent())
+  saveClick.triggerLater{
+
+  }
+
+  val renameClick: Var[MouseEvent] = Var(Events.createMouseEvent())
+  renameClick.triggerLater{
+
   }
 
 

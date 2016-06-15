@@ -80,9 +80,9 @@ class PublicationView(val elem: Element,
 
 
   override def bindView() = {
+    println("bind view")
     super.bindView()
     subscribePapers()
-
   }
 
   override def update(value: Paper): PublicationView.this.type = {

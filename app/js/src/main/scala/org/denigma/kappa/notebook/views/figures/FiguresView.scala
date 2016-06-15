@@ -13,7 +13,6 @@ import rx._
   * Created by antonkulaga on 08/06/16.
   */
 class FiguresView(val elem: Element,
-                  val selected: Var[String],
                   val items: Var[Map[String, Figure]]) extends ItemsMapView with TabItem
 {
 
@@ -22,6 +21,8 @@ class FiguresView(val elem: Element,
   override type ItemView = FigureView
 
   override type Item = String
+
+  val selected = Var("")
 
   val empty = items.map(its=>its.isEmpty)
 

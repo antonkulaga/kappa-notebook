@@ -2,7 +2,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 {
 	val scala = "2.11.8"
 
-	val kappaNotebook = "0.0.8"
+	val kappaNotebook = "0.0.9"
 
 	val binding = "0.8.8"
 
@@ -30,7 +30,7 @@ trait OtherJVM {
 
 	val akka = "2.4.7"
 
-	val circeHttp = "1.6.0"
+	val circeHttp = "1.7.0"
 
 	val libSBOLj = "2.1.0"
 
@@ -47,7 +47,7 @@ trait ScalaJSVersions {
 
 	val jqueryFacade = "0.11" //1.0-RC2
 
-	val dom = "0.9.0"
+	val dom = "0.9.1"
 
 	val codemirrorFacade = "5.11-0.7"
 
@@ -75,9 +75,7 @@ trait SharedVersions
 
 	val productCollections = "1.4.2"
 
-	val scalaTest = "3.0.0-RC1"//"3.0.0-SNAP13"
-
-	val scalaTestMatchers = "3.0.0-SNAP13"
+	val scalaTest = "3.0.0-RC2"
 
 	val fastparse = "0.3.7"
 
@@ -87,7 +85,7 @@ trait SharedVersions
 
 trait WebJarsVersions{
 
-	val jquery =  "2.2.4"
+	val jquery =  "3.0.0" //"2.2.4"
 
 	val jquerySVG = "1.5.0"
 

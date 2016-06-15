@@ -59,9 +59,6 @@ object KappaFile
 
 case class KappaFile(path: String, name: String, content: String, saved: Boolean = false) extends KappaPath
 
-
-
-
 object KappaProject {
 
   lazy val default: KappaProject = KappaProject(/*"presentation"*/"repressilator", saved = false)
@@ -134,11 +131,11 @@ object FileRequests {
 
   case class LoadFileSync(projectName: String, path: String) extends KappaFileMessage
 
-  case class LoadFile(projectName: String, path: String, chunkSize: Int = 8192 * 8/*-1*/) extends KappaFileMessage
+  case class LoadBinaryFile(projectName: String, path: String, chunkSize: Int = 8192 * 8 /*-1*/) extends KappaFileMessage
 
-  //case class Upload() extends KappaFileMessage
+  case class UploadBinary(projectName: String, files: List[DataMessage]) extends KappaFileMessage
 
-  case class Upload(projectName: String, files: List[DataMessage]) extends KappaFileMessage
+  case class Save(projectName: String, files: List[KappaFile], rewrite: Boolean) extends KappaFileMessage
 
   case class ZipUpload(projectName: String, zip: DataMessage, rewriteIfExist: Boolean = false) extends KappaFileMessage
 }

@@ -119,6 +119,8 @@ class WebSocketTransport(val protocol: String, val host: String, val channel: St
   override protected def unpickle(bytes: ByteBuffer): KappaMessage = {
     Unpickle[Input].fromBytes(bytes)
   }
+
+  def IO: (Var[KappaMessage], Var[KappaMessage]) = (input, output)
 }
 /*
 import java.nio.ByteBuffer

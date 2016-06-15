@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.views.papers
 
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.FileRequests.{LoadFileSync, LoadFile}
+import org.denigma.kappa.messages.FileRequests.{LoadFileSync, LoadBinaryFile}
 import org.denigma.kappa.messages.{DataChunk, DataMessage, FileRequests}
 import org.denigma.kappa.notebook.WebSocketTransport
 import org.denigma.pdf.PDFJS

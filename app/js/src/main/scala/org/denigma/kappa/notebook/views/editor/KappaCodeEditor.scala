@@ -1,24 +1,20 @@
 package org.denigma.kappa.notebook.views.editor
 
 import org.denigma.binding.binders.GeneralBinder
+import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView}
 import org.denigma.codemirror._
-import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.{GoToSource, KappaMessage, KappaFile, KappaProject}
-//import org.denigma.kappa.notebook.Selector
+import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage}
 import org.denigma.kappa.notebook.views.common.TabHeaders
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import org.denigma.binding.extensions._
-import org.scalajs.dom
 
 import scala.collection.immutable._
 
 
 class KappaCodeEditor(val elem: Element,
                       val items: Var[Map[String, KappaFile]],
-                      val selected: Var[String],
                       val errorsList: Var[List[String]],
                       val input: Var[KappaMessage],
                       val kappaCursor: Var[Option[(Editor, PositionLike)]],
@@ -26,6 +22,7 @@ class KappaCodeEditor(val elem: Element,
   with ItemsMapView
 {
 
+  val selected: Var[String] = Var("")
   //items.foreach(i=>println(" FILES: "+i))
 
   override type Item = String
@@ -44,7 +41,9 @@ class KappaCodeEditor(val elem: Element,
   override type ItemView = CodeTab
 
   input.onChange{
-    case GoToSource(name, from, to)=> selected() = name
+    case Go.ToSource(name, from, to)=>
+      selected() = name
+
     case other => //do nothing
   }
 

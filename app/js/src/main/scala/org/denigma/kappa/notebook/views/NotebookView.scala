@@ -17,13 +17,16 @@ import org.denigma.kappa.notebook.views.project.ProjectsPanelView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook._
+import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import org.querki.jquery.$
 
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
+import scala.scalajs.js
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
@@ -31,36 +34,26 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val connector: WebSocketTransport = WebSocketTransport("notebook", "guest" + Math.random() * 1000)
 
-  val (input: Var[KappaMessage], output: Var[KappaMessage]) = (connector.input, connector.output)
+  val (input: Var[KappaMessage], output: Var[KappaMessage]) = connector.IO
 
   val loaded: Var[ProjectResponses.Loaded] = Var(ProjectResponses.Loaded.empty)
 
   val errors = Var(List.empty[String])
 
-  val name = Var("HelloWorld!")
-
   val path = Var("files")
 
-  val sourceMap: Var[Map[String, KappaFile]] = Var(Map.empty[String, KappaFile])
-
-  val otherFiles = Var(SortedSet.empty[KappaFile])
-
-  val currentProject: Rx[KappaProject] = Rx{
-    val sourceFiles = sourceMap().values.toSeq
-    val fls = SortedSet(sourceFiles:_*) ++ otherFiles()
-    val folder = KappaFolder(path(), files = fls)
-    KappaProject(name(), folder)
-  }
+  val sources: Var[Map[String, KappaFile]] = Var(Map.empty[String, KappaFile])
 
   val location: Var[Bookmark] = Var(Bookmark("", 1, Nil))
-
-  val selectedFigure: Var[String] = Var("")
-
-  val selectedSource: Var[String] = Var("")
 
   val figures: Var[Map[String, Figure]] = Var(Map.empty)
 
   val currentProjOpt: Rx[Option[KappaProject]] = loaded.map(_.projectOpt)
+
+  val currentProjectName = currentProjOpt.map{
+    case Some(p) => p.name
+    case None => KappaProject.default.name
+  }
 
   currentProjOpt.onChange{
     case Some(proj)=>
@@ -76,39 +69,47 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     case None =>
   }
 
-  lazy val currentProjectName: Rx[String] = currentProject.map(p=>p.name)
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
   override def bindView() = {
     super.bindView()
-    loaded.onChange{
-      case ld=>
-        ld.projectOpt match {
-          case Some(proj)=>
-            name() = proj.name
-            otherFiles() = proj.nonsourceFiles
-            val sources = proj.sourceMap
-            sourceMap.set(sources)
-          case None =>
-        }
-    }
     connector.onOpen.triggerLater{
       println("websocket opened")
       val toLoad = ProjectRequests.Load(KappaProject.default)
       connector.output() = toLoad //ask to load default project
     }
-    input.foreach{
-      case ld: ProjectResponses.Loaded =>
-        //println("LOQDED = "+ld)
-        loaded() = ld
-      case SyntaxErrors(server, ers, params) =>  errors() = ers
-      case Failed(operation, ers, username) =>  errors() = ers
-      case ServerErrors(ers) => errors() = ers
-      case other => //do nothing
-    }
-
+    input.foreach(onMessage)
     connector.open()
+  }
+
+  protected def onMessage(message: KappaMessage): Unit = message match {
+
+    case KappaMessage.Container(messages) =>
+      messages.foreach(mess=>input() = mess) //flatmapping
+    case Go.ToTab(tabName) =>
+        if(menuMap.now.contains(tabName))
+        {
+          val value: ViewElement = menuMap.now(tabName)
+          value.id match {
+            case null => dom.console.error(s"$tabName id is null")
+            case undef if js.isUndefined(undef)=> dom.console.error(s"$tabName id is undefined")
+            case ident =>
+              dom.window.location.hash = ""
+              dom.window.location.hash = ident
+          }
+        }
+       else {
+        dom.console.error(s"Go.ToTab($tabName) failed as there is not such tab in the menu")
+        }
+    case ld: ProjectResponses.Loaded =>
+      //println("LOQDED = "+ld)
+      loaded() = ld
+    //case GoToPaper()
+    case SyntaxErrors(server, ers, params) =>  errors() = ers
+    case Failed(operation, ers, username) =>  errors() = ers
+    case ServerErrors(ers) => errors() = ers
+    case other => //do nothing
   }
 
   val commentManager = new CommentsWatcher(editorsUpdates, location/*, selector*/)
@@ -127,6 +128,8 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val menu: Var[List[(String, Element)]] = Var(List.empty[(String, Element)])
 
+  val menuMap = menu.map(list=>list.toMap)
+
   protected def addMenuItem(el: Element, title: String) = {
     menu() = menu.now :+ (title, el)
   }
@@ -138,38 +141,39 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("ProjectsPanel"){
       case (el, args) =>
-        val v = new ProjectsPanelView(el, currentProject, loaded, connector.input, connector.output, kappaWatcher).withBinder(n => new CodeBinder(n))
-        addMenuItem(el, "Projects")
+        val v = new ProjectsPanelView(el, sources, loaded, connector.input, connector.output, kappaWatcher).withBinder(n => new CodeBinder(n))
+        addMenuItem(el, MainTabs.Projects)
         v
      }
     .register("KappaEditor"){
       case (el, args) =>
-        val editor = new KappaCodeEditor(el, sourceMap, selectedSource, errors, input, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
-        addMenuItem(el, "Editor")
+        val editor = new KappaCodeEditor(el, sources, errors, input, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
+        addMenuItem(el, MainTabs.Editor)
         editor
     }
     .register("Simulations") {
       case (el, params) =>
-        val v = new SimulationsView(el, sourceMap, input, output).withBinder(new CodeBinder(_))
-        addMenuItem(el, "Simulations")
+        val v = new SimulationsView(el, sources, input, output).withBinder(new CodeBinder(_))
+        addMenuItem(el, MainTabs.Simulations)
         v
     }
     .register("Papers") {
       case (el, params) =>
         val v = new PapersView(el, location, currentProjectName, connector, kappaCursor).withBinder(new CodeBinder(_))
-        addMenuItem(el, "Papers")
+        addMenuItem(el, MainTabs.Papers)
         v
     }
     .register("Annotator"){
       case (el, args) =>
         val v = new AnnotatorNLP(el).withBinder(new GeneralBinder(_))
-        addMenuItem(el, "Annotations")
+        addMenuItem(el, MainTabs.Annotations)
         v
     }
     .register("Figures") {
       case (el, params) =>
-        val v = new FiguresView(el, selectedFigure, figures).withBinder(new CodeBinder(_))
-        addMenuItem(el, "Figures")
+        val v = new FiguresView(el, figures).withBinder(new CodeBinder(_))
+        addMenuItem(el, MainTabs.Figures)
         v
     }
 }
+

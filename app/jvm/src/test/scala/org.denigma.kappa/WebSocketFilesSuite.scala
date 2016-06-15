@@ -84,7 +84,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           val big = KappaProject("big")
           val ProjectResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
 
-          FileRequests.Upload
+          FileRequests.UploadBinary
 
         }
     }
@@ -170,7 +170,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           val paper = files / ".." / "upload" / "403339a0.pdf"
           paper.exists() shouldEqual true
 
-          val upload = FileRequests.Upload("big", List(DataMessage(paperName, paper.byteArray)))
+          val upload = FileRequests.UploadBinary("big", List(DataMessage(paperName, paper.byteArray)))
           val up: ByteBuffer = Pickle.intoBytes[KappaMessage](upload)
           wsClient.sendMessage(pack(up))
 
@@ -183,7 +183,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
               l
           }
 
-          val load = FileRequests.LoadFile("big", paperName)
+          val load = FileRequests.LoadBinaryFile("big", paperName)
           val d = Pickle.intoBytes[KappaMessage](load)
           wsClient.sendMessage(pack(d))
 

@@ -18,12 +18,6 @@ class Pages extends Directives with PJax{
     }
   }
 
-  def brat: Route = pathPrefix("brat" ~ Slash) { ctx=>
-    ctx.complete {
-      HttpResponse(  entity = HttpEntity(MediaTypes.`text/html`.withCharset(HttpCharsets.`UTF-8`), html.brat().body  ))
-    }
-  }
-
   val loadPage: Html => Html = h => html.index(Some(h))
 
 
@@ -35,7 +29,7 @@ class Pages extends Directives with PJax{
     }
 
 
-  def routes: Route = index ~ test ~ brat
+  def routes: Route = index ~ test
 
 
 }

@@ -6,7 +6,8 @@ import scalacss.Defaults._
 /**
   * Created by antonkulaga on 06/04/16.
   */
-object MyStyles extends TextLayerStyles with DragDropStyles{
+object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles with ListStyles
+{
   import dsl._
 
   val totalWidth = 5120 px
@@ -37,18 +38,6 @@ object MyStyles extends TextLayerStyles with DragDropStyles{
     borderWidth(3 px)
     )
 
-  ".attached.tab.segment" -(
-      overflowY.auto
-    )
-
-  ".ui.column" -(
-    overflowY.auto  important,
-    padding(0 px)  important
-    )
-
-  ".ui.number.input" -(
-    maxWidth(50 px)
-    )
 
 
   ".CodeMirror" -(
@@ -82,17 +71,6 @@ object MyStyles extends TextLayerStyles with DragDropStyles{
     minHeight(98.0 vh)
     )
 
-  ".tab.page" -(
-      //overflowY.scroll,
-      //overflowX.scroll,
-      minHeight(98.0 vh)
-    )
-
-  ".tab.flexible.page" -(
-    overflowY.auto,
-    overflowX.auto,
-    height(100.0 %%)
-    )
 
   "#LeftGraph" -(
     padding(0 px)

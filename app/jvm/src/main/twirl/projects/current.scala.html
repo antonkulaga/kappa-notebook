@@ -1,0 +1,54 @@
+@()
+<div class="ui blue segment" data-view="ProjectFilesView">
+  <h4 class="ui blue header">Current project: <b data-bind="name"></b></h4>
+  <h4 class="ui inverted blue header"></h4>
+
+ <section class="ui celled animated list">
+    <section class="item" data-template="true">
+      <i class="label" data-class="icon"></i>
+      <div class="content">
+        <table class="ui unstackable table">
+          <tbody>
+            <tr>
+              <td data-bind="name" class="clickable header" data-click="openClick"></td>
+              <td class="right aligned">
+                <i class="edit clickable icon" data-click="renameClick"></i>
+              </td>
+              <td class="right aligned">
+                <i class="save clickable icon" data-click="saveClick"></i>
+              </td>
+              <td class="right aligned">
+                <i class="remove clickable icon" data-click="removeClick"></i>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+    </section>
+  </section>
+  @*
+  <section class="ui celled grid">
+    <div data-template="true" class="row">
+      <div class="two wide column">
+        <i class="label" data-class="icon"></i>
+      </div>
+      <div class="ten wide column">
+        <div data-bind="name" class="header" style="cursor: pointer" data-click="openClick"></div>
+      </div>
+      <div class="four wide column">
+        <i class="edit icon  column" style="cursor: pointer" data-click="removeClick"></i>
+        <i class="save icon" style="cursor: pointer" data-click="removeClick"></i>
+        <i class="remove icon" style="cursor: pointer" data-click="removeClick"></i>
+      </div>
+    </div>
+  </section>
+  *@
+
+  <div>
+    <input class="ui input" placeholder="add file" data-bind="newFileName">
+    <div class="ui button" data-click="addFileClick"><i class="add circle icon"></i>&nbsp:</div>
+  </div>
+  <div class="ui button" data-click="download">
+    <i class="ui download icon"></i>Download
+  </div>
+</div>

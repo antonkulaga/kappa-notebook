@@ -63,10 +63,8 @@ class PapersView(val elem: Element,
   override def newItemView(name: String): PublicationView = this.constructItemView(name){
     case (el, params)=>
       el.id = name
-      //println("add view "+name)
       val paper: Paper = this.items.now(name) //buggy but hope it will work
       val v = new PublicationView(el, location, paper, kappaCursor).withBinder(v=>new CodeBinder(v))
-      //selector.paper() = name
       v
   }
 

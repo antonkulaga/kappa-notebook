@@ -12,5 +12,5 @@ trait TabItem {
 
   def selected: Rx[String]
 
-  val active: rx.Rx[Boolean] = selected.map(value => value == self.id)
+  lazy val active: rx.Rx[Boolean] = selected.map(value => value == self.id)
 }

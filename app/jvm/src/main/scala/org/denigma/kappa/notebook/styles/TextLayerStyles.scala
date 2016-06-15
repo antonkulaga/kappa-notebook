@@ -1,9 +1,7 @@
 package org.denigma.kappa.notebook.styles
 
 import scalacss.Defaults._
-/**
-  * Created by antonkulaga on 09/06/16.
-  */
+
 trait TextLayerStyles extends StyleSheet.Standalone {
   import dsl._
   ".textLayer" -(
@@ -33,6 +31,7 @@ trait TextLayerStyles extends StyleSheet.Standalone {
     backgroundColor.rgb(180, 0, 170),
     borderRadius( 4 px)
     )
+
   ".textLayer .highlight.begin" -(
     borderRadius(4 px, 0 px , 0 px , 4 px)
     )

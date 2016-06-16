@@ -28,7 +28,7 @@ class KappaServerActor extends Actor with ActorLogging {
 
 
   protected def addServer(s: WebSimClient) = {
-    val version: Future[VersionInfo] = s.getVersion()
+    val version: Future[Version] = s.getVersion()
     import akka.pattern._
     import akka.pattern.pipe
     //version.pipeTo(self)

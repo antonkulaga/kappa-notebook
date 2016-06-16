@@ -13,6 +13,8 @@ Note: sometimes it can be broken as I use this address as a playground.
 Building from source and running examples
 -----------------------------------------
 
+*WARNING*: I AM ADOPTING TO NEW API SO LATEST COMMIT DOES NOT COMPILE!!!
+
 To build from source:
 Install [sbt](http://www.scala-sbt.org/)
 Make sure that [KaSim Server](https://github.com/Kappa-Dev/KaSim) is up and running in your system
@@ -23,6 +25,11 @@ $ re-start // will open akka-http application with examples
 ```
 It will open a local version of kappa-notebook at http://localhost:1234/ 
 If you have a debian-based Linux you can also run sbt _debian:packageBin_ command to create a deb installer in the _target_ folder
+
+Using WebSim scala API
+----------------------
+
+Scala API for dealing with WebSim (Kappa server) is now separated into websim subproject and published as a separate library so you can use it to build your own Scala client.
 
 Building WebSim server
 ----------------------

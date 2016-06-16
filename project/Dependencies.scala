@@ -10,11 +10,7 @@ object Dependencies {
 
 	//libs for testing
   lazy val testing = Def.setting(Seq(
-		"org.scalatest" %%% "scalatest" % Versions.scalaTest % Test/*,
-
-		"org.scalatest" %%% "scalatest-matchers" % Versions.scalaTestMatchers % Test,
-
-		"org.scalatest" %%% "scalatest-wordspec" % Versions.scalaTestMatchers % Test*/
+		"org.scalatest" %%% "scalatest" % Versions.scalaTest % Test
   ))
 
 	//akka-related libs
@@ -22,15 +18,18 @@ object Dependencies {
 
 		"org.denigma" %%% "akka-http-extensions" % Versions.akkaHttpExtensions,
 
-		"com.typesafe.akka" %% "akka-http-testkit" % Versions.akka % Test,
-
-		"com.typesafe.akka" %% "akka-stream-testkit" % Versions.akka % Test,
+		"com.github.pathikrit"  %% "better-files-akka"  % Versions.betterFiles,
 
 		"ch.qos.logback" % "logback-classic" % Versions.logback,
 
 		"com.typesafe.akka" %% "akka-slf4j" % Versions.akka,
 
-		"de.heikoseeberger" %% "akka-http-circe" % Versions.circeHttp
+		"de.heikoseeberger" %% "akka-http-circe" % Versions.circeHttp,
+
+		"com.typesafe.akka" %% "akka-http-testkit" % Versions.akka % Test,
+
+		"com.typesafe.akka" %% "akka-stream-testkit" % Versions.akka % Test
+
 	))
 
 	//scalajs libs
@@ -62,15 +61,18 @@ object Dependencies {
 
 	))
 
-	//common purpose libs
-	lazy val commonShared: Def.Initialize[Seq[ModuleID]] = Def.setting(Seq(
+	lazy val appShared: Def.Initialize[Seq[ModuleID]] = Def.setting(Seq(
 		"com.github.japgolly.scalacss" %%% "core" % Versions.scalaCSS,
 
 		"com.github.japgolly.scalacss" %%% "ext-scalatags" %  Versions.scalaCSS,
 
 		"org.denigma" %%% "binding-controls" % Versions.bindingControls,
 
-		"com.lihaoyi" %%% "fastparse" % Versions.fastparse,
+		"org.denigma" %%% "annotator" % Versions.annotator
+	))
+
+	//common purpose libs
+	lazy val commonShared: Def.Initialize[Seq[ModuleID]] = Def.setting(Seq(
 
 		"io.circe" %%% "circe-core" % Versions.circe,
 
@@ -80,7 +82,11 @@ object Dependencies {
 
 		"com.softwaremill.quicklens" %%% "quicklens" % Versions.quicklens,
 
-		"org.denigma" %%% "annotator" % Versions.annotator
+		"com.lihaoyi" %%% "fastparse" % Versions.fastparse,
+
+		"me.chrons" %%% "boopickle" % Versions.booPickle
+
+
 	))
 
 	val otherJvm = Def.setting(Seq(
@@ -92,11 +98,18 @@ object Dependencies {
 
 		"com.iheart" %% "ficus" % Versions.ficus,
 
-		"com.github.pathikrit"  %% "better-files-akka"  % Versions.betterFiles,
-
 		"org.biopax.paxtools" % "paxtools" % Versions.paxtools
 
 		//"org.clulab" %% "reach" % Versions.reach
+
+	))
+
+	val ammonite = Def.setting(Seq(
+		"com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
+
+		"com.lihaoyi" %% "ammonite-shell" % Versions.ammonite,
+
+		"com.lihaoyi" % "ammonite-repl" % Versions.ammonite % Test cross CrossVersion.full
 
 	))
 

@@ -80,6 +80,8 @@ trait SharedVersions
 	val fastparse = "0.3.7"
 
 	val quicklens = "1.4.7"
+
+	val booPickle = "1.2.0"
 }
 
 

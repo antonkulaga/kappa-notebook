@@ -106,9 +106,10 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
       //println("LOQDED = "+ld)
       loaded() = ld
     //case GoToPaper()
-    case SyntaxErrors(server, ers, params) =>  errors() = ers
+    case KappaMessage.ServerResponse(SyntaxErrors(server, ers, params)) =>  errors() = ers
+    case KappaMessage.ServerResponse(ServerErrors(ers)) => errors() = ers
     case Failed(operation, ers, username) =>  errors() = ers
-    case ServerErrors(ers) => errors() = ers
+
     case other => //do nothing
   }
 

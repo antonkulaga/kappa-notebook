@@ -4,15 +4,14 @@ import akka.NotUsed
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpResponse
 import akka.pattern.pipe
-import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.testkit.TestSubscriber.Probe
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestProbe
-import org.denigma.kappa.messages.{RunModel, ServerConnection, SimulationStatus, VersionInfo}
+import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.services._
 
 import scala.collection.immutable.Seq
-import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util._
 
@@ -31,16 +30,16 @@ class WebSimSuite extends BasicKappaSuite {
       val p = TestSink.probe
       val source = Source.single(Unit)
       source.via(flows.versionFlow)
-        .runWith(TestSink.probe[VersionInfo])
+        .runWith(TestSink.probe[Version])
         .request(1)
-        .expectNextPF{ case v:VersionInfo => v }
+        .expectNextPF{ case v: Version => v }
     }
 
     "return a version number" in {
       val probe = TestProbe()
       server.getVersion().pipeTo(probe.ref)
       probe.expectMsgPF(duration * 2) {
-        case VersionInfo(build, "v1") if build.contains("Kappa Simulator") =>
+        case Version(build, "v1") if build.contains("Kappa Simulator") =>
       }
     }
 
@@ -78,7 +77,8 @@ class WebSimSuite extends BasicKappaSuite {
      val tokenFut = server.launch(params).pipeTo(probeToken.ref)
 
      probeToken.expectMsgPF(duration * 2) {
-       case Right(msg: List[String]) =>
+       case Right(msg) =>
+         println(msg)
      }
    }
 
@@ -112,7 +112,7 @@ class WebSimSuite extends BasicKappaSuite {
     }
 
     "run streamed" in {
-      val tokenSink = TestSink.probe[(Either[Int, List[String]], RunModel)]
+      val tokenSink = TestSink.probe[(Either[Int, List[WebSimError]], RunModel)]
       val params = messages.RunModel(abc, Some(100), max_events = Some(5000))
       val launcher = Source.single(params).via(flows.tokenFlow).runWith(tokenSink)
       val (token, model) = launcher.request(1).expectNextPF{ case (Left(t: Int), mod) =>  t -> mod }
@@ -127,14 +127,14 @@ class WebSimSuite extends BasicKappaSuite {
     }
 
 
-     "run simulation and get results" in {
-       val probe = TestProbe()
-       val params = messages.RunModel(abc, Some(1000), max_events = Some(1000))
-       server.run(params).map(_._1).pipeTo(probe.ref)
-       probe.expectMsgPF(1 second){
-         case  Left( (token: Int, sim: SimulationStatus)) if sim.percentage>=100.0  =>
-       }
+   "run simulation and get results" in {
+     val probe = TestProbe()
+     val params = messages.RunModel(abc, Some(1000), max_events = Some(1000))
+     server.run(params).map(_._1).pipeTo(probe.ref)
+     probe.expectMsgPF(1 second){
+       case  Left( (token: Int, sim: SimulationStatus)) if sim.percentage>=100.0  =>
      }
+   }
  }
 
  protected override def afterAll() = {

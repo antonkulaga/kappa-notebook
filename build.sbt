@@ -31,7 +31,6 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-
 //settings for all the projects
 lazy val commonSettings = Seq(
   scalaVersion := Versions.scala,
@@ -54,46 +53,65 @@ def scalaJSDevTaskStage: Def.Initialize[Task[Pipeline.Stage]] = Def.task { mappi
   mappings ++ PlayScalaJS.devFiles(Compile).value ++ PlayScalaJS.sourcemapScalaFiles(fastOptJS).value
 }
 
+lazy val websim = crossProject
+  .crossType(CrossType.Full)
+  .in(file("websim")) //websim api
+  .settings(commonSettings ++ publishSettings: _*)
+  .settings(
+    name := "websim",
+    version := Versions.kappaNotebook
+  ).disablePlugins(RevolverPlugin)
+  .jsSettings(
+    persistLauncher in Compile := true,
+    persistLauncher in Test := false
+  )
+  .jvmSettings(
+    libraryDependencies ++= Dependencies.akka.value,
+    libraryDependencies ++= Dependencies.otherJvm.value,
+    (emitSourceMaps in fullOptJS) := true,
+    initialCommands in (Test, console) := Console.out
+  )
+
+lazy val websimJS = websim.js
+lazy val websimJVM = websim.jvm
+
 lazy val app = crossProject
   .crossType(CrossType.Full)
   .in(file("app"))
   .settings(commonSettings ++ publishSettings: _*)
   .settings(
     name := "kappa-notebook",
-    version := Versions.kappaNotebook
-  ).disablePlugins(RevolverPlugin).
-    // adding the `it` configuration
-    configs(IntegrationTest).
-    // adding `it` tasks
-    settings(Defaults.itSettings:_*).
-    // add `shared` folder to `jvm` source directories
-    jvmSettings(unmanagedSourceDirectories in IntegrationTest ++=
-    CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq).
-    // add `shared` folder to `js` source directories
-    jsSettings(unmanagedSourceDirectories in IntegrationTest ++=
-    CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq).
+    version := Versions.kappaNotebook,
+    libraryDependencies ++= Dependencies.appShared.value
+  ).dependsOn(websim)
+  .disablePlugins(RevolverPlugin).
+  // adding the `it` configuration
+  configs(IntegrationTest).
+  // adding `it` tasks
+  settings(Defaults.itSettings:_*).
+  // add `shared` folder to `jvm` source directories
+  jvmSettings(unmanagedSourceDirectories in IntegrationTest ++=
+  CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq).
+  // add `shared` folder to `js` source directories
+  jsSettings(unmanagedSourceDirectories in IntegrationTest ++=
+  CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq)
   // adding ScalaJSClassLoader to `js` configuration
-  jsSettings(inConfig(IntegrationTest)(ScalaJSPluginInternal.scalaJSTestSettings):_*)
+  .jsSettings(inConfig(IntegrationTest)(ScalaJSPluginInternal.scalaJSTestSettings):_*)
   .jsSettings(
     libraryDependencies ++= Dependencies.sjsLibs.value,
     persistLauncher in Compile := true,
     persistLauncher in Test := false,
     jsDependencies += RuntimeDOM % Test
-    //jsEnv in Test := new org.scalajs.jsenv.selenium.SeleniumJSEnv(org.scalajs.jsenv.selenium.Firefox)
   )
   .jsConfigure(p=>p.enablePlugins(ScalaJSPlay))
   .jvmSettings(
-    libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value,
     mainClass in Compile := Some("org.denigma.kappa.notebook.Main"),
     libraryDependencies ++= Dependencies.compilers.value ++ Dependencies.otherJvm.value,
     scalaJSDevStage := scalaJSDevTaskStage.value,
-    //pipelineStages := Seq(scalaJSProd,gzip),
     (emitSourceMaps in fullOptJS) := true,
     pipelineStages in Assets := Seq(scalaJSDevStage, gzip), //for run configuration
     (fullClasspath in Runtime) += (packageBin in Assets).value, //to package production deps
-    libraryDependencies += "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
-    libraryDependencies += "com.lihaoyi" %% "ammonite-shell" % Versions.ammonite,
-    libraryDependencies += "com.lihaoyi" % "ammonite-repl" % Versions.ammonite % Test cross CrossVersion.full,
+    libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value ++ Dependencies.ammonite.value,
     initialCommands in (Test, console) := Console.out
   )
   .jvmConfigure(p => p.enablePlugins(SbtTwirl, SbtWeb, PlayScalaJS))

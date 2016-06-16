@@ -3,6 +3,7 @@ package org.denigma.kappa
 import java.io.InputStream
 
 import akka.NotUsed
+import akka.http.{FlowUpTo, extensions}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.pattern.pipe

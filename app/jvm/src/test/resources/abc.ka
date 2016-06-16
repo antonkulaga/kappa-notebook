@@ -28,4 +28,3 @@
 
 %mod: [true] do $FLUX "flux.html" [true]
 %mod: [T]>20 do $FLUX "flux.html" [false]
-%def: "relativeFluxMaps" "true"

@@ -4,6 +4,21 @@ import boopickle.CompositePickler
 
 object KappaMessage{
 
+  object ServerCommand {
+    import boopickle.DefaultBasic._
+    implicit val classPickler = boopickle.Default.generatePickler[ServerCommand]
+  }
+
+  case class ServerCommand(serverMessage: ServerMessage) extends KappaMessage
+
+  object ServerResponse {
+    import boopickle.DefaultBasic._
+    implicit val classPickler = boopickle.Default.generatePickler[ServerCommand]
+  }
+
+  case class ServerResponse(serverMessage: ServerMessage) extends KappaMessage
+
+
   object Container {
     import boopickle.DefaultBasic._
 
@@ -20,12 +35,6 @@ object KappaMessage{
   import boopickle.Default._
   implicit val simpleMessagePickler: CompositePickler[KappaMessage] = compositePickler[KappaMessage]
     .addConcreteType[KappaProject]
-    .addConcreteType[LaunchModel]
-    .addConcreteType[SimulationResult]
-    .addConcreteType[SyntaxErrors]
-    .addConcreteType[ServerErrors]
-    .addConcreteType[Connected]
-    .addConcreteType[Disconnected]
     .addConcreteType[KappaFile]
     .addConcreteType[KappaFolder]
     .addConcreteType[ProjectRequests.Create]
@@ -103,20 +112,6 @@ case class KappaUser(name: String) extends KappaMessage
 case class Connected(username: String, channel: String, users: List[KappaUser], servers: ConnectedServers = ConnectedServers.empty) extends KappaMessage
 
 case class Disconnected(username: String, channel: String, users: List[KappaUser] /*, time: LocalDateTime = LocalDateTime.now()*/) extends KappaMessage
-
-trait ServerMessage extends KappaMessage
-
-trait ErrorMessage extends KappaMessage
-{
-  def errors: List[String]
-}
-
-case class SyntaxErrors(server: String, errors: List[String], initialParams: Option[RunModel] = None) extends ServerMessage with ErrorMessage
-
-case class SimulationResult(server: String, simulationStatus: SimulationStatus, token: Int, initialParams: Option[RunModel] = None) extends ServerMessage
-
-case class LaunchModel(server: String, parameters: RunModel, counter: Int = 0) extends ServerMessage
-
 
 case class DataChunk(id: KappaMessage, path: String, data: Array[Byte], downloaded: Int, total: Int, completed: Boolean = false) extends KappaFileMessage
 {

@@ -6,6 +6,7 @@ import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
 import org.denigma.controls.code.CodeBinder
+import org.denigma.kappa.messages.KappaMessage.ServerCommand
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.common._
 import org.scalajs.dom
@@ -58,7 +59,7 @@ class SimulationsView(val elem: Element,
 
 
   input.foreach{
-    case SimulationResult(server, status, token, params) =>
+    case KappaMessage.ServerResponse( SimulationResult(server, status, token, params) ) =>
       //println("percent: "+ status.percentage)
       items() = items.now.updated((token, params.getOrElse(status.runParameters)), status)
     //if(errors.now.nonEmpty) errors() = List.empty
@@ -72,7 +73,7 @@ class SimulationsView(val elem: Element,
       val code = concat()
       val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = code))
       //println("PARAMS TO THE SERVER = "+launchParams)
-      output() = launchParams
+      output() = ServerCommand(launchParams)
     }
   }
 

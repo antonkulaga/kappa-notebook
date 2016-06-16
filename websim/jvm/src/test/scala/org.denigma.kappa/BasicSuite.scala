@@ -1,4 +1,5 @@
 package org.denigma.kappa
+
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.Timeout
 import com.typesafe.config.Config

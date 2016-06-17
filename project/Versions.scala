@@ -2,7 +2,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 {
 	val scala = "2.11.8"
 
-	val kappaNotebook = "0.0.9"
+	val kappaNotebook = "0.0.10"
 
 	val binding = "0.8.8"
 
@@ -16,7 +16,7 @@ trait OtherJVM {
 
 	val bcrypt = "2.4"
 
-	val ammonite = "0.6.0"
+	val ammonite = "0.6.2"
 
 	val apacheCodec = "1.10"
 

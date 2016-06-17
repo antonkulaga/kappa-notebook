@@ -66,8 +66,7 @@ lazy val websim = crossProject
     persistLauncher in Test := false
   )
   .jvmSettings(
-    libraryDependencies ++= Dependencies.akka.value,
-    libraryDependencies ++= Dependencies.otherJvm.value,
+    libraryDependencies ++= Dependencies.akka.value ++ Dependencies.otherJvm.value ++ Dependencies.ammonite.value,
     (emitSourceMaps in fullOptJS) := true,
     initialCommands in (Test, console) := Console.out
   )

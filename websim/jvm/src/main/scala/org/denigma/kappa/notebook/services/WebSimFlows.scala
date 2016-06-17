@@ -6,7 +6,7 @@ import akka.stream.scaladsl._
 import de.heikoseeberger.akkahttpcirce.CirceSupport
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.denigma.kappa.messages.RunModel
+import org.denigma.kappa.messages.{ParseCode, RunModel}
 import akka.http.extensions._
 
 /**
@@ -21,6 +21,16 @@ trait WebSimFlows extends CirceSupport{
   protected val versionRequestFlow: Flow[Any, HttpRequest, NotUsed] = Flow[Any].map(any => HttpRequest(uri = s"$base/version"))
 
   protected val runningRequestFlow: Flow[Any, HttpRequest, NotUsed] = Flow[Any].map(any => HttpRequest(uri = s"$base/process", method = HttpMethods.GET))
+
+
+  /**
+    * Flow where you provide Running configurations to get Model with request in return
+    */
+  protected val parseRequestFlow: Flow[ParseCode, HttpRequest, NotUsed] = Flow[ParseCode].map{
+    case ParseCode(code) =>
+      val data = Uri(s"$base/parse").withQuery(Uri.Query(Map("code"->code)))
+      HttpRequest(uri = data, method = HttpMethods.GET)
+  }
 
   /**
     * Flow where you provide Running configurations to get Model with request in return

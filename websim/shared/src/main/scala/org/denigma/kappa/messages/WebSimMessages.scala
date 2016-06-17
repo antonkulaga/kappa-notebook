@@ -17,6 +17,8 @@ object WebSimMessage {
     .addConcreteType[Location]
     .addConcreteType[WebSimNode]
     .addConcreteType[WebSimSide]
+    .addConcreteType[ParseCode]
+    .addConcreteType[ContactMap]
     .addConcreteType[Observable]
     .addConcreteType[KappaPlot]
     .addConcreteType[RunModel]
@@ -71,14 +73,21 @@ object WebSimSide {
   implicit val classPickler: Pickler[WebSimSide] = boopickle.Default.generatePickler[WebSimSide]
 }
 
-case class WebSimSide(site_name: String, site_links: List[Int], site_states: List[Int]) extends WebSimMessage
+case class WebSimSide(site_name: String, site_links: List[(Int, Int)], site_states: List[String]) extends WebSimMessage
 
-object Parse {
+object ContactMap {
   import boopickle.DefaultBasic._
-  implicit val classPickler: Pickler[Parse] = boopickle.Default.generatePickler[Parse]
+  implicit val classPickler: Pickler[ContactMap] = boopickle.Default.generatePickler[ContactMap]
 }
 
-case class Parse(contact_map: List[WebSimNode]) extends WebSimMessage
+case class ContactMap(contact_map: List[WebSimNode]) extends WebSimMessage
+
+object ParseCode {
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[ParseCode] = boopickle.Default.generatePickler[ParseCode]
+}
+
+case class ParseCode(code: String) extends WebSimMessage
 
 //case class Parameter(code: String, nb_plot: Int, max_time: Double) extends WebSimMessage
 object RunModel {
@@ -140,13 +149,14 @@ case class Snapshot(snap_file: String, snap_event: Int, agents: List[AgentState]
 
 
 object SimulationStatus {
-  lazy val empty = SimulationStatus(
-    None, None, None, None, None, None, None, is_running = false, "", Nil, None//, Nil, Nil, Nil
+  lazy val empty = SimulationStatus(0.0,
+    None, None, None, None, None, None, None, is_running = false, None , Nil, None, Nil, Nil//, Nil
   )
   import boopickle.Default._
   implicit val classPickler: Pickler[SimulationStatus] = boopickle.Default.generatePickler[SimulationStatus]
 }
 case class SimulationStatus(
+                             time: Double,
                              time_percentage: Option[Double],
                              event: Option[Int],
                              event_percentage: Option[Double],
@@ -155,17 +165,17 @@ case class SimulationStatus(
                              max_time: Option[Double],
                              max_events: Option[Int],
                              is_running: Boolean,
-                             code: String,
+                             code: Option[String],
                              log_messages: List[String],
-                             plot: Option[KappaPlot]/*,
-                             snapshots: List[Snapshot],
+                             plot: Option[KappaPlot],
+                             //snapshots: List[Snapshot],
                              flux_maps: List[FluxMap],
-                             files: List[String]*/
+                             files: List[String]
                            )  extends WebSimMessage
 {
   def notFinished: Boolean = percentage < 100.0 && is_running//.getOrElse(true)
 
   def percentage: Double = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
 
-  def runParameters: RunModel = RunModel(code, nb_plot, max_events, max_time)
+  def runParameters: RunModel = RunModel(code.getOrElse(""), nb_plot, max_events, max_time)
 }

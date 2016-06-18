@@ -44,24 +44,6 @@ class WebSimSuite extends BasicKappaSuite {
       }
     }
 
-
-    "run simulation and get token" in {
-      val probeToken = TestProbe()
-      val probeList = TestProbe()
-      val model = abc
-      val params = RunModel(model, Some(1000), max_events = Some(10000))
-      val tokenFut =  server.launch(params).pipeTo(probeToken.ref)
-
-      probeToken.expectMsgPF(duration * 2) {
-        case Left(token: Int) =>
-          server.getRunning().pipeTo(probeList.ref)
-          probeList.expectMsgPF(duration * 3) {
-            case arr: Array[Int] if arr.contains(token) => //println(s"tokens are : [${arr.toList.mkString(" ")}]")
-          }
-      }
-    }
-
-
    "parse simulations" in {
      val probeToken = TestProbe()
      val probeList = TestProbe()
@@ -86,13 +68,42 @@ class WebSimSuite extends BasicKappaSuite {
      }
    }
 
+    "run simulation and get token" in {
+      val probeToken = TestProbe()
+      val probeList = TestProbe()
+      val model = abc
+      val wrongModel = model
+        .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
+        .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
+
+      val wrongParams = messages.RunModel(wrongModel, Some(1000), max_events = Some(1000000))
+      server.launch(wrongParams).pipeTo(probeToken.ref)
+      probeToken.expectMsgPF(duration * 2) {
+        case (Right(msg), model) =>
+          print("launching wrong model works well")
+      }
+
+      val params = RunModel(model, Some(1000), max_events = Some(10000))
+      server.launch(params).pipeTo(probeToken.ref)
+
+      probeToken.expectMsgPF(duration * 2) {
+        case (Left((token: Int, mp: ContactMap)), mod) =>
+          server.getRunning().pipeTo(probeList.ref)
+          probeList.expectMsgPF(duration * 3) {
+            case arr: Array[Int] if arr.contains(token) => //println(s"tokens are : [${arr.toList.mkString(" ")}]")
+          }
+      }
+    }
+
+
+
   "run simulation, get first result and " in {
     val probeToken = TestProbe()
     val model = abc
     val params = messages.RunModel(model, Some(1000), max_events = Some(1000000))
     val tokenFut = server.launch(params).pipeTo(probeToken.ref)
 
-    val token = probeToken.expectMsgPF(duration * 2) {  case Left(t: Int) => t  }
+    val token = probeToken.expectMsgPF(duration * 2) {  case (Left((t: Int, mp: ContactMap)), mod) => t  }
     val source =  Source.single(token)
     val simSink: Sink[(flows.Token, SimulationStatus), Probe[(flows.Token, SimulationStatus)]] = TestSink.probe[(flows.Token, SimulationStatus)]
     val s: Source[(flows.Token, SimulationStatus), NotUsed] = source.via(flows.simulationStatusFlow)
@@ -114,6 +125,7 @@ class WebSimSuite extends BasicKappaSuite {
       case res =>
     }
   }
+
 /*
   "run simulation extended" in {
     val probeToken = TestProbe()

@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http.HostConnectionPool
-import akka.http.scaladsl.model.{HttpMethods, HttpMethod, HttpRequest, HttpResponse}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream._
 import akka.stream.scaladsl._
@@ -35,6 +35,14 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   type TryResponse = (Try[HttpResponse], PoolMessage)
 
+  type ParseResult = Either[ContactMap, List[WebSimError]]
+
+  type TokenResult = Either[Token, List[WebSimError]]
+
+  type TokenContactResult = Either[(Token, ContactMap), List[WebSimError]]
+
+  type Runnable[T] = (T, RunModel)
+
   implicit val system: ActorSystem
 
   implicit val mat: ActorMaterializer
@@ -60,7 +68,7 @@ trait PooledWebSimFlows extends WebSimFlows {
       case (Failure(exception), time) => Future.failed(exception)
     }
 
-  protected val safeParseUnmarshalFlow: Flow[TryResponse, Future[Either[ContactMap, List[WebSimError]]], NotUsed] = safeUnmarshalFlow[ContactMap, List[WebSimError]]{
+  protected val safeParseUnmarshalFlow: Flow[TryResponse, Future[ParseResult], NotUsed] = safeUnmarshalFlow[ContactMap, List[WebSimError]]{
     case (resp, time) =>
       println("UNMARSHAL RESPONSE IS: "+resp)
       Unmarshal(resp).to[List[WebSimError]].recoverWith{
@@ -72,7 +80,7 @@ trait PooledWebSimFlows extends WebSimFlows {
   }
 
 
-  protected val safeTokenUnmarshalFlow: Flow[TryResponse, Future[Either[Token, List[WebSimError]]], NotUsed] = safeUnmarshalFlow[Int, List[WebSimError]]{
+  protected val safeTokenUnmarshalFlow: Flow[TryResponse, Future[TokenResult], NotUsed] = safeUnmarshalFlow[Int, List[WebSimError]]{
     case (resp, time) =>
       Unmarshal(resp).to[List[WebSimError]].recoverWith{
         case th=>
@@ -102,81 +110,111 @@ trait PooledWebSimFlows extends WebSimFlows {
     parseRequestFlow.inputZipWith(timePool.via(safeParseUnmarshalFlow.sync)){
       case (params, either)=> either -> params
     }
-/*
-protected val runModelContactFlow = {
-  val parseMe = Flow[RunModel].map(m=>ParseCode(m.code))
-  val pooledParse: Flow[ParseCode, scala.Either[ContactMap, List[WebSimError]], NotUsed] = parseRequestFlow.via(timePool.via(safeParseUnmarshalFlow.sync))
-  Flow[RunModel].inputZipWith(parseMe.via(pooledParse))
-  //Flow[RunModel].map(m=>ParseCode(m.code)).via(parseFlow)
-  parseRequestFlow.via(timePool.via(safeParseUnmarshalFlow.sync))
-}
-//tokens and contact maps
-val tokenContactFlow: Flow[RunModel, (Either[(Token, ContactMap), List[WebSimError]], RunModel), NotUsed] = {
 
-  Flow.fromGraph(GraphDSL.create(){ implicit builder=>
-    import GraphDSL.Implicits._
-    val input = new Inlet[RunModel]()
-    val out = new Outlet[(Either[(Token, ContactMap)])]()
-    val parse = builder.add(parseFlow)
-    val errors = parse.collect{
-      case (Left()
+  val runModelFlow: Flow[RunModel, (TokenContactResult, RunModel), NotUsed] = {
+    val parseFlow = parseModelFlow.via(timePool.via(safeParseUnmarshalFlow.sync))
+
+    val leftMaps: Flow[(ParseResult, RunModel), Runnable[ContactMap], NotUsed] = Flow[Runnable[ParseResult]].collect { case (Left(mp), initial) => mp -> initial }
+
+    val rightErrors: Flow[Runnable[ParseResult], (TokenContactResult, RunModel), NotUsed] = Flow[Runnable[ParseResult]].collect { case (Right(res), initial) => Right(res) -> initial }
+
+    val tokFlow: Flow[(ContactMap, RunModel), TokenResult, NotUsed]=
+      Flow[Runnable[ContactMap]].map{ case (mp, model)=> model}.via(runModelRequestFlow).via(timePool.via(safeTokenUnmarshalFlow.sync))
+
+    val zipRun = ZipWith[RunModel, ParseResult, Runnable[ParseResult]] {
+      case (model, result) => result -> model
     }
-    FlowShape(parse.in, parse.out)
+
+    val zipToken = ZipWith[Runnable[ContactMap], TokenResult, Runnable[TokenContactResult]] {
+      case ( (mp, model), either ) => either.left.map{ case token=> token-> mp } -> model
+    }
+
+
+    val flow: Flow[RunModel, (TokenContactResult, RunModel), NotUsed] = Flow.fromGraph(GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+
+      val runcast = builder.add(Broadcast[RunModel](2))
+
+      val parse: FlowShape[RunModel, ParseResult] = builder.add(parseFlow)
+
+      val runZipper = builder.add(zipRun)
+
+      val parsecast = builder.add(Broadcast[Runnable[ParseResult]](2))
+
+      val errors = builder.add(rightErrors)
+
+      val maps = builder.add(leftMaps)
+
+      val contactcast = builder.add(Broadcast[Runnable[ContactMap]](2))
+
+      val tokener = builder.add(tokFlow)
+
+      val tokenZipper = builder.add(zipToken)
+
+      val merger = builder.add(Merge[Runnable[TokenContactResult]](2))
+
+      //input ~> runcast
+      runcast ~> runZipper.in0
+      runcast ~> parse ~> runZipper.in1
+
+      runZipper.out ~> parsecast
+
+      parsecast ~> errors ~> merger
+
+      parsecast ~> maps ~> contactcast
+      contactcast ~> tokenZipper.in0
+      contactcast ~> tokener ~> tokenZipper.in1
+
+      tokenZipper.out ~>  merger
+
+      //merger ~> output
+      FlowShape(runcast.in, merger.out)
+    })
+
+    flow
   }
-  /*
-  runModelRequestFlow.inputZipWith(timePool.via(safeTokenUnmarshalFlow.sync)){
-    case (params, either)=> either -> params
-  }
-  */
-  parseFlow.map{
-    case Left(mp) =>
-    case Right(errors) =>
-  }
-  ???
-}
-*/
 
 
-val tokenFlow: Flow[RunModel, (Either[Token, List[WebSimError]], RunModel), NotUsed] =
-  runModelRequestFlow.inputZipWith(timePool.via(safeTokenUnmarshalFlow.sync)){
-    case (params, either)=> either -> params
+  val tokenFlow: Flow[RunModel, (Either[Token, List[WebSimError]], RunModel), NotUsed] =
+    runModelRequestFlow.inputZipWith(timePool.via(safeTokenUnmarshalFlow.sync)){
+      case (params, either)=> either -> params
+    }
+
+  val simulationStatusFlow: Flow[Token, (Token, SimulationStatus), NotUsed] =
+    simulationStatusRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
+      case (token, result)=> token -> result
   }
 
-val simulationStatusFlow: Flow[Token, (Token, SimulationStatus), NotUsed] =
-  simulationStatusRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
-  case (token, result)=> token -> result
-}
-
-def simulationStream(updateInterval: FiniteDuration, parallelism: Int) =  Flow[Token].flatMapMerge(parallelism, {
-  case token =>
-    val source = Source.tick(0 millis, updateInterval, token)
-    source.via( simulationStatusFlow )
-      .upTo{
-        case (t, sim) =>
-          sim.percentage >= 100.0 || !sim.is_running//.getOrElse(false)
-      }
-})
-
-lazy val syncSimulationStream: Flow[Token, (Token, SimulationStatus), NotUsed] = simulationStream(300 millis, 1)
-
-def simulationResultStream(updateInterval: FiniteDuration, parallelism: Int): Flow[RunModel,
-  (Either[(Token, SimulationStatus), List[WebSimError]], RunModel), NotUsed] =
-  tokenFlow.flatMapMerge(parallelism, {
-    case (Left(token), model) =>
+  def simulationStream(updateInterval: FiniteDuration, parallelism: Int) =  Flow[Token].flatMapMerge(parallelism, {
+    case token =>
       val source = Source.tick(0 millis, updateInterval, token)
-      source.via( simulationStatusFlow ).upTo{
-        case (t, sim) => sim.percentage >= 100.0 || !sim.is_running
-      }.map(v=>Left(v)->model)
+      source.via( simulationStatusFlow )
+        .upTo{
+          case (t, sim) =>
+            sim.percentage >= 100.0 || !sim.is_running//.getOrElse(false)
+        }
+  })
 
-    case (Right(errors), model) =>
-      Source.single(Right(errors) -> model)
+  lazy val syncSimulationStream: Flow[Token, (Token, SimulationStatus), NotUsed] = simulationStream(300 millis, 1)
+
+  def simulationResultStream(updateInterval: FiniteDuration, parallelism: Int): Flow[RunModel,
+    (Either[(Token, SimulationStatus), List[WebSimError]], RunModel), NotUsed] =
+    tokenFlow.flatMapMerge(parallelism, {
+      case (Left(token), model) =>
+        val source = Source.tick(0 millis, updateInterval, token)
+        source.via( simulationStatusFlow ).upTo{
+          case (t, sim) => sim.percentage >= 100.0 || !sim.is_running
+        }.map(v=>Left(v)->model)
+
+      case (Right(errors), model) =>
+        Source.single(Right(errors) -> model)
+    }
+    )
+
+  lazy val syncSimulationResultStream: Flow[RunModel, (Either[(Token, SimulationStatus), List[WebSimError]], RunModel), NotUsed] = simulationResultStream(300 millis, 1)
+
+  val stopFlow: Flow[Token, (Token, SimulationStatus), NotUsed] = stopRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
+    case (token, result)=> token -> result
   }
-  )
-
-lazy val syncSimulationResultStream: Flow[RunModel, (Either[(Token, SimulationStatus), List[WebSimError]], RunModel), NotUsed] = simulationResultStream(300 millis, 1)
-
-val stopFlow: Flow[Token, (Token, SimulationStatus), NotUsed] = stopRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
-  case (token, result)=> token -> result
-}
 
 }

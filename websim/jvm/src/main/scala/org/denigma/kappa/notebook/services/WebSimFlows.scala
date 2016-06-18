@@ -22,13 +22,18 @@ trait WebSimFlows extends CirceSupport{
 
   protected val runningRequestFlow: Flow[Any, HttpRequest, NotUsed] = Flow[Any].map(any => HttpRequest(uri = s"$base/process", method = HttpMethods.GET))
 
-
   /**
     * Flow where you provide Running configurations to get Model with request in return
     */
   protected val parseRequestFlow: Flow[ParseCode, HttpRequest, NotUsed] = Flow[ParseCode].map{
     case ParseCode(code) =>
       val data = Uri(s"$base/parse").withQuery(Uri.Query(Map("code"->code)))
+      HttpRequest(uri = data, method = HttpMethods.GET)
+  }
+
+  protected val parseModelFlow: Flow[RunModel, HttpRequest, NotUsed] = Flow[RunModel].map{
+    case m =>
+      val data = Uri(s"$base/parse").withQuery(Uri.Query(Map("code"->m.code)))
       HttpRequest(uri = data, method = HttpMethods.GET)
   }
 

@@ -46,16 +46,16 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
     source.via(flows.parseFlow).map(_._1) runWith Sink.head
   }
   def parse(code: String): Future[scala.Either[ContactMap, List[WebSimError]]]  = parse(ParseCode(code))
-/*
-  def launchExt(model: RunModel): Future[Either[(Token, ContactMap), List[WebSimError]]] = {
+
+  def launch(model: RunModel): Future[(flows.TokenContactResult, RunModel)] = {
     val source = Source.single(model) // give one model
-    source.via(flows.tokenContactFlow).map(_._1) runWith Sink.head
+    source.via(flows.runModelFlow) runWith Sink.head
   }
-*/
-  def launch(model: RunModel): Future[Either[Token, List[WebSimError]]] = {
+
+/*  def launch(model: RunModel): Future[Either[Token, List[WebSimError]]] = {
     val source = Source.single(model) // give one model
     source.via(flows.tokenFlow).map(_._1) runWith Sink.head
-  }
+  }*/
 
   def stop(token: Token): Future[SimulationStatus] = {
     val source: Source[Token, NotUsed] = Source.single(token)

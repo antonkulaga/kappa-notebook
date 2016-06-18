@@ -1,5 +1,5 @@
 package org.denigma.kappa
-
+/*
 import java.io.{File => JFile}
 import java.nio.ByteBuffer
 
@@ -224,3 +224,4 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
 
 }
 
+*/

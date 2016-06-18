@@ -2,7 +2,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 {
 	val scala = "2.11.8"
 
-	val kappaNotebook = "0.0.10"
+	val kappaNotebook = "0.0.11"
 
 	val binding = "0.8.8"
 
@@ -45,7 +45,7 @@ trait OtherJVM {
 
 trait ScalaJSVersions {
 
-	val jqueryFacade = "0.11" //1.0-RC2
+	val jqueryFacade = "0.11"
 
 	val dom = "0.9.1"
 
@@ -56,8 +56,6 @@ trait ScalaJSVersions {
 	val d3jsFacade = "0.3.1"
 
 	val pdfJSFacade = "0.8.0-0.0.2"
-
-
 
 }
 
@@ -87,7 +85,7 @@ trait SharedVersions
 
 trait WebJarsVersions{
 
-	val jquery =  "3.0.0" //"2.2.4"
+	val jquery =  "3.0.0"
 
 	val jquerySVG = "1.5.0"
 
@@ -100,7 +98,6 @@ trait WebJarsVersions{
 	val webcomponents = "0.7.12"
 
 	val d3js: String = "3.5.12"
-
 
 }
 

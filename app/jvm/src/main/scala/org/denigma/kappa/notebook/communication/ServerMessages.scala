@@ -34,14 +34,11 @@ class KappaServerActor extends Actor with ActorLogging {
     //version.pipeTo(self)
   }
 
-
-
-  override def receive: Receive = {
-
+  protected def onServerCommands(sv: ServerMessage) = sv match {
     case launch @ RunAtServer(username, serverName, message: RunModel, userRef, interval) if servers.contains(serverName)=>
 
-      val sink: Sink[(Either[(Int, SimulationStatus), List[String]], RunModel), Any] = Sink.foreach {
-        case (Left( (token, res: SimulationStatus)), model) =>
+      val sink: Sink[server.flows.Runnable[server.flows.SimulationContactResult], Any] = Sink.foreach {
+        case (Left( (token, res: SimulationStatus, con)), model) =>
 
           val mess = SimulationResult(serverName, res, token, Some(model))
           //log.info("result is:\n "+mess)
@@ -58,8 +55,17 @@ class KappaServerActor extends Actor with ActorLogging {
 
     case  launch @ RunAtServer(username, serverName, message: RunModel, userRef, interval) =>
       system.log.error("DOES NOT EXIST: " + launch)
-      userRef ! SyntaxErrors(serverName, List(s"Server $serverName does not respond"))
+      userRef ! KappaServerErrors(List(s"Server $serverName does not respond"))
 
+    case other => this.log.error(s"some other message $other")
+  }
+
+
+  override def receive: Receive = {
+
+    case KappaMessage.ServerCommand(message) => onServerCommands(message)
+
+    case run: RunAtServer => onServerCommands(run)
 
     case other => this.log.error(s"some other message $other")
   }

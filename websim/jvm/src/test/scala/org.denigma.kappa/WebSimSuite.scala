@@ -125,14 +125,15 @@ class WebSimSuite extends BasicKappaSuite {
       case res =>
     }
   }
-
-/*
   "run simulation extended" in {
+
     val probeToken = TestProbe()
     val model = abc
     val params = messages.RunModel(model, Some(1000), max_events = Some(1000000))
-    val tokenFut = server.launch(params).pipeTo(probeToken.ref)
-    val token = probeToken.expectMsgPF(duration * 2) {  case Left(t: Int) => t  }
+    val tokenFut: Future[server.flows.Runnable[server.flows.TokenContactResult]] = server.launch(params).pipeTo(probeToken.ref)
+    val token = probeToken.expectMsgPF(duration * 2) {
+       case (Left((t: Int, result)), m) => t
+    }
     val source =  Source.single(token)
     val simSink: Sink[(flows.Token, SimulationStatus), Probe[(flows.Token, SimulationStatus)]] = TestSink.probe[(flows.Token, SimulationStatus)]
     val s: Source[(flows.Token, SimulationStatus), NotUsed] = source.via(flows.simulationStatusFlow)
@@ -155,31 +156,36 @@ class WebSimSuite extends BasicKappaSuite {
     }
   }
 
-    "run streamed" in {
-      val tokenSink = TestSink.probe[(Either[Int, List[WebSimError]], RunModel)]
-      val params = messages.RunModel(abc, Some(100), max_events = Some(5000))
-      val launcher = Source.single(params).via(flows.tokenFlow).runWith(tokenSink)
-      val (token, model) = launcher.request(1).expectNextPF{ case (Left(t: Int), mod) =>  t -> mod }
-      val simSource = Source.single(token).via(flows.syncSimulationStream)
-      val probe = TestProbe()
-      simSource.runWith(Sink.seq).pipeTo(probe.ref)
-      val results = probe.expectMsgPF(2 seconds){
-        case res: Seq[(Int, SimulationStatus)]=> res
-      }
-      results.nonEmpty shouldEqual true
-      results.last._2.percentage >= 100.0 shouldBe true
+  "run streamed" in {
+    val tokenSink = TestSink.probe[flows.Runnable[flows.TokenContactResult]]
+    val params = messages.RunModel(abc, Some(100), max_events = Some(5000))
+    val launcher: Probe[flows.Runnable[flows.TokenContactResult]] = Source.single(params).via(flows.runModelFlow).runWith(tokenSink)
+    val (token, model) = launcher.request(1).expectNextPF{
+      case (Left((t: Int, cm)), mod) =>  t -> mod
     }
+    val simSource = Source.single(token).via(flows.syncSimulationStream)
+    val probe = TestProbe()
+    simSource.runWith(Sink.seq).pipeTo(probe.ref)
+    val results = probe.expectMsgPF(2 seconds){
+      case res: Seq[(Int, SimulationStatus)]=> res
+    }
+    results.nonEmpty shouldEqual true
+    results.last._2.percentage >= 100.0 shouldBe true
+  }
 
 
    "run simulation and get results" in {
+
      val probe = TestProbe()
-     val params = messages.RunModel(abc, Some(1000), max_events = Some(1000))
+     val params = messages.RunModel(abcFlow, Some(1000), max_events = Some(1000))
+
      server.run(params).map(_._1).pipeTo(probe.ref)
-     probe.expectMsgPF(1 second){
-       case  Left( (token: Int, sim: SimulationStatus)) if sim.percentage>=100.0  =>
+
+     probe.expectMsgPF(1 second) {
+       case Left((token: Int, sim: SimulationStatus, mp)) if sim.percentage >= 100.0 =>
+       //Token, SimulationStatus, ContactMap
      }
    }
-  */
  }
 
  protected override def afterAll() = {

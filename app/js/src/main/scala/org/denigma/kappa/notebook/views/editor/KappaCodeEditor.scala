@@ -4,10 +4,11 @@ import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView}
 import org.denigma.codemirror._
-import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage}
+import org.denigma.kappa.messages.{SyntaxErrors, Go, KappaFile, KappaMessage}
 import org.denigma.kappa.notebook.views.common.TabHeaders
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 import rx._
 
 import scala.collection.immutable._
@@ -15,7 +16,6 @@ import scala.collection.immutable._
 
 class KappaCodeEditor(val elem: Element,
                       val items: Var[Map[String, KappaFile]],
-                      val errorsList: Var[List[String]],
                       val input: Var[KappaMessage],
                       val kappaCursor: Var[Option[(Editor, PositionLike)]],
                       val editorUpdates: Var[EditorUpdates]) extends BindableView
@@ -27,7 +27,9 @@ class KappaCodeEditor(val elem: Element,
 
   override type Item = String
 
-  val errors: Rx[String] = errorsList.map(er=> if(er.isEmpty) "" else er.reduce(_ + "\n" + _))
+  val syntaxErrors = Var(SyntaxErrors.empty)
+
+  val errors: Rx[String] = syntaxErrors.map(er => if(er.isEmpty) "" else er.errors.map(s=>s.message).reduce(_ + "\n" + _))
 
   val hasErrors = errors.map(e=>e != "")
 
@@ -40,9 +42,13 @@ class KappaCodeEditor(val elem: Element,
 
   override type ItemView = CodeTab
 
+
   input.onChange{
     case Go.ToSource(name, from, to)=>
       selected() = name
+
+    case s: SyntaxErrors=>
+      syntaxErrors() = s
 
     case other => //do nothing
   }

@@ -18,6 +18,8 @@ trait KappaRes {
 
   lazy val abc = readString("/abc.ka")
 
+  lazy val abcFlow = readString("/abc-cflow.ka")
+
   lazy val runABCShort: RunModel = messages.RunModel(abc, Some(1000), max_events = Some(10000))
 
   //lazy val runABCLong: RunModel = WebSim.RunModel(abc, 1000, max_events = Some(1000000))

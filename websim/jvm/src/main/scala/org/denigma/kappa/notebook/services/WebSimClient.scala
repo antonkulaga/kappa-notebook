@@ -52,32 +52,27 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
     source.via(flows.runModelFlow) runWith Sink.head
   }
 
-/*  def launch(model: RunModel): Future[Either[Token, List[WebSimError]]] = {
-    val source = Source.single(model) // give one model
-    source.via(flows.tokenFlow).map(_._1) runWith Sink.head
-  }*/
-
   def stop(token: Token): Future[SimulationStatus] = {
     val source: Source[Token, NotUsed] = Source.single(token)
     source.via(flows.simulationStatusFlow).map(_._2) runWith Sink.head
   }
 
-  def run(model: RunModel): Future[(Either[(flows.Token, SimulationStatus), List[WebSimError]], RunModel)] =  {
+  def run(model: RunModel): Future[flows.Runnable[flows.SimulationContactResult]] =  {
     val source = Source.single(model)
     source.via(flows.syncSimulationResultStream).runWith(Sink.last)
   }
 
   def run(model: RunModel,
           updateInterval: FiniteDuration,
-          parallelism: Int = 1): Future[(scala.Either[(Token, SimulationStatus), List[WebSimError]], RunModel)] = {
+          parallelism: Int = 1): Future[flows.Runnable[flows.SimulationContactResult]] = {
     runStreamed(model, Sink.last, updateInterval, parallelism)
   }
 
   def runStreamed[T](model: RunModel,
-                     sink: Sink[(Either[(Int, SimulationStatus), List[WebSimError]], RunModel), T],
+                     sink: Sink[flows.Runnable[flows.SimulationContactResult], T],
                      updateInterval: FiniteDuration, parallelism: Int = 1): T = {
     val source = Source.single(model)
-    val withFlow = source.via(flows.simulationResultStream(updateInterval, parallelism))
+    val withFlow: Source[flows.Runnable[flows.SimulationContactResult], NotUsed] = source.via(flows.simulationResultStream(updateInterval, parallelism))
     withFlow.runWith(sink)
   }
 

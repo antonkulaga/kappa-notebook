@@ -117,14 +117,14 @@ object FluxData {
   implicit val classPickler: Pickler[FluxData] = boopickle.Default.generatePickler[FluxData]
 }
 
-case class FluxData(flux_name: String, flux_start: List[Int]) extends WebSimMessage
+case class FluxData(flux_name: String/*, flux_start: List[Int]*/) extends WebSimMessage
 
 object FluxMap {
   import boopickle.DefaultBasic._
   implicit val classPickler: Pickler[FluxMap] = boopickle.Default.generatePickler[FluxMap]
 }
 
-case class FluxMap(flux_rules: List[String], flux_data: FluxData, flux_end: Double) extends WebSimMessage
+case class FluxMap(flux_rules: List[String], flux_data: Option[FluxData]/*, flux_end: Double*/) extends WebSimMessage
 
 object AgentState {
   import boopickle.DefaultBasic._

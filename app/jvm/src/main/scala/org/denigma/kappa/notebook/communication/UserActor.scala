@@ -103,11 +103,11 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
   protected def onServerMessage: Receive = {
 
     case result: SimulationResult =>
-      val d = Pickle.intoBytes[KappaMessage](result)
+      val d = Pickle.intoBytes[KappaMessage](KappaMessage.ServerResponse(result))
       send(d)
 
     case s: SyntaxErrors=>
-      val d = Pickle.intoBytes[KappaMessage](s)
+      val d = Pickle.intoBytes[KappaMessage](KappaMessage.ServerResponse(s))
       send(d)
 
     case result: Connected =>

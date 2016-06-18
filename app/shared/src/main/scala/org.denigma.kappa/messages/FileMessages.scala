@@ -1,5 +1,6 @@
 package org.denigma.kappa.messages
 
+import boopickle.CompositePickler
 import boopickle.Default._
 
 import scala.List
@@ -105,18 +106,50 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
   lazy val nonsourceFiles = folder.files.filterNot(sourceFilter)
 }
 object ProjectRequests {
-  case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
-  case class Save(project: KappaProject) extends KappaFileMessage
-  case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
-  case class Detete(project: KappaProject) extends KappaFileMessage
-  case class Download(projectName: String) extends KappaFileMessage
-  case class Remove(projectName: String) extends KappaFileMessage
 
+
+  object Load {
+    implicit val classPickler: Pickler[Load] = boopickle.Default.generatePickler[Load]
+  }
+  case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
+
+  object Save {
+    implicit val classPickler: Pickler[Save] = boopickle.Default.generatePickler[Save]
+  }
+
+  case class Save(project: KappaProject) extends KappaFileMessage
+  object Create {
+    implicit val classPickler: Pickler[Create] = boopickle.Default.generatePickler[Create]
+  }
+  case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
+
+  object Delete {
+    implicit val classPickler: Pickler[Delete] = boopickle.Default.generatePickler[Delete]
+  }
+
+  case class Delete(project: KappaProject) extends KappaFileMessage
+
+  object Download {
+    implicit val classPickler: Pickler[Download] = boopickle.Default.generatePickler[Download]
+  }
+
+  case class Download(projectName: String) extends KappaFileMessage
+
+
+  object Remove {
+    implicit val classPickler: Pickler[Remove] = boopickle.Default.generatePickler[Remove]
+  }
+
+  case class Remove(projectName: String) extends KappaFileMessage
 }
 
 object ProjectResponses {
   object Loaded {
+
     def apply(projects: List[KappaProject]): Loaded = Loaded(None, SortedSet(projects:_*))
+
+    implicit val classPickler: Pickler[Loaded] = boopickle.Default.generatePickler[Loaded]
+
     lazy val empty: Loaded = Loaded(Nil)
   }
 
@@ -126,26 +159,56 @@ object ProjectResponses {
 }
 
 object FileRequests {
-  //case class Update(project: KappaProject, insertions) extends KappaFileMessage
+
+  object Remove {
+    implicit val classPickler: Pickler[Remove] = boopickle.Default.generatePickler[Remove]
+  }
+
   case class Remove(projectName: String, filename: String) extends KappaFileMessage
+
+  object LoadFileSync {
+    implicit val classPickler: Pickler[LoadFileSync] = boopickle.Default.generatePickler[LoadFileSync]
+  }
 
   case class LoadFileSync(projectName: String, path: String) extends KappaFileMessage
 
+  object LoadBinaryFile{
+    implicit val classPickler: Pickler[LoadBinaryFile] = boopickle.Default.generatePickler[LoadBinaryFile]
+  }
+
   case class LoadBinaryFile(projectName: String, path: String, chunkSize: Int = 8192 * 8 /*-1*/) extends KappaFileMessage
+
+  object UploadBinary{
+    implicit val classPickler: Pickler[UploadBinary] = boopickle.Default.generatePickler[UploadBinary]
+  }
 
   case class UploadBinary(projectName: String, files: List[DataMessage]) extends KappaFileMessage
 
+  object Save{
+    implicit val classPickler: Pickler[Save] = boopickle.Default.generatePickler[Save]
+  }
+
   case class Save(projectName: String, files: List[KappaFile], rewrite: Boolean) extends KappaFileMessage
+
+  object ZipUpload{
+    implicit val classPickler: Pickler[ZipUpload] = boopickle.Default.generatePickler[ZipUpload]
+  }
 
   case class ZipUpload(projectName: String, zip: DataMessage, rewriteIfExist: Boolean = false) extends KappaFileMessage
 }
 
 object FileResponses {
 
-  object Downloaded {
+  object Downloaded{
+    implicit val classPickler: Pickler[Downloaded] = boopickle.Default.generatePickler[Downloaded]
+
     lazy val empty = Downloaded("", Array())
   }
   case class Downloaded(folderName: String, data: Array[Byte]) extends KappaFileMessage
+
+  object UploadStatus{
+    implicit val classPickler: Pickler[UploadStatus] = boopickle.Default.generatePickler[UploadStatus]
+  }
 
   case class UploadStatus(projectName: String, hash: Int, rewriteIfExist: Boolean) extends KappaFileMessage
 

@@ -38,7 +38,9 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val loaded: Var[ProjectResponses.Loaded] = Var(ProjectResponses.Loaded.empty)
 
-  val errors = Var(List.empty[String])
+  val serverErrors = Var(ServerErrors.empty)
+
+  val kappaServerErrors = Var(KappaServerErrors.empty)
 
   val path = Var("files")
 
@@ -106,9 +108,9 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
       //println("LOQDED = "+ld)
       loaded() = ld
     //case GoToPaper()
-    case KappaMessage.ServerResponse(SyntaxErrors(server, ers, params)) =>  errors() = ers
-    case KappaMessage.ServerResponse(ServerErrors(ers)) => errors() = ers
-    case Failed(operation, ers, username) =>  errors() = ers
+    case KappaMessage.ServerResponse(ers: ServerErrors) =>  serverErrors() = ers
+    case KappaMessage.ServerResponse(ers: KappaServerErrors) => kappaServerErrors() = ers
+    case Failed(operation, ers, username) =>  kappaServerErrors() = kappaServerErrors.now.copy(errors = kappaServerErrors.now.errors ++ ers)
 
     case other => //do nothing
   }
@@ -148,7 +150,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
      }
     .register("KappaEditor"){
       case (el, args) =>
-        val editor = new KappaCodeEditor(el, sources, errors, input, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
+        val editor = new KappaCodeEditor(el, sources, input, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Editor)
         editor
     }

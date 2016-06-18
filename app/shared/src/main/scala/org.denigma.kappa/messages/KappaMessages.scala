@@ -34,12 +34,34 @@ object KappaMessage{
 
   import boopickle.Default._
   implicit val simpleMessagePickler: CompositePickler[KappaMessage] = compositePickler[KappaMessage]
+    .addConcreteType[ServerErrors]
     .addConcreteType[KappaProject]
     .addConcreteType[KappaFile]
     .addConcreteType[KappaFolder]
+    .addConcreteType[Done]
+    .addConcreteType[Failed]
+    .addConcreteType[Container]
+
+    .join(KappaFileMessage.kappaFilePickler)
+    .join(UIMessage.UIMessagePickler)
+
+}
+
+sealed trait KappaMessage
+
+object ServerErrors {
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[ServerErrors] = boopickle.Default.generatePickler[ServerErrors]
+  lazy val empty = ServerErrors(Nil)
+}
+
+case class ServerErrors(errors: List[String]) extends KappaMessage
+
+object KappaFileMessage {
+  import boopickle.DefaultBasic._
+  implicit val kappaFilePickler: CompositePickler[KappaFileMessage] = compositePickler[KappaFileMessage]
     .addConcreteType[ProjectRequests.Create]
     .addConcreteType[ProjectRequests.Download]
-
     .addConcreteType[ProjectRequests.Load]
     .addConcreteType[ProjectRequests.Save]
     .addConcreteType[ProjectResponses.Loaded]
@@ -48,45 +70,18 @@ object KappaMessage{
     .addConcreteType[FileRequests.LoadBinaryFile]
     .addConcreteType[FileRequests.LoadFileSync]
     .addConcreteType[FileRequests.Remove]
-    .addConcreteType[FileRequests.UploadBinary]
+    .addConcreteType[FileRequests.Save]
     .addConcreteType[FileRequests.ZipUpload]
 
     .addConcreteType[FileResponses.Downloaded]
     .addConcreteType[FileResponses.UploadStatus]
+
     .addConcreteType[DataChunk]
     .addConcreteType[DataMessage]
-    .addConcreteType[Done]
-    .addConcreteType[Failed]
-    .addConcreteType[Container]
-    .join(UIMessage.UIMessagePickler)
+    .join(KappaPath.kappaPathPickler)
 
 }
 
-sealed trait KappaMessage
-/*
-object KappaFileMessage {
-  import boopickle.DefaultBasic._
-  implicit val simpleMessagePickler: CompositePickler[KappaFileMessage] = compositePickler[KappaFileMessage]
-    .addConcreteType[ProjectRequests.Create]
-    .addConcreteType[ProjectRequests.Download]
-
-    .addConcreteType[ProjectRequests.Load]
-    .addConcreteType[ProjectRequests.Save]
-    .addConcreteType[ProjectResponses.Loaded]
-    .addConcreteType[ProjectRequests.Remove]
-
-    .addConcreteType[FileRequests.LoadFile]
-    .addConcreteType[FileRequests.LoadFileSync]
-    .addConcreteType[FileRequests.Remove]
-    .addConcreteType[FileRequests.Upload]
-    .addConcreteType[FileRequests.ZipUpload]
-
-    .addConcreteType[FileResponses.Downloaded]
-    .addConcreteType[FileResponses.UploadStatus]
-    .addConcreteType[DataChunk]
-    .addConcreteType[DataMessage]
-}
-*/
 trait KappaFileMessage extends KappaMessage
 
 
@@ -107,20 +102,55 @@ object UIMessage {
 
 trait UIMessage extends KappaMessage
 
+object KappaUser{
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[KappaUser] = boopickle.Default.generatePickler[KappaUser]
+}
+
 case class KappaUser(name: String) extends KappaMessage
+
+object Connected{
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[Connected] = boopickle.Default.generatePickler[Connected]
+}
 
 case class Connected(username: String, channel: String, users: List[KappaUser], servers: ConnectedServers = ConnectedServers.empty) extends KappaMessage
 
+object Disconnected{
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[Disconnected] = boopickle.Default.generatePickler[Disconnected]
+}
+
 case class Disconnected(username: String, channel: String, users: List[KappaUser] /*, time: LocalDateTime = LocalDateTime.now()*/) extends KappaMessage
+
+object DataChunk{
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[DataChunk] = boopickle.Default.generatePickler[DataChunk]
+}
 
 case class DataChunk(id: KappaMessage, path: String, data: Array[Byte], downloaded: Int, total: Int, completed: Boolean = false) extends KappaFileMessage
 {
   lazy val percent = downloaded / total
 }
 
+object DataMessage{
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[DataMessage] = boopickle.Default.generatePickler[DataMessage]
+}
+
 case class DataMessage(name: String, data: Array[Byte]) extends KappaFileMessage
+
+object Done{
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[Done] = boopickle.Default.generatePickler[Done]
+}
 
 case class Done(operation: KappaMessage, user: String) extends KappaMessage
 
-case class Failed(operation: KappaMessage, error: List[String], user: String) extends KappaMessage
+object Failed{
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[Failed] = boopickle.Default.generatePickler[Failed]
+}
+
+case class Failed(operation: KappaMessage, errors: List[String], user: String) extends KappaMessage
 

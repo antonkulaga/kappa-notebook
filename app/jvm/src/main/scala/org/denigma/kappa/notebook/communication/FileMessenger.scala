@@ -62,7 +62,7 @@ trait FileMessenger extends Messenger{
           }
 
         case None =>
-          val failed = Failed(mess, error = List(s"Path $path does not exist"), username)
+          val failed = Failed(mess, errors = List(s"Path $path does not exist"), username)
           val d = Pickle.intoBytes[KappaMessage](failed)
           send(d)
       }

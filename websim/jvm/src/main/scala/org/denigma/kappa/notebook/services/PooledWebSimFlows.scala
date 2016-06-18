@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.services
 import java.time.LocalDateTime
 
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.{Cancellable, ActorSystem}
 import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
@@ -31,6 +31,8 @@ case class ModelPoolMessage(runParams: RunModel,
                             errors: List[String] = List.empty)
   extends PoolMessage
 
+
+
 trait PooledWebSimFlows extends WebSimFlows {
 
   type TryResponse = (Try[HttpResponse], PoolMessage)
@@ -41,7 +43,9 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   type TokenContactResult = Either[(Token, ContactMap), List[WebSimError]]
 
-  type Runnable[T] = (T, RunModel)
+  type SimulationContactResult= Either[(Token, SimulationStatus, ContactMap), List[WebSimError]]
+
+  type Runnable[T] = (T, RunModel) //type that contains the result and initial run parameters
 
   implicit val system: ActorSystem
 
@@ -61,16 +65,29 @@ trait PooledWebSimFlows extends WebSimFlows {
                              (implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[Either[T,U]], NotUsed] =
     Flow[TryResponse].map{
       case (Success(resp), message) =>
+        debug(resp)
         val fut = Unmarshal(resp).to[T]
+
         fut.map[Either[T, U]](Left(_)).recoverWith{
           case exception => onfailure(resp, exception).map[Either[T, U]](Right(_))
         }
       case (Failure(exception), time) => Future.failed(exception)
     }
 
+  protected def debug(resp: HttpResponse) = {
+    /*
+    resp._3.toString.indexOf("flux_maps") match
+    {
+      case r if r <0=>
+      case i =>
+        println("FLUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX ==\n\n\n"+resp.entity.toString.substring(i))
+    }
+    */
+  }
+
   protected val safeParseUnmarshalFlow: Flow[TryResponse, Future[ParseResult], NotUsed] = safeUnmarshalFlow[ContactMap, List[WebSimError]]{
     case (resp, time) =>
-      println("UNMARSHAL RESPONSE IS: "+resp)
+      debug(resp)
       Unmarshal(resp).to[List[WebSimError]].recoverWith{
         case th=>
           system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
@@ -82,6 +99,7 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   protected val safeTokenUnmarshalFlow: Flow[TryResponse, Future[TokenResult], NotUsed] = safeUnmarshalFlow[Int, List[WebSimError]]{
     case (resp, time) =>
+      debug(resp)
       Unmarshal(resp).to[List[WebSimError]].recoverWith{
         case th=>
           system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
@@ -92,10 +110,11 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   def unmarshalFlow[T](implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[T], NotUsed] = Flow[TryResponse].map{
     case (Success(resp), time) =>
+      debug(resp)
       Unmarshal(resp).to[T].recoverWith{
         case th=>
-          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
-          system.log.error("THE ERROR is:"+th)
+          system.log.error("==\n WRONG UNMARSHAL FOR:\n " + resp + "==\n")
+          system.log.error("THE ERROR is:" + th)
           Future.failed(th)
       }
     case (Failure(exception), time) =>
@@ -175,11 +194,6 @@ trait PooledWebSimFlows extends WebSimFlows {
   }
 
 
-  val tokenFlow: Flow[RunModel, (Either[Token, List[WebSimError]], RunModel), NotUsed] =
-    runModelRequestFlow.inputZipWith(timePool.via(safeTokenUnmarshalFlow.sync)){
-      case (params, either)=> either -> params
-    }
-
   val simulationStatusFlow: Flow[Token, (Token, SimulationStatus), NotUsed] =
     simulationStatusRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
       case (token, result)=> token -> result
@@ -197,21 +211,24 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   lazy val syncSimulationStream: Flow[Token, (Token, SimulationStatus), NotUsed] = simulationStream(300 millis, 1)
 
-  def simulationResultStream(updateInterval: FiniteDuration, parallelism: Int): Flow[RunModel,
-    (Either[(Token, SimulationStatus), List[WebSimError]], RunModel), NotUsed] =
-    tokenFlow.flatMapMerge(parallelism, {
-      case (Left(token), model) =>
+  def simulationResultStream(updateInterval: FiniteDuration, parallelism: Int): Flow[RunModel, Runnable[SimulationContactResult], NotUsed] =
+    runModelFlow.flatMapMerge(parallelism, {
+      case (Left((token, contacts)), model) =>
         val source = Source.tick(0 millis, updateInterval, token)
-        source.via( simulationStatusFlow ).upTo{
+        val result: Source[Runnable[SimulationContactResult], Cancellable] = source.via( simulationStatusFlow ).upTo{
           case (t, sim) => sim.percentage >= 100.0 || !sim.is_running
-        }.map(v=>Left(v)->model)
+        }.map{
+         case (tok, res) =>
+           Left((tok, res, contacts)) -> model
+        }
+        result
 
       case (Right(errors), model) =>
         Source.single(Right(errors) -> model)
     }
     )
 
-  lazy val syncSimulationResultStream: Flow[RunModel, (Either[(Token, SimulationStatus), List[WebSimError]], RunModel), NotUsed] = simulationResultStream(300 millis, 1)
+  lazy val syncSimulationResultStream: Flow[RunModel, Runnable[SimulationContactResult], NotUsed] = simulationResultStream(300 millis, 1)
 
   val stopFlow: Flow[Token, (Token, SimulationStatus), NotUsed] = stopRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
     case (token, result)=> token -> result

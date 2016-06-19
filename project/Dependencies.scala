@@ -36,8 +36,6 @@ object Dependencies {
 	lazy val sjsLibs= Def.setting(Seq(
 		"org.scala-js" %%% "scalajs-dom" % Versions.dom,
 
-		"org.querki" %%% "jquery-facade" % Versions.jqueryFacade, //scalajs facade for jQuery + jQuery extensions
-
 		"org.denigma" %%% "codemirror-facade" % Versions.codemirrorFacade,
 
 		"org.denigma" %%% "threejs-facade" % Versions.threejsFacade,
@@ -89,19 +87,23 @@ object Dependencies {
 
 	))
 
-	val otherJvm = Def.setting(Seq(
+	val scientificJvm = Def.setting(Seq(
     "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
 
 		"org.sbolstandard" % "libSBOLj-parent" % Versions.libSBOLj,
 
 		"org.scalanlp" %% "breeze" % Versions.breeze,
 
-		"com.iheart" %% "ficus" % Versions.ficus,
-
 		"org.biopax.paxtools" % "paxtools" % Versions.paxtools
 
-		//"org.clulab" %% "reach" % Versions.reach
+	
+	))
 
+	val otherJvm = Def.setting(Seq(
+    "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
+
+
+		"com.iheart" %% "ficus" % Versions.ficus
 	))
 
 	val ammonite = Def.setting(Seq(

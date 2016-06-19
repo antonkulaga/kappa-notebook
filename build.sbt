@@ -66,9 +66,8 @@ lazy val websim = crossProject
     persistLauncher in Test := false
   )
   .jvmSettings(
-    libraryDependencies ++= Dependencies.akka.value ++ Dependencies.otherJvm.value ++ Dependencies.ammonite.value,
-    (emitSourceMaps in fullOptJS) := true,
-    initialCommands in (Test, console) := Console.out
+    libraryDependencies ++= Dependencies.akka.value ++ Dependencies.otherJvm.value,
+    (emitSourceMaps in fullOptJS) := true
   )
 
 lazy val websimJS = websim.js
@@ -82,26 +81,24 @@ lazy val app = crossProject
     name := "kappa-notebook",
     version := Versions.kappaNotebook,
     libraryDependencies ++= Dependencies.appShared.value
-  ).dependsOn(websim)
-  .disablePlugins(RevolverPlugin).
-  // adding the `it` configuration
-  configs(IntegrationTest).
-  // adding `it` tasks
-  settings(Defaults.itSettings:_*).
-  // add `shared` folder to `jvm` source directories
-  jvmSettings(unmanagedSourceDirectories in IntegrationTest ++=
-  CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq).
-  // add `shared` folder to `js` source directories
-  jsSettings(unmanagedSourceDirectories in IntegrationTest ++=
-  CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq)
-  // adding ScalaJSClassLoader to `js` configuration
-  .jsSettings(inConfig(IntegrationTest)(ScalaJSPluginInternal.scalaJSTestSettings):_*)
+  ).dependsOn(websim % "test->test;compile->compile" )
+  .disablePlugins(RevolverPlugin)
   .jsSettings(
     libraryDependencies ++= Dependencies.sjsLibs.value,
     persistLauncher in Compile := true,
     persistLauncher in Test := false,
     jsDependencies += RuntimeDOM % Test
   )
+  // adding the `it` configuration
+  .configs(IntegrationTest).
+  // adding `it` tasks
+  settings(Defaults.itSettings:_*).
+  // add `shared` folder to `jvm` source directories
+  jvmSettings(unmanagedSourceDirectories in IntegrationTest ++= CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq).
+  // add `shared` folder to `js` source directories
+  jsSettings(unmanagedSourceDirectories in IntegrationTest ++= CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq)
+  // adding ScalaJSClassLoader to `js` configuration
+  .jsSettings(inConfig(IntegrationTest)(ScalaJSPluginInternal.scalaJSTestSettings):_*)
   .jsConfigure(p=>p.enablePlugins(ScalaJSPlay))
   .jvmSettings(
     mainClass in Compile := Some("org.denigma.kappa.notebook.Main"),
@@ -109,7 +106,7 @@ lazy val app = crossProject
     scalaJSDevStage := scalaJSDevTaskStage.value,
     (emitSourceMaps in fullOptJS) := true,
     pipelineStages in Assets := Seq(scalaJSDevStage, gzip), //for run configuration
-    (fullClasspath in Runtime) += (packageBin in Assets).value, //to package production deps
+    //(fullClasspath in Runtime) += (packageBin in Assets).value, //to package production deps
     libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value ++ Dependencies.ammonite.value,
     initialCommands in (Test, console) := Console.out
   )

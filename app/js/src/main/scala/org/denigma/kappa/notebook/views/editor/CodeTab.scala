@@ -17,7 +17,7 @@ import org.denigma.binding.extensions._
 import scala.util._
 import scala.scalajs.js
 import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.kappa.notebook.extensions._
+//import org.denigma.kappa.notebook.extensions._
 import scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.concurrent.duration._
 

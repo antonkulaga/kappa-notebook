@@ -4,9 +4,9 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val kappaNotebook = "0.0.11"
 
-	val binding = "0.8.8"
+	val binding = "0.8.10"
 
-	val bindingControls = "0.0.16"
+	val bindingControls = "0.0.17"
 
 	val betterFiles = "2.16.0"
 
@@ -45,11 +45,9 @@ trait OtherJVM {
 
 trait ScalaJSVersions {
 
-	val jqueryFacade = "0.11"
-
 	val dom = "0.9.1"
 
-	val codemirrorFacade = "5.11-0.7"
+	val codemirrorFacade = "5.13.2-0.7"
 
 	val threejsFacade = "0.0.74-0.1.7"
 
@@ -63,15 +61,13 @@ trait ScalaJSVersions {
 trait SharedVersions
 {
 
-	val annotator = "0.0.3"
+	val annotator = "0.0.4"
 
 	val circe = "0.4.1"
 
 	val scalaTags = "0.5.4"
 
 	val scalaCSS = "0.4.1"
-
-	val productCollections = "1.4.2"
 
 	val scalaTest = "3.0.0-RC2"
 

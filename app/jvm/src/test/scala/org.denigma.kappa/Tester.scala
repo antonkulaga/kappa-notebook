@@ -8,9 +8,6 @@ import akka.stream.ActorMaterializer
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-/**
-  * Created by antonkulaga on 3/29/16.
-  */
 class Tester(implicit system: ActorSystem, materializer: ActorMaterializer) {
 
   implicit def dispatcher = system.dispatcher

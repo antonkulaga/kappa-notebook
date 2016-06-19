@@ -2,14 +2,20 @@ package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
-import org.denigma.kappa.messages.LaunchModel
+import org.denigma.kappa.messages.KappaMessage
+import org.denigma.kappa.messages.KappaMessage.ServerCommand
+import org.denigma.kappa.messages.ServerMessages.LaunchModel
+import org.denigma.kappa.messages.WebSimMessages.RunModel
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import com.softwaremill.quicklens._
 
-class RunnerView(val elem: Element, launcher: Var[LaunchModel]) extends BindableView
+class RunnerView(val elem: Element, sender: Var[KappaMessage], concat: () => String) extends BindableView
 {
   self=>
+
+  val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
 
   val parameters = Var(launcher.now.parameters)
 
@@ -52,6 +58,18 @@ class RunnerView(val elem: Element, launcher: Var[LaunchModel]) extends Bindable
     //hub.runParameters.propagate()
     val params = launcher.now
     launcher() = params.copy(parameters = this.parameters.now, counter = params.counter + 1)
+  }
+
+
+  override def bindView() = {
+    super.bindView()
+    launcher.triggerLater{
+      val l: LaunchModel = launcher.now
+      val code = concat()
+      val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = code))
+      //println("PARAMS TO THE SERVER = "+launchParams)
+      sender() = ServerCommand(launchParams)
+    }
   }
 
   //name.onChange{  case n=>  if(fileName.now!=n) fileName() = n  }

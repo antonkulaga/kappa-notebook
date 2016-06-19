@@ -1,5 +1,5 @@
 package org.denigma.kappa
-/*
+
 import java.io.{File => JFile}
 import java.nio.ByteBuffer
 
@@ -45,7 +45,6 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
       //wsClient.expectCompletion()
     }
 
-
     "update projects" in {
       val wsClient = WSProbe()
       WS("/channel/notebook?username=tester4", wsClient.flow) ~>  routes ~>
@@ -88,7 +87,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
 
         }
     }
-
+/*
     "download, remove and upload project" in {
       val wsClient = WSProbe()
       WS("/channel/notebook?username=tester5", wsClient.flow) ~>  routes ~>
@@ -147,6 +146,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           checkTestProjects(wsClient)
         }
     }
+    */
 
     "upload, streamed load and delete" in {
       val wsClient = WSProbe()
@@ -214,6 +214,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
     }
   }
 
+
   def checkTestProjects(wsClient: WSProbe): ProjectResponses.Loaded = checkProject(wsClient, KappaProject("big")){
     case l @ ProjectResponses.Loaded(Some(proj), projects) =>
       //println("LOADED = "+ l)
@@ -223,5 +224,3 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
   }
 
 }
-
-*/

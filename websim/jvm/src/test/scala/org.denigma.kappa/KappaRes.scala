@@ -2,7 +2,8 @@ package org.denigma.kappa
 
 import java.io.InputStream
 
-import org.denigma.kappa.messages.RunModel
+import org.denigma.kappa.messages.WebSimMessages._
+
 
 /**
   * Created by antonkulaga on 04/04/16.
@@ -20,7 +21,7 @@ trait KappaRes {
 
   lazy val abcFlow = readString("/abc-cflow.ka")
 
-  lazy val runABCShort: RunModel = messages.RunModel(abc, Some(1000), max_events = Some(10000))
+  lazy val runABCShort: RunModel = RunModel(abc, Some(1000), max_events = Some(10000))
 
   //lazy val runABCLong: RunModel = WebSim.RunModel(abc, 1000, max_events = Some(1000000))
 

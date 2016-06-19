@@ -17,7 +17,8 @@ import rx._
 
 import scala.collection.immutable._
 import scala.util._
-import com.softwaremill.quicklens._
+import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult}
+import org.denigma.kappa.messages.WebSimMessages.{KappaPlot, RunModel, SimulationStatus}
 
 
 class SimulationsView(val elem: Element,
@@ -55,7 +56,7 @@ class SimulationsView(val elem: Element,
 
   val items: Var[Map[(Int, RunModel), SimulationStatus]] = Var(Map.empty[(Int, RunModel), SimulationStatus])
 
-  val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
+  //val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
 
 
   input.foreach{
@@ -65,18 +66,6 @@ class SimulationsView(val elem: Element,
     //if(errors.now.nonEmpty) errors() = List.empty
     case other => //do nothing
   }
-
-  override def bindView() = {
-    super.bindView()
-    launcher.triggerLater{
-      val l: LaunchModel = launcher.now
-      val code = concat()
-      val launchParams = l.modify(_.parameters).setTo(l.parameters.copy(code = code))
-      //println("PARAMS TO THE SERVER = "+launchParams)
-      output() = ServerCommand(launchParams)
-    }
-  }
-
 
   val saveOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
 
@@ -102,9 +91,7 @@ class SimulationsView(val elem: Element,
       case Failure(th) => dom.console.error(s"File upload failure: ${th.toString}")
     })
 
-
   def makeId(item: Item): String = "#"+item._1
-
 
   override def newItemView(item: Key): SimulationStatusView = this.constructItemView(item)( {
     case (el, mp) =>
@@ -116,7 +103,7 @@ class SimulationsView(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selectTab).withBinder(new GeneralBinder(_)))
-    .register("runner")((el, args) => new RunnerView(el, launcher).withBinder(n => new CodeBinder(n)))
+    .register("runner")((el, args) => new RunnerView(el, output, concat).withBinder(n => new CodeBinder(n)))
 
 }
 

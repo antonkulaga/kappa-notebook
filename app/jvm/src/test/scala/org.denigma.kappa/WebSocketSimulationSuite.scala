@@ -1,5 +1,5 @@
 package org.denigma.kappa
-/*
+
 import java.io.{File => JFile}
 import java.nio.ByteBuffer
 
@@ -10,6 +10,9 @@ import akka.util.ByteString
 import better.files.File
 import boopickle.DefaultBasic._
 import net.ceedubs.ficus.Ficus._
+import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
+import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult, SyntaxErrors}
+import org.denigma.kappa.messages.WebSimMessages.RunModel
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.WebSocketManager
@@ -39,7 +42,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
           // check response for WS Upgrade headers
           isWebSocketUpgrade shouldEqual true
           val params = RunModel(abc, Some(1000), max_events = Some(10000))
-          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](LaunchModel("", params))
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(LaunchModel("", params)))
           wsClient.sendMessage(pack(d))
           wsClient.inProbe.request(1).expectNextPF {
             case BinaryMessage.Strict(bytes) if {
@@ -52,7 +55,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
           wsClient.inProbe.request(1).expectNextPF {
             case BinaryMessage.Strict(bytes) if {
               Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
-                case sim: SimulationResult =>
+                case ServerResponse(s: SimulationResult) =>
                   true
                 case _ =>
                   false
@@ -74,15 +77,15 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
           val model = abc
             .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
             .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
-          val params = messages.LaunchModel("", RunModel(model, Some(1000), max_events = Some(10000)))
-          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](params)
+          val params = LaunchModel("", RunModel(model, Some(1000), max_events = Some(10000)))
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(params))
           wsClient.sendMessage(pack(d))
 
           wsClient.inProbe.request(1).expectNextPF {
             case BinaryMessage.Strict(bytes) if {
               val mes = Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer)
               mes match {
-                case SyntaxErrors(server, errors, _) =>
+                case ServerResponse(SyntaxErrors(server, errors, _)) =>
                   //println("expected errors are: "+ errors)
                   true
                 case _ => false
@@ -97,4 +100,3 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
 
   }
 }
-*/

@@ -4,7 +4,8 @@ import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView}
 import org.denigma.codemirror._
-import org.denigma.kappa.messages.{SyntaxErrors, Go, KappaFile, KappaMessage}
+import org.denigma.kappa.messages.ServerMessages.SyntaxErrors
+import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage}
 import org.denigma.kappa.notebook.views.common.TabHeaders
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe

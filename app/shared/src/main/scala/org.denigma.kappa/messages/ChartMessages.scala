@@ -2,6 +2,7 @@ package org.denigma.kappa.messages
 
 
 import org.denigma.controls.charts.{LineStyles, Point, Series}
+import org.denigma.kappa.messages.WebSimMessages.KappaPlot
 
 import scala.collection.immutable._
 

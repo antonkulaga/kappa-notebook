@@ -6,8 +6,7 @@ import akka.stream.scaladsl._
 import de.heikoseeberger.akkahttpcirce.CirceSupport
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.denigma.kappa.messages.{ParseCode, RunModel}
-import akka.http.extensions._
+import org.denigma.kappa.messages.WebSimMessages._
 
 /**
   * Basic idea of the API is that we create a flow for each type of request to websim API, then those flows are applied to http pool

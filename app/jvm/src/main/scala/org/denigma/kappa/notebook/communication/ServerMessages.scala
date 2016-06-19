@@ -3,7 +3,9 @@ package org.denigma.kappa.notebook.communication
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
-import org.denigma.kappa.messages.{RunModel, SimulationStatus, _}
+import org.denigma.kappa.messages.KappaMessage.ServerCommand
+import org.denigma.kappa.messages.ServerMessages._
+import org.denigma.kappa.messages.WebSimMessages._
 import org.denigma.kappa.notebook.services.WebSimClient
 import rx.Var
 
@@ -63,7 +65,7 @@ class KappaServerActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
 
-    case KappaMessage.ServerCommand(message) => onServerCommands(message)
+    case ServerCommand(message) => onServerCommands(message)
 
     case run: RunAtServer => onServerCommands(run)
 

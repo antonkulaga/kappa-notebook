@@ -2,7 +2,8 @@ package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.controls.charts._
-import org.denigma.kappa.messages.{KappaPlot, KappaSeries}
+import org.denigma.kappa.messages.KappaSeries
+import org.denigma.kappa.messages.WebSimMessages.KappaPlot
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, SVGElement}
 import rx.Ctx.Owner.Unsafe.Unsafe

@@ -8,10 +8,11 @@ import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.Session
 import org.denigma.controls.papers.{Bookmark, PaperLoader}
+import org.denigma.kappa.messages.ServerMessages.KappaServerErrors
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.annotations.AnnotatorNLP
 import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor, KappaWatcher}
-import org.denigma.kappa.notebook.views.figures.{Image, Video, Figure, FiguresView}
+import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView, Image, Video}
 import org.denigma.kappa.notebook.views.papers.{PapersView, WebSocketPaperLoader}
 import org.denigma.kappa.notebook.views.project.ProjectsPanelView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView

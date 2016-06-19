@@ -17,7 +17,7 @@ import com.typesafe.config.Config
 /**
   * Websocket transport that unplickles/pickles messages
   */
-class WebSocketManager(system: ActorSystem, fileManager: FileManager) extends KappaPicklers {
+class WebSocketManager(system: ActorSystem, fileManager: FileManager){
 
   val config: Config = system.settings.config
 

@@ -16,6 +16,7 @@ import scala.concurrent.duration.{FiniteDuration, _}
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util._
 import akka.http.extensions._
+import WebSimMessages._
 
 trait PoolMessage
 {

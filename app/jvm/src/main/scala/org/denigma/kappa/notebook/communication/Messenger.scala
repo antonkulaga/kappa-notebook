@@ -26,8 +26,7 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 
-trait Messenger extends KappaPicklers
-  with Actor
+trait Messenger extends Actor
   with akka.actor.ActorLogging
   with ActorPublisher[SocketMessages.OutgoingMessage]
 {

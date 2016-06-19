@@ -13,6 +13,8 @@ import scala.concurrent.Future
 import scala.concurrent.duration.{FiniteDuration, _}
 import scala.util._
 import akka.http.extensions._
+import WebSimMessages._
+import org.denigma.kappa.messages.ServerMessages.ServerConnection
 
 class WebSimClientFlows(host: String = "localhost", port: Int = 8080)
                        (implicit val system: ActorSystem, val mat: ActorMaterializer)

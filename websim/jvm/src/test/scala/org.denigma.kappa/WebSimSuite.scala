@@ -15,6 +15,8 @@ import scala.collection.immutable.Seq
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util._
+import WebSimMessages._
+import org.denigma.kappa.messages.ServerMessages.ServerConnection
 
 /**
   * Tests quering WebSim
@@ -76,7 +78,7 @@ class WebSimSuite extends BasicKappaSuite {
         .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
         .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
 
-      val wrongParams = messages.RunModel(wrongModel, Some(1000), max_events = Some(1000000))
+      val wrongParams = RunModel(wrongModel, Some(1000), max_events = Some(1000000))
       server.launch(wrongParams).pipeTo(probeToken.ref)
       probeToken.expectMsgPF(duration * 2) {
         case (Right(msg), model) =>
@@ -100,7 +102,7 @@ class WebSimSuite extends BasicKappaSuite {
   "run simulation, get first result and " in {
     val probeToken = TestProbe()
     val model = abc
-    val params = messages.RunModel(model, Some(1000), max_events = Some(1000000))
+    val params = RunModel(model, Some(1000), max_events = Some(1000000))
     val tokenFut = server.launch(params).pipeTo(probeToken.ref)
 
     val token = probeToken.expectMsgPF(duration * 2) {  case (Left((t: Int, mp: ContactMap)), mod) => t  }
@@ -129,7 +131,7 @@ class WebSimSuite extends BasicKappaSuite {
 
     val probeToken = TestProbe()
     val model = abc
-    val params = messages.RunModel(model, Some(1000), max_events = Some(1000000))
+    val params = RunModel(model, Some(1000), max_events = Some(1000000))
     val tokenFut: Future[server.flows.Runnable[server.flows.TokenContactResult]] = server.launch(params).pipeTo(probeToken.ref)
     val token = probeToken.expectMsgPF(duration * 2) {
        case (Left((t: Int, result)), m) => t
@@ -158,7 +160,7 @@ class WebSimSuite extends BasicKappaSuite {
 
   "run streamed" in {
     val tokenSink = TestSink.probe[flows.Runnable[flows.TokenContactResult]]
-    val params = messages.RunModel(abc, Some(100), max_events = Some(5000))
+    val params = RunModel(abc, Some(100), max_events = Some(5000))
     val launcher: Probe[flows.Runnable[flows.TokenContactResult]] = Source.single(params).via(flows.runModelFlow).runWith(tokenSink)
     val (token, model) = launcher.request(1).expectNextPF{
       case (Left((t: Int, cm)), mod) =>  t -> mod
@@ -177,7 +179,7 @@ class WebSimSuite extends BasicKappaSuite {
    "run simulation and get results" in {
 
      val probe = TestProbe()
-     val params = messages.RunModel(abcFlow, Some(1000), max_events = Some(1000))
+     val params = RunModel(abcFlow, Some(1000), max_events = Some(1000))
 
      server.run(params).map(_._1).pipeTo(probe.ref)
 

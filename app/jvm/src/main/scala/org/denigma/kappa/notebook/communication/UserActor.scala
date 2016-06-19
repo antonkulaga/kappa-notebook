@@ -7,6 +7,8 @@ import akka.actor.ActorRef
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.stream.actor.ActorPublisherMessage
 import boopickle.DefaultBasic._
+import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult, SyntaxErrors}
+import org.denigma.kappa.messages.WebSimMessages.RunModel
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 

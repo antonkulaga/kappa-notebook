@@ -69,6 +69,8 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
       val videos = proj.videos.map(i=> i.name -> Video(i.name , i.path))
       figures() = (images ++ videos).toMap
 
+      sources() = proj.sourceMap
+
     case None =>
   }
 
@@ -89,7 +91,8 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   protected def onMessage(message: KappaMessage): Unit = message match {
 
     case KappaMessage.Container(messages) =>
-      messages.foreach(mess=>input() = mess) //flatmapping
+      messages.foreach(mess=> input() = mess) //flatmapping
+
     case Go.ToTab(tabName) =>
         if(menuMap.now.contains(tabName))
         {
@@ -105,12 +108,15 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
        else {
         dom.console.error(s"Go.ToTab($tabName) failed as there is not such tab in the menu")
         }
+
     case ld: ProjectResponses.Loaded =>
       //println("LOQDED = "+ld)
       loaded() = ld
-    //case GoToPaper()
+
     case KappaMessage.ServerResponse(ers: ServerErrors) =>  serverErrors() = ers
+
     case KappaMessage.ServerResponse(ers: KappaServerErrors) => kappaServerErrors() = ers
+
     case Failed(operation, ers, username) =>  kappaServerErrors() = kappaServerErrors.now.copy(errors = kappaServerErrors.now.errors ++ ers)
 
     case other => //do nothing

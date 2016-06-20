@@ -5,7 +5,6 @@ import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView}
 import org.denigma.kappa.messages._
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw.Element
-import rx.Rx.Dynamic
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._

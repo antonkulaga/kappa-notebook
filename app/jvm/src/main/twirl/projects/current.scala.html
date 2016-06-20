@@ -1,53 +1,49 @@
 @()
-<div class="ui blue segment" data-view="ProjectFilesView">
+<div class="ui blue segment" data-view="CurrentProjectView">
   <h4 class="ui blue header">Current project: <b data-bind="name"></b></h4>
   <h4 class="ui inverted blue header"></h4>
 
- <section class="ui celled animated list">
-    <section class="item" data-template="true">
-      <i class="label" data-class="icon"></i>
-      <div class="content">
-        <table class="ui unstackable table">
-          <tbody>
+    <table class="ui celled table">
+        <thead>
             <tr>
-              <td data-bind="name" class="clickable header" data-click="openClick"></td>
-              <td class="right aligned">
-                <i class="edit clickable icon" data-click="renameClick"></i>
-              </td>
-              <td class="right aligned">
-                <i class="save clickable icon" data-click="saveClick"></i>
-              </td>
-              <td class="right aligned">
-                <i class="remove clickable icon" data-click="removeClick"></i>
-              </td>
+                <th></th>
+                <th>File</th>
+                <th>Actions</th>
+                <th>Ops</th>
             </tr>
-            </tbody>
-          </table>
+        </thead>
+        <tbody>
+            <tr data-template="true">
+                <td><i class="label" data-class="icon"></i></td>
+                <td class="selectable"  data-bind="name" data-click="openClick">
+                </td>
+                <td class="right aligned">
+                    <div class="ui icon buttons">
+                        <button class="ui button" data-click="renameClick"><i class="edit icon"></i></button>
+                        <button class="ui button" data-click="saveClick"><i class="save icon"></i></button>
+                        <button class="ui button" data-click="removeClick"><i class="remove icon"></i></button>
+                    </div>
+                </td>
+                <td class="right aligned">
+                    <div class="ui toggle checkbox" data-show-if="isSource">
+                        <input type="checkbox" name="public">
+                        <label>run</label>
+                    </div>
+                    <button data-click="openClick" data-hide-if="isSource">
+                        GoTo
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="ui teal message">
+        <input class="ui input" placeholder="filename" data-bind="newFileName">
+        <div class="ui icon buttons">
+            <div class="ui button" data-click="addFile"><i class="add circle icon"></i>&nbsp;</div>
+            <div class="ui button" data-click="uploadFile"><i class="add circle icon"></i>&nbsp;</div>
         </div>
-    </section>
-  </section>
-  @*
-  <section class="ui celled grid">
-    <div data-template="true" class="row">
-      <div class="two wide column">
-        <i class="label" data-class="icon"></i>
-      </div>
-      <div class="ten wide column">
-        <div data-bind="name" class="header" style="cursor: pointer" data-click="openClick"></div>
-      </div>
-      <div class="four wide column">
-        <i class="edit icon  column" style="cursor: pointer" data-click="removeClick"></i>
-        <i class="save icon" style="cursor: pointer" data-click="removeClick"></i>
-        <i class="remove icon" style="cursor: pointer" data-click="removeClick"></i>
-      </div>
     </div>
-  </section>
-  *@
 
-  <div>
-    <input class="ui input" placeholder="add file" data-bind="newFileName">
-    <div class="ui button" data-click="addFileClick"><i class="add circle icon"></i>&nbsp:</div>
-  </div>
   <div class="ui button" data-click="download">
     <i class="ui download icon"></i>Download
   </div>

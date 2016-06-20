@@ -4,6 +4,7 @@ import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsSetView}
 import org.denigma.controls.papers.Bookmark
+import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.MainTabs
 import org.scalajs.dom
@@ -22,16 +23,29 @@ class CurrentProjectView(val elem: Element, currentProject: Rx[KappaProject], va
   val projectName = currentProject.map(p=>p.name)
   val newFileName = Var("")
   val hasNewFile = newFileName.map(f=>f.length > 1)
-  val fileName = newFileName.map{
+  val fileName: Rx[String] = newFileName.map{
     case f if f.endsWith(".ka")=>f
     case other => other
   }
 
+  val canCreate: Rx[Boolean] = Rx{
+    val sources = sourceMap()
+    val name = fileName()
+    !sources.contains(name)
+  }
+
   val unsaved: Dynamic[Map[String, KappaFile]] = sourceMap.map{ sm=> sm.collect{ case (key, value) if !value.saved => key -> value } }
 
-  val addFileClick = Var(Events.createMouseEvent())
-  addFileClick.triggerLater{
+  val addFile = Var(Events.createMouseEvent())
+  addFile.triggerIf(canCreate) { case ev=>
+    val file = KappaFile("", newFileName.now, "", false)
+    output() = FileRequests.Save(projectName.now, List(file), false)
     //output() = //org.denigma.kappa.messages.FileRequests.Save(projectName.now, List())
+  }
+
+  val uploadFile = Var(Events.createMouseEvent())
+  uploadFile.triggerLater{
+
   }
 
   val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.folder.files)
@@ -106,6 +120,13 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
     case n if n.endsWith(".avi") => FileType.video
     case other => FileType.other
   }
+
+
+  val isSource: Rx[Boolean] = fileType.map(f=>f==FileType.source)
+  val isImage: Rx[Boolean] = fileType.map(f=>f==FileType.image)
+  val isVideo: Rx[Boolean] = fileType.map(f=>f==FileType.video)
+  val isPaper: Rx[Boolean] = fileType.map(f=>f==FileType.pdf)
+
 
   val icon: Rx[String] = fileType.map{
     case FileType.pdf => "File Pdf Outline" + " large icon"

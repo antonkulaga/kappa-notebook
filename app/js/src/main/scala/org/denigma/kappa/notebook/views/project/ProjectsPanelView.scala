@@ -38,18 +38,18 @@ class ProjectsPanelView(val elem: Element,
 
   override lazy val injector = defaultInjector
   .register("ProjectsView")((el, args) => new ProjectsView(el, loaded, output).withBinder(n => new CodeBinder(n)))
-  .register("ProjectFilesView")((el, args) => new CurrentProjectView(el, currentProject, sourceMap, input, output).withBinder(n => new CodeBinder(n)))
+  .register("CurrentProjectView")((el, args) => new CurrentProjectView(el, currentProject, sourceMap, input, output).withBinder(n => new CodeBinder(n)))
   .register("LeftGraph") {  (el, args) =>
     new GraphView(el,
       kappaWatcher.leftPattern.nodes,
       kappaWatcher.leftPattern.edges,
       kappaWatcher.leftPattern.layouts,
-      args.getOrElse("container","graph-container").toString).withBinder(n => new CodeBinder(n)) }
+      args.getOrElse("container", "graph-container").toString).withBinder(n => new CodeBinder(n)) }
   .register("RightGraph") {  (el, args) =>
     new GraphView(el,
       kappaWatcher.rightPattern.nodes,
       kappaWatcher.rightPattern.edges,
       kappaWatcher.rightPattern.layouts,
-      args.getOrElse("container","graph-container").toString).withBinder(n => new CodeBinder(n)) }
+      args.getOrElse("container", "graph-container").toString).withBinder(n => new CodeBinder(n)) }
 
 }

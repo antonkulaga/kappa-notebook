@@ -45,7 +45,7 @@ class FiguresView(val elem: Element,
 
 class ImgView(val elem: Element, val selected: Var[String], val image: Var[Image]) extends FigureView
 {
-  val src = image.map(i => "/files/"+i)
+  val src = image.map(i => "/files/"+i.url)
 
   override def update(value: Figure) =  value match {
     case v @ Image(name, url)=>

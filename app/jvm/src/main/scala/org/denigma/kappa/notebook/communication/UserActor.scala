@@ -7,7 +7,7 @@ import akka.actor.ActorRef
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.stream.actor.ActorPublisherMessage
 import boopickle.DefaultBasic._
-import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult, SyntaxErrors}
+import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.WebSimMessages.RunModel
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
@@ -72,7 +72,6 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
 
         case None =>
           val response = Failed(dn, List(s"project $projectName does not exist"), username)
-          println(response)
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
           send(d)
       }
@@ -86,8 +85,9 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
   }
 
   protected def simulationMessages: Receive  = {
-    case LaunchModel(server, parameters, counter)=> run(parameters)
+    case ServerCommand(ServerMessages.LaunchModel(server, parameters, counter))=> run(parameters)
   }
+
 
   protected def otherKappaMessages: Receive  = {
     case other => log.error(s"unexpected $other")
@@ -104,12 +104,8 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
 
   protected def onServerMessage: Receive = {
 
-    case result: SimulationResult =>
-      val d = Pickle.intoBytes[KappaMessage](KappaMessage.ServerResponse(result))
-      send(d)
-
-    case s: SyntaxErrors=>
-      val d = Pickle.intoBytes[KappaMessage](KappaMessage.ServerResponse(s))
+    case result: ServerResponse =>
+      val d = Pickle.intoBytes[KappaMessage](result)
       send(d)
 
     case result: Connected =>

@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.communication
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
-import org.denigma.kappa.messages.KappaMessage.ServerCommand
+import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages._
 import org.denigma.kappa.messages.WebSimMessages._
 import org.denigma.kappa.notebook.services.WebSimClient
@@ -36,8 +36,10 @@ class KappaServerActor extends Actor with ActorLogging {
     //version.pipeTo(self)
   }
 
-  protected def onServerCommands(sv: ServerMessage) = sv match {
+
+  protected def runIfServerExists: PartialFunction[ServerMessage, Unit] ={
     case launch @ RunAtServer(username, serverName, message: RunModel, userRef, interval) if servers.contains(serverName)=>
+      println("run model")
 
       val sink: Sink[server.flows.Runnable[server.flows.SimulationContactResult], Any] = Sink.foreach {
         case (Left( (token, res: SimulationStatus, con)), model) =>
@@ -45,22 +47,26 @@ class KappaServerActor extends Actor with ActorLogging {
           val mess = SimulationResult(serverName, res, token, Some(model))
           //log.info("result is:\n "+mess)
 
-          userRef ! SimulationResult(serverName, res, token, Some(model))
+          userRef ! ServerResponse( SimulationResult(serverName, res, token, Some(model)) )
 
         case (Right(errors), model) =>
           val mess = SyntaxErrors(serverName, errors, Some(model))
           //log.info("result is with errors "+mess)
-          userRef ! mess
+          userRef ! ServerResponse( mess )
       }
       val server = servers(serverName)
       server.runStreamed(message, sink, interval)
+  }
 
+  protected def otherCases: PartialFunction[ServerMessage, Unit] = {
     case  launch @ RunAtServer(username, serverName, message: RunModel, userRef, interval) =>
       system.log.error("DOES NOT EXIST: " + launch)
       userRef ! KappaServerErrors(List(s"Server $serverName does not respond"))
 
     case other => this.log.error(s"some other message $other")
   }
+
+  protected def onServerCommands(sv: ServerMessage): Unit = runIfServerExists.orElse(otherCases)(sv)
 
 
   override def receive: Receive = {

@@ -50,7 +50,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
                 case c: Connected => true
                 case _ => false
               }
-            } =>
+            } => println("connected works")
           }
           wsClient.inProbe.request(1).expectNextPF {
             case BinaryMessage.Strict(bytes) if {

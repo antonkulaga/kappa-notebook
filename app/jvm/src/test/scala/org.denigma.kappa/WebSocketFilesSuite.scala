@@ -87,7 +87,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
 
         }
     }
-/*
+
     "download, remove and upload project" in {
       val wsClient = WSProbe()
       WS("/channel/notebook?username=tester5", wsClient.flow) ~>  routes ~>
@@ -146,7 +146,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           checkTestProjects(wsClient)
         }
     }
-    */
+
 
     "upload, streamed load and delete" in {
       val wsClient = WSProbe()

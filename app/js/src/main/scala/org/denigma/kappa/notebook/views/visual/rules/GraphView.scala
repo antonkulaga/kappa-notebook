@@ -1,17 +1,11 @@
-package org.denigma.kappa.notebook.views.visual
-
+package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.extensions.{sq, _}
 import org.denigma.binding.views.BindableView
-import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.model.KappaModel.Agent
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-
-
-import scala.collection.immutable
 
 class GraphView(val elem: Element,
                 val nodes: Rx[Vector[AgentNode]],

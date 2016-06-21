@@ -42,7 +42,9 @@ object Dependencies {
 
 		"io.circe" %%% "circe-scalajs" % Versions.circe,
 
-		"org.denigma" %%% "pdf-js-facade" % Versions.pdfJSFacade
+		"org.denigma" %%% "pdf-js-facade" % Versions.pdfJSFacade,
+
+		"org.singlespaced" %%% "scalajs-d3" % Versions.d3jsFacade
 	))
 
 	//dependencies on javascript libs
@@ -55,7 +57,9 @@ object Dependencies {
 
 		"org.webjars" % "jquery-svg" % Versions.jquerySVG,
 
-		"org.webjars" % "three.js" % Versions.threeJS
+		"org.webjars" % "three.js" % Versions.threeJS,
+
+		"org.webjars" % "d3js" % Versions.d3js
 
 	))
 

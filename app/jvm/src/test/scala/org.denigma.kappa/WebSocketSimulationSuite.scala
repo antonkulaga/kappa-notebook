@@ -11,7 +11,7 @@ import better.files.File
 import boopickle.DefaultBasic._
 import net.ceedubs.ficus.Ficus._
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
-import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult, SyntaxErrors}
+import org.denigma.kappa.messages.ServerMessages.{ParseModel, LaunchModel, SimulationResult, SyntaxErrors}
 import org.denigma.kappa.messages.WebSimMessages.RunModel
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
@@ -78,6 +78,35 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
             .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
             .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
           val params = LaunchModel("", RunModel(model, Some(1000), max_events = Some(10000)))
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(params))
+          wsClient.sendMessage(pack(d))
+
+          wsClient.inProbe.request(1).expectNextPF {
+            case BinaryMessage.Strict(bytes) if {
+              val mes = Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer)
+              mes match {
+                case ServerResponse(SyntaxErrors(server, errors, _)) =>
+                  //println("expected errors are: "+ errors)
+                  true
+                case _ => false
+              }
+            } =>
+
+          }
+          wsClient.sendCompletion()
+          //wsClient.expectCompletion()
+        }
+    }
+
+    "get connection map" in {
+      val wsClient = WSProbe()
+      WS("/channel/notebook?username=tester2", wsClient.flow) ~> routes ~>
+        check {
+          // check response for WS Upgrade headers
+          checkConnection(wsClient)
+
+          val model = abc
+          val params = ParseModel("", model)
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(params))
           wsClient.sendMessage(pack(d))
 

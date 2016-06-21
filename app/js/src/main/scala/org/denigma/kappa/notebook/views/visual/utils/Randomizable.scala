@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views.visual
+package org.denigma.kappa.notebook.views.visual.utils
 
 import org.denigma.threejs.{Vector2, Vector3}
 

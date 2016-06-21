@@ -1,6 +1,4 @@
-package org.denigma.kappa.notebook.views.visual
-
-import rx._
+package org.denigma.kappa.notebook.views.visual.utils
 
 import scala.util.Random
 

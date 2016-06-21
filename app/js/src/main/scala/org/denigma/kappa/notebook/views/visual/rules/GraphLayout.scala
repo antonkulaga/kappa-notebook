@@ -1,7 +1,10 @@
-package org.denigma.kappa.notebook.views.visual
+package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.threejs.PerspectiveCamera
 
+/**
+  * Created by antonkulaga on 21/06/16.
+  */
 trait GraphLayout
 {
 

@@ -3,7 +3,7 @@
   <h4 class="ui blue header">Current project: <b data-bind="name"></b></h4>
   <h4 class="ui inverted blue header"></h4>
 
-    <table class="ui celled table">
+    <table class="ui celled compact unstackable table">
         <thead>
             <tr>
                 <th></th>
@@ -18,7 +18,7 @@
                 <td class="selectable"  data-bind="name" data-click="openClick">
                 </td>
                 <td class="right aligned">
-                    <div class="ui icon buttons">
+                    <div class="ui icon tiny buttons">
                         <button class="ui button" data-click="renameClick"><i class="edit icon"></i></button>
                         <button class="ui button" data-click="saveClick"><i class="save icon"></i></button>
                         <button class="ui button" data-click="removeClick"><i class="remove icon"></i></button>
@@ -36,11 +36,11 @@
             </tr>
         </tbody>
     </table>
-    <div class="ui teal message">
+    <div class="ui segment">
         <input class="ui input" placeholder="filename" data-bind="newFileName">
         <div class="ui icon buttons">
             <div class="ui button" data-click="addFile"><i class="add circle icon"></i>&nbsp;</div>
-            <div class="ui button" data-click="uploadFile"><i class="add circle icon"></i>&nbsp;</div>
+            <div class="ui button" data-click="uploadFile"><i class="Cloud Upload icon"></i>&nbsp;</div>
         </div>
     </div>
 

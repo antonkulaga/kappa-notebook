@@ -4,6 +4,7 @@ import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView}
 import org.denigma.codemirror._
+import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.ServerMessages.SyntaxErrors
 import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage}
 import org.denigma.kappa.notebook.views.common.TabHeaders
@@ -13,7 +14,7 @@ import rx.Rx.Dynamic
 import rx._
 
 import scala.collection.immutable._
-
+import scala.scalajs.js
 
 class KappaCodeEditor(val elem: Element,
                       val items: Var[Map[String, KappaFile]],
@@ -74,7 +75,7 @@ class KappaCodeEditor(val elem: Element,
       val value: Var[KappaFile] = keyVar(item)
       println(s"source for  $item loaded")
       //println(value.now)
-      val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor)//.withBinder(v => new CodeBinder(v) )
+      val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor).withBinder(v => new CodeBinder(v) )
       println(selected.now)
       selected() = item
       view

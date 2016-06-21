@@ -51,7 +51,7 @@ trait ScalaJSVersions {
 
 	val threejsFacade = "0.0.74-0.1.7"
 
-	val d3jsFacade = "0.3.1"
+	val d3jsFacade = "0.3.3"
 
 	val pdfJSFacade = "0.8.0-0.0.2"
 
@@ -93,7 +93,7 @@ trait WebJarsVersions{
 
 	val webcomponents = "0.7.12"
 
-	val d3js: String = "3.5.12"
+	val d3js = "3.5.17"
 
 }
 

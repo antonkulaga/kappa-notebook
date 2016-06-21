@@ -1,14 +1,9 @@
 <section id="Notebook" data-view="Notebook">
-    <div class="ui top fixed seven item green menu" data-view="MainMenuView" id="MainMenuView"
-    data-event-drop="onDrop" data-event-dragover="onDragOver"  data-event-dragleave="onDragLeave" data-event-dragenter="onDragEnter" dropzone="move"
-    >
-        <a data-template="true" class="item" data-bind="itemName" data-bind-href="fragment"
-         draggable="true"  data-dragstart="onDragStart" data-event-dragend="onDragEnd"
-        ></a>
-    </div>
-    <section class="ui blue secondary segment padded celled grid">
+    @menu()
+    <section class="ui blue secondary segment padded celled grid" id="MainGrid">
         <div class="ui row">
             @projects.html.index()
+            @visualizations.html.index()
             @editor.html.index()
             @simulations.html.index()
             @papers.html.index()

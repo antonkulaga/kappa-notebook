@@ -1,19 +1,13 @@
-package org.denigma.kappa.notebook.views.visual
+package org.denigma.kappa.notebook.views.visual.rules
 
-import org.denigma.kappa.model.KappaModel
+import org.denigma.binding.extensions._
 import org.denigma.threejs.extensions.Container3D
 import org.denigma.threejs.extensions.controls.JumpCameraControls
-import org.denigma.threejs.{Object3D, PerspectiveCamera, Vector3, WebGLRendererParameters}
 import org.denigma.threejs.extras._
+import org.denigma.threejs.{Object3D, PerspectiveCamera, WebGLRendererParameters}
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw._
-import org.scalajs.dom.svg.SVG
 import rx._
-
-import scalatags.JsDom.implicits._
-import scalatags.JsDom.svgAttrs._
-import scalatags.JsDom.svgTags._
-import org.denigma.binding.extensions._
 
 
 class Visualizer (val container: HTMLElement,

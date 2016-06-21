@@ -37,17 +37,19 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
 
   type Token = Int
 
+  type ContactMapResult = scala.Either[ContactMap, List[WebSimError]]
+
   val flows = new WebSimClientFlows(connectionParameters.host, connectionParameters.port)
 
   protected lazy val ModelPool = Http().cachedHostConnectionPool[ModelPoolMessage](connectionParameters.host, connectionParameters.port)
 
   def getVersion(): Future[Version] = Source.single(Unit).via(flows.versionFlow).runWith(Sink.head)
 
-  def parse(toParse: ParseCode): Future[scala.Either[ContactMap, List[WebSimError]]] = {
+  def parse(toParse: ParseCode): Future[ContactMapResult] = {
     val source = Source.single(toParse)
     source.via(flows.parseFlow).map(_._1) runWith Sink.head
   }
-  def parse(code: String): Future[scala.Either[ContactMap, List[WebSimError]]]  = parse(ParseCode(code))
+  def parse(code: String): Future[ContactMapResult]  = parse(ParseCode(code))
 
   def launch(model: RunModel): Future[(flows.TokenContactResult, RunModel)] = {
     val source = Source.single(model) // give one model

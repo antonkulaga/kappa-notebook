@@ -1,8 +1,10 @@
-package org.denigma.kappa.notebook.views.visual.layouts
+package org.denigma.kappa.notebook.views.visual.rules.layouts
 
 import org.denigma.kappa.notebook.views.visual._
-import org.denigma.kappa.notebook.views.visual.drawing.Rectangle
-import org.denigma.kappa.notebook.views.visual.layouts.LayoutMode.LayoutMode
+import org.denigma.kappa.notebook.views.visual.rules.{AgentNode, LayoutInfo, KappaEdge, GraphLayout}
+import org.denigma.kappa.notebook.views.visual.rules.drawing.Rectangle
+import org.denigma.kappa.notebook.views.visual.rules.layouts.LayoutMode.LayoutMode
+import org.denigma.kappa.notebook.views.visual.utils.Randomizable
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
 import rx._
 

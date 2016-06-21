@@ -1,9 +1,10 @@
-package org.denigma.kappa.notebook.views.visual
+package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all._
+import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
+import org.denigma.kappa.notebook.views.visual.utils.LineParams
 import rx._
-import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all.attrs._
+import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all.attrs._
 import org.denigma.threejs.{Side => _, _}
 import org.scalajs.dom.svg.SVG
 

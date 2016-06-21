@@ -38,11 +38,10 @@ class KappaServerActor extends Actor with ActorLogging {
 
 
   protected def runIfServerExists: PartialFunction[ServerMessage, Unit] ={
-    case launch @ RunAtServer(username, serverName, message: RunModel, userRef, interval) if servers.contains(serverName)=>
-      println("run model")
+    case RunAtServer(username, serverName, LaunchModel(_, parameters, _), userRef, interval) if servers.contains(serverName)=>
 
       val sink: Sink[server.flows.Runnable[server.flows.SimulationContactResult], Any] = Sink.foreach {
-        case (Left( (token, res: SimulationStatus, con)), model) =>
+        case (Left( (token, res: SimulationStatus, connectionMap)), model) =>
 
           val mess = SimulationResult(serverName, res, token, Some(model))
           //log.info("result is:\n "+mess)
@@ -55,11 +54,29 @@ class KappaServerActor extends Actor with ActorLogging {
           userRef ! ServerResponse( mess )
       }
       val server = servers(serverName)
-      server.runStreamed(message, sink, interval)
+      server.runStreamed(parameters, sink, interval)
+
+    case RunAtServer(username, serverName, p: ParseModel, userRef, interval) if servers.contains(serverName)=>
+
+      val sink: Sink[Either[ContactMap, List[WebSimError]], Any] = Sink.foreach {
+        case Left( connectionMap) =>
+
+          val mess = ParseResult(serverName, connectionMap)
+          //log.info("result is:\n "+mess)
+
+          userRef ! ServerResponse( mess )
+
+        case Right(errors) =>
+          val mess = SyntaxErrors(serverName, errors)
+          //log.info("result is with errors "+mess)
+          userRef ! ServerResponse( mess )
+      }
+      val server = servers(serverName)
+      server.parse(p.code)
   }
 
   protected def otherCases: PartialFunction[ServerMessage, Unit] = {
-    case  launch @ RunAtServer(username, serverName, message: RunModel, userRef, interval) =>
+    case  launch @ RunAtServer(username, serverName, message, userRef, interval) =>
       system.log.error("DOES NOT EXIST: " + launch)
       userRef ! KappaServerErrors(List(s"Server $serverName does not respond"))
 
@@ -81,4 +98,4 @@ class KappaServerActor extends Actor with ActorLogging {
 
 }
 
-case class RunAtServer(username: String, server: String, message: RunModel, userRef: ActorRef, interval: FiniteDuration) extends ServerMessage
+case class RunAtServer(username: String, server: String, message: ServerMessage, userRef: ActorRef, interval: FiniteDuration) extends ServerMessage

@@ -1,22 +1,20 @@
-package org.denigma.kappa.notebook.views.visual
+package org.denigma.kappa.notebook.views.visual.rules
 
-
+import org.denigma.binding.extensions._
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.{Agent, KappaNamedElement, _}
-import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all._
-import rx._
+import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
 import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all.attrs._
-import org.denigma.kappa.notebook.views.visual.drawing.{KappaPainter, Rectangle, SideBorder, SvgBundle}
+import rx._
+import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all.attrs._
+import org.denigma.kappa.notebook.views.visual.rules.drawing.{KappaPainter, Rectangle, SideBorder}
 import org.denigma.threejs.extras.HtmlSprite
 import org.denigma.threejs.{Side => _, _}
 import org.scalajs.dom
-import org.scalajs.dom.raw.{SVGElement, SVGLocatable}
 import org.scalajs.dom.svg.{LinearGradient, SVG}
+
 import scala.collection.immutable.::
-import scalatags.JsDom
 import scalatags.JsDom.TypedTag
-import org.denigma.binding.extensions._
 
 trait KappaView extends KappaPainter {
 

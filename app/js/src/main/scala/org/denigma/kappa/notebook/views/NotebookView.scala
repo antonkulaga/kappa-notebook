@@ -16,7 +16,8 @@ import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView, Image, Vid
 import org.denigma.kappa.notebook.views.papers.{PapersView, WebSocketPaperLoader}
 import org.denigma.kappa.notebook.views.project.ProjectsPanelView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
-import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all._
+import org.denigma.kappa.notebook.views.visual.VisualPanelView
+import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook._
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
@@ -147,14 +148,20 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   override lazy val injector = defaultInjector
     .register("MainMenuView") {
       case (el, args) =>
-        new MainMenuView(el, menu).withBinder(n => new FixedBinder(n))
+        new MainMenuView(el, menu).withBinder(n => new CodeBinder(n))
     }
     .register("ProjectsPanel"){
       case (el, args) =>
-        val v = new ProjectsPanelView(el, sources, loaded, connector.input, connector.output, kappaWatcher).withBinder(n => new CodeBinder(n))
+        val v = new ProjectsPanelView(el, sources, loaded, connector.input, connector.output).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Projects)
         v
      }
+    .register("VisualPanel"){
+      case (el, args) =>
+        val v = new VisualPanelView(el, kappaWatcher, input).withBinder(n => new CodeBinder(n))
+        addMenuItem(el, MainTabs.Visualizations)
+        v
+    }
     .register("KappaEditor"){
       case (el, args) =>
         val editor = new KappaCodeEditor(el, sources, input, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))

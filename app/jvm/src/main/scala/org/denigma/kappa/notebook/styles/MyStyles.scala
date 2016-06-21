@@ -17,10 +17,6 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
     minWidth(totalWidth)
     )
 
-  "#Scroller" -(
-    minWidth(totalWidth)
-    )
-
   "#main" -(
     overflowX.auto,
     overflowY.hidden,

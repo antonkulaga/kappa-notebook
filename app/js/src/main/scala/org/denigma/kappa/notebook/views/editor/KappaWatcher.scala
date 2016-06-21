@@ -6,6 +6,7 @@ import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel._
 import org.denigma.kappa.notebook.parsers.KappaParser
 import org.denigma.kappa.notebook.views.visual._
+import org.denigma.kappa.notebook.views.visual.rules.{AgentNode, KappaEdge, GraphLayout}
 import org.scalajs.dom.svg.SVG
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -13,25 +14,9 @@ import org.denigma.binding.extensions._
 import org.denigma.threejs.extras.HtmlSprite
 import rx.Rx.Dynamic
 import org.denigma.kappa.notebook.extensions._
-import org.denigma.kappa.notebook.views.visual.layouts._
+import org.denigma.kappa.notebook.views.visual.rules.layouts._
 
 import scalatags.JsDom
-/*
-object Tester {
-
-  val agents =  scala.collection.immutable.SortedSet(
-    KappaModel.Agent("LacI_RNA"),
-    KappaModel.Agent("LacI", List( Side("left"), Side("right"), Side("dna") )),
-    KappaModel.Agent("LacI_unf"),
-    KappaModel.Agent("pLacAra", List( Side("araC"), Side("lacI1"), Side("lacI2"), Side("down") )),
-    KappaModel.Agent("LacI_DNA", List(Side("up"))),
-    KappaModel.Agent("AraC_DNA", List(Side("up"))),
-    KappaModel.Agent("AraC_RNA"),
-    KappaModel.Agent("AraC", List( Side("ara"), Side("dna") )),
-    KappaModel.Agent("AraC_unf")
-  )
-}
-*/
 
 import scala.collection.immutable.SortedSet
 

@@ -1,7 +1,7 @@
-package org.denigma.kappa.notebook.views.visual.drawing
-import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all._
+package org.denigma.kappa.notebook.views.visual.rules.drawing
+import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
 import rx._
-import org.denigma.kappa.notebook.views.visual.drawing.SvgBundle.all.attrs._
+import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all.attrs._
 import org.denigma.threejs.{Side => _}
 import org.scalajs.dom.raw.{SVGElement, SVGLocatable}
 import org.scalajs.dom.svg.SVG

@@ -8,6 +8,7 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.stream.actor.ActorPublisherMessage
 import boopickle.DefaultBasic._
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
+import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages.RunModel
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
@@ -22,14 +23,6 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
     val stream: InputStream = getClass.getResourceAsStream(path)
     scala.io.Source.fromInputStream( stream ).getLines
   }
-
-
-  def run(params: RunModel): Unit = {
-    val toServer = RunAtServer(username, "localhost", params, self, 100 millis)
-    //println("RUN QT SERVER: "+toServer)
-    servers ! toServer
-  }
-
 
   protected def onTextMessage: Receive = {
     case SocketMessages.IncomingMessage(channel, uname, TextMessage.Strict(text), time) =>
@@ -85,7 +78,15 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
   }
 
   protected def simulationMessages: Receive  = {
-    case ServerCommand(ServerMessages.LaunchModel(server, parameters, counter))=> run(parameters)
+    case ServerCommand(l: LaunchModel)=>
+      val toServer = RunAtServer(username, "", l, self, 100 millis)
+      //println("RUN QT SERVER: "+toServer)
+      servers ! toServer
+
+    case ServerCommand(p: ServerMessages.ParseModel) =>
+      val toServer = RunAtServer(username, "localhost", p, self, 100 millis)
+      //println("RUN QT SERVER: "+toServer)
+      servers ! toServer
   }
 
 

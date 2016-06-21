@@ -1,12 +1,4 @@
-
-%agent: pLac(up, binding, down)
-%agent: pTet(up, binding, down)
-%agent: pL(up, binding, down)
-%agent: LacI(dna)
-%agent: TetR(dna)
-%agent: cl(dna)
-
-#### Signatures 
+#### Signatures
 
 #### Variables 
 %var: 'synth'   0.1

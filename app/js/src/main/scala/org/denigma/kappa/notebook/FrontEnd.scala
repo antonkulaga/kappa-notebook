@@ -8,10 +8,12 @@ import org.denigma.controls.login.{AjaxSession, LoginView}
 import org.denigma.kappa.notebook.views.NotebookView
 import org.scalajs.dom
 import org.scalajs.dom.UIEvent
-import org.scalajs.dom.raw.{Element, HTMLElement}
+import org.scalajs.dom.raw.{PopStateEvent, Element, HTMLElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
-
+import org.denigma.binding.extensions._
+import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.JSConverters._
 
 /**
  * Just a simple view for the whole app, if interested ( see https://github.com/antonkulaga/scala-js-binding )
@@ -20,7 +22,7 @@ import scala.scalajs.js.annotation.JSExport
 object FrontEnd extends BindableView with scalajs.js.JSApp
 {
 
-  override lazy val id: String = "main"
+  override lazy val id: String = "body"
 
   lazy val elem: Element = dom.document.body
 
@@ -28,6 +30,17 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
 
   class Scroller(val elem: HTMLElement, target: HTMLElement) extends BindableView{
     import scalatags.JsDom.all._
+
+    protected def popStateHandler(ppe: PopStateEvent): Unit = {
+      val uid: js.UndefOr[Dynamic] = ppe.state.dyn.id
+      uid.toOption match {
+        case None | Some(null)=> println("non or null")
+        case st =>
+          println("STTTTTT = "+st)
+          val gid = st.toString
+          scrollTo(gid)
+      }
+    }
 
     override def bindView() = {
       super.bindView()
@@ -43,8 +56,15 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
         //println("scrollleft =" + target.scrollLeft)
         elem.scrollLeft = target.scrollLeft
       }
+      dom.window.onpopstate = popStateHandler _
     }
 
+  }
+
+  protected def scrollTo(ident: String) = {
+    for{
+      e <- sq.byId(ident)
+    } dom.window.scrollTo(e.offsetLeft.toInt, 0)
   }
 
   /**

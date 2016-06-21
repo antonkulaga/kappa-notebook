@@ -37,10 +37,16 @@ class CodeTab(val elem: Element,
 
   override lazy val id: String = name
 
-  //override def id = name
-
-
   override def mode = "Kappa"
+
+  active.onChange{
+    case true =>
+      println("active value for "+id+" is true and display is "+elem.style.display)
+      //elem.display = "initial"
+    case false =>
+      elem.style.display = "none"
+      //println("active value for "+id+" is false and display is "+elem.style.display)
+  }
 
   val code = Var(source.now.content)
   code.onChange{
@@ -53,22 +59,20 @@ class CodeTab(val elem: Element,
     source() = value
     this
   }
-
-  //override val active = Var(true)
-
+/*
   override def bindView(): Unit ={
-    if(!active.now) active.triggerOnce{
+    if(active.now) {
+      println(id+" is active")
+      super.bindView()
+    }
+    else active.triggerOnce{
       case value =>
         println("trigger for active +"+name)
         bindView()
         //js.timers.setTimeout(300 millis)(bindView())
-    } else {
-      println("super bind = "+name)
-
-      super.bindView()
     }
   }
-
+*/
   override def unbindView() = {
     super.unbindView()
     source.kill()
@@ -103,7 +107,7 @@ class CodeTab(val elem: Element,
         if(doc.getValue()!=text) doc.setValue(text)
       }
       editor.addOnChanges(onChanges)
-      val handler: (Editor) => Unit = onCursorActivity _
+      val handler: (Editor) => Unit = onCursorActivity
       editor.on("cursorActivity", handler)
       editor
 

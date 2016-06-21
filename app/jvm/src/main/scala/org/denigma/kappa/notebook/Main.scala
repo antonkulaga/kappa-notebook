@@ -1,25 +1,16 @@
 package org.denigma.kappa.notebook
 
 import java.io.{File => JFile}
-import java.nio.file.Path
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
-import better.files.File.OpenOptions
 import better.files._
 import com.typesafe.config.Config
 import net.ceedubs.ficus.Ficus._
-import org.denigma.kappa.messages.FileRequests.ZipUpload
-import org.denigma.kappa.messages.FileResponses.{Downloaded, UploadStatus}
-import org.denigma.kappa.messages._
-
-import scala.Seq
-import scala.collection.immutable._
-import scala.util.Try
 
 
-object Main extends App  {
+object Main extends App {
 
   implicit val system = ActorSystem("my-system")
   implicit val materializer = ActorMaterializer(ActorMaterializerSettings(system)

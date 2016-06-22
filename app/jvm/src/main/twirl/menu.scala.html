@@ -1,7 +1,9 @@
 @()
 <div class="ui top fixed pointing seven item green menu" data-view="MainMenuView" id="MainMenuView"
- data-event-dragover="onDragOver"  data-event-dragleave="onDragLeave" data-event-dragenter="onDragEnter" dropzone="move"
+dropzone="link"
 >
   <a data-template="true" class="item" data-bind="itemName" data-click="menuClick"
+  data-event-dragleave="onDragLeave" data-event-dragenter="onDragEnter"
+  data-event-dragover="onDragOver"
   draggable="true"  data-event-dragstart="onDragStart" data-event-dragend="onDragEnd" data-event-drop="onDrop"></a>
 </div>

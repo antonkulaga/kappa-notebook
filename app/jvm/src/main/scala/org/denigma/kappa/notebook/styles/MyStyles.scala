@@ -10,7 +10,7 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
 {
   import dsl._
 
-  val totalWidth = 5120 px
+  val totalWidth = 5632.0 px
 
   "#Notebook" -(
     maxHeight(95 vh),

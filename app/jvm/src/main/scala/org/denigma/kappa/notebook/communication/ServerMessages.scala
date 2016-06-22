@@ -7,7 +7,6 @@ import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages._
 import org.denigma.kappa.messages.WebSimMessages._
 import org.denigma.kappa.notebook.services.WebSimClient
-import rx.Var
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
@@ -58,21 +57,22 @@ class KappaServerActor extends Actor with ActorLogging {
 
     case RunAtServer(username, serverName, p: ParseModel, userRef, interval) if servers.contains(serverName)=>
 
-      val sink: Sink[Either[ContactMap, List[WebSimError]], Any] = Sink.foreach {
+      println("PRINT MODEL WORKS!")
+
+      val sink: Sink[server.ContactMapResult, Any] = Sink.foreach {
         case Left( connectionMap) =>
 
           val mess = ParseResult(serverName, connectionMap)
-          //log.info("result is:\n "+mess)
-
+          println("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS   " +mess)
           userRef ! ServerResponse( mess )
 
         case Right(errors) =>
           val mess = SyntaxErrors(serverName, errors)
-          //log.info("result is with errors "+mess)
+          println("RRRRRRRRRRRRRRRRRRRRSSSSSSSSSSSSSSSS   " +mess)
           userRef ! ServerResponse( mess )
       }
       val server = servers(serverName)
-      server.parse(p.code)
+      server.parse(ParseCode(p.code), sink)
   }
 
   protected def otherCases: PartialFunction[ServerMessage, Unit] = {

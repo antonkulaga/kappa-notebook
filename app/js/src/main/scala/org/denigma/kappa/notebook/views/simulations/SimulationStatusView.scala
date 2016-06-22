@@ -56,9 +56,6 @@ class SimulationsView(val elem: Element,
 
   val items: Var[Map[(Int, RunModel), SimulationStatus]] = Var(Map.empty[(Int, RunModel), SimulationStatus])
 
-  //val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
-
-
   input.foreach{
     case KappaMessage.ServerResponse( SimulationResult(server, status, token, params) ) =>
       //println("percent: "+ status.percentage)

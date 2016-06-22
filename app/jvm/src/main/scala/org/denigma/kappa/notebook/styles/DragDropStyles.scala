@@ -9,7 +9,9 @@ trait DragDropStyles extends StyleSheet.Standalone {
   import dsl._
 
   ".dockable" -(
-      borderWidth(4 px)  important,
-      borderColor  :=! "green" important
+      borderWidth(5 px)  important,
+      borderColor  :=! "green" important,
+      borderStyle.dashed
     )
+
 }

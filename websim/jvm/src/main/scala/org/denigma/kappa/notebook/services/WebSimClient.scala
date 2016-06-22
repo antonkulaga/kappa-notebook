@@ -45,6 +45,11 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
 
   def getVersion(): Future[Version] = Source.single(Unit).via(flows.versionFlow).runWith(Sink.head)
 
+  def parse[T](toParse: ParseCode, sink: Sink[ContactMapResult, T]): T = {
+    val source = Source.single(toParse)
+    source.via(flows.parseFlow).map(_._1) runWith sink
+  }
+
   def parse(toParse: ParseCode): Future[ContactMapResult] = {
     val source = Source.single(toParse)
     source.via(flows.parseFlow).map(_._1) runWith Sink.head

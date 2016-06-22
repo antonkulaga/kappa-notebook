@@ -2,7 +2,7 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 {
 	val scala = "2.11.8"
 
-	val kappaNotebook = "0.0.11"
+	val kappaNotebook = "0.0.12"
 
 	val binding = "0.8.10"
 

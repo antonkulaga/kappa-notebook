@@ -15,7 +15,7 @@ class RunnerView(val elem: Element, sender: Var[KappaMessage], concat: () => Str
 {
   self=>
 
-  val launcher: Var[LaunchModel] = Var( LaunchModel("", RunModel(code = "", max_events = Some(10000), max_time = None)))
+  val launcher: Var[LaunchModel] = Var( LaunchModel("localhost", RunModel(code = "", max_events = Some(10000), max_time = None)))
 
   val parameters = Var(launcher.now.parameters)
 

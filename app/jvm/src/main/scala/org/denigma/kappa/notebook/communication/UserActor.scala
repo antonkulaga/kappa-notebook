@@ -78,14 +78,14 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
   }
 
   protected def simulationMessages: Receive  = {
-    case ServerCommand(l: LaunchModel)=>
-      val toServer = RunAtServer(username, "", l, self, 100 millis)
+    case ServerCommand(l: ServerMessages.LaunchModel)=>
+      val toServer = RunAtServer(username, l.server, l, self, 100 millis)
       //println("RUN QT SERVER: "+toServer)
       servers ! toServer
 
     case ServerCommand(p: ServerMessages.ParseModel) =>
-      val toServer = RunAtServer(username, "localhost", p, self, 100 millis)
-      //println("RUN QT SERVER: "+toServer)
+      val toServer = RunAtServer(username, p.server, p, self, 100 millis)
+      //println("PARSE MODEL: "+toServer)
       servers ! toServer
   }
 

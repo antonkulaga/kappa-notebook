@@ -12,8 +12,9 @@
         <div data-bind="name" class="header"></div>
       </div>
     </div>
-    <div>
-      <input placeholder="create project"><button data-event-click="createProjectClick" class="ui positive button">create project</button>
+    <div class="ui segment">
+      <input class="ui tiny input" placeholder="create project" data-bind="newProjectName">
+      <button data-event-click="createProjectClick" class="ui tiny positive button"><i class="add circle icon"></i>project</button>
     </div>
 
   </div>

@@ -5,52 +5,66 @@ import org.denigma.binding.views.{BindableView, ItemsSeqView}
 import org.denigma.controls.code.CodeBinder
 import org.scalajs.dom
 import org.scalajs.dom._
-import org.scalajs.dom.raw.{HTMLElement, Element, SVGElement}
+import org.scalajs.dom.raw.{Element, HTMLElement, SVGElement}
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
 import org.scalajs.dom.ext._
 
+import scala.annotation.tailrec
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExport
+import scala.util.{Failure, Success, Try}
 
 class MainMenuView(val elem: Element, val items: Var[List[(String, Element)]] ) extends BindableView with ItemsSeqView{
 
   type Item =  (String, Element)
   type ItemView = MainMenuItemView
-/*
 
-  val onDragOver = Var(Events.createDragEvent())
-  onDragOver.onChange{
-    case event=>
-      event.preventDefault()
-      event.dataTransfer.dropEffect = "copy"
-      println("drag over parent")
-    //event.preventDefault()
-      //println("DRAG Over WITH:"+elem.id)
+  lazy val zipped = items.zipped
+
+  def insertItemView(item: Item, iv: ItemView, before: Element): ItemView = {
+    Try ( template.parentElement.insertBefore(iv.viewElement, before) ) match {
+      case Failure(th) =>
+        dom.console.error("stack trace "+th.getMessage+"\n"+th.getStackTrace.toList.mkString("/n"))
+        println("TEMPLATE ="+template.outerHTML)
+        println("IV ="+iv.viewElement.outerHTML)
+        println("TEMPLATE PARENT ="+template.parentElement.outerHTML)
+        println("and EL = \n**********\n"+this.viewElement.outerHTML)
+      case Success(res) =>
+    }
+    iv match {
+      case b: ChildView =>  this.addView(b)
+    }
+    itemViews() = itemViews.now + (item->iv)
+    iv.bindView()
+    iv
   }
-*/
 
-
-  override protected def onMove(mv: Moved[Item]) = {
-    println(" MOVED = "+mv)
-    val fr = itemViews.now(items.now(mv.from))
-    val t = itemViews.now(items.now(mv.to))
-    this.replace(t.viewElement, fr.viewElement)
+  @inline protected def reDraw(curRev: List[Item], added: Set[Item], insertBefore: Element): Unit =  curRev match {
+    case Nil =>
+    case head :: tail if added.contains(head) =>
+      val v = this.newItemView(head)
+      insertItemView(head, v, insertBefore)
+      reDraw(tail, added - head, v.viewElement)
+    case head :: tail =>
+      val view = itemViews.now(head)
+      template.parentElement.insertBefore(view.viewElement, insertBefore)
+      reDraw(tail, added, view.viewElement)
   }
-
 
   override protected def subscribeUpdates() = {
     template.hide()
     this.items.now.foreach(i => this.addItemView(i, this.newItemView(i)))
-    updates.onChange(upd => {
-      upd.added.foreach(onInsert)
-      upd.added.foreach(i=>println("inserted = "+i))
-      upd.removed.foreach(r=>println("removed = "+r))
-      upd.moved.foreach(r=>println("moved = "+r))
-      upd.removed.foreach(onRemove)
-      upd.moved.foreach(onMove)
-    })
+    zipped.onChange{
+      case (from, to) if from == to => //do nothing
+      case (prev, cur) if prev !=cur =>
+        val removed = prev.diff(cur)
+        for(r <- removed) removeItemView(r)
+        val added = cur.toSet.diff(prev.toSet)
+        val revCur = cur.toList.reverse
+        reDraw(revCur, added, template)
+    }
   }
 
   protected def insertNear(from: Item, to: Item) = {
@@ -60,64 +74,23 @@ class MainMenuView(val elem: Element, val items: Var[List[(String, Element)]] ) 
       case (acc, el) if el == to => from::acc
       case (acc, el) => el::acc
     }.reverse
+  }
 
-    /*
-    (its.indexOf(from), its.indexOf(to)) match {
-      case (-1, _) => dom.console.error("cannot find first view")
-      case (_, -1) => dom.console.error("cannot find second view")
-
-
-      /*
-    case (f, t) if f < t=>
-      println("old items = "+its.map(_._1))
-      items() = (its.take(t).filterNot(_==from) :+ from :+ to) ++ its.drop(t+1)
-      println("new items = "+items.now.map(_._1))
-    case (f, t) if f>t =>
-      println("old items = "+its.map(_._1))
-      items() = (its.take(t) :+ to :+ from) ++ its.drop(t+1).filterNot(_==from)
-      println("new items = "+items.now.map(_._1))
-      */
-      case other => println("OTHER ="+other)
-    }
-    */
+  protected def switchElements(from: Element, to: Element) = {
+    replaceHTML(from, to, true)
+    println(3)
   }
 
   def park(to: ItemView, targetName: String) = {
     items.now.find{ case (key, _) => key == targetName } match {
       case Some(from) =>
-        val e = itemViews.now(from).elem
-        if( !( elem.children.contains(e) && e.parentElement == elem ) )
-        {
-          dom.console.error("does not contain drop target!")
-          println(e.outerHTML)
-          elem.appendChild(e)
-        }
-        println("switch = "+from+" => "+to.item)
         insertNear(from, to.item)
+        switchElements(from = from._2, to.item._2)
 
       case None =>
         dom.console.error("cannot find the draggable element")
     }
   }
-
-  /*
-  def park(source: ItemView, elm: Element): Unit = elm match {
-    case e if this.subviews.contains(e.id)  =>
-      val otherChild: ChildView = subviews(e.id)
-      itemViews.now.values.collectFirst{ case value if value == otherChild => value } match {
-        case None => println("cannot find child")
-        case Some(v) => insertNear(source, v)
-      }
-
-    case other =>
-      println("other = "+other.outerHTML)
-      other.parentElement match {
-        case null =>
-        case p if p!= elem =>
-        case e => park(source, e)
-      }
-  }
-  */
 
 
   override def newItemView(item: (String, Element)): MainMenuItemView = this.constructItemView(item){

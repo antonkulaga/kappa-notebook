@@ -19,12 +19,18 @@ trait FileMessenger extends Messenger {
   protected def fileMessages: PartialFunction[KappaMessage, Unit] = {
 
     case r @ FileRequests.Remove(projectName, filename) =>
-      println("REMOVE REMOVE REMOVE")
-      println(r)
       fileManager.remove(projectName, filename)
       val response = org.denigma.kappa.messages.Done(r, username)
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
       send(d)
+
+    case FileResponses.Rename(_, pairs)  =>
+      fileManager.remove(projectName, filename)
+      val response = org.denigma.kappa.messages.Done(r, username)
+      val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+      send(d)
+
+    //case FileResponses.RenameResults(_, List(("CRUD_Test.ka", "CRUD.ka")))  =>
 
     case mess @ FileRequests.LoadFileSync(currentProject, path) =>
       fileManager.readBytes(currentProject, path) match {
@@ -108,17 +114,11 @@ trait FileMessenger extends Messenger {
     case FileRequests.Save(projectName, files, rewrite) =>
       val path: File = fileManager.root / projectName
       files.foreach{ case f =>
-        //println("MAKE ="+f.path)
         val rel = f.relativeTo(projectName)
-        //println("MAKE ="+rel.path)
-
         fileManager.writeFile(rel)
       }
-      sender ! FileResponses.FileSaved(projectName, files.map(v=>v.name).toSet)
-
-
-    case sv @ ProjectRequests.Save(project)=>
-      println("PROJECT SAVING IS NOT YET IMPLEMENTED!")
+      val reply = FileResponses.FileSaved(projectName, files.map(v=>v.name).toSet)
+      send(Pickle.intoBytes[KappaMessage](reply))
   }
 
 }

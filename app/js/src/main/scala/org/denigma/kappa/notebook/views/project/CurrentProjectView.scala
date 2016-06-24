@@ -166,7 +166,7 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
 
   val saveClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   saveClick.triggerLater{
-
+    output() = FileRequests.Save(projectName = name.now, List(file), rewrite = true)
   }
 
   val renameClick: Var[MouseEvent] = Var(Events.createMouseEvent())

@@ -39,6 +39,7 @@ object KappaMessage{
     .addConcreteType[KappaUser]
     .addConcreteType[ServerCommand]
     .addConcreteType[ServerResponse]
+    .addConcreteType[FileResponses.FileSaved]
     .join(KappaFileMessage.kappaFilePickler)
     .join(UIMessage.UIMessagePickler)
 

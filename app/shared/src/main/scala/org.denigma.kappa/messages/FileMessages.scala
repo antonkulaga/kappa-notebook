@@ -10,11 +10,13 @@ object KappaFileMessage {
     .addConcreteType[FileRequests.LoadBinaryFile]
     .addConcreteType[FileRequests.LoadFileSync]
     .addConcreteType[FileRequests.Remove]
+    .addConcreteType[FileRequests.Rename]
     .addConcreteType[FileRequests.Save]
     .addConcreteType[FileRequests.ZipUpload]
 
     .addConcreteType[FileResponses.Downloaded]
     .addConcreteType[FileResponses.UploadStatus]
+    .addConcreteType[FileResponses.RenameResults]
 
     .addConcreteType[DataChunk]
     .addConcreteType[DataMessage]
@@ -36,7 +38,7 @@ object KappaPath{
 
   lazy val empty: KappaPath = KappaFolder.empty
 
-  implicit val kappaPathPickler = compositePickler[KappaPath]
+  implicit val kappaPathPickler: CompositePickler[KappaPath] = compositePickler[KappaPath]
     .addConcreteType[KappaFile]
     .addConcreteType[KappaFolder]
 }
@@ -129,6 +131,13 @@ object FileRequests {
 
   case class UploadBinary(projectName: String, files: List[DataMessage]) extends KappaFileMessage
 
+  object Rename{
+    implicit val classPickler: Pickler[Rename] = boopickle.Default.generatePickler[Rename]
+    def apply(projectName: String): Rename = Rename(projectName, Nil)
+  }
+
+  case class Rename(projectName: String, namePairs: List[(String, String)]) extends KappaFileMessage
+
   object Save{
     implicit val classPickler: Pickler[Save] = boopickle.Default.generatePickler[Save]
   }
@@ -157,13 +166,17 @@ object FileResponses {
 
   case class UploadStatus(projectName: String, hash: Int, rewriteIfExist: Boolean) extends KappaFileMessage
 
-  /*
-  case class FileNotFound(path: String) extends KappaFileMessage with ErrorMessage {
-    override def errors: List[String] = List(s"File '${path}' not found!")
+  object FileSaved {
+    implicit val classPickler: Pickler[FileSaved] = boopickle.Default.generatePickler[FileSaved]
   }
-  */
 
   case class FileSaved(projectName: String, names: Set[String]) extends KappaFileMessage
+
+  object RenameResults {
+    implicit val classPickler: Pickler[RenameResults] = boopickle.Default.generatePickler[RenameResults]
+  }
+
+  case class RenameResults(projectName: String, pairs: List[(String, String)]) extends KappaFileMessage
 }
 
 object DataChunk{

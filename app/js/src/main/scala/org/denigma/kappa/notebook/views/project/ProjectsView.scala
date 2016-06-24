@@ -14,10 +14,7 @@ import scala.collection.immutable.{Seq, SortedSet}
 class ProjectsView(val elem: Element, val loaded: Rx[ProjectResponses.Loaded], val sender: Var[KappaMessage]) extends ItemsSetView {
 
   val selectProject = Var(loaded.now.projectOpt.getOrElse(KappaProject.default))
-  selectProject.onChange{
-    case proj =>
-      sender() = ProjectRequests.Load(proj)
-  }
+  selectProject.onChange{ case proj =>  sender() = ProjectRequests.Load(proj) }
 
   val currentProject = loaded.map{
     case lds=>

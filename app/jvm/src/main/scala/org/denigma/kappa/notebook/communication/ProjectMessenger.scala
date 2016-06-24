@@ -46,7 +46,6 @@ trait ProjectMessenger extends Messenger {
       fileManager.loadZiped(projectName) match
       {
         case Some(response: FileResponses.Downloaded) =>
-          //log.info("RESPONDE = "+response)
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
           send(d)
 
@@ -61,5 +60,8 @@ trait ProjectMessenger extends Messenger {
       val response = org.denigma.kappa.messages.Done(r, username)
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
       send(d)
+
+    case sv @ ProjectRequests.Save(project)=>
+      println("PROJECT SAVING IS NOT YET IMPLEMENTED!")
   }
 }

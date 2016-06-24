@@ -11,6 +11,7 @@ import boopickle.DefaultBasic._
 import net.ceedubs.ficus.Ficus._
 import org.denigma.kappa.messages.FileRequests.Save
 import org.denigma.kappa.messages.FileResponses.{Downloaded, UploadStatus}
+import org.denigma.kappa.messages.ProjectRequests.Remove
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 import org.denigma.kappa.notebook.communication.WebSocketManager
@@ -78,175 +79,191 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           // check response for WS Upgrade headers
           checkConnection(wsClient)
 
-          val fl = files / "big"
-          fl.exists() shouldEqual true
+          //create project
+          val projectName = "crud"
 
-          val big = KappaProject("big")
+          val s: File = files / projectName
+
+          val folder = KappaFolder(s.pathAsString, files = SortedSet.empty)
+          val crudProject = KappaProject(projectName, folder)
+
+          val cr = ProjectRequests.Create(crudProject)
+          val create: ByteBuffer = Pickle.intoBytes[KappaMessage](cr)
+          checkMessage(wsClient, create){
+            case org.denigma.kappa.messages.Done(_, _) =>
+          }
+
           val ProjectResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
-          //val abc = files / "abc" / "abc.ka"
           val testName = "CRUD_Test.ka"
 
           val testFile = KappaFile("", testName, abc, saved = false)
           val fls = List(testFile)
-          val sv: Save = FileRequests.Save(projectName = big.name, fls, rewrite = false )
+          val sv: Save = FileRequests.Save(projectName = projectName, fls, rewrite = false )
           val save: ByteBuffer = Pickle.intoBytes[KappaMessage](sv)
-          /*
+          s.exists() shouldEqual true
+
           checkMessage(wsClient, save){
-            /*case FileResponses.FileSaved(_, saved) if saved == fls.map(v=>v.name).toSet =>
-              println("FileResponses.FileSaved " + saved)
-              */
-            case other =>
-              println("*************************************************************************")
-              println(other)
-          }
-          //val sv: Save = FileRequests.Save(projectName = big.name, fls, rewrite = false )
-          val rv = FileRequests.Remove(projectName = big.name, testName)
-          val remove: ByteBuffer = Pickle.intoBytes[KappaMessage](rv)
-          checkMessage(wsClient, remove){
-            /*case FileResponses.FileSaved(_, saved) if saved == fls.map(v=>v.name).toSet =>
-              println("FileResponses.FileSaved " + saved)
-              */
-            case other =>
-              println("///////////////////////////////////////////////////////////////////////////")
-              println(other)
-          }
-          */
-        }
-    }
-
-    "download, remove and upload project" in {
-      val wsClient = WSProbe()
-      WS("/channel/notebook?username=tester5", wsClient.flow) ~>  routes ~>
-        check {
-          // check response for WS Upgrade headers
-          checkConnection(wsClient)
-
-          val fl = files / "big"
-          fl.exists() shouldEqual true
-
-          val big = KappaProject("big")
-          val ProjectResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
-
-          val downloadWrong: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big_wrong"))
-          checkMessage(wsClient, downloadWrong){
-            case Failed(_, List("project big_wrong does not exist"), _) =>
+            case FileResponses.FileSaved("crud", _) =>
           }
 
-          val downloadRight: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big"))
-          val dat: Array[Byte] = checkMessage(wsClient, downloadRight){
-            case FileResponses.Downloaded("big", data) =>
-
-              val zp = fl.zip().byteArray
-              //val some = fileManager.loadZiped("big").get
-              //val zp2 = fileManager.loadZiped("big").get.data
-              //println("========================================")
-              //println("SOMETHING RECEIVED "+smt)
-              //println("data size = "+data.length)
-              //println("zp   size = "+zp.length)
-              //data.sameElements(zp) shouldEqual true
-              data.sameElements(zp) shouldEqual true
-              //data shouldEqual zp
-              data
-          }
-
-          val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Remove("big"))
-          checkMessage(wsClient, rem){
-            case Done(ProjectRequests.Remove(_), _) =>
-          }
-
-          fl.exists() shouldEqual false
-
-          checkProject(wsClient, big){
-            case Failed(/*KappaProject("big", _, _)*/_, _, _) =>
-          }
-
-          val ms = DataMessage("big", dat)
-          val upl = FileRequests.ZipUpload("big", ms, false )
-
-          val upload: ByteBuffer = Pickle.intoBytes[KappaMessage](upl)
-          //println("====================start upload of "+upload)
-          checkMessage(wsClient, upload){
-            case Done(upd: UploadStatus, _) =>
-          }
-
-          checkTestProjects(wsClient)
-        }
-    }
+      /*
+       val rename = FileRequests.Rename(projectName = projectName, List(("CRUD_Test.ka", "CRUD.ka")))
+       val rn: ByteBuffer = Pickle.intoBytes[KappaMessage](rename)
+       checkMessage(wsClient, rn){
+         case FileResponses.RenameResults(_, List(("CRUD_Test.ka", "CRUD.ka"))) =>
+       }
 
 
-    "upload, streamed load and delete" in {
-      val wsClient = WSProbe()
-      WS("/channel/notebook?username=tester6", wsClient.flow) ~>  routes ~>
-        check {
-          // check response for WS Upgrade headers
-          checkConnection(wsClient)
+       val ileRequests.Remove(projectName = projectName, "CRUD.ka")
+       val remove: ByteBuffer = Pickle.intoBytes[KappaMessage](rv)
+       checkMessage(wsClient, remove){
+         case Done(_, _) =>
+       }
 
-          val big = KappaProject("big")
-          checkProject(wsClient, big){
-            case l @ ProjectResponses.Loaded(Some(p), _) =>
-              //println("LOADED = "+ l)
-              p.name shouldEqual "big"
-              p.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
-              l
-          }
+       val removed = FileRequests.Remove("crud", s.pathAsString)
+       */
 
-          val ProjectResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
+       val remProj: Remove = ProjectRequests.Remove(projectName)
+       val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](remProj)
+       checkMessage(wsClient, rem){
+         case org.denigma.kappa.messages.Done(_, _) =>
+       }
+     }
+ }
 
-          val paperName = "403339a0.pdf"
-          val paper = files / ".." / "upload" / "403339a0.pdf"
-          paper.exists() shouldEqual true
+ "download, remove and upload project" in {
+   val wsClient = WSProbe()
+   WS("/channel/notebook?username=tester5", wsClient.flow) ~>  routes ~>
+     check {
+       // check response for WS Upgrade headers
+       checkConnection(wsClient)
 
-          val upload = FileRequests.UploadBinary("big", List(DataMessage(paperName, paper.byteArray)))
-          val up: ByteBuffer = Pickle.intoBytes[KappaMessage](upload)
-          wsClient.sendMessage(pack(up))
+       val fl = files / "big"
+       fl.exists() shouldEqual true
+
+       val big = KappaProject("big")
+       val ProjectResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
+
+       val downloadWrong: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big_wrong"))
+       checkMessage(wsClient, downloadWrong){
+         case Failed(_, List("project big_wrong does not exist"), _) =>
+       }
+
+       val downloadRight: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big"))
+       val dat: Array[Byte] = checkMessage(wsClient, downloadRight){
+         case FileResponses.Downloaded("big", data) =>
+
+           val zp = fl.zip().byteArray
+           //val some = fileManager.loadZiped("big").get
+           //val zp2 = fileManager.loadZiped("big").get.data
+           //println("========================================")
+           //println("SOMETHING RECEIVED "+smt)
+           //println("data size = "+data.length)
+           //println("zp   size = "+zp.length)
+           //data.sameElements(zp) shouldEqual true
+           data.sameElements(zp) shouldEqual true
+           //data shouldEqual zp
+           data
+       }
+
+       val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Remove("big"))
+       checkMessage(wsClient, rem){
+         case Done(ProjectRequests.Remove(_), _) =>
+       }
+
+       fl.exists() shouldEqual false
+
+       checkProject(wsClient, big){
+         case Failed(/*KappaProject("big", _, _)*/_, _, _) =>
+       }
+
+       val ms = DataMessage("big", dat)
+       val upl = FileRequests.ZipUpload("big", ms, false )
+
+       val upload: ByteBuffer = Pickle.intoBytes[KappaMessage](upl)
+       //println("====================start upload of "+upload)
+       checkMessage(wsClient, upload){
+         case Done(upd: UploadStatus, _) =>
+       }
+
+       checkTestProjects(wsClient)
+     }
+ }
 
 
-          checkProject(wsClient, big){
-            case l @ ProjectResponses.Loaded(Some(p), _) =>
-              //println("LOADED = "+ l)
-              p.name shouldEqual "big"
-              p.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka", paperName)
-              l
-          }
+ "upload, streamed load and delete" in {
+   val wsClient = WSProbe()
+   WS("/channel/notebook?username=tester6", wsClient.flow) ~>  routes ~>
+     check {
+       // check response for WS Upgrade headers
+       checkConnection(wsClient)
 
-          val load = FileRequests.LoadBinaryFile("big", paperName)
-          val d = Pickle.intoBytes[KappaMessage](load)
-          wsClient.sendMessage(pack(d))
+       val big = KappaProject("big")
+       checkProject(wsClient, big){
+         case l @ ProjectResponses.Loaded(Some(p), _) =>
+           //println("LOADED = "+ l)
+           p.name shouldEqual "big"
+           p.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
+           l
+       }
 
-          val dataList: List[Array[Byte]] = collectPartialKappaMessage(wsClient.inProbe, 4 seconds){
-            case d @ DataChunk(_, _, data, downloaded, total, false) => data
-          }{
-            case d @ DataChunk(_, _, _, downloaded, total, true) =>
-              //println("COMPLETED, BYTES TOTAL ARE "+total)
-              true
-          }
+       val ProjectResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
 
-          val bytes = dataList.reduce(_ ++ _)
-          bytes.sameElements(paper.byteArray) shouldEqual(true)
+       val paperName = "403339a0.pdf"
+       val paper = files / ".." / "upload" / "403339a0.pdf"
+       paper.exists() shouldEqual true
 
-          val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](FileRequests.Remove("big", paperName))
-          checkMessage(wsClient, rem){
-            case Done(FileRequests.Remove(_, _), _) =>
-          }
-
-          checkProject(wsClient, big){
-            case l @ ProjectResponses.Loaded(Some(p), _) =>
-              //println("LOADED = "+ l)
-              p.name shouldEqual "big"
-              p.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
-              l
-          }
-        }
-    }
-  }
+       val upload = FileRequests.UploadBinary("big", List(DataMessage(paperName, paper.byteArray)))
+       val up: ByteBuffer = Pickle.intoBytes[KappaMessage](upload)
+       wsClient.sendMessage(pack(up))
 
 
-  def checkTestProjects(wsClient: WSProbe): ProjectResponses.Loaded = checkProject(wsClient, KappaProject("big")){
-    case l @ ProjectResponses.Loaded(Some(proj), projects) =>
-      //println("LOADED = "+ l)
-      proj.name shouldEqual "big"
-      proj.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
-      l
-  }
+       checkProject(wsClient, big){
+         case l @ ProjectResponses.Loaded(Some(p), _) =>
+           //println("LOADED = "+ l)
+           p.name shouldEqual "big"
+           p.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka", paperName)
+           l
+       }
+
+       val load = FileRequests.LoadBinaryFile("big", paperName)
+       val d = Pickle.intoBytes[KappaMessage](load)
+       wsClient.sendMessage(pack(d))
+
+       val dataList: List[Array[Byte]] = collectPartialKappaMessage(wsClient.inProbe, 4 seconds){
+         case d @ DataChunk(_, _, data, downloaded, total, false) => data
+       }{
+         case d @ DataChunk(_, _, _, downloaded, total, true) =>
+           //println("COMPLETED, BYTES TOTAL ARE "+total)
+           true
+       }
+
+       val bytes = dataList.reduce(_ ++ _)
+       bytes.sameElements(paper.byteArray) shouldEqual(true)
+
+       val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](FileRequests.Remove("big", paperName))
+       checkMessage(wsClient, rem){
+         case Done(FileRequests.Remove(_, _), _) =>
+       }
+
+       checkProject(wsClient, big){
+         case l @ ProjectResponses.Loaded(Some(p), _) =>
+           //println("LOADED = "+ l)
+           p.name shouldEqual "big"
+           p.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
+           l
+       }
+     }
+ }
+}
+
+
+def checkTestProjects(wsClient: WSProbe): ProjectResponses.Loaded = checkProject(wsClient, KappaProject("big")){
+ case l @ ProjectResponses.Loaded(Some(proj), projects) =>
+   //println("LOADED = "+ l)
+   proj.name shouldEqual "big"
+   proj.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
+   l
+}
 
 }

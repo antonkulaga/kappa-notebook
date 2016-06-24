@@ -20,6 +20,11 @@ class FileManager(val root: File) {
     write(project.folder)
   }
 
+  def rename(project: String, pairs: List[(String, String)]): Unit = {
+    //path.delete()
+    ???
+  }
+
   def remove(project: String, name: String): File = {
     val path: File = root / project / name
     path.delete()

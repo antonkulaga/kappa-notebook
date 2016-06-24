@@ -1,6 +1,6 @@
 package org.denigma.kappa.notebook.communication
 
-import java.io.{InputStream, File => JFile}
+import java.io.{File => JFile, InputStream}
 import java.nio.ByteBuffer
 
 import akka.actor.ActorRef
@@ -8,15 +8,13 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.stream.actor.ActorPublisherMessage
 import boopickle.DefaultBasic._
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
-import org.denigma.kappa.messages.ServerMessages.LaunchModel
-import org.denigma.kappa.messages.WebSimMessages.RunModel
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
 
-class UserActor(val username: String, servers: ActorRef, val fileManager: FileManager) extends FileMessenger
+class UserActor(val username: String, servers: ActorRef, val fileManager: FileManager) extends FileMessenger with ProjectMessenger
 {
 
   def readResource(path: String): Iterator[String] = {
@@ -28,55 +26,6 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
     case SocketMessages.IncomingMessage(channel, uname, TextMessage.Strict(text), time) =>
   }
 
-  protected def projectMessages: PartialFunction[KappaMessage, Unit] = {
-    case ProjectRequests.Load(pro) =>
-      fileManager.loadProject(pro) match {
-        case project: KappaProject if project.saved =>
-          val list: SortedSet[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p)
-          val response = ProjectResponses.Loaded(Some(project), list)
-          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
-          //log.info("################################"+response)
-          send(d)
-
-        case project =>
-          //val error = ServerErrors(List(s"folder of ${pro.name} does not exist!"))
-          val error = Failed(project, List(s"folder of ${pro.name} does not exist!"), username)
-          val d = Pickle.intoBytes[KappaMessage](error)
-
-          //log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!"+error)
-          send(d)
-      }
-
-    case c @ ProjectRequests.Create(project, rewriteIfExists) =>
-      fileManager.create(project)
-      val response = org.denigma.kappa.messages.Done(c, username)
-      val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
-      send(d)
-
-    case dn @ ProjectRequests.Download(projectName)=>
-      //log.info("DOWNLOADED STARTED "+projectName)
-
-      fileManager.loadZiped(projectName) match
-      {
-        case Some(response: FileResponses.Downloaded) =>
-          //log.info("RESPONDE = "+response)
-          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
-          send(d)
-
-        case None =>
-          val response = Failed(dn, List(s"project $projectName does not exist"), username)
-          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
-          send(d)
-      }
-
-    case r @ ProjectRequests.Remove(name) =>
-      fileManager.remove(name)
-      val response = org.denigma.kappa.messages.Done(r, username)
-      val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
-      send(d)
-
-  }
-
   protected def simulationMessages: Receive  = {
     case ServerCommand(l: ServerMessages.LaunchModel)=>
       val toServer = RunAtServer(username, l.server, l, self, 100 millis)
@@ -85,7 +34,6 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
 
     case ServerCommand(p: ServerMessages.ParseModel) =>
       val toServer = RunAtServer(username, p.server, p, self, 100 millis)
-      //println("PARSE MODEL: "+toServer)
       servers ! toServer
   }
 

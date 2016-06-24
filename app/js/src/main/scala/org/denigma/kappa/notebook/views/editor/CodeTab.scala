@@ -51,28 +51,14 @@ class CodeTab(val elem: Element,
   val code = Var(source.now.content)
   code.onChange{
     case str =>
-      if(source.now.content!=str) source() = source.now.copy(content = str)
+      if(source.now.content!=str) source() = source.now.copy(content = str, saved = false)
   }
-  //val code = source.map(s=>s.content)
 
   override def update(value: KappaFile): this.type = {
     source() = value
     this
   }
-/*
-  override def bindView(): Unit ={
-    if(active.now) {
-      println(id+" is active")
-      super.bindView()
-    }
-    else active.triggerOnce{
-      case value =>
-        println("trigger for active +"+name)
-        bindView()
-        //js.timers.setTimeout(300 millis)(bindView())
-    }
-  }
-*/
+
   override def unbindView() = {
     super.unbindView()
     source.kill()

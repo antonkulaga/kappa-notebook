@@ -57,18 +57,16 @@ class KappaServerActor extends Actor with ActorLogging {
 
     case RunAtServer(username, serverName, p: ParseModel, userRef, interval) if servers.contains(serverName)=>
 
-      println("PRINT MODEL WORKS!")
-
       val sink: Sink[server.ContactMapResult, Any] = Sink.foreach {
         case Left( connectionMap) =>
 
           val mess = ParseResult(serverName, connectionMap)
-          println("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS   " +mess)
+          //println("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS   " +mess)
           userRef ! ServerResponse( mess )
 
         case Right(errors) =>
           val mess = SyntaxErrors(serverName, errors)
-          println("RRRRRRRRRRRRRRRRRRRRSSSSSSSSSSSSSSSS   " +mess)
+          //println("RRRRRRRRRRRRRRRRRRRRSSSSSSSSSSSSSSSS   " +mess)
           userRef ! ServerResponse( mess )
       }
       val server = servers(serverName)

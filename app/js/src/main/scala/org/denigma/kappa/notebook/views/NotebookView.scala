@@ -29,6 +29,10 @@ import org.querki.jquery.$
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
 import scala.scalajs.js
+import org.denigma.binding.extensions._
+import org.denigma.kappa.notebook.extensions._
+
+
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
@@ -46,35 +50,15 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val path = Var("files")
 
-  val sources: Var[Map[String, KappaFile]] = Var(Map.empty[String, KappaFile])
+  val currentProject: Var[CurrentProject] = Var(CurrentProject.fromKappaProject(KappaProject.default))
+
+  val sourceMap: Var[Map[String, KappaFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(sourceMap = s, saved = false))
 
   val location: Var[Bookmark] = Var(Bookmark("", 1, Nil))
 
   val figures: Var[Map[String, Figure]] = Var(Map.empty)
 
-  val currentProjOpt: Rx[Option[KappaProject]] = loaded.map(_.projectOpt)
-
-  val currentProjectName = currentProjOpt.map{
-    case Some(p) => p.name
-    case None => KappaProject.default.name
-  }
-
-  currentProjOpt.onChange{
-    case Some(proj)=>
-
-      val images = proj.images.map{
-        case i=>
-          val p = proj.name + "/" +i.name
-          i.name ->Image(i.name, p)
-      }
-      val videos = proj.videos.map(i=> i.name -> Video(i.name , i.path))
-      figures() = (images ++ videos).toMap
-
-      sources() = proj.sourceMap
-
-    case None =>
-  }
-
+  val currentProjectName = currentProject.map(_.name)
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
@@ -152,7 +136,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("ProjectsPanel"){
       case (el, args) =>
-        val v = new ProjectsPanelView(el, sources, loaded, connector.input, connector.output).withBinder(n => new CodeBinder(n))
+        val v = new ProjectsPanelView(el, loaded, currentProject, connector.input, connector.output).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Projects)
         v
      }
@@ -164,13 +148,13 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("KappaEditor"){
       case (el, args) =>
-        val editor = new KappaCodeEditor(el, sources, input, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
+        val editor = new KappaCodeEditor(el, sourceMap, input, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Editor)
         editor
     }
     .register("Simulations") {
       case (el, params) =>
-        val v = new SimulationsView(el, sources, input, output).withBinder(new CodeBinder(_))
+        val v = new SimulationsView(el, sourceMap: Var[Map[String, KappaFile]], input, output).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Simulations)
         v
     }

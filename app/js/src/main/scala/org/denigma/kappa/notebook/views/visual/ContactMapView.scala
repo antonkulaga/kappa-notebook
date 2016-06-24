@@ -27,6 +27,9 @@ class ContactMapRenderer(val id: String, isSnapshot: Boolean) extends js.Object 
 class ContactMapView(val elem: Element, val input: Var[KappaMessage]) extends BindableView {
 
   input.onChange{
+
+    case KappaMessage.ServerResponse(ServerMessages.ParseResult(_, contactMap))=>
+
     //case KappaMessage.ServerResponse(ServerMessages.LaunchModel) =>
     case _ => //do nothing
 

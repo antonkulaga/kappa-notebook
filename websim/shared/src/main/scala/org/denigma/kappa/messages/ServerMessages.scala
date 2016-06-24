@@ -92,7 +92,7 @@ object ServerMessages {
     }.reverse
 
     lazy val code = files.foldLeft(""){
-      case (acc, el)=> acc + el
+      case (acc, (_, content))=> acc + content
     }
   }
 

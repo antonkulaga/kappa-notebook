@@ -116,7 +116,6 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
           val params = ParseModel(serverName, List("abc"->abc))
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(params))
           wsClient.sendMessage(pack(d))
-
           wsClient.inProbe.request(1).expectNextPF {
             case BinaryMessage.Strict(bytes) if {
               val mes = Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer)
@@ -124,7 +123,8 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
                 case ServerResponse(ServerMessages.ParseResult(server, cm)) =>
                   //println("expected errors are: "+ errors)
                   true
-                case _ => false
+                case _ =>
+                  false
               }
             } =>
 

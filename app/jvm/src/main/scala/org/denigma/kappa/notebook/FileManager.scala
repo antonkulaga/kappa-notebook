@@ -105,6 +105,14 @@ class FileManager(val root: File) {
     project.copy(folder = dir, saved = p.exists())
   }
 
+  def writeFile(p: KappaFile) = p match {
+    case KappaFile(path, name, content, _, _) =>
+      val pp = root.path.resolve(p.fullPath)
+      val f = File(pp)
+      f < content
+      f
+  }
+
   /**
     * Writes KappaFile to the disk
     *
@@ -118,7 +126,7 @@ class FileManager(val root: File) {
       for(f <- folders) write(f)
       dir
 
-    case KappaFile(path, name, content, _) =>
+    case KappaFile(path, name, content, _, _) =>
       val f = File(root.path.resolve(path))
       f < content
       f

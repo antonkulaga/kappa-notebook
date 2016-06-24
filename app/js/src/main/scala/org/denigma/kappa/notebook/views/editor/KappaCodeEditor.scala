@@ -6,7 +6,7 @@ import org.denigma.binding.views.{BindableView, ItemsMapView}
 import org.denigma.codemirror._
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.ServerMessages.SyntaxErrors
-import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage}
+import org.denigma.kappa.messages.{KappaProject, Go, KappaFile, KappaMessage}
 import org.denigma.kappa.notebook.views.common.TabHeaders
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -73,8 +73,6 @@ class KappaCodeEditor(val elem: Element,
     case (el, _) =>
       el.id = item //dirty trick
       val value: Var[KappaFile] = keyVar(item)
-      println(s"source for  $item loaded")
-      //println(value.now)
       val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor).withBinder(v => new CodeBinder(v) )
       println(selected.now)
       selected() = item

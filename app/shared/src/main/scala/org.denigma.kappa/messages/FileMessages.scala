@@ -82,7 +82,26 @@ object KappaFile
   }
 }
 
-case class KappaFile(path: String, name: String, content: String, saved: Boolean = false) extends KappaPath
+//note: should do something with active
+case class KappaFile(path: String, name: String, content: String, saved: Boolean = false, active: Boolean = true) extends KappaPath {
+
+  def relativeTo(parentPath: String): KappaFile = {
+    val np = (parentPath, path) match {
+      case (par, me) if par.endsWith("/") &&  me.startsWith("/") => par + me.tail
+      case (par, me) if par.endsWith("/") => par + me
+      case (par, me) if me.startsWith("/") => par + me
+      case (par, me) => par + "/" +me
+    }
+    this.copy( path = np )
+  }
+
+  lazy val fullPath: String = path match {
+    case p if p.endsWith(name) => p
+    case p if p.endsWith("/") || p.endsWith("\\") => p + name
+    case p => p + "/" + name
+  }
+
+}
 
 object FileRequests {
 
@@ -143,6 +162,8 @@ object FileResponses {
     override def errors: List[String] = List(s"File '${path}' not found!")
   }
   */
+
+  case class FileSaved(projectName: String, names: Set[String]) extends KappaFileMessage
 }
 
 object DataChunk{

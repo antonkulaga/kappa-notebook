@@ -77,8 +77,10 @@ class MainMenuView(val elem: Element, val items: Var[List[(String, Element)]] ) 
   }
 
   protected def switchElements(from: Element, to: Element) = {
-    replaceHTML(from, to, true)
-    println(3)
+    val nextFrom = from.nextElementSibling
+    val nextTo = to.nextElementSibling
+    from.parentElement.insertBefore(to, nextFrom)
+    to.parentElement.insertBefore(from, nextTo)
   }
 
   def park(to: ItemView, targetName: String) = {

@@ -1,5 +1,6 @@
 package org.denigma.kappa.messages
 
+import scala.Predef
 import scala.collection.immutable._
 import boopickle.DefaultBasic._
 
@@ -27,36 +28,46 @@ object KappaProject {
   }
 }
 
+
+
 case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, saved: Boolean = false) extends KappaFileMessage
 {
   def loaded = folder != KappaFolder.empty
 
-  protected def sourceFilter(f: KappaFile) =  f.name.endsWith(".ka") || f.name.endsWith(".ttl")
+  protected def sourceFilter(f: KappaFile): Boolean =  f.name.endsWith(".ka") || f.name.endsWith(".ttl")
 
-  protected def imageFilter(f: KappaFile) =   f.name.endsWith(".svg") ||
+  protected def imageFilter(f: KappaFile): Boolean =   f.name.endsWith(".svg") ||
     f.name.endsWith(".gif") ||
     f.name.endsWith(".jpg") ||
     f.name.endsWith(".png") ||
     f.name.endsWith(".webp")
 
 
-  protected def videoFilter(f: KappaFile) =   f.name.endsWith(".avi") ||
+  protected def videoFilter(f: KappaFile): Boolean =   f.name.endsWith(".avi") ||
     f.name.endsWith(".mp4") ||
     f.name.endsWith(".flv") ||
     f.name.endsWith(".mpeg")
 
+  protected def paperFilter(f: KappaFile): Boolean =   f.name.endsWith(".pdf")
 
   lazy val sources: SortedSet[KappaFile] = folder.files.filter(sourceFilter)
 
-  lazy val sourceMap: Map[String, KappaFile] = sources.map(f=> (f.name, f)).toMap
+  lazy val sourceMap: Predef.Map[String, KappaFile] = sources.map(f=> (f.name, f)).toMap
 
-  lazy val papers = folder.files.filter(f => f.name.endsWith(".pdf"))
+  lazy val papers: SortedSet[KappaFile] = folder.files.filter(paperFilter)
 
-  lazy val images = folder.files.filter(imageFilter)
+  lazy val images: SortedSet[KappaFile] = folder.files.filter(imageFilter)
 
-  lazy val videos = folder.files.filter(videoFilter)
+  lazy val videos: SortedSet[KappaFile] = folder.files.filter(videoFilter)
 
-  lazy val nonsourceFiles = folder.files.filterNot(sourceFilter)
+  lazy val nonsourceFiles: SortedSet[KappaFile] = folder.files.filterNot(sourceFilter)
+
+  lazy val otherFiles: SortedSet[KappaFile] = folder.files
+    .filterNot(sourceFilter)
+    .filterNot(imageFilter)
+    .filterNot(videoFilter)
+    .filterNot(paperFilter)
+
 }
 object ProjectRequests {
 

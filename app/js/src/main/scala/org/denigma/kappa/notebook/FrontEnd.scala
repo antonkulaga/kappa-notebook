@@ -32,11 +32,11 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
     import scalatags.JsDom.all._
 
     protected def popStateHandler(ppe: PopStateEvent): Unit = {
+      println("POP STATE CHANGED")
       val uid: js.UndefOr[Dynamic] = ppe.state.dyn.id
       uid.toOption match {
         case None | Some(null)=> println("non or null")
         case st =>
-          println("STTTTTT = "+st)
           val gid = st.toString
           scrollTo(gid)
       }
@@ -62,6 +62,7 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
   }
 
   protected def scrollTo(ident: String) = {
+    println("scroll to "+ident)
     for{
       e <- sq.byId(ident)
     } dom.window.scrollTo(e.offsetLeft.toInt, 0)

@@ -17,6 +17,22 @@ object extensions {
       source.triggerLater(if (value.now) fun(source.now) )
     }
   }
+  implicit class AnyKappaVar[T](source: Var[T]) {
+
+    def extractVar[U](fromSource: T => U)(updateSource: (T, U) => T): Var[U] = { //no can be very dangerous
+      val initial = fromSource(source.now)
+      val variable = Var(initial)
+      source.onChange{
+        case s=>
+          variable() = fromSource(s)
+      }
+      variable.onChange{
+        case v =>
+          source() = updateSource(source.now, v)
+      }
+      variable
+    }
+  }
 
   implicit class ParsedExt[T](source: Parsed[T]) {
 

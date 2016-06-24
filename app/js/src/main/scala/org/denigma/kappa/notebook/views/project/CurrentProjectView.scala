@@ -18,11 +18,16 @@ import scala.collection.immutable._
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
-class CurrentProjectView(val elem: Element, currentProject: Rx[KappaProject], val sourceMap: Var[Map[String, KappaFile]],  input: Var[KappaMessage], output: Var[KappaMessage]) extends ItemsSetView {
+class CurrentProjectView(val elem: Element, currentProject: Rx[CurrentProject],  input: Var[KappaMessage], output: Var[KappaMessage]) extends ItemsSetView {
 
-  val projectName = currentProject.map(p=>p.name)
-  val newFileName = Var("")
-  val hasNewFile = newFileName.map(f=>f.length > 1)
+  val sourceMap = currentProject.map(p=>p.sourceMap)
+
+  val projectName: Rx[String] = currentProject.map(p=>p.name)
+
+  val newFileName: Var[String] = Var("")
+
+  val hasNewFile: Rx[Boolean] = newFileName.map(f=>f.length > 1)
+
   val fileName: Rx[String] = newFileName.map{
     case f if f.endsWith(".ka")=>f
     case other => other
@@ -45,10 +50,12 @@ class CurrentProjectView(val elem: Element, currentProject: Rx[KappaProject], va
 
   val uploadFile = Var(Events.createMouseEvent())
   uploadFile.triggerLater{
-
+    val name = fileName.now
+    val k = KappaFile("", name, "", saved = false)
+    output() = FileRequests.Save(projectName.now, List(k), false)
   }
 
-  val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.folder.files)
+  val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.allFiles)
 
   input.onChange{
     case d @ FileResponses.Downloaded(label, data)=>
@@ -70,7 +77,7 @@ class CurrentProjectView(val elem: Element, currentProject: Rx[KappaProject], va
   val save = Var(Events.createMouseEvent())
   save.onChange{
     case ev =>
-      output() = ProjectRequests.Save(currentProject.now)
+      output() = ProjectRequests.Save(currentProject.now.toKappaProject)
       //connector.send(Save(currentProject.now))
   }
 
@@ -121,12 +128,10 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
     case other => FileType.other
   }
 
-
   val isSource: Rx[Boolean] = fileType.map(f=>f==FileType.source)
   val isImage: Rx[Boolean] = fileType.map(f=>f==FileType.image)
   val isVideo: Rx[Boolean] = fileType.map(f=>f==FileType.video)
   val isPaper: Rx[Boolean] = fileType.map(f=>f==FileType.pdf)
-
 
   val icon: Rx[String] = fileType.map{
     case FileType.pdf => "File Pdf Outline" + " large icon"
@@ -150,11 +155,6 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
           .andThen(Go.ToTab(MainTabs.Editor))
           .andThen(Go.ToSource(filename = file.name))
 
-      /*
-      case FileType.txt =>
-      case FileType.image => "File Image Outline" + " large icon"
-      case FileType.video => "File Video Outline" + " large icon"
-      */
       case other => //do nothing
     }
   }

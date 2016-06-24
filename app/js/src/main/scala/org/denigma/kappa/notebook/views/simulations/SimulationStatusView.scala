@@ -22,7 +22,7 @@ import org.denigma.kappa.messages.WebSimMessages.{KappaPlot, RunModel, Simulatio
 
 
 class SimulationsView(val elem: Element,
-                      val sourceMap: Var[Map[String, KappaFile]],
+                      val sourceMap: Rx[Map[String, KappaFile]],
                       val input: Rx[KappaMessage],
                       val output: Var[KappaMessage])
 

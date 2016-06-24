@@ -4,6 +4,7 @@ import java.io.{File => JFile}
 import java.nio.ByteBuffer
 
 import akka.stream.scaladsl.FileIO
+import better.files.File
 import boopickle.DefaultBasic._
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
@@ -11,14 +12,20 @@ import org.denigma.kappa.notebook.FileManager
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-
-
-
-trait FileMessenger extends Messenger{
+trait FileMessenger extends Messenger {
 
   def fileManager: FileManager
 
   protected def fileMessages: PartialFunction[KappaMessage, Unit] = {
+
+    case r @ FileRequests.Remove(projectName, filename) =>
+      println("REMOVE REMOVE REMOVE")
+      println(r)
+      fileManager.remove(projectName, filename)
+      val response = org.denigma.kappa.messages.Done(r, username)
+      val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+      send(d)
+
     case mess @ FileRequests.LoadFileSync(currentProject, path) =>
       fileManager.readBytes(currentProject, path) match {
         case Some(bytes)=>
@@ -35,7 +42,6 @@ trait FileMessenger extends Messenger{
       }
 
     case mess @ FileRequests.LoadBinaryFile(projectName, path, chunkSize) =>
-      //log.info(s"***********+${mess}*****************")
       fileManager.getJavaPath(projectName, path) match {
         case Some((fl, size)) =>
           val folding: Future[Int] = FileIO.fromPath(fl, chunkSize).runFold[Int](0){
@@ -58,7 +64,6 @@ trait FileMessenger extends Messenger{
             case Failure(th) =>
               val d = Pickle.intoBytes[KappaMessage](Failed(mess, List(th.toString), username))
               send(d)
-
           }
 
         case None =>
@@ -66,12 +71,6 @@ trait FileMessenger extends Messenger{
           val d = Pickle.intoBytes[KappaMessage](failed)
           send(d)
       }
-
-    case r @ FileRequests.Remove(projectName, filename) =>
-      fileManager.remove(projectName, filename)
-      val response = org.denigma.kappa.messages.Done(r, username)
-      val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
-      send(d)
 
     case upl @ FileRequests.UploadBinary(projectName, files) =>
       files.foreach{
@@ -106,9 +105,20 @@ trait FileMessenger extends Messenger{
       //.map(r=>Done(r, username)).getOrElse(Failed())
       send(d)
 
+    case FileRequests.Save(projectName, files, rewrite) =>
+      val path: File = fileManager.root / projectName
+      files.foreach{ case f =>
+        //println("MAKE ="+f.path)
+        val rel = f.relativeTo(projectName)
+        //println("MAKE ="+rel.path)
+
+        fileManager.writeFile(rel)
+      }
+      sender ! FileResponses.FileSaved(projectName, files.map(v=>v.name).toSet)
+
 
     case sv @ ProjectRequests.Save(project)=>
-      println("SAVING IS NOT YET IMPLEMENTED!")
+      println("PROJECT SAVING IS NOT YET IMPLEMENTED!")
   }
 
 }

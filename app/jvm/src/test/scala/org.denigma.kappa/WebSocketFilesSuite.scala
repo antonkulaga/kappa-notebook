@@ -9,6 +9,7 @@ import akka.stream.testkit.TestSubscriber
 import better.files.File
 import boopickle.DefaultBasic._
 import net.ceedubs.ficus.Ficus._
+import org.denigma.kappa.messages.FileRequests.Save
 import org.denigma.kappa.messages.FileResponses.{Downloaded, UploadStatus}
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
@@ -70,7 +71,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
         }
     }
 
-    "upload/remove files" in {
+    "CRUD source files" in {
       val wsClient = WSProbe()
       WS("/channel/notebook?username=tester5", wsClient.flow) ~>  routes ~>
         check {
@@ -82,9 +83,34 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
 
           val big = KappaProject("big")
           val ProjectResponses.Loaded(Some(proj), projects) = checkTestProjects(wsClient)
+          //val abc = files / "abc" / "abc.ka"
+          val testName = "CRUD_Test.ka"
 
-          FileRequests.UploadBinary
-
+          val testFile = KappaFile("", testName, abc, saved = false)
+          val fls = List(testFile)
+          val sv: Save = FileRequests.Save(projectName = big.name, fls, rewrite = false )
+          val save: ByteBuffer = Pickle.intoBytes[KappaMessage](sv)
+          /*
+          checkMessage(wsClient, save){
+            /*case FileResponses.FileSaved(_, saved) if saved == fls.map(v=>v.name).toSet =>
+              println("FileResponses.FileSaved " + saved)
+              */
+            case other =>
+              println("*************************************************************************")
+              println(other)
+          }
+          //val sv: Save = FileRequests.Save(projectName = big.name, fls, rewrite = false )
+          val rv = FileRequests.Remove(projectName = big.name, testName)
+          val remove: ByteBuffer = Pickle.intoBytes[KappaMessage](rv)
+          checkMessage(wsClient, remove){
+            /*case FileResponses.FileSaved(_, saved) if saved == fls.map(v=>v.name).toSet =>
+              println("FileResponses.FileSaved " + saved)
+              */
+            case other =>
+              println("///////////////////////////////////////////////////////////////////////////")
+              println(other)
+          }
+          */
         }
     }
 
@@ -103,7 +129,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
 
           val downloadWrong: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big_wrong"))
           checkMessage(wsClient, downloadWrong){
-            case Failed(_,List("project big_wrong does not exist"), _) =>
+            case Failed(_, List("project big_wrong does not exist"), _) =>
           }
 
           val downloadRight: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big"))

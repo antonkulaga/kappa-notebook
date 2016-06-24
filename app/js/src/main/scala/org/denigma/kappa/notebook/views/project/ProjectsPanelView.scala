@@ -6,6 +6,7 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.editor.KappaWatcher
 import org.denigma.kappa.notebook.views.visual.rules.GraphView
 import org.scalajs.dom.raw.Element
+import rx.Rx.Dynamic
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 
@@ -13,18 +14,17 @@ import scala.collection.immutable.SortedSet
 
 
 class ProjectsPanelView(val elem: Element,
-                        val sourceMap: Var[Map[String, KappaFile]],
                         val loaded: Rx[ProjectResponses.Loaded],
+                        val currentProject: Var[CurrentProject],
+                        //val currentProject: Var[KappaProject],
                         val input: Var[KappaMessage],
                         val output: Var[KappaMessage]
                        ) extends BindableView {
 
-  val currentProject = loaded.map {
+  loaded.foreach {
     case l if l.projectOpt.isDefined =>
-      l.projectOpt.get
+      currentProject() = CurrentProject.fromKappaProject(l.projectOpt.get)
     case other =>
-      val proj = KappaProject.default
-      proj
   }
 
   val isSaved = currentProject.map(p => p.saved)
@@ -33,5 +33,5 @@ class ProjectsPanelView(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("ProjectsView")((el, args) => new ProjectsView(el, loaded, output).withBinder(n => new CodeBinder(n)))
-    .register("CurrentProjectView")((el, args) => new CurrentProjectView(el, currentProject, sourceMap, input, output).withBinder(n => new CodeBinder(n)))
+    .register("CurrentProjectView")((el, args) => new CurrentProjectView(el, currentProject, input, output).withBinder(n => new CodeBinder(n)))
 }

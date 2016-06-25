@@ -38,7 +38,6 @@ class CurrentProjectView(val elem: Element, currentProject: Rx[CurrentProject], 
     val name = fileName()
     !sources.contains(name)
   }
-
   val unsaved: Dynamic[Map[String, KappaFile]] = sourceMap.map{ sm=> sm.collect{ case (key, value) if !value.saved => key -> value } }
 
   val addFile = Var(Events.createMouseEvent())
@@ -133,6 +132,8 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
   val isVideo: Rx[Boolean] = fileType.map(f=>f==FileType.video)
   val isPaper: Rx[Boolean] = fileType.map(f=>f==FileType.pdf)
 
+  val saved = Var(file.saved)
+
   val icon: Rx[String] = fileType.map{
     case FileType.pdf => "File Pdf Outline" + " large icon"
     case FileType.txt => "File Text Outline" + " large icon"
@@ -147,13 +148,19 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
     fileType.now match {
       case FileType.pdf => input() =
         KappaMessage.Container()
-        .andThen(Go.ToTab(MainTabs.Papers))
-        .andThen(GoToPaper(Bookmark(file.name, 1)))
+          .andThen(Go.ToTab(MainTabs.Papers))
+          .andThen(GoToPaper(Bookmark(file.name, 1)))
 
       case FileType.source => input() =
         KappaMessage.Container()
           .andThen(Go.ToTab(MainTabs.Editor))
           .andThen(Go.ToSource(filename = file.name))
+
+      case FileType.image=> input() =
+        KappaMessage.Container()
+          .andThen(Go.ToTab(MainTabs.Figures))
+          .andThen(GoToFigure(file.name))
+
 
       case other => //do nothing
     }

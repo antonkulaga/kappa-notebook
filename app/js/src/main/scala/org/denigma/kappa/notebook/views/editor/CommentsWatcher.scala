@@ -4,7 +4,10 @@ import fastparse.all._
 import org.denigma.codemirror.Editor
 import org.denigma.codemirror.extensions._
 import org.denigma.controls.papers.Bookmark
+import org.denigma.kappa.messages.{Go, GoToFigure, GoToPaper, KappaMessage}
 import org.denigma.kappa.notebook.parsers.{CommentLinksParser, ImageParser, PaperParser}
+import org.denigma.kappa.notebook.views.MainTabs
+import org.denigma.kappa.notebook.views.figures.{Figure, Image}
 import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
 import rx._
@@ -16,7 +19,11 @@ import scalatags.JsDom.all._
   */
 class CommentsWatcher(
                        val updates: Var[EditorUpdates],
-                       val location: Var[Bookmark] )  {
+                       val location: Var[Bookmark],
+                       val figures: Var[Map[String, Figure]],
+                       val currentProjectName: Rx[String],
+                       val input: Var[KappaMessage]
+                     )  {
 
   updates.foreach(changeHandler) //subscription
 
@@ -47,14 +54,14 @@ class CommentsWatcher(
     val pages: List[((Int, String), Int)] = lines.map{ case (num, line)=> (num, line) -> paperParser.page.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
-    val papers = lines.map{ case (num, line)=> (num, line) -> paperParser.paper.parse(line) }.collect{
+    val papers: List[((Int, String), String)] = lines.map{ case (num, line)=> (num, line) -> paperParser.paper.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
     val links = lines.map{ case (num, line)=> (num, line) -> linkParser.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
 
-    val images = lines.map{ case (num, line)=> (num, line) -> imageParser.image.parse(line) }.collect{
+    val images: List[((Int, String), String)] = lines.map{ case (num, line)=> (num, line) -> imageParser.image.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
     /*
@@ -70,6 +77,7 @@ class CommentsWatcher(
     }
     images.collectFirst{
       case ((n, line), result) if n == currentNum =>
+        addFigure(result)
         val marker = makeImageMarker(result)
         editor.setGutterMarker(n, "breakpoints", marker)
     }
@@ -90,6 +98,13 @@ class CommentsWatcher(
     */
   }
 
+  protected def addFigure(image: String) = {
+    val src = if(image.contains("://") || image.startsWith("/")) image else currentProjectName.now + "/" + image
+    if(!figures.now.contains(src)) {
+      figures() = figures.now.updated(image, Image(image, src))
+    }
+  }
+
   protected def makeURIMarker(link: String): Anchor = {
     val tag = a(href := link, target := "blank",
       i(`class` := "label File Code Outline large icon", id :="class_icon"+Math.random()),
@@ -105,7 +120,11 @@ class CommentsWatcher(
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        println("image = "+ image.trim)
+        input() =
+        KappaMessage.Container()
+          .andThen(Go.ToTab(MainTabs.Figures))
+          .andThen(GoToFigure(image))
+      //println("image = "+ image.trim)
         /*
         println("SELECTOR = "+selector.image)
         println("SELECOT == "+selector.image==image.trim)
@@ -122,7 +141,13 @@ class CommentsWatcher(
       }))
     val html = tag.render
     html.onclick = {
-      event: MouseEvent => //println(s"click on $num")
+      event: MouseEvent =>
+        input() =
+          KappaMessage.Container()
+            .andThen(Go.ToTab(MainTabs.Papers))
+            .andThen(GoToPaper(Bookmark(paper, 1)))
+
+      //println(s"click on $num")
         //  println("papers work")
         //location() = location.now.copy(page = num)
         //selector.paper() =

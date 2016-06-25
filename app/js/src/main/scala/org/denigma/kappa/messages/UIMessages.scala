@@ -7,6 +7,14 @@ import rx.{Rx, Var}
 import scala.collection.immutable.SortedSet
 
 
+object GoToFigure {
+
+  import boopickle.DefaultBasic._
+  implicit val classPickler: Pickler[GoToFigure] = boopickle.Default.generatePickler[GoToFigure]
+}
+
+case class GoToFigure(figureName: String) extends UIMessage
+
 object GoToPaper {
   /*
     implicit val textLayerSelectionPickler = boopickle.Default.generatePickler[TextLayerSelection]

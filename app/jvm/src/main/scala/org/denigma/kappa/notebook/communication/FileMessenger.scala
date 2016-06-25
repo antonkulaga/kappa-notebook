@@ -24,12 +24,13 @@ trait FileMessenger extends Messenger {
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
       send(d)
 
+      /*
     case FileResponses.Rename(_, pairs)  =>
       fileManager.remove(projectName, filename)
       val response = org.denigma.kappa.messages.Done(r, username)
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
       send(d)
-
+    */
     //case FileResponses.RenameResults(_, List(("CRUD_Test.ka", "CRUD.ka")))  =>
 
     case mess @ FileRequests.LoadFileSync(currentProject, path) =>

@@ -34,6 +34,10 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
     borderWidth(3 px)
     )
 
+  ".pages.row" - {
+    maxHeight(98 vh)
+    }
+
 
 
   ".CodeMirror" -(

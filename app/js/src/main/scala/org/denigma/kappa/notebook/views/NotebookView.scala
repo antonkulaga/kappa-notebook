@@ -20,7 +20,7 @@ import org.denigma.kappa.notebook.views.visual.VisualPanelView
 import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook._
 import org.scalajs.dom
-import org.scalajs.dom.raw.Element
+import org.scalajs.dom.raw.{Element, PopStateEvent}
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -71,7 +71,26 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     input.foreach(onMessage)
     connector.open()
+    dom.window.onpopstate = popStateHandler _
   }
+
+  def scrollTo(ident: String) = {
+    for{
+      e <- sq.byId(ident)
+    } dom.window.scrollTo(e.offsetLeft.toInt, 0)
+  }
+
+  protected def popStateHandler(ppe: PopStateEvent): Unit = {
+    println("POP STATE CHANGED")
+    val uid: js.UndefOr[Dynamic] = ppe.state.dyn.id
+    uid.toOption match {
+      case None | Some(null)=> println("non or null")
+      case st =>
+        val gid = st.toString
+        scrollTo(gid)
+    }
+  }
+
 
   protected def onMessage(message: KappaMessage): Unit = message match {
 
@@ -86,8 +105,12 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
             case null => dom.console.error(s"$tabName id is null")
             case undef if js.isUndefined(undef)=> dom.console.error(s"$tabName id is undefined")
             case ident =>
+              scrollTo(ident)
+              /*
               dom.window.location.hash = ""
               dom.window.location.hash = ident
+              */
+
           }
         }
        else {
@@ -107,7 +130,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     case other => //do nothing
   }
 
-  val commentManager = new CommentsWatcher(editorsUpdates, location/*, selector*/)
+  val commentManager = new CommentsWatcher(editorsUpdates, location, figures, currentProjectName, input)
 
   lazy val s: SVG = {
     val t = svg(/*width :=  defaultWidth, height := defaultHeight*/).render
@@ -172,7 +195,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("Figures") {
       case (el, params) =>
-        val v = new FiguresView(el, figures).withBinder(new CodeBinder(_))
+        val v = new FiguresView(el, figures, input).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Figures)
         v
     }

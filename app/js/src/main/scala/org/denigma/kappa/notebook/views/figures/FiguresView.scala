@@ -3,17 +3,22 @@ package org.denigma.kappa.notebook.views.figures
 import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
 import org.denigma.controls.code.CodeBinder
+import org.denigma.kappa.messages.{GoToFigure, KappaMessage}
 import org.scalajs.dom
+
 import scala.collection.immutable
 import org.denigma.kappa.notebook.views.common.{TabHeaders, TabItem}
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import org.denigma.binding.extensions._
 /**
   * Created by antonkulaga on 08/06/16.
   */
 class FiguresView(val elem: Element,
-                  val items: Var[Map[String, Figure]]) extends ItemsMapView with TabItem
+                  val items: Var[Map[String, Figure]],
+                  val input: Rx[KappaMessage]
+                 ) extends ItemsMapView with TabItem
 {
 
   override type Value = Figure
@@ -25,6 +30,11 @@ class FiguresView(val elem: Element,
   val selected = Var("")
 
   val empty = items.map(its=>its.isEmpty)
+
+  input.onChange {
+    case GoToFigure(image)=> selected() = image
+    case other => //do nothing
+  }
 
   override def newItemView(item: Item): ItemView=  this.constructItemView(item){
     case (el, params)=>

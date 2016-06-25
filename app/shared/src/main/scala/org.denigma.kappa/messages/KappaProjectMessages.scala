@@ -17,7 +17,7 @@ object KappaProject {
     .addConcreteType[ProjectRequests.Remove]
     .addConcreteType[KappaProject]
 
-  lazy val default: KappaProject = KappaProject(/*"presentation"*/"repressilator", saved = false)
+  lazy val default: KappaProject = KappaProject("presentation"/*"repressilator"*/, saved = false)
 
   implicit val ordering = new Ordering[KappaProject] {
     override def compare(x: KappaProject, y: KappaProject): Int = x.name.compare(y.name) match {
@@ -30,7 +30,7 @@ object KappaProject {
 
 
 
-case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, saved: Boolean = false) extends KappaFileMessage
+case class  KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, saved: Boolean = false) extends KappaFileMessage
 {
   def loaded = folder != KappaFolder.empty
 

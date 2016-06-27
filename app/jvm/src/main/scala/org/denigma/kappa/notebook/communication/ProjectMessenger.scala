@@ -7,7 +7,7 @@ import akka.actor.ActorRef
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.stream.actor.ActorPublisherMessage
 import boopickle.DefaultBasic._
-import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
+import org.denigma.kappa.messages.KappaMessage.{Container, ServerCommand, ServerResponse}
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 
@@ -19,11 +19,18 @@ trait ProjectMessenger extends Messenger {
   def fileManager: FileManager
 
   protected def projectMessages: PartialFunction[KappaMessage, Unit] = {
+
+    case ProjectRequests.GetList =>
+      val list: SortedSet[KappaProject] = fileManager.loadProjectSet()
+      val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectResponses.ProjectList(list.toList))
+      send(d)
+
+
     case ProjectRequests.Load(pro) => fileManager.loadProject(pro) match
     {
       case project: KappaProject if project.saved =>
         val list: SortedSet[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p)
-        val response = ProjectResponses.Loaded(Some(project), list)
+        val response = Container(ProjectResponses.ProjectList(list.toList)::ProjectResponses.LoadedProject(project)::Nil)
         val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
         send(d)
 

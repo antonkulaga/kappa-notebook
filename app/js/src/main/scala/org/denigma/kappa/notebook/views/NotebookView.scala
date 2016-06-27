@@ -24,15 +24,9 @@ import org.scalajs.dom.raw.{Element, PopStateEvent}
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import org.querki.jquery.$
-
-import scala.collection.immutable.SortedSet
-import scala.concurrent.duration._
 import scala.scalajs.js
 import org.denigma.binding.extensions._
 import org.denigma.kappa.notebook.extensions._
-
-
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
@@ -41,8 +35,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   val connector: WebSocketTransport = WebSocketTransport("notebook", "guest" + Math.random() * 1000)
 
   val (input: Var[KappaMessage], output: Var[KappaMessage]) = connector.IO
-
-  val loaded: Var[ProjectResponses.Loaded] = Var(ProjectResponses.Loaded.empty)
 
   val serverErrors = Var(ServerErrors.empty)
 
@@ -61,6 +53,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   val currentProjectName = currentProject.map(_.name)
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
+
 
   override def bindView() = {
     super.bindView()
@@ -91,7 +84,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
   }
 
-
   protected def onMessage(message: KappaMessage): Unit = message match {
 
     case KappaMessage.Container(messages) =>
@@ -117,9 +109,11 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
         dom.console.error(s"Go.ToTab($tabName) failed as there is not such tab in the menu")
         }
 
-    case ld: ProjectResponses.Loaded =>
-      //println("LOQDED = "+ld)
-      loaded() = ld
+    case ProjectResponses.LoadedProject(proj) =>
+      //println("LOADED PROJECT IS")
+      //pprint.log(proj)
+      currentProject() = CurrentProject.fromKappaProject(proj)
+
 
     case KappaMessage.ServerResponse(ers: ServerErrors) =>  serverErrors() = ers
 
@@ -159,7 +153,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("ProjectsPanel"){
       case (el, args) =>
-        val v = new ProjectsPanelView(el, loaded, currentProject, connector.input, connector.output).withBinder(n => new CodeBinder(n))
+        val v = new ProjectsPanelView(el, currentProject, connector.input, connector.output).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Projects)
         v
      }

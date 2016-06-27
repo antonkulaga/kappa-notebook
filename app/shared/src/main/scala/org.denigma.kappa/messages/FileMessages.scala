@@ -13,11 +13,8 @@ object KappaFileMessage {
     .addConcreteType[FileRequests.Rename]
     .addConcreteType[FileRequests.Save]
     .addConcreteType[FileRequests.ZipUpload]
-
     .addConcreteType[FileResponses.Downloaded]
     .addConcreteType[FileResponses.UploadStatus]
-    .addConcreteType[FileResponses.RenameResults]
-
     .addConcreteType[DataChunk]
     .addConcreteType[DataMessage]
     .join(KappaProject.projectPickler)
@@ -172,11 +169,6 @@ object FileResponses {
 
   case class FileSaved(projectName: String, names: Set[String]) extends KappaFileMessage
 
-  object RenameResults {
-    implicit val classPickler: Pickler[RenameResults] = boopickle.Default.generatePickler[RenameResults]
-  }
-
-  case class RenameResults(projectName: String, pairs: List[(String, String)]) extends KappaFileMessage
 }
 
 object DataChunk{

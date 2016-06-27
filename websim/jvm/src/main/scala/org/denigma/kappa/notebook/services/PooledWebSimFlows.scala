@@ -66,57 +66,43 @@ trait PooledWebSimFlows extends WebSimFlows {
                              (implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[Either[T,U]], NotUsed] =
     Flow[TryResponse].map{
       case (Success(resp), message) =>
-        debug(resp)
         val fut = Unmarshal(resp).to[T]
-
         fut.map[Either[T, U]](Left(_)).recoverWith{
           case exception => onfailure(resp, exception).map[Either[T, U]](Right(_))
         }
       case (Failure(exception), time) => Future.failed(exception)
     }
 
-  protected def debug(resp: HttpResponse) = {
-    /*
-    resp._3.toString.indexOf("flux_maps") match
-    {
-      case r if r <0=>
-      case i =>
-        println("FLUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUX ==\n\n\n"+resp.entity.toString.substring(i))
+  protected def wrongUnmarshal(th: Throwable,resp: HttpResponse) = {
+    system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
+    system.log.error("THE ERROR is:"+th)
+    Unmarshal(resp).to[String].onComplete{
+      case Success(str)=>
+        system.log.error("POSSIBLE String/JSON for marshal value is:\n"+str)
+      case _=>
     }
-    */
+    Future.failed(th)
   }
 
   protected val safeParseUnmarshalFlow: Flow[TryResponse, Future[ParseResult], NotUsed] = safeUnmarshalFlow[ContactMap, List[WebSimError]]{
     case (resp, time) =>
-      debug(resp)
       Unmarshal(resp).to[List[WebSimError]].recoverWith{
-        case th=>
-          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
-          system.log.error("THE ERROR is:"+th)
-          Future.failed(th)
+        case th=> wrongUnmarshal(th, resp)
       }
   }
 
 
   protected val safeTokenUnmarshalFlow: Flow[TryResponse, Future[TokenResult], NotUsed] = safeUnmarshalFlow[Int, List[WebSimError]]{
     case (resp, time) =>
-      debug(resp)
       Unmarshal(resp).to[List[WebSimError]].recoverWith{
-        case th=>
-          system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
-          system.log.error("THE ERROR is:"+th)
-          Future.failed(th)
+        case th=> wrongUnmarshal(th, resp)
       }
   }
 
   def unmarshalFlow[T](implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[T], NotUsed] = Flow[TryResponse].map{
     case (Success(resp), time) =>
-      debug(resp)
       Unmarshal(resp).to[T].recoverWith{
-        case th=>
-          system.log.error("==\n WRONG UNMARSHAL FOR:\n " + resp + "==\n")
-          system.log.error("THE ERROR is:" + th)
-          Future.failed(th)
+        case th=> wrongUnmarshal(th, resp)
       }
     case (Failure(exception), time) =>
       Future.failed(exception)

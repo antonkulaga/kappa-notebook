@@ -24,13 +24,13 @@ trait FileMessenger extends Messenger {
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
       send(d)
 
-      /*
-    case FileResponses.Rename(_, pairs)  =>
-      fileManager.remove(projectName, filename)
+
+    case r @ FileRequests.Rename(projectName, pairs)  =>
+      fileManager.rename(projectName, pairs)
       val response = org.denigma.kappa.messages.Done(r, username)
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
       send(d)
-    */
+
     //case FileResponses.RenameResults(_, List(("CRUD_Test.ka", "CRUD.ka")))  =>
 
     case mess @ FileRequests.LoadFileSync(currentProject, path) =>
@@ -84,20 +84,6 @@ trait FileMessenger extends Messenger {
         case DataMessage(name, bytes) =>
           fileManager.writeBytes(projectName, name, bytes)
       }
-
-
-    /*
-    val d: ByteBuffer = fileManager.uploadZiped(upl).map{
-      case r =>
-        Pickle.intoBytes[KappaMessage](org.denigma.kappa.messages.Done(r, username))
-    }
-      .getOrElse( Pickle.intoBytes[KappaMessage]{
-        val resp = FileResponses.UploadStatus(projectName, data.hashCode(), rewriteIfExist)
-        Failed(resp, List("Does not exist"), username)
-      })
-    //.map(r=>Done(r, username)).getOrElse(Failed())
-    send(d)
-    */
 
     case upl @ FileRequests.ZipUpload(projectName, data, rewriteIfExist) =>
 

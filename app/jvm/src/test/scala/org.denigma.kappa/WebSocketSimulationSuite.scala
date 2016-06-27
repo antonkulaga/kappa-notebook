@@ -38,7 +38,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
 
   val serverName = defaultServers.head.server
 
-    "WebSockets" should {
+  "WebSockets" should {
 
     "get run messages and start index" in {
       val wsClient = WSProbe()

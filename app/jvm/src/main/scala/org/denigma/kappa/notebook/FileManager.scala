@@ -17,12 +17,17 @@ import scala.util.Try
 class FileManager(val root: File) {
 
   def create(project: KappaProject, rewriteIfExists: Boolean = false): File = {
-    write(project.folder)
+    val p = if (project.folder == KappaFolder.empty) project.copy(folder = KappaFolder.empty.copy(path = project.name)) else project
+    write(p.folder)
   }
 
   def rename(project: String, pairs: List[(String, String)]): Unit = {
-    //path.delete()
-    ???
+    for{
+      (currentName, newName) <- pairs
+    } {
+      val path: File = root / project / currentName
+      path.renameTo(newName)
+    }
   }
 
   def remove(project: String, name: String): File = {

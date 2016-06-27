@@ -24,6 +24,7 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
 
   protected def onTextMessage: Receive = {
     case SocketMessages.IncomingMessage(channel, uname, TextMessage.Strict(text), time) =>
+      println("text message is :"+text)
   }
 
   protected def simulationMessages: Receive  = {

@@ -3,17 +3,13 @@ package org.denigma.kappa.notebook
 import org.denigma.binding.binders.{GeneralBinder, NavigationBinder}
 import org.denigma.binding.extensions.sq
 import org.denigma.binding.views.BindableView
-import org.denigma.controls.code.{CodeBinder}
+import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.{AjaxSession, LoginView}
 import org.denigma.kappa.notebook.views.NotebookView
 import org.scalajs.dom
-import org.scalajs.dom.UIEvent
-import org.scalajs.dom.raw.{PopStateEvent, Element, HTMLElement}
-import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.binding.extensions._
-import scala.scalajs.js
+import org.scalajs.dom.raw.Element
+
 import scala.scalajs.js.annotation.JSExport
-import scala.scalajs.js.JSConverters._
 
 /**
  * Just a simple view for the whole app, if interested ( see https://github.com/antonkulaga/scala-js-binding )
@@ -27,7 +23,6 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
   lazy val elem: Element = dom.document.body
 
   val session = new AjaxSession()
-
 
   /**
    * Register views

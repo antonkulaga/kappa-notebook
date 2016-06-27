@@ -11,27 +11,49 @@ import org.denigma.binding.extensions._
 
 import scala.collection.immutable.{Seq, SortedSet}
 
-class ProjectsView(val elem: Element, val loaded: Rx[ProjectResponses.Loaded], val sender: Var[KappaMessage]) extends ItemsSetView {
+class ProjectsView(val elem: Element,
+                   val input: Var[KappaMessage],
+                   val sender: Var[KappaMessage]) extends ItemsSetView {
 
-  val selectProject = Var(loaded.now.projectOpt.getOrElse(KappaProject.default))
-  selectProject.onChange{ case proj =>  sender() = ProjectRequests.Load(proj) }
+  val items: Var[SortedSet[KappaProject]] = Var(SortedSet.empty[KappaProject])
 
-  val currentProject = loaded.map{
-    case lds=>
-      val p = lds.projectOpt.getOrElse(KappaProject.default)
-      selectProject() = p
-      p
+  val selectedProject = Var(KappaProject.empty)
+  selectedProject.onChange{
+    case proj => sender() = ProjectRequests.Load(proj)
   }
 
+  input.onChange{
+
+    case ProjectResponses.LoadedProject(proj) =>
+      selectedProject() = proj
+
+    case ld: ProjectResponses.ProjectList =>
+      //println("LOQDED = "+ld)
+      items() = SortedSet(ld.projects:_*)
+
+    case org.denigma.kappa.messages.Done(cr: ProjectRequests.Create, _) =>
+      println("project has been created, loading it...")
+      sender() = ProjectRequests.Load(cr.project)
+
+    case _=> //do nothing
+  }
+
+  val newProjectName = Var("")
+
   override def newItemView(item: Item): ItemView = constructItemView(item){
-    case (el, _) => new ProjectTitleView(el, item, selectProject).withBinder(v=>new GeneralBinder(v))
+    case (el, _) => new ProjectTitleView(el, item, selectedProject).withBinder(v=>new GeneralBinder(v))
   }
 
   override type Item = KappaProject
   override type ItemView = ProjectTitleView
-  override val items: Rx[SortedSet[KappaProject]] = loaded.map(lds=>lds.projects)
 
   val createProjectClick: Var[MouseEvent] = Var(Events.createMouseEvent())
+
+  createProjectClick.onChange{
+    case ev=>
+      sender() = ProjectRequests.Create(KappaProject(newProjectName.now), false)
+  }
+
 }
 
 class ProjectTitleView(val elem: Element, val project: KappaProject, val selectProject: Var[KappaProject]) extends BindableView {

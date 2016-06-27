@@ -12,6 +12,11 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
 
   val totalWidth = 5632.0 px
 
+  "html" - (
+    height(100 %%),
+    overflow.auto
+  )
+
   "#Notebook" -(
     maxHeight(95 vh),
     minWidth(totalWidth)

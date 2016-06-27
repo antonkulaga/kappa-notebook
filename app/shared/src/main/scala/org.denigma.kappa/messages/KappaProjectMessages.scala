@@ -1,6 +1,7 @@
 package org.denigma.kappa.messages
 
-import scala.Predef
+import boopickle.CompositePickler
+
 import scala.collection.immutable._
 import boopickle.DefaultBasic._
 
@@ -9,15 +10,13 @@ object KappaProject {
   implicit val classPickler: Pickler[KappaProject] = boopickle.Default.generatePickler[KappaProject]
 
   implicit val projectPickler = compositePickler[KappaFileMessage]
-    .addConcreteType[ProjectRequests.Create]
-    .addConcreteType[ProjectRequests.Download]
-    .addConcreteType[ProjectRequests.Load]
-    .addConcreteType[ProjectRequests.Save]
-    .addConcreteType[ProjectResponses.Loaded]
-    .addConcreteType[ProjectRequests.Remove]
     .addConcreteType[KappaProject]
+    .join(ProjectResponses.pickler)
+    .join(ProjectRequests.projectRequestPickler)
 
   lazy val default: KappaProject = KappaProject("presentation"/*"repressilator"*/, saved = false)
+
+  lazy val empty: KappaProject = KappaProject("", saved = false)
 
   implicit val ordering = new Ordering[KappaProject] {
     override def compare(x: KappaProject, y: KappaProject): Int = x.name.compare(y.name) match {
@@ -30,7 +29,7 @@ object KappaProject {
 
 
 
-case class  KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, saved: Boolean = false) extends KappaFileMessage
+case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, saved: Boolean = false) extends KappaFileMessage
 {
   def loaded = folder != KappaFolder.empty
 
@@ -69,54 +68,79 @@ case class  KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, 
     .filterNot(paperFilter)
 
 }
+
 object ProjectRequests {
+
+  implicit val projectRequestPickler: CompositePickler[ProjectRequest] = compositePickler[ProjectRequest]
+    .addConcreteType[ProjectRequests.GetList.type]
+    .addConcreteType[ProjectRequests.Create]
+    .addConcreteType[ProjectRequests.Download]
+    .addConcreteType[ProjectRequests.Load]
+    .addConcreteType[ProjectRequests.Save]
+    .addConcreteType[ProjectRequests.Remove]
+
+
+  trait ProjectRequest extends KappaFileMessage
+
+  case object GetList extends ProjectRequest{
+    implicit val  classPickler: Pickler[GetList.type] = boopickle.Default.generatePickler[GetList.type]
+  }
 
   object Load {
     implicit val classPickler: Pickler[Load] = boopickle.Default.generatePickler[Load]
   }
-  case class Load(project: KappaProject = KappaProject.default) extends KappaFileMessage
+  case class Load(project: KappaProject = KappaProject.default) extends ProjectRequest
 
   object Save {
     implicit val classPickler: Pickler[Save] = boopickle.Default.generatePickler[Save]
   }
 
-  case class Save(project: KappaProject) extends KappaFileMessage
+  case class Save(project: KappaProject) extends ProjectRequest
   object Create {
     implicit val classPickler: Pickler[Create] = boopickle.Default.generatePickler[Create]
   }
-  case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends KappaFileMessage
+  case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends ProjectRequest
 
   object Delete {
     implicit val classPickler: Pickler[Delete] = boopickle.Default.generatePickler[Delete]
   }
 
-  case class Delete(project: KappaProject) extends KappaFileMessage
+  case class Delete(project: KappaProject) extends ProjectRequest
 
   object Download {
     implicit val classPickler: Pickler[Download] = boopickle.Default.generatePickler[Download]
   }
 
-  case class Download(projectName: String) extends KappaFileMessage
-
+  case class Download(projectName: String) extends ProjectRequest
 
   object Remove {
     implicit val classPickler: Pickler[Remove] = boopickle.Default.generatePickler[Remove]
   }
 
-  case class Remove(projectName: String) extends KappaFileMessage
+  case class Remove(projectName: String) extends ProjectRequest
 }
 
 object ProjectResponses {
-  object Loaded {
 
-    def apply(projects: List[KappaProject]): Loaded = Loaded(None, SortedSet(projects:_*))
+  trait ProjectResponse extends KappaFileMessage
 
-    implicit val classPickler: Pickler[Loaded] = boopickle.Default.generatePickler[Loaded]
+  implicit val pickler = compositePickler[ProjectResponse]
+    .addConcreteType[ProjectList]
+    .addConcreteType[LoadedProject]
 
-    lazy val empty: Loaded = Loaded(Nil)
+  object ProjectList {
+    implicit val classPickler: Pickler[ProjectList] = boopickle.Default.generatePickler[ProjectList]
+
+    lazy val empty = ProjectList(Nil)
   }
 
-  case class Loaded(projectOpt: Option[KappaProject], projects: SortedSet[KappaProject] = SortedSet.empty) extends KappaFileMessage {
-    //lazy val project = projectOpt.getOrElse(KappaProject.default) //TODO fix this broken thing!!!!!
+  case class ProjectList(projects: List[KappaProject]) extends ProjectResponse
+
+  object LoadedProject {
+    implicit val classPickler: Pickler[LoadedProject] = boopickle.Default.generatePickler[LoadedProject]
+
+    lazy val empty = LoadedProject (KappaProject.default)
   }
+
+  case class LoadedProject(project: KappaProject) extends ProjectResponse
 }

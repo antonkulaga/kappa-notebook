@@ -6,6 +6,7 @@ import java.nio.ByteBuffer
 import akka.stream.scaladsl.FileIO
 import better.files.File
 import boopickle.DefaultBasic._
+import org.denigma.kappa.messages.FileResponses.RenamingResult
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 
@@ -25,13 +26,12 @@ trait FileMessenger extends Messenger {
       send(d)
 
 
-    case r @ FileRequests.Rename(projectName, pairs)  =>
-      fileManager.rename(projectName, pairs)
-      val response = org.denigma.kappa.messages.Done(r, username)
+    case r @ FileRequests.Rename(projectName, renames, overwrite)  =>
+      println("RENAMING = "+renames)
+      val response: RenamingResult = fileManager.rename(projectName, renames, overwrite)
+      println("RESPONSE = "+response)
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
       send(d)
-
-    //case FileResponses.RenameResults(_, List(("CRUD_Test.ka", "CRUD.ka")))  =>
 
     case mess @ FileRequests.LoadFileSync(currentProject, path) =>
       fileManager.readBytes(currentProject, path) match {

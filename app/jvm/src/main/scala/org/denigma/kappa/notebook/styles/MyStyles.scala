@@ -12,6 +12,15 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
 
   val totalWidth = 5632.0 px
 
+  ".selectable" -{
+    cursor.pointer
+  }
+
+
+  ".project.content" -{
+    cursor.pointer
+  }
+
   "html" - (
     height(100 %%),
     overflow.auto

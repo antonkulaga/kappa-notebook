@@ -6,17 +6,10 @@ import scala.collection.immutable._
 
 object KappaFileMessage {
   implicit val kappaFilePickler: CompositePickler[KappaFileMessage] = compositePickler[KappaFileMessage]
-    .addConcreteType[FileRequests.UploadBinary]
-    .addConcreteType[FileRequests.LoadBinaryFile]
-    .addConcreteType[FileRequests.LoadFileSync]
-    .addConcreteType[FileRequests.Remove]
-    .addConcreteType[FileRequests.Rename]
-    .addConcreteType[FileRequests.Save]
-    .addConcreteType[FileRequests.ZipUpload]
-    .addConcreteType[FileResponses.Downloaded]
-    .addConcreteType[FileResponses.UploadStatus]
     .addConcreteType[DataChunk]
     .addConcreteType[DataMessage]
+    .join(FileResponses.pickler)
+    .join(FileRequests.pickler)
     .join(KappaProject.projectPickler)
     .join(KappaPath.kappaPathPickler)
 
@@ -104,70 +97,98 @@ case class KappaFile(path: String, name: String, content: String, saved: Boolean
 
 object FileRequests {
 
+
+  implicit val pickler: CompositePickler[FileRequest] = compositePickler[FileRequest]
+    .addConcreteType[FileRequests.UploadBinary]
+    .addConcreteType[FileRequests.LoadBinaryFile]
+    .addConcreteType[FileRequests.LoadFileSync]
+    .addConcreteType[FileRequests.Remove]
+    .addConcreteType[FileRequests.Rename]
+    .addConcreteType[FileRequests.Save]
+    .addConcreteType[FileRequests.ZipUpload]
+
+
+  trait FileRequest extends KappaFileMessage
+
   object Remove {
     implicit val classPickler: Pickler[Remove] = boopickle.Default.generatePickler[Remove]
   }
 
-  case class Remove(projectName: String, filename: String) extends KappaFileMessage
+  case class Remove(projectName: String, filename: String) extends FileRequest
 
   object LoadFileSync {
     implicit val classPickler: Pickler[LoadFileSync] = boopickle.Default.generatePickler[LoadFileSync]
   }
 
-  case class LoadFileSync(projectName: String, path: String) extends KappaFileMessage
+  case class LoadFileSync(projectName: String, path: String) extends FileRequest
 
   object LoadBinaryFile{
     implicit val classPickler: Pickler[LoadBinaryFile] = boopickle.Default.generatePickler[LoadBinaryFile]
   }
 
-  case class LoadBinaryFile(projectName: String, path: String, chunkSize: Int = 8192 * 8 /*-1*/) extends KappaFileMessage
+  case class LoadBinaryFile(projectName: String, path: String, chunkSize: Int = 8192 * 8 /*-1*/) extends FileRequest
 
   object UploadBinary{
     implicit val classPickler: Pickler[UploadBinary] = boopickle.Default.generatePickler[UploadBinary]
   }
 
-  case class UploadBinary(projectName: String, files: List[DataMessage]) extends KappaFileMessage
+  case class UploadBinary(projectName: String, files: List[DataMessage]) extends FileRequest
 
   object Rename{
     implicit val classPickler: Pickler[Rename] = boopickle.Default.generatePickler[Rename]
-    def apply(projectName: String): Rename = Rename(projectName, Nil)
+    def apply(projectName: String): Rename = Rename(projectName, Map.empty)
   }
 
-  case class Rename(projectName: String, namePairs: List[(String, String)]) extends KappaFileMessage
+  case class Rename(projectName: String, renames: Map[String, String], rewriteIfExists: Boolean = false) extends FileRequest
 
   object Save{
     implicit val classPickler: Pickler[Save] = boopickle.Default.generatePickler[Save]
   }
 
-  case class Save(projectName: String, files: List[KappaFile], rewrite: Boolean) extends KappaFileMessage
+  case class Save(projectName: String, files: List[KappaFile], rewrite: Boolean) extends FileRequest
 
   object ZipUpload{
     implicit val classPickler: Pickler[ZipUpload] = boopickle.Default.generatePickler[ZipUpload]
   }
 
-  case class ZipUpload(projectName: String, zip: DataMessage, rewriteIfExist: Boolean = false) extends KappaFileMessage
+  case class ZipUpload(projectName: String, zip: DataMessage, rewriteIfExist: Boolean = false) extends FileRequest
 }
 
 object FileResponses {
+
+
+  implicit val pickler: CompositePickler[FileResponse] = compositePickler[FileResponse]
+    .addConcreteType[Downloaded]
+    .addConcreteType[UploadStatus]
+    .addConcreteType[FileSaved]
+    .addConcreteType[RenamingResult]
+
+  trait FileResponse extends KappaFileMessage
 
   object Downloaded{
     implicit val classPickler: Pickler[Downloaded] = boopickle.Default.generatePickler[Downloaded]
 
     lazy val empty = Downloaded("", Array())
   }
-  case class Downloaded(folderName: String, data: Array[Byte]) extends KappaFileMessage
+  case class Downloaded(folderName: String, data: Array[Byte]) extends FileResponse
 
   object UploadStatus{
     implicit val classPickler: Pickler[UploadStatus] = boopickle.Default.generatePickler[UploadStatus]
   }
 
-  case class UploadStatus(projectName: String, hash: Int, rewriteIfExist: Boolean) extends KappaFileMessage
+  case class UploadStatus(projectName: String, hash: Int, rewriteIfExist: Boolean) extends FileResponse
+
+  object RenamingResult {
+    implicit val classPickler: Pickler[RenamingResult] = boopickle.Default.generatePickler[RenamingResult]
+  }
+
+  case class RenamingResult(projectName: String, renamed: Map[String, (String, String)], nameConflicts: Map[String, String], notFound: Map[String, String]) extends FileResponse
 
   object FileSaved {
     implicit val classPickler: Pickler[FileSaved] = boopickle.Default.generatePickler[FileSaved]
   }
 
-  case class FileSaved(projectName: String, names: Set[String]) extends KappaFileMessage
+  case class FileSaved(projectName: String, names: Set[String]) extends FileResponse
 
 }
 

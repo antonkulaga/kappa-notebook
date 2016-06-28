@@ -104,7 +104,6 @@ class WebSimSuite extends BasicKappaSuite {
     val model = abc
     val params = RunModel(model, Some(1000), max_events = Some(1000000))
     val tokenFut = server.launch(params).pipeTo(probeToken.ref)
-
     val token = probeToken.expectMsgPF(duration * 2) {  case (Left((t: Int, mp: ContactMap)), mod) => t  }
     val source =  Source.single(token)
     val simSink: Sink[(flows.Token, SimulationStatus), Probe[(flows.Token, SimulationStatus)]] = TestSink.probe[(flows.Token, SimulationStatus)]

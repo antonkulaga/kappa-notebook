@@ -1,5 +1,5 @@
 @()
-<div class="ui blue segment" data-view="CurrentProjectView">
+<div class="ui blue segment" data-view="CurrentProjectView"  data-tooltip="files of the current project" data-delay="500">
   <h4 class="ui blue header">Current project: <b data-bind="name"></b></h4>
   <h4 class="ui inverted blue header"></h4>
 
@@ -15,7 +15,7 @@
         <tbody>
             <tr data-template="true">
                 <td><i class="label" data-class="icon"></i></td>
-                <td class="selectable"  data-bind="name" data-click="openClick">
+                <td contenteditable="true" class="selectable" data-bind="name" data-click="openClick">
                 </td>
                 <td class="right aligned">
                     <div class="ui icon tiny buttons">
@@ -24,20 +24,18 @@
                         <button class="ui button" data-click="removeClick"><i class="remove icon"></i></button>
                     </div>
                 </td>
-                <td class="right aligned">
-                    <div class="ui toggle checkbox" data-show-if="isSource">
+                <td>
+                    <div class="ui tiny toggle checkbox" data-show-if="isSource">
                         <input type="checkbox" name="public">
                         <label>run</label>
                     </div>
-                    <button data-click="openClick" data-hide-if="isSource">
-                        GoTo
-                    </button>
                 </td>
             </tr>
         </tbody>
     </table>
-    <div class="ui segment">
-        <input class="ui input" placeholder="filename" data-bind="newFileName">
+
+    <div class="ui action input">
+        <input type="text" placeholder="create file"  data-bind="newFileName">
         <div class="ui icon buttons">
             <div class="ui button" data-click="addFile"><i class="add circle icon"></i>&nbsp;</div>
             <div class="ui button" data-click="uploadFile"><i class="Cloud Upload icon"></i>&nbsp;</div>

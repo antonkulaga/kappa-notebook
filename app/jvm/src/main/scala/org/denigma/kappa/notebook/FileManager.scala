@@ -13,7 +13,6 @@ import scala.Seq
 import scala.collection.immutable._
 import scala.util.Try
 
-
 class FileManager(val root: File) {
 
   def create(project: KappaProject, rewriteIfExists: Boolean = false): File = {
@@ -21,12 +20,26 @@ class FileManager(val root: File) {
     write(p.folder)
   }
 
-  def rename(project: String, pairs: List[(String, String)]): Unit = {
-    for{
-      (currentName, newName) <- pairs
-    } {
-      val path: File = root / project / currentName
-      path.renameTo(newName)
+  def rename(projectName: String, renames: Map[String, String], overwriteIfExists: Boolean = false): FileResponses.RenamingResult = {
+    renames.foldLeft(FileResponses.RenamingResult(projectName, Map.empty, Map.empty, Map.empty)) {
+      case (acc, (currentName, newName)) =>
+        (root / projectName / currentName, root / projectName / newName) match {
+          case (fromPath, toPath) if fromPath.notExists=>
+            //println("FROM THAT DOES NOT EXIST PATH "+fromPath)
+            acc.copy(notFound = acc.notFound.updated(currentName, newName))
+
+          case (fromPath, toPath) if toPath.exists && overwriteIfExists=>
+            fromPath.renameTo(newName)
+            acc.copy(renamed = acc.renamed.updated(currentName, (newName, toPath.pathAsString)))
+
+          case (fromPath, toPath) if toPath.exists && !overwriteIfExists=>
+            //println("NAME CONFLICTS "+fromPath)
+            acc.copy(nameConflicts = acc.nameConflicts.updated(currentName, newName))
+
+          case (fromPath, toPath) =>
+            fromPath.renameTo(newName)
+            acc.copy(renamed = acc.renamed.updated(currentName, (newName, toPath.pathAsString)))
+        }
     }
   }
 

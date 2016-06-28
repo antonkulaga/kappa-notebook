@@ -1,5 +1,7 @@
 package org.denigma.kappa.notebook.views.editor
 
+import org.denigma.codemirror.addons.Lint
+import org.denigma.codemirror.addons.Lint._
 import fastparse.all._
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.commons.Uploader
@@ -82,6 +84,25 @@ class CodeTab(val elem: Element,
       case _ => //do nothing
     }
   }
+
+  override def makeEditor(area: HTMLTextAreaElement, textValue: String, codeMode: String, readOnly: Boolean = false): Editor = {
+    val params: EditorConfigurationBuilder = EditorConfig
+      .mode(codeMode)
+      .lineNumbers(true)
+      .value(textValue)
+      .readOnly(readOnly)
+      .viewportMargin(Integer.MAX_VALUE)
+      .gutters(js.Array(Lint.gutters, "CodeMirror-linenumbers", "breakpoints"))
+    val config: EditorConfiguration = params
+    config.lint = true
+    CodeMirror.addLint(codeMode){
+      text => {
+        new js.Array()
+      }
+    }
+
+    CodeMirror.fromTextArea(area, params)
+  }
   
 
   override def addEditor(name: String, element: ViewElement, codeMode: String): Unit = element match {
@@ -127,6 +148,9 @@ class CodeTab(val elem: Element,
     editorUpdates() = EditorUpdates(Option(ed), ch.toList)
     val value = doc.getValue()
     if(value != code.now) code() = value
+
+    editor.setOption("lint", true) //trigger linting
+    println("lint = true")
     //updateCursor()
   }
 

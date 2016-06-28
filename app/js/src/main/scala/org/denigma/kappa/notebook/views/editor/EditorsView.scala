@@ -104,7 +104,7 @@ trait EditorMaker {
       .value(textValue)
       .readOnly(readOnly)
       .viewportMargin(Integer.MAX_VALUE)
-      .gutters(js.Array("CodeMirror-linenumbers", "breakpoints"))
+      .gutters(js.Array("CodeMirror-lint-markers", "CodeMirror-linenumbers", "breakpoints"))
     //  gutters: ["CodeMirror-linenumbers", "breakpoints"]
     CodeMirror.fromTextArea(area, params)
   }

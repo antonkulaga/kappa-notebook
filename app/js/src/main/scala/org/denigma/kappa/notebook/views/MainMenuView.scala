@@ -118,7 +118,7 @@ class MainMenuItemView(val elem: HTMLElement, val item: (String, Element)) exten
     case event=>
       event.preventDefault()
       event.stopPropagation()
-      println("drag over "+ item._1)
+      //println("drag over "+ item._1)
   }
 
   val onDragEnter = Var(Events.createDragEvent())
@@ -128,7 +128,7 @@ class MainMenuItemView(val elem: HTMLElement, val item: (String, Element)) exten
       event.stopPropagation()
       elem.classList.add("dockable")
       event.dataTransfer.effectAllowed = "none"
-      println("drag enter "+ item._1)
+      //println("drag enter "+ item._1)
   }
 
   val onDragLeave = Var(Events.createDragEvent())
@@ -150,7 +150,7 @@ class MainMenuItemView(val elem: HTMLElement, val item: (String, Element)) exten
       elem.classList.remove("dockable")
       menuParent match {
         case Some(p) =>
-          println("let us park!")
+          //println("let us park!")
           p.park(self, nm)
         case _ => println("cannot park")
     }

@@ -107,10 +107,11 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
             case FileResponses.FileSaved("crud", _) =>
           }
 
-          val rename = FileRequests.Rename(projectName = projectName, List(("CRUD_Test.ka", "CRUD.ka")))
+          val renames = Map(("CRUD_Test.ka", "CRUD.ka"), ("doesnotexist.ka", "also_does_not_exist.ka"))
+          val rename = FileRequests.Rename(projectName = projectName, renames = renames, false)
           val rn: ByteBuffer = Pickle.intoBytes[KappaMessage](rename)
           checkMessage(wsClient, rn){
-            case org.denigma.kappa.messages.Done(_, _) =>
+            case r: FileResponses.RenamingResult if r.notFound == Map(("doesnotexist.ka", "also_does_not_exist.ka")) && r.renamed.keySet ==Set("CRUD_Test.ka")=>
           }
 
           val rv =  FileRequests.Remove(projectName = projectName, "CRUD.ka")

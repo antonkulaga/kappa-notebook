@@ -31,8 +31,19 @@ object CurrentProject {
 
   protected implicit def toMap(st: SortedSet[KappaFile]): Map[String, KappaFile] = st.map(f=> (f.name, f)).toMap
 
+  def apply(name: String, place: String, allFiles: List[Map[String, KappaFile]] ): CurrentProject = {
+    CurrentProject(name, place, allFiles(0),  allFiles(1),  allFiles(2),  allFiles(3),  allFiles(4), true)
+  }
+
   def fromKappaProject(kappaProject: KappaProject) = {
-    CurrentProject(kappaProject.name, kappaProject.folder.path, kappaProject.sourceMap, kappaProject.papers, kappaProject.images, kappaProject.videos, kappaProject.otherFiles, kappaProject.saved)
+    CurrentProject(kappaProject.name,
+      kappaProject.folder.path,
+      kappaProject.sourceMap,
+      kappaProject.papers,
+      kappaProject.images,
+      kappaProject.videos,
+      kappaProject.otherFiles,
+      kappaProject.saved)
   }
 }
 
@@ -44,55 +55,40 @@ case class CurrentProject(name: String,
                           videos: Map[String, KappaFile],
                           otherFiles: Map[String, KappaFile],
                           saved: Boolean
-                         )
+                         ) extends FileFilters
 {
+
+  lazy val allFilesList: List[Map[String, KappaFile]] = List(sourceMap, papers, images, videos, otherFiles)
+
   lazy val allFilesMap: Map[String, KappaFile] = sourceMap ++ papers ++ images ++ videos ++  otherFiles
+
   lazy val allFiles = SortedSet(allFilesMap.values.toSeq:_*)
 
   def toKappaProject: KappaProject = KappaProject(name, KappaFolder(path, SortedSet.empty, allFiles), saved)
-}
 
-/*
-object CurrentProject {
-
-  def fromKappaProject(kappaProject: KappaProject) = CurrentProject(
-    Var(kappaProject.name),
-    Var(kappaProject.sourceMap),
-    Var(kappaProject.papers),
-    Var(kappaProject.images),
-    Var(kappaProject.videos),
-    Var(kappaProject.otherFiles)
-  )
-
-  lazy val empty = CurrentProject(Var(Map.empty), Var(SortedSet.empty), Var(SortedSet.empty), Var(SortedSet.empty), Var(SortedSet.empty),)
-
-}
-
-/**
-  * Just a class, probably temporal to keep
-  * @param name
-  * @param sourceMap
-  * @param papers
-  * @param images
-  * @param videos
-  * @param otherFiles
-  */
-case class CurrentProject(
-                          name: Var[String],
-                          sourceMap: Var[Map[String, KappaFile]],
-                          papers: Var[SortedSet[KappaFile]],
-                          images: Var[SortedSet[KappaFile]],
-                          videos: Var[SortedSet[KappaFile]],
-                          otherFiles: Var[SortedSet[KappaFile]]
-                         ) extends UIMessage {
-
-  lazy val sources: Dynamic[SortedSet[KappaFile]] = sourceMap.map(v=>SortedSet.apply(v.values.toSeq:_*))
-
-  val allFiles = Rx{
-    sources() ++ papers() ++ images() ++ videos() ++ otherFiles()
+  def removeByName(name: String): CurrentProject = {
+    if(sourceMap.contains(name)) this.copy(sourceMap = sourceMap - name) else
+    if(papers.contains(name)) this.copy(papers = papers - name) else
+    if(images.contains(name)) this.copy(images = images - name) else
+    if(videos.contains(name)) this.copy(videos = videos - name) else
+    this.copy(otherFiles = otherFiles - name)
   }
 
-  val dirty = allFiles.map()
-}
-*/
+  protected def update(fun: Map[String, KappaFile] =>  Map[String, KappaFile] ) = {
+    val updated = for(mp <- allFilesList) yield fun(mp)
+    CurrentProject(name, path, updated)
+  }
 
+  def markSaved(files: Set[String]): CurrentProject = this.update{
+    case mp =>  mp.map{ case (key, value)=> if(files.contains(key)) key->value.copy(saved = true) else key-> value}
+  }
+
+  def withRenames(renames: Map[String, (String, String)]) =  this.update{
+    case mp =>  mp.map{
+      case (key, value) if renames.contains(key)=>
+        val (newName, newPath) = renames(key)
+        newName -> value.copy(path = newPath)
+      case (key, value)=> key -> value
+    }
+  }
+}

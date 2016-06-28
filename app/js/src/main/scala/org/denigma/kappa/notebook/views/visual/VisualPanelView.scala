@@ -2,20 +2,20 @@ package org.denigma.kappa.notebook.views.visual
 
 import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.KappaMessage
+import org.denigma.kappa.messages.{WebSimMessages, KappaMessage}
 import org.denigma.kappa.notebook.views.editor.KappaWatcher
 import org.denigma.kappa.notebook.views.project.ProjectsView
 import org.denigma.kappa.notebook.views.visual.rules.GraphView
 import org.scalajs.dom.raw.Element
 import rx._
 
-class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[KappaMessage]) extends BindableView{
+class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[KappaMessage]/*, val contactMap: Var[WebSimMessages.ContactMap]*/) extends BindableView{
 
   val currentLine: Rx[String] = kappaWatcher.text
 
   override lazy val injector = defaultInjector
     .register("ContactMapView") {
-      (el, args) =>new ContactMapView(el, input).withBinder(v=>new CodeBinder(v))
+      (el, args) =>new ContactMapView(el, /*contactMap,*/ input).withBinder(v=>new CodeBinder(v))
     }
     .register("LeftGraph") {  (el, args) =>
       new GraphView(el,

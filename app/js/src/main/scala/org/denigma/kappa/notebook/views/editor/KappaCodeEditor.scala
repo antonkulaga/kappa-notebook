@@ -24,8 +24,11 @@ class KappaCodeEditor(val elem: Element,
   with ItemsMapView
 {
 
+  override type Value = KappaFile
+
+  override type ItemView = CodeTab
+
   val selected: Var[String] = Var("")
-  //items.foreach(i=>println(" FILES: "+i))
 
   override type Item = String
 
@@ -39,11 +42,6 @@ class KappaCodeEditor(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
-
-  override type Value = KappaFile
-
-  override type ItemView = CodeTab
-
 
   input.onChange{
     case Go.ToSource(name, from, to)=>

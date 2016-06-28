@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.views.visual
 
 import org.denigma.binding.views.BindableView
-import org.denigma.kappa.messages.{ServerMessages, KappaMessage}
+import org.denigma.kappa.messages.{WebSimMessages, ServerMessages, KappaMessage}
 import org.scalajs.dom.raw.Element
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -24,7 +24,7 @@ class ContactMapRenderer(val id: String, isSnapshot: Boolean) extends js.Object 
 }
 
 
-class ContactMapView(val elem: Element, val input: Var[KappaMessage]) extends BindableView {
+class ContactMapView(val elem: Element/*, val contactMap: Var[WebSimMessages.ContactMap]*/, val input: Var[KappaMessage]) extends BindableView {
 
   input.onChange{
 

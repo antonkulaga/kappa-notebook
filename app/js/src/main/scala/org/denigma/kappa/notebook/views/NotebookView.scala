@@ -40,8 +40,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val kappaServerErrors = Var(KappaServerErrors.empty)
 
-  val path = Var("files")
-
   val currentProject: Var[CurrentProject] = Var(CurrentProject.fromKappaProject(KappaProject.default))
 
   val sourceMap: Var[Map[String, KappaFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(sourceMap = s, saved = false))

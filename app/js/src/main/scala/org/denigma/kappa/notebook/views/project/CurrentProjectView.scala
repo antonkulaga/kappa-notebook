@@ -18,7 +18,7 @@ import scala.collection.immutable._
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
-class CurrentProjectView(val elem: Element, currentProject: Rx[CurrentProject],  input: Var[KappaMessage], output: Var[KappaMessage]) extends ItemsSetView {
+class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],  input: Var[KappaMessage], output: Var[KappaMessage]) extends ItemsSetView {
 
   val sourceMap = currentProject.map(p=>p.sourceMap)
 
@@ -61,6 +61,17 @@ class CurrentProjectView(val elem: Element, currentProject: Rx[CurrentProject], 
       val name = if(!label.contains(".")) label+".zip" else label
       //println("DOWNLOADED IS = "+d)
       if(d != FileResponses.Downloaded.empty) saveBinaryAs(name, data)
+
+    case Done(FileRequests.Remove(pname, filename), _) if pname ==currentProject.now.name =>
+      currentProject() = currentProject.now.removeByName(filename)
+
+    case FileResponses.RenamingResult(projectName, renamed: Map[String, (String, String)], nameConflicts, notFound) if projectName ==currentProject.now.name =>
+      currentProject() = currentProject.now.withRenames(renamed)
+
+    case FileResponses.FileSaved(pname, names) if pname ==currentProject.now.name =>
+      currentProject() = currentProject.now.markSaved(names)
+
+
 
     case _=> //do nothing
   }

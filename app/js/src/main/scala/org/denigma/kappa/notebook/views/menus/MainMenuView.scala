@@ -1,25 +1,30 @@
-package org.denigma.kappa.notebook.views
+package org.denigma.kappa.notebook.views.menus
 
 import org.denigma.binding.binders._
+import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsSeqView}
 import org.denigma.controls.code.CodeBinder
+import org.denigma.kappa.messages.KappaMessage
+import org.denigma.kappa.notebook.views.actions.Movements
 import org.scalajs.dom
-import org.scalajs.dom._
-import org.scalajs.dom.raw.{Element, HTMLElement, SVGElement}
-import rx._
+import org.scalajs.dom.raw.{Element, HTMLElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.binding.extensions._
-import org.scalajs.dom.ext._
+import rx._
 
-import scala.annotation.tailrec
 import scala.scalajs.js
-import scala.scalajs.js.annotation.{JSName, JSExport}
+import scala.scalajs.js.annotation.{ScalaJSDefined, JSExport}
 import scala.util.{Failure, Success, Try}
 
-class MainMenuView(val elem: Element, val items: Var[List[(String, Element)]] ) extends BindableView with ItemsSeqView{
+class MainMenuView(
+                   val elem: Element,
+                   val input: Var[KappaMessage],
+                   val scrollPanel: Element,
+                   val items: Var[List[(String, Element)]] ) extends BindableView with ItemsSeqView{
 
   type Item =  (String, Element)
   type ItemView = MainMenuItemView
+
+  val menuMap: Rx[Map[String, ViewElement]] = items.map(list=>list.toMap)
 
   lazy val zipped = items.zipped
 
@@ -94,15 +99,24 @@ class MainMenuView(val elem: Element, val items: Var[List[(String, Element)]] ) 
     }
   }
 
-
   override def newItemView(item: (String, Element)): MainMenuItemView = this.constructItemView(item){
-    case (el: HTMLElement, _) => new MainMenuItemView(el, item).withBinder(new CodeBinder(_))
+    case (el: HTMLElement, _) => new MainMenuItemView(el, item, input).withBinder(new CodeBinder(_))
     case _ => throw new Exception("Element is not an HTML Element")
   }
+
+  override lazy val injector = defaultInjector
+    .register("ScrollerView") {
+      case (el, args) =>
+        new ScrollerView(el, scrollPanel, input, menuMap).withBinder(n => new CodeBinder(n))
+    }
 }
 
 @JSExport
-class MainMenuItemView(val elem: HTMLElement, val item: (String, Element)) extends BindableView {
+class MainMenuItemView(
+                        val elem: HTMLElement,
+                        val item: (String, Element),
+                        val input: Var[KappaMessage]
+                      ) extends BindableView {
 
   self =>
 
@@ -111,6 +125,12 @@ class MainMenuItemView(val elem: HTMLElement, val item: (String, Element)) exten
 
   lazy val menuParent = this.fromParents{
     case p: MainMenuView => p
+  }
+
+  val visible: Var[Boolean] = Var(true)
+  visible.onChange{
+    case true => if(target.display == "none") target.display = "block"
+    case false => target.display = "none"
   }
 
   val onDragOver = Var(Events.createDragEvent())
@@ -173,28 +193,13 @@ class MainMenuItemView(val elem: HTMLElement, val item: (String, Element)) exten
 
   @JSExport
   def click(): Unit = {
-    pushState()
-  }
-
-  def pushState() = {
-    val stateObject = scalajs.js.Dynamic.literal(id = target.id)
-    dom.window.history.pushState(stateObject, itemName.now, target.id)
-    val state = js.Dynamic.literal(
-      bubbles = false,
-      cancelable = false,
-      state = stateObject
-    )
-    var popStateEvent = new FixedPopStateEvent("popstate", state)
-    dom.window.dispatchEvent(popStateEvent)
-    println("pop event dispatched")
+    input() = Movements.toTab(itemName.now)
   }
 
   menuClick.triggerLater{ click() }
 }
 
-@js.native
-@JSName("PopStateEvent")
-class FixedPopStateEvent(val typeArg: String, override val state: js.Any) extends PopStateEvent
-{
+@ScalaJSDefined
+class ScrollPosition(val id: String, val currentPosition: Double) extends js.Object {
 
 }

@@ -1,14 +1,17 @@
 @()
-<div class="ui blue segment" data-view="ProjectsView" data-tooltip="List of all projects" data-delay="500">
-  <h4 class="ui blue header">Project</h4>
+<div class="ui blue segment" data-view="ProjectsView">
+  @commons.html.header("Project")
   <div class="ui large celled animated list">
-
     <div class="item" data-template="true" >
       <div class="right floated content">
-        <div class="ui mini button" data-click="loadClick" data-hide-if="current">load</div>
+        <span class="ui icon mini buttons">
+          <button class="ui tiny button" data-click="removeClick"><i class="red remove icon"></i></button>
+          <button class="ui button" data-click="downloadClick"><i class="download icon"></i></button>
+          <div class="ui blue small button" data-click="openClick" data-hide-if="current">open</div>
+        </span>
       </div>
       <i class="large suitcase icon" data-class-blue-if="current"></i>
-      <div class="project content" data-click="loadClick">
+      <div class="project content" data-click="openClick">
         <div data-bind="name" class="header"></div>
       </div>
     </div>
@@ -16,6 +19,5 @@
       <input class="ui tiny input" placeholder="create project" data-bind="newProjectName">
       <button data-event-click="createProjectClick" class="ui tiny positive button"><i class="add circle icon"></i>project</button>
     </div>
-
   </div>
 </div>

@@ -10,12 +10,20 @@ import org.denigma.kappa.messages.FileResponses.RenamingResult
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 
+import scala.collection.immutable.Iterable
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 trait FileMessenger extends Messenger {
 
   def fileManager: FileManager
+
+
+  protected def containerMessages: PartialFunction[KappaMessage, Unit] = {
+    case KappaMessage.Container(messages) =>
+      messages.foreach(m=> self ! m)
+  }
+
 
   protected def fileMessages: PartialFunction[KappaMessage, Unit] = {
 
@@ -98,13 +106,17 @@ trait FileMessenger extends Messenger {
       //.map(r=>Done(r, username)).getOrElse(Failed())
       send(d)
 
-    case FileRequests.Save(projectName, files, rewrite) =>
+    case FileRequests.Save(projectName, files, rewrite, false) =>
       val path: File = fileManager.root / projectName
-      files.foreach{ case f =>
-        val rel = f.relativeTo(projectName)
-        fileManager.writeFile(rel)
-      }
-      val reply = FileResponses.FileSaved(projectName, files.map(v=>v.name).toSet)
+      val rels = files.map(f=>f.relativeTo(projectName))
+      val reply = FileResponses.SavedFiles(projectName, Left(rels.map(v=>v.name).toSet))
+      send(Pickle.intoBytes[KappaMessage](reply))
+
+    case FileRequests.Save(projectName, files, rewrite, returnResults) =>
+      val path: File = fileManager.root / projectName
+      val rels = files.map(f=>f.relativeTo(projectName))
+      val kappaFiles: Map[String, KappaFile] = (for{f <- rels} yield { fileManager.writeFile(f); f.name -> f.copy(saved = true) }).toMap
+      val reply = FileResponses.SavedFiles(projectName, Right(kappaFiles))
       send(Pickle.intoBytes[KappaMessage](reply))
   }
 

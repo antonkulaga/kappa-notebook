@@ -41,9 +41,10 @@ class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],
   val unsaved: Dynamic[Map[String, KappaFile]] = sourceMap.map{ sm=> sm.collect{ case (key, value) if !value.saved => key -> value } }
 
   val addFile = Var(Events.createMouseEvent())
-  addFile.triggerIf(canCreate) { case ev=>
-    val file = KappaFile("", newFileName.now, "", false)
-    output() = FileRequests.Save(projectName.now, List(file), false)
+  addFile.triggerIf(canCreate){ case ev=>
+    println("adding file!!!!")
+    val file = KappaFile("", newFileName.now, "", saved = false)
+    output() = FileRequests.Save(projectName.now, List(file), rewrite = false, true)
     //output() = //org.denigma.kappa.messages.FileRequests.Save(projectName.now, List())
   }
 
@@ -51,7 +52,7 @@ class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],
   uploadFile.triggerLater{
     val name = fileName.now
     val k = KappaFile("", name, "", saved = false)
-    output() = FileRequests.Save(projectName.now, List(k), false)
+    output() = FileRequests.Save(projectName.now, List(k), false, true)
   }
 
   val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.allFiles)
@@ -68,10 +69,13 @@ class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],
     case FileResponses.RenamingResult(projectName, renamed: Map[String, (String, String)], nameConflicts, notFound) if projectName ==currentProject.now.name =>
       currentProject() = currentProject.now.withRenames(renamed)
 
-    case FileResponses.FileSaved(pname, names) if pname ==currentProject.now.name =>
-      currentProject() = currentProject.now.markSaved(names)
+    case FileResponses.SavedFiles(pname, Left(names)) if pname ==currentProject.now.name =>
+      val proj = currentProject.now
+      currentProject() = { proj.markSaved(names) }
 
-
+    case FileResponses.SavedFiles(pname, Right(files)) if pname ==currentProject.now.name =>
+      val proj = currentProject.now
+      currentProject() = { proj.markSaved(files) }
 
     case _=> //do nothing
   }
@@ -128,6 +132,8 @@ object FileType extends Enumeration {
 
 class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[String], input: Var[KappaMessage], output: Var[KappaMessage]) extends BindableView {
 
+  val editable = Var(false)
+
   val name = Var(file.name)
   val fileType: Rx[FileType.Value] = name.map{
     case n if n.endsWith(".pdf") => FileType.pdf
@@ -143,6 +149,10 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
   val isVideo: Rx[Boolean] = fileType.map(f=>f==FileType.video)
   val isPaper: Rx[Boolean] = fileType.map(f=>f==FileType.pdf)
 
+  val runnable = Rx{
+    isSource() && file.active
+  }
+
   val saved = Var(file.saved)
 
   val icon: Rx[String] = fileType.map{
@@ -154,8 +164,13 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
     case other => "File Outline"
   }
 
-  val openClick: Var[MouseEvent] = Var(Events.createMouseEvent())
-  openClick.triggerLater{
+  val fileClick: Var[MouseEvent] = Var(Events.createMouseEvent())
+  fileClick.triggerLater{
+    if(!editable.now) goToFile()
+
+  }
+
+  protected def goToFile() = {
     fileType.now match {
       case FileType.pdf => input() =
         KappaMessage.Container()

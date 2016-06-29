@@ -7,6 +7,7 @@ import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages.{Go, GoToFigure, GoToPaper, KappaMessage}
 import org.denigma.kappa.notebook.parsers.{CommentLinksParser, ImageParser, PaperParser}
 import org.denigma.kappa.notebook.views.MainTabs
+import org.denigma.kappa.notebook.views.actions.Movements
 import org.denigma.kappa.notebook.views.figures.{Figure, Image}
 import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
@@ -113,24 +114,14 @@ class CommentsWatcher(
     tag.render
   }
 
-  protected def makeImageMarker(image: String) = {
+  protected def makeImageMarker(figure: String) = {
     val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline large icon", onclick := {
       //println(s"mouse down on $num")
     }))
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        input() =
-        KappaMessage.Container()
-          .andThen(Go.ToTab(MainTabs.Figures))
-          .andThen(GoToFigure(image))
-      //println("image = "+ image.trim)
-        /*
-        println("SELECTOR = "+selector.image)
-        println("SELECOT == "+selector.image==image.trim)
-        selector.image() = image.trim
-        selector.go2images()
-        */
+        input() = Movements.toFigure(figure)
     }
     html
   }
@@ -142,20 +133,7 @@ class CommentsWatcher(
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        input() =
-          KappaMessage.Container()
-            .andThen(Go.ToTab(MainTabs.Papers))
-            .andThen(GoToPaper(Bookmark(paper, 1)))
-
-      //println(s"click on $num")
-        //  println("papers work")
-        //location() = location.now.copy(page = num)
-        //selector.paper() =
-        /*
-        println("paper"+ paper)
-        selector.paper() = paper
-        selector.go2papers()
-        */
+        input() = Movements.toPaper(paper, 1)
     }
     html
   }

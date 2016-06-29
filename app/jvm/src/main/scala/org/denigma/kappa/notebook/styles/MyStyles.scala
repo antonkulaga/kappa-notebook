@@ -16,6 +16,10 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
     cursor.pointer
   }
 
+  ".fileitem" -{
+    fontSize(0.9 em)
+  }
+
 
   ".project.content" -{
     cursor.pointer
@@ -23,8 +27,13 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
 
   "html" - (
     height(100 %%),
-    overflow.auto
+    overflowX.auto
   )
+
+  "body" - (
+    height(100 %%),
+    overflowX.auto
+    )
 
   "#Notebook" -(
     maxHeight(95 vh),

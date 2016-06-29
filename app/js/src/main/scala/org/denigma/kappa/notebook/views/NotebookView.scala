@@ -13,6 +13,7 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.annotations.AnnotatorNLP
 import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor, KappaWatcher}
 import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView, Image, Video}
+import org.denigma.kappa.notebook.views.menus.MainMenuView
 import org.denigma.kappa.notebook.views.papers.{PapersView, WebSocketPaperLoader}
 import org.denigma.kappa.notebook.views.project.ProjectsPanelView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
@@ -20,9 +21,10 @@ import org.denigma.kappa.notebook.views.visual.VisualPanelView
 import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook._
 import org.scalajs.dom
-import org.scalajs.dom.raw.{Element, PopStateEvent}
+import org.scalajs.dom.raw.{HTMLElement, Element, PopStateEvent}
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 import rx._
 import scala.scalajs.js
 import org.denigma.binding.extensions._
@@ -67,50 +69,12 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     input.foreach(onMessage)
     connector.open()
-    dom.window.onpopstate = popStateHandler _
-  }
-
-  def scrollTo(ident: String) = {
-    for{
-      e <- sq.byId(ident)
-    } dom.window.scrollTo(e.offsetLeft.toInt, 0)
-  }
-
-  protected def popStateHandler(ppe: PopStateEvent): Unit = {
-    println("POP STATE CHANGED")
-    val uid: js.UndefOr[Dynamic] = ppe.state.dyn.id
-    uid.toOption match {
-      case None | Some(null)=> println("non or null")
-      case st =>
-        val gid = st.toString
-        scrollTo(gid)
-    }
   }
 
   protected def onMessage(message: KappaMessage): Unit = message match {
 
     case KappaMessage.Container(messages) =>
       messages.foreach(mess=> input() = mess) //flatmapping
-
-    case Go.ToTab(tabName) =>
-        if(menuMap.now.contains(tabName))
-        {
-          val value: ViewElement = menuMap.now(tabName)
-          value.id match {
-            case null => dom.console.error(s"$tabName id is null")
-            case undef if js.isUndefined(undef)=> dom.console.error(s"$tabName id is undefined")
-            case ident =>
-              scrollTo(ident)
-              /*
-              dom.window.location.hash = ""
-              dom.window.location.hash = ident
-              */
-
-          }
-        }
-       else {
-        dom.console.error(s"Go.ToTab($tabName) failed as there is not such tab in the menu")
-        }
 
     case ProjectResponses.LoadedProject(proj) =>
       //println("LOADED PROJECT IS")
@@ -143,8 +107,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val menu: Var[List[(String, Element)]] = Var(List.empty[(String, Element)])
 
-  val menuMap = menu.map(list=>list.toMap)
-
   protected def addMenuItem(el: Element, title: String) = {
     menu() = menu.now :+ (title, el)
   }
@@ -152,7 +114,8 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   override lazy val injector = defaultInjector
     .register("MainMenuView") {
       case (el, args) =>
-        new MainMenuView(el, menu).withBinder(n => new CodeBinder(n))
+        elem.parentElement
+        new MainMenuView(el, input, elem.parentElement, menu).withBinder(n => new CodeBinder(n))
     }
     .register("ProjectsPanel"){
       case (el, args) =>

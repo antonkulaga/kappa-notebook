@@ -1,31 +1,7 @@
 package org.denigma.kappa.messages
 
-import org.denigma.controls.papers.Bookmark
-import rx.Rx.Dynamic
-import rx.{Rx, Var}
-
 import scala.collection.immutable.SortedSet
 
-
-object GoToFigure {
-
-  import boopickle.DefaultBasic._
-  implicit val classPickler: Pickler[GoToFigure] = boopickle.Default.generatePickler[GoToFigure]
-}
-
-case class GoToFigure(figureName: String) extends UIMessage
-
-object GoToPaper {
-  /*
-    implicit val textLayerSelectionPickler = boopickle.Default.generatePickler[TextLayerSelection]
-
-    implicit val bookmarkPickler = boopickle.Default.generatePickler[Bookmark]
-
-    implicit val goToPickler = boopickle.Default.generatePickler[GoToPaper]
-    */
-}
-
-case class GoToPaper (bookmark: Bookmark) extends UIMessage
 
 object CurrentProject {
 
@@ -71,7 +47,7 @@ case class CurrentProject(name: String,
     if(papers.contains(name)) this.copy(papers = papers - name) else
     if(images.contains(name)) this.copy(images = images - name) else
     if(videos.contains(name)) this.copy(videos = videos - name) else
-    this.copy(otherFiles = otherFiles - name)
+      this.copy(otherFiles = otherFiles - name)
   }
 
   protected def update(fun: Map[String, KappaFile] =>  Map[String, KappaFile] ) = {
@@ -81,6 +57,11 @@ case class CurrentProject(name: String,
 
   def markSaved(files: Set[String]): CurrentProject = this.update{
     case mp =>  mp.map{ case (key, value)=> if(files.contains(key)) key->value.copy(saved = true) else key-> value}
+  }
+
+  def markSaved(files: Map[String, KappaFile]): CurrentProject = this.update{
+    case mp =>  mp.map{
+      case (key, value)=> if(files.contains(key)) key-> files(key) else key-> value}
   }
 
   def withRenames(renames: Map[String, (String, String)]) =  this.update{

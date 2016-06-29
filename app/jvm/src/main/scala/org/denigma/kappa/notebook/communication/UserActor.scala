@@ -47,7 +47,7 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
   protected def onBinaryMessage: Receive = {
     case SocketMessages.IncomingMessage(channel, uname, message: BinaryMessage.Strict, time) =>
       val mes = Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer)
-      val fun = fileMessages.orElse(projectMessages).orElse(simulationMessages).orElse(otherKappaMessages)
+      val fun = containerMessages.orElse(fileMessages).orElse(projectMessages).orElse(simulationMessages).orElse(otherKappaMessages)
       fun(mes)
     //log.error(s"something binary received on $channel by $username")
   }

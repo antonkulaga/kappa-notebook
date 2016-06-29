@@ -145,7 +145,7 @@ object FileRequests {
     implicit val classPickler: Pickler[Save] = boopickle.Default.generatePickler[Save]
   }
 
-  case class Save(projectName: String, files: List[KappaFile], rewrite: Boolean) extends FileRequest
+  case class Save(projectName: String, files: List[KappaFile], rewrite: Boolean, getSaved: Boolean = false) extends FileRequest
 
   object ZipUpload{
     implicit val classPickler: Pickler[ZipUpload] = boopickle.Default.generatePickler[ZipUpload]
@@ -160,8 +160,9 @@ object FileResponses {
   implicit val pickler: CompositePickler[FileResponse] = compositePickler[FileResponse]
     .addConcreteType[Downloaded]
     .addConcreteType[UploadStatus]
-    .addConcreteType[FileSaved]
+    .addConcreteType[SavedFiles]
     .addConcreteType[RenamingResult]
+    .addConcreteType[FileAdded]
 
   trait FileResponse extends KappaFileMessage
 
@@ -184,11 +185,17 @@ object FileResponses {
 
   case class RenamingResult(projectName: String, renamed: Map[String, (String, String)], nameConflicts: Map[String, String], notFound: Map[String, String]) extends FileResponse
 
-  object FileSaved {
-    implicit val classPickler: Pickler[FileSaved] = boopickle.Default.generatePickler[FileSaved]
+  object SavedFiles {
+    implicit val classPickler: Pickler[SavedFiles] = boopickle.Default.generatePickler[SavedFiles]
   }
 
-  case class FileSaved(projectName: String, names: Set[String]) extends FileResponse
+  case class SavedFiles(projectName: String, savedFiles: Either[Set[String], Map[String, KappaFile]]) extends FileResponse
+
+  object FileAdded {
+    implicit val classPickler: Pickler[FileAdded] = boopickle.Default.generatePickler[FileAdded]
+  }
+
+  case class FileAdded(projectName: String, files: List[KappaFile]) extends FileResponse
 
 }
 

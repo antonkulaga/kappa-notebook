@@ -1,9 +1,20 @@
 @()
-<div class="ui top fixed pointing seven item green menu" data-view="MainMenuView" id="MainMenuView"
+<div class="ui top fixed pointing green menu" data-view="MainMenuView" id="MainMenuView"
 dropzone="link"
 >
-  <a data-template="true" class="item" data-bind="itemName" data-event-click="menuClick"
-  data-event-dragleave="onDragLeave" data-event-dragenter="onDragEnter"
-  data-event-dragover="onDragOver"
-  draggable="true"  data-event-dragstart="onDragStart" data-event-dragend="onDragEnd" data-event-drop="onDrop"></a>
+
+  <a data-template="true" class="item" data-bind="itemName" data-event-click="menuClick" draggable="true"
+    data-event-dragleave="onDragLeave" data-event-dragenter="onDragEnter"
+    data-event-dragover="onDragOver"
+    data-event-dragstart="onDragStart" data-event-dragend="onDragEnd"
+    data-event-drop="onDrop"></a>
+  <div class="green labeled icon right menu" data-view="ScrollerView">
+    <a class="item" data-click="backClick" data-show-if="hasHistory">
+      <i class="step backward icon"></i>
+    </a>
+    @*
+    <a class="item" data-click="forwardClick">
+    <i class="step forward icon"></i>
+    </a>*@
+  </div>
 </div>

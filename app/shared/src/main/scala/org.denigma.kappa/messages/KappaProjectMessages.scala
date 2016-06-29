@@ -103,12 +103,6 @@ object ProjectRequests {
   }
   case class Create(project: KappaProject, rewriteIfExists: Boolean = false) extends ProjectRequest
 
-  object Delete {
-    implicit val classPickler: Pickler[Delete] = boopickle.Default.generatePickler[Delete]
-  }
-
-  case class Delete(project: KappaProject) extends ProjectRequest
-
   object Download {
     implicit val classPickler: Pickler[Download] = boopickle.Default.generatePickler[Download]
   }

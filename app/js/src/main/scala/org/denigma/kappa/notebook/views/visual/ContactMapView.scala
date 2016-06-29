@@ -72,8 +72,6 @@ class ContactMapView(val elem: Element,  val input: Var[KappaMessage]) extends B
   contactMap.onChange{
     case cm=>
       val nodes: js.Array[WebSimNodeJS] = js.Array(cm.contact_map.map(n=>n:WebSimNodeJS):_*)
-      println("NODES ARE: ")
-      println(nodes)
       renderer.setData(nodes)
   }
 

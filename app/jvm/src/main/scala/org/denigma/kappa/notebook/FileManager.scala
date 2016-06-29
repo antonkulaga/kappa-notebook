@@ -6,7 +6,7 @@ import java.nio.file.Path
 import better.files.File.OpenOptions
 import better.files._
 import org.denigma.kappa.messages.FileRequests.ZipUpload
-import org.denigma.kappa.messages.FileResponses.Downloaded
+import org.denigma.kappa.messages.FileResponses.{UploadStatus, Downloaded}
 import org.denigma.kappa.messages._
 
 import scala.Seq
@@ -67,7 +67,7 @@ class FileManager(val root: File) {
     Some(FileResponses.Downloaded(projectName, zp.byteArray))
   } else None
 
-  def uploadZiped(upload: ZipUpload) =  {
+  def uploadZiped(upload: ZipUpload): Option[UploadStatus] =  {
     val r: File = root / upload.projectName
     if(r.exists && !upload.rewriteIfExist)
     {
@@ -99,8 +99,6 @@ class FileManager(val root: File) {
     } else None
   }
 
-
-
   def writeBytes(relativePath: String, name: String, bytes: Array[Byte]): Try[Unit] = Try {
     val f = root / relativePath / name
     f.write(bytes)(OpenOptions.default)
@@ -128,9 +126,11 @@ class FileManager(val root: File) {
     project.copy(folder = dir, saved = p.exists())
   }
 
-  def writeFile(p: KappaFile) = p match {
+  def resolve(p: KappaFile): Path = root.path.resolve(p.fullPath)
+
+  def writeFile(p: KappaFile): File = p match {
     case KappaFile(path, name, content, _, _) =>
-      val pp = root.path.resolve(p.fullPath)
+      val pp: Path = resolve(p)
       val f = File(pp)
       f < content
       f
@@ -155,17 +155,37 @@ class FileManager(val root: File) {
       f
   }
 
+
+  protected def kappaTextFileSelector(ch: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")) = {
+    ch.isRegularFile && {
+      val p = ch.pathAsString
+      val ext = p.substring(ch.pathAsString.indexOf(".") +1)
+      knownExtensions.contains(ext)
+    }
+  }
+
+  protected def loadKappaFile(projectName: String, fileName: String, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): Option[KappaFile] = {
+    val file: File = root / projectName / fileName
+    if(file.notExists || !kappaTextFileSelector(file, knownExtensions)) None else {
+      file match {
+        case ch if kappaTextFileSelector(ch, knownExtensions)  =>
+          Some(KappaFile(ch.pathAsString, ch.name, ch.contentAsString, saved = true))
+
+        case ch if ch.isRegularFile =>
+          Some(KappaFile(ch.pathAsString, ch.name, "",  saved = true))
+
+        case _ => None
+      }
+    }
+
+  }
+
   def listFolder(file: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder =
     if(file.exists)
     {
       val (folders: Iterator[File], files: Iterator[File]) = file.children.partition(f => f.isDirectory)
       val fiter: Seq[KappaFile] =  files.map{
-        case ch if ch.isRegularFile
-          && {
-          val p = ch.pathAsString
-          val ext = p.substring(ch.pathAsString.indexOf(".") +1)
-          knownExtensions.contains(ext)
-        }  =>
+        case ch if kappaTextFileSelector(ch, knownExtensions)  =>
           KappaFile(ch.pathAsString, ch.name, ch.contentAsString, saved = true)
         case ch if ch.isRegularFile => KappaFile(ch.pathAsString, ch.name, "",  saved = true)
       }.toSeq

@@ -1,8 +1,9 @@
-package org.denigma.kappa.notebook.views
+package org.denigma.kappa.notebook.views.simulations
+
 import org.denigma.binding.views._
 import org.scalajs.dom.raw.Element
-import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
 
 
 /**

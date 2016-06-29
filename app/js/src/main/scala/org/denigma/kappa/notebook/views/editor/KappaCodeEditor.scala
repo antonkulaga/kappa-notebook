@@ -5,20 +5,26 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView}
 import org.denigma.codemirror._
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.ServerMessages.SyntaxErrors
-import org.denigma.kappa.messages.{KappaProject, Go, KappaFile, KappaMessage}
+import org.denigma.kappa.messages.ServerMessages.{ParseModel, SyntaxErrors}
+import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage, KappaProject}
 import org.denigma.kappa.notebook.views.common.TabHeaders
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
+import org.denigma.kappa
 import rx._
+import org.denigma.binding.extensions._
+import org.denigma.kappa.messages.KappaMessage.ServerCommand
+import org.scalajs.dom
 
 import scala.collection.immutable._
 import scala.scalajs.js
+import scala.concurrent.duration._
 
 class KappaCodeEditor(val elem: Element,
                       val items: Var[Map[String, KappaFile]],
                       val input: Var[KappaMessage],
+                      val output: Var[KappaMessage],
                       val kappaCursor: Var[Option[(Editor, PositionLike)]],
                       val editorUpdates: Var[EditorUpdates]) extends BindableView
   with ItemsMapView
@@ -27,6 +33,26 @@ class KappaCodeEditor(val elem: Element,
   override type Value = KappaFile
 
   override type ItemView = CodeTab
+
+
+  /*
+  protected def concat() = {
+    items.now.values.foldLeft(""){
+      case (acc, e)=> acc + "\n"+ e.content
+    }
+  }
+
+  val codeToCheck: Var[String] = Var(concat())
+  */
+
+  items.afterLastChange(800 millis){
+    its=>
+      println("sending files for checking")
+      val files = its.values.collect{
+        case fl => fl.name -> fl.content
+      }.toList
+      output() = ServerCommand(ParseModel("localhost", files))
+  }
 
   val selected: Var[String] = Var("")
 
@@ -48,6 +74,7 @@ class KappaCodeEditor(val elem: Element,
       selected() = name
 
     case s: SyntaxErrors=>
+      dom.console.error("get syntax errors: \n"+s)
       syntaxErrors() = s
 
     case other => //do nothing

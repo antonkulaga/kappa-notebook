@@ -79,6 +79,7 @@ object WebSimMessages {
   object ContactMap {
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[ContactMap] = boopickle.Default.generatePickler[ContactMap]
+    lazy val empty = ContactMap(Nil)
   }
 
   case class ContactMap(contact_map: List[WebSimNode]) extends WebSimMessage

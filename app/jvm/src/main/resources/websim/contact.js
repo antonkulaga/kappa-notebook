@@ -721,8 +721,9 @@ function ContactMap(id,isSnapshot){
     this.id = "#"+id;
     this.isSnapshot = isSnapshot;
     this.setData = function(json){
-        debug(json);
-        var data = JSON.parse(json);
+        var data = json
+        //debug(json);
+        //var data = JSON.parse(json);
         that.data = data;
         var contactMap = new DataTransfer(data,isSnapshot);
         that.clearData();
@@ -732,7 +733,6 @@ function ContactMap(id,isSnapshot){
             render.render();
         }
     }
-    this.setData = wrap(this.setData);
 
     this.clearData = function(){
         d3.select(that.id).selectAll("svg").remove();

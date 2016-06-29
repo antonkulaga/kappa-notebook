@@ -52,6 +52,11 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
+  val allTheCode = Var("")
+
+  val allCodeToRun = Var("")
+
+
 
   override def bindView() = {
     super.bindView()
@@ -163,13 +168,13 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("KappaEditor"){
       case (el, args) =>
-        val editor = new KappaCodeEditor(el, sourceMap, input, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
+        val editor = new KappaCodeEditor(el, sourceMap, input, output, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Editor)
         editor
     }
     .register("Simulations") {
       case (el, params) =>
-        val v = new SimulationsView(el, sourceMap: Var[Map[String, KappaFile]], input, output).withBinder(new CodeBinder(_))
+        val v = new SimulationsView(el, sourceMap, input, output).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Simulations)
         v
     }

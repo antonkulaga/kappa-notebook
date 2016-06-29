@@ -9,13 +9,13 @@ import org.denigma.kappa.notebook.views.visual.rules.GraphView
 import org.scalajs.dom.raw.Element
 import rx._
 
-class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[KappaMessage]/*, val contactMap: Var[WebSimMessages.ContactMap]*/) extends BindableView{
+class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[KappaMessage]) extends BindableView{
 
   val currentLine: Rx[String] = kappaWatcher.text
 
   override lazy val injector = defaultInjector
     .register("ContactMapView") {
-      (el, args) =>new ContactMapView(el, /*contactMap,*/ input).withBinder(v=>new CodeBinder(v))
+      (el, args) =>new ContactMapView(el, input).withBinder(v=>new CodeBinder(v))
     }
     .register("LeftGraph") {  (el, args) =>
       new GraphView(el,

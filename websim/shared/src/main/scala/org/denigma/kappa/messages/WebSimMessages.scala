@@ -149,7 +149,6 @@ object WebSimMessages {
 
   case class Snapshot(snap_file: String, snap_event: Int, agents: List[AgentState], tokens: List[TokenState]) extends WebSimMessage
 
-
   object SimulationStatus {
     lazy val empty = SimulationStatus(0.0,
       None, None, None, None, None, None, None, is_running = false, None , Nil, None, Nil, Nil//, Nil

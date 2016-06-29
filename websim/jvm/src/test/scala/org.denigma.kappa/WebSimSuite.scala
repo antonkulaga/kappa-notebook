@@ -97,8 +97,6 @@ class WebSimSuite extends BasicKappaSuite {
       }
     }
 
-
-
   "run simulation, get first result and " in {
     val probeToken = TestProbe()
     val model = abc

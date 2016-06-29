@@ -33,7 +33,8 @@ object WebSimNodeJS {
 }
 
 @JSName("Node")
-class WebSimNodeJS(val node_name: String, val node_sites: js.Array[WebSimSideJS]) {
+@ScalaJSDefined
+class WebSimNodeJS(val node_name: String, val node_sites: js.Array[WebSimSideJS]) extends js.Object{
 
 }
 
@@ -46,6 +47,7 @@ object WebSimSideJS {
     new WebSimSideJS(site.site_name, links, states)
   }
 }
+
 @ScalaJSDefined
 class WebSimSideJS(val site_name: String, val site_links: js.Array[js.Array[Int]], val site_states: js.Array[String] ) extends js.Object
 
@@ -70,6 +72,8 @@ class ContactMapView(val elem: Element,  val input: Var[KappaMessage]) extends B
   contactMap.onChange{
     case cm=>
       val nodes: js.Array[WebSimNodeJS] = js.Array(cm.contact_map.map(n=>n:WebSimNodeJS):_*)
+      println("NODES ARE: ")
+      println(nodes)
       renderer.setData(nodes)
   }
 

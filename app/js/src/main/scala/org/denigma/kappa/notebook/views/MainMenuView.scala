@@ -13,7 +13,7 @@ import org.scalajs.dom.ext._
 
 import scala.annotation.tailrec
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.{JSName, JSExport}
 import scala.util.{Failure, Success, Try}
 
 class MainMenuView(val elem: Element, val items: Var[List[(String, Element)]] ) extends BindableView with ItemsSeqView{
@@ -173,8 +173,28 @@ class MainMenuItemView(val elem: HTMLElement, val item: (String, Element)) exten
 
   @JSExport
   def click(): Unit = {
-    dom.window.history.pushState(scalajs.js.Dynamic.literal(id = target.id), itemName.now, target.id)
+    pushState()
+  }
+
+  def pushState() = {
+    val stateObject = scalajs.js.Dynamic.literal(id = target.id)
+    dom.window.history.pushState(stateObject, itemName.now, target.id)
+    val state = js.Dynamic.literal(
+      bubbles = false,
+      cancelable = false,
+      state = stateObject
+    )
+    var popStateEvent = new FixedPopStateEvent("popstate", state)
+    dom.window.dispatchEvent(popStateEvent)
+    println("pop event dispatched")
   }
 
   menuClick.triggerLater{ click() }
+}
+
+@js.native
+@JSName("PopStateEvent")
+class FixedPopStateEvent(val typeArg: String, override val state: js.Any) extends PopStateEvent
+{
+
 }

@@ -39,6 +39,7 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
     this.bindView()
   }
 
+
   @JSExport
   def load(content: String, into: String): Unit = {
     dom.document.getElementById(into).innerHTML = content

@@ -198,8 +198,3 @@ class MainMenuItemView(
 
   menuClick.triggerLater{ click() }
 }
-
-@ScalaJSDefined
-class ScrollPosition(val id: String, val currentPosition: Double) extends js.Object {
-
-}

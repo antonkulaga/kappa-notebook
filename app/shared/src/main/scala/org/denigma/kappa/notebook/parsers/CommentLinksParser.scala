@@ -29,6 +29,10 @@ class ImageParser extends BasicParser {
   //val img = P( optSpaces ~  ":image" ~ spaces ~AnyChar.! )
 }
 
+class VideoParser extends BasicParser {
+  val video = P( optSpaces ~  ":video" ~ spaces ~AnyChar.rep.! )
+
+}
 
 class PaperParser extends BasicParser {
   val page = P( optSpaces ~  ":on_page" ~ spaces ~ CharIn('0' to '9').rep.!.map(v=>v.toInt) )

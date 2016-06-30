@@ -61,6 +61,8 @@ object Dependencies {
 
 		"org.webjars" % "d3js" % Versions.d3js
 
+		//"org.webjars.npm" % "video.js" % Versions.videoJS
+
 	))
 
 	lazy val appShared: Def.Initialize[Seq[ModuleID]] = Def.setting(Seq(

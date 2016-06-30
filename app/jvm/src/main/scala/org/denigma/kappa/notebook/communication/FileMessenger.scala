@@ -106,17 +106,34 @@ trait FileMessenger extends Messenger {
       //.map(r=>Done(r, username)).getOrElse(Failed())
       send(d)
 
-    case FileRequests.Save(projectName, files, rewrite, false) =>
+    case FileRequests.Save(projectName, files, rewrite, false) => //saving file without returning it to the user
       val path: File = fileManager.root / projectName
-      val rels = files.map(f=>f.relativeTo(projectName))
+      val rels = files.map(f=>f.copy(path = (path / f.name).pathAsString))
+      for{f <- rels} {
+        println("write file")
+        pprint.pprintln(f)
+        fileManager.writeFile(projectName, f)
+      }
       val reply = FileResponses.SavedFiles(projectName, Left(rels.map(v=>v.name).toSet))
+      println("saved marking")
+      pprint.pprintln(reply)
       send(Pickle.intoBytes[KappaMessage](reply))
 
-    case FileRequests.Save(projectName, files, rewrite, returnResults) =>
+    case FileRequests.Save(projectName, files, rewrite, true) => //saving file with returning its content to the user
       val path: File = fileManager.root / projectName
-      val rels = files.map(f=>f.relativeTo(projectName))
-      val kappaFiles: Map[String, KappaFile] = (for{f <- rels} yield { fileManager.writeFile(f); f.name -> f.copy(saved = true) }).toMap
+      val rels = files.map(f=>f.copy(path = (path / f.name).pathAsString))
+      val kappaFiles: Map[String, KappaFile] = (
+        for{f <- rels}
+          yield {
+            println("write file 2")
+            pprint.pprintln(f)
+            fileManager.writeFile(projectName, f)
+            f.name -> f.copy(saved = true)
+          }
+        ).toMap
       val reply = FileResponses.SavedFiles(projectName, Right(kappaFiles))
+      println("saved FULL")
+      pprint.pprintln(reply)
       send(Pickle.intoBytes[KappaMessage](reply))
   }
 

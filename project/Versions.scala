@@ -95,5 +95,7 @@ trait WebJarsVersions{
 
 	val d3js = "3.5.17"
 
+	val videoJS = "5.10.7"
+
 }
 

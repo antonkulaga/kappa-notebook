@@ -20,16 +20,23 @@ class Pages extends Directives with PJax{
 
   val loadPage: Html => Html = h => html.index(Some(h))
 
+  def test: Route = path("video") { ctx=>
+    ctx.complete {
+      HttpResponse(  entity = HttpEntity(MediaTypes.`text/html`.withCharset(HttpCharsets.`UTF-8`), html.test().body  ))
+    }
+  }
 
-  def test: Route = pathPrefix("test" ~ Slash) { ctx=>
-      pjax[Twirl](Html(s"<h1>${ctx.unmatchedPath}</h1>"),loadPage){h=>c=>
+
+
+  def notFound: Route = pathPrefix("test" ~ Slash) { ctx=>
+      pjax[Twirl](Html(s"<h1>${ctx.unmatchedPath}</h1>"),loadPage){h=> c=>
         val resp = HttpResponse(  entity = HttpEntity(MediaTypes.`text/html`.withCharset(HttpCharsets.`UTF-8`), h.body  ))
         c.complete(resp)
       }(ctx)
     }
 
 
-  def routes: Route = index ~ test
+  def routes: Route = index ~ test ~ notFound
 
 
 }

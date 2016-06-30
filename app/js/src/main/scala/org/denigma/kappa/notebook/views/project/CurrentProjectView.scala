@@ -20,6 +20,11 @@ import scala.scalajs.js.typedarray.Uint8Array
 
 class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],  input: Var[KappaMessage], output: Var[KappaMessage]) extends ItemsSetView {
 
+  override type Item = KappaFile
+
+  override type ItemView = ProjectFileView
+
+
   val sourceMap = currentProject.map(p=>p.sourceMap)
 
   val projectName: Rx[String] = currentProject.map(p=>p.name)
@@ -42,9 +47,11 @@ class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],
 
   val addFile = Var(Events.createMouseEvent())
   addFile.triggerIf(canCreate){ case ev=>
-    println("adding file!!!!")
     val file = KappaFile("", newFileName.now, "", saved = false)
-    output() = FileRequests.Save(projectName.now, List(file), rewrite = false, true)
+    val saveRequest = FileRequests.Save(projectName.now, List(file), rewrite = false, true)
+    println("adding file!!!!")
+    pprint.pprintln(saveRequest)
+    output() = saveRequest
     //output() = //org.denigma.kappa.messages.FileRequests.Save(projectName.now, List())
   }
 
@@ -52,7 +59,9 @@ class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],
   uploadFile.triggerLater{
     val name = fileName.now
     val k = KappaFile("", name, "", saved = false)
-    output() = FileRequests.Save(projectName.now, List(k), false, true)
+    println("uploading file!!!!")
+    val uploadRequest = FileRequests.Save(projectName.now, List(k), rewrite = false, getSaved = true)
+    output() = uploadRequest
   }
 
   val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.allFiles)
@@ -63,19 +72,25 @@ class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],
       //println("DOWNLOADED IS = "+d)
       if(d != FileResponses.Downloaded.empty) saveBinaryAs(name, data)
 
-    case Done(FileRequests.Remove(pname, filename), _) if pname ==currentProject.now.name =>
+    case Done(FileRequests.Remove(pname, filename), _) if pname == currentProject.now.name =>
       currentProject() = currentProject.now.removeByName(filename)
 
-    case FileResponses.RenamingResult(projectName, renamed: Map[String, (String, String)], nameConflicts, notFound) if projectName ==currentProject.now.name =>
+    case resp @ FileResponses.RenamingResult(pname, renamed: Map[String, (String, String)], nameConflicts, notFound) if pname == currentProject.now.name =>
       currentProject() = currentProject.now.withRenames(renamed)
 
-    case FileResponses.SavedFiles(pname, Left(names)) if pname ==currentProject.now.name =>
+    case resp @ FileResponses.SavedFiles(pname, Left(names)) if pname == currentProject.now.name =>
       val proj = currentProject.now
       currentProject() = { proj.markSaved(names) }
+      println("save resp")
+      pprint.pprintln(resp)
 
-    case FileResponses.SavedFiles(pname, Right(files)) if pname ==currentProject.now.name =>
+    case resp @ FileResponses.SavedFiles(pname, Right(files)) if pname == currentProject.now.name =>
       val proj = currentProject.now
-      currentProject() = { proj.markSaved(files) }
+      currentProject() = {
+        println("mark saved with addition!")
+        pprint.pprintln(resp)
+        proj.markSaved(files)
+      }
 
     case _=> //do nothing
   }
@@ -83,9 +98,6 @@ class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],
   override def newItemView(item: Item): ItemView = constructItemView(item){
     case (el, _) => new ProjectFileView(el, item, name, input, output).withBinder(v => new GeneralBinder(v))
   }
-
-  override type Item = KappaFile
-  override type ItemView = ProjectFileView
 
   val name = currentProject.map(proj => proj.name)
   val save = Var(Events.createMouseEvent())
@@ -125,87 +137,4 @@ class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],
 
 }
 
-object FileType extends Enumeration {
-  type FileType = Value
-  val pdf, txt, source, image, video, other = Value
-}
 
-class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[String], input: Var[KappaMessage], output: Var[KappaMessage]) extends BindableView {
-
-  val editable = Var(false)
-
-  val name = Var(file.name)
-  val fileType: Rx[FileType.Value] = name.map{
-    case n if n.endsWith(".pdf") => FileType.pdf
-    case n if n.endsWith(".txt") => FileType.txt
-    case n if n.endsWith(".ka") | n.endsWith(".ttl") => FileType.source
-    case n if n.endsWith(".svg") | n.endsWith(".png") | n.endsWith(".jpg") | n.endsWith(".gif") => FileType.image
-    case n if n.endsWith(".avi") => FileType.video
-    case other => FileType.other
-  }
-
-  val isSource: Rx[Boolean] = fileType.map(f=>f==FileType.source)
-  val isImage: Rx[Boolean] = fileType.map(f=>f==FileType.image)
-  val isVideo: Rx[Boolean] = fileType.map(f=>f==FileType.video)
-  val isPaper: Rx[Boolean] = fileType.map(f=>f==FileType.pdf)
-
-  val runnable = Rx{
-    isSource() && file.active
-  }
-
-  val saved = Var(file.saved)
-
-  val icon: Rx[String] = fileType.map{
-    case FileType.pdf => "File Pdf Outline" + " large icon"
-    case FileType.txt => "File Text Outline" + " large icon"
-    case FileType.source => "File Code Outline" + " large icon"
-    case FileType.image => "File Image Outline" + " large icon"
-    case FileType.video => "File Video Outline" + " large icon"
-    case other => "File Outline"
-  }
-
-  val fileClick: Var[MouseEvent] = Var(Events.createMouseEvent())
-  fileClick.triggerLater{
-    if(!editable.now) goToFile()
-
-  }
-
-  protected def goToFile() = {
-    fileType.now match {
-      case FileType.pdf => input() =
-        KappaMessage.Container()
-          .andThen(Go.ToTab(MainTabs.Papers))
-          .andThen(GoToPaper(Bookmark(file.name, 1)))
-
-      case FileType.source => input() =
-        KappaMessage.Container()
-          .andThen(Go.ToTab(MainTabs.Editor))
-          .andThen(Go.ToSource(filename = file.name))
-
-      case FileType.image=> input() =
-        KappaMessage.Container()
-          .andThen(Go.ToTab(MainTabs.Figures))
-          .andThen(GoToFigure(file.name))
-
-
-      case other => //do nothing
-    }
-  }
-
-  val removeClick: Var[MouseEvent] = Var(Events.createMouseEvent())
-  removeClick.triggerLater{
-    output() = FileRequests.Remove(parentName.now, file.name)
-  }
-
-  val saveClick: Var[MouseEvent] = Var(Events.createMouseEvent())
-  saveClick.triggerLater{
-    output() = FileRequests.Save(projectName = name.now, List(file), rewrite = true)
-  }
-
-  val renameClick: Var[MouseEvent] = Var(Events.createMouseEvent())
-  renameClick.triggerLater{
-
-  }
-
-
-}

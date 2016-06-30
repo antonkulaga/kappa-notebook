@@ -62,6 +62,12 @@ case class KappaFolder(path: String,
 
 }
 
+
+object FileType extends Enumeration {
+  type FileType = Value
+  val pdf, txt, source, image, video, other = Value
+}
+
 object KappaFile
 {
   implicit val classPickler: Pickler[KappaFile] = boopickle.Default.generatePickler[KappaFile]
@@ -74,9 +80,12 @@ object KappaFile
   }
 }
 
-//note: should do something with active
+/*
+* TODO:
+* */
 case class KappaFile(path: String, name: String, content: String, saved: Boolean = false, active: Boolean = true) extends KappaPath {
 
+  /*
   def relativeTo(parentPath: String): KappaFile = {
     val np = (parentPath, path) match {
       case (par, me) if par.endsWith("/") &&  me.startsWith("/") => par + me.tail
@@ -87,12 +96,13 @@ case class KappaFile(path: String, name: String, content: String, saved: Boolean
     this.copy( path = np )
   }
 
+
   lazy val fullPath: String = path match {
     case p if p.endsWith(name) => p
     case p if p.endsWith("/") || p.endsWith("\\") => p + name
     case p => p + "/" + name
   }
-
+  */
 }
 
 object FileRequests {

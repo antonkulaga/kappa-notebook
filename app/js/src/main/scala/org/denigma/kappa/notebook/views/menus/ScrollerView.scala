@@ -8,9 +8,10 @@ import org.denigma.kappa.notebook.views.common.FixedPopStateEvent
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, HTMLElement, PopStateEvent}
 import rx._
-
+import rx.Ctx.Owner.Unsafe.Unsafe
 import scala.scalajs.js
 import scala.scalajs.js.JSON
+import scala.scalajs.js.annotation.ScalaJSDefined
 
 class ScrollerView(val elem: Element,
                    scrollPanel: Element,
@@ -20,19 +21,41 @@ class ScrollerView(val elem: Element,
 
   val backClick = Var(Events.createMouseEvent())
   backClick.onChange{
-    case ev=> dom.window.history.back()
+    case ev=>
+      scrollHistory.now match {
+        case Nil =>
+          dom.console.error("back should be invisible when there is not history")
+        //do nothing
+
+        case head::Nil =>
+          scrollHistory() = Nil
+          scrollPanel.scrollLeft = head.currentPosition
+
+        case head::tail =>
+          scrollHistory() = tail
+          dom.window.history.back()
+      }
   }
 
   val forwardClick = Var(Events.createMouseEvent())
   forwardClick.onChange{
-    case ev=> dom.window.history.back()
+    case ev=>
+      //dom.window.history.back()
   }
+  val scrollHistory: Var[List[ScrollPosition]] = Var(List.empty[ScrollPosition])
 
-  val hasHistory = Var(false)
+  val hasHistory = scrollHistory.map(v=>v.length > 1)
+
+  protected def historyState: Option[ScrollPosition] = dom.window.history.state match {
+    case some if js.isUndefined(some) => None
+    case right if !js.isUndefined(right.dyn.index)=>Some(right.asInstanceOf[ScrollPosition])
+    case other => None
+  }
 
   protected def moveToTab(tab: String) = menuMap.now.get(tab) match {
     case Some(target) =>
       val tid = target.id
+      //val index = historyState.map(v=>v.index).getOrElse(0) + 1
       val stateObject = new ScrollPosition(tid, scrollPanel.scrollLeft)
       dom.window.history.pushState(stateObject, tab, "#"+tid)
       val state = js.Dynamic.literal(
@@ -41,6 +64,7 @@ class ScrollerView(val elem: Element,
         state = stateObject
       )
       var popStateEvent = new FixedPopStateEvent("popstate", state)
+      scrollHistory() = stateObject::scrollHistory.now
       dom.window.dispatchEvent(popStateEvent)
       //println("pop event dispatched")
     case None =>
@@ -58,8 +82,6 @@ class ScrollerView(val elem: Element,
   }
 
   protected def popStateHandler(ppe: PopStateEvent): Unit = {
-    hasHistory() = true
-    println("state is: \n "+JSON.stringify(ppe.state))
     ppe.state match {
       case value if js.isUndefined(value) => dom.console.error("scroll to undefined id")
       case null => dom.console.error("scroll to null")
@@ -84,5 +106,12 @@ class ScrollerView(val elem: Element,
 
     case other => //do nothing
   }
+
+}
+
+
+
+@ScalaJSDefined
+class ScrollPosition(val id: String, val currentPosition: Double) extends js.Object {
 
 }

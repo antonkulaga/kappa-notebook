@@ -1,13 +1,12 @@
 @()
 <div class="ui blue segment" data-view="CurrentProjectView">
-  <h5 class="ui blue message">Current project = <b data-bind="name"></b></h5>
+  <h5 class="ui blue header">Current project = <b data-bind="name"></b></h5>
 
     <table class="ui celled small compact unstackable table">
         <thead>
             <tr>
                 <th>Files</th>
                 <th>Actions</th>
-                <th>Run</th>
             </tr>
         </thead>
         <tbody>
@@ -23,22 +22,25 @@
                         <button class="ui button" data-hide-if="saved" data-click="saveClick"><i class="save green icon"></i></button>
                     </span>
                 </td>
-                <td>
-                    <input type="checkbox" data-bind="runnable" data-show-if="isSource" />
-                </td>
+            </tr>
+            <tr>
+                <th>
+                    <input type="text" placeholder="create file" data-bind="newFileName">
+                </th>
+                <th>
+                    <div class="ui icon buttons">
+                        <div class="ui button" data-click="addFile"><i class="add green circle icon"></i>create</div>
+                    </div>
+                </th>
             </tr>
         </tbody>
     </table>
-
-    <div class="ui action input">
-        <input type="text" placeholder="create file" data-bind="newFileName">
-        <div class="ui icon buttons">
-            <div class="ui button" data-click="addFile"><i class="add green circle icon"></i>add</div>
-            <div class="ui button" data-click="uploadFile"><i class="Cloud Upload icon"></i>&nbsp;</div>
+    <div class="ui icon small buttons">
+        <div class="ui button" data-click="uploadFile"><i class="Cloud Upload icon"></i>Upload file</div>
+        <div class="ui button" data-click="download">
+            <i class="ui download icon"></i>Download Project
         </div>
     </div>
 
-  <div class="ui button" data-click="download">
-    <i class="ui download icon"></i>Download Project
-  </div>
+
 </div>

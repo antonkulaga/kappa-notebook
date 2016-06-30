@@ -43,7 +43,7 @@ class CodeTab(val elem: Element,
 
   active.onChange{
     case true =>
-      println("active value for "+id+" is true and display is "+elem.style.display)
+      //println("active value for "+id+" is true and display is "+elem.style.display)
       //elem.display = "initial"
     case false =>
       elem.style.display = "none"
@@ -107,8 +107,6 @@ class CodeTab(val elem: Element,
 
   override def addEditor(name: String, element: ViewElement, codeMode: String): Unit = element match {
     case area: HTMLTextAreaElement =>
-      println("let us add editor!")
-      //val text = if (area.value == "") defaultText else area.value
       editor = this.makeEditor(area, code.now, codeMode)
       code.foreach{ case text =>
         if(doc.getValue()!=text) doc.setValue(text)
@@ -150,7 +148,7 @@ class CodeTab(val elem: Element,
     if(value != code.now) code() = value
 
     editor.setOption("lint", true) //trigger linting
-    println("lint = true")
+    //println("lint = true")
     //updateCursor()
   }
 

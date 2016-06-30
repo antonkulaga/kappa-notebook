@@ -43,13 +43,24 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
     case other => log.error(s"unexpected $other")
   }
 
+  def onKappaMessage: Receive = {
+    case message: KappaMessage => kappaHandler(message)
+  }
+
+  lazy val kappaHandler: PartialFunction[KappaMessage, Unit] =
+    containerMessages
+      .orElse(onServerMessage)
+      .orElse(fileMessages)
+      .orElse(projectMessages)
+      .orElse(simulationMessages)
+      .orElse(otherKappaMessages)
+
+
 
   protected def onBinaryMessage: Receive = {
     case SocketMessages.IncomingMessage(channel, uname, message: BinaryMessage.Strict, time) =>
-      val mes = Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer)
-      val fun = containerMessages.orElse(fileMessages).orElse(projectMessages).orElse(simulationMessages).orElse(otherKappaMessages)
-      fun(mes)
-    //log.error(s"something binary received on $channel by $username")
+      val mes: KappaMessage = Unpickle[KappaMessage].fromBytes(message.data.toByteBuffer)
+      self ! mes
   }
 
   protected def onServerMessage: Receive = {
@@ -75,7 +86,10 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
   }
 
 
-  override def receive: Receive =  onTextMessage.orElse(onBinaryMessage).orElse(onServerMessage).orElse(onOtherMessage)
+  override def receive: Receive =  onTextMessage
+    .orElse(onBinaryMessage)
+    .orElse(onKappaMessage)
+    .orElse(onOtherMessage)
 
 
 }

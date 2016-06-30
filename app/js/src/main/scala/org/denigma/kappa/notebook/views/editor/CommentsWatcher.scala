@@ -5,7 +5,7 @@ import org.denigma.codemirror.Editor
 import org.denigma.codemirror.extensions._
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages.{Go, GoToFigure, GoToPaper, KappaMessage}
-import org.denigma.kappa.notebook.parsers.{CommentLinksParser, ImageParser, PaperParser}
+import org.denigma.kappa.notebook.parsers.{VideoParser, CommentLinksParser, ImageParser, PaperParser}
 import org.denigma.kappa.notebook.views.MainTabs
 import org.denigma.kappa.notebook.views.actions.Movements
 import org.denigma.kappa.notebook.views.figures.{Figure, Image}
@@ -32,6 +32,7 @@ class CommentsWatcher(
   def linkParser = commentsParser.link
   val paperParser = new PaperParser()
   val imageParser = new ImageParser()
+  val videoParser = new VideoParser()
 
   protected def mergeComments(num: Int, ed: Editor, text: List[(Int,String)] = Nil): List[(Int, String)]  = if(num >= 0)  {
     val line = ed.getDoc().getLine(num)
@@ -65,11 +66,10 @@ class CommentsWatcher(
     val images: List[((Int, String), String)] = lines.map{ case (num, line)=> (num, line) -> imageParser.image.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
-    /*
-    val videos = lines.map{ case (num, line)=> (num, line) -> videosParser.parse(line) }.collect{
+
+    val videos: List[((Int, String), String)] = lines.map{ case (num, line)=> (num, line) -> videoParser.video.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
-    */
 
     links.collectFirst{
       case ((n, line), result) if n == currentNum =>
@@ -82,7 +82,12 @@ class CommentsWatcher(
         val marker = makeImageMarker(result)
         editor.setGutterMarker(n, "breakpoints", marker)
     }
-
+    videos.collectFirst{
+      case ((n, line), result) if n == currentNum =>
+        addFigure(result)
+        val marker = makeVideoMarker(result)
+        editor.setGutterMarker(n, "breakpoints", marker)
+    }
     papers.collectFirst{
       case ((n, line), result) if n == currentNum =>
         val marker = makePageMarker(result)
@@ -108,14 +113,26 @@ class CommentsWatcher(
 
   protected def makeURIMarker(link: String): Anchor = {
     val tag = a(href := link, target := "blank",
-      i(`class` := "label File Code Outline large icon", id :="class_icon"+Math.random()),
+      i(`class` := "label File Pdf Outline large icon", id :="class_icon"+Math.random()),
       " "
     )
     tag.render
   }
 
   protected def makeImageMarker(figure: String) = {
-    val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline large icon", onclick := {
+    val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Image Outline large icon", onclick := {
+      //println(s"mouse down on $num")
+    }))
+    val html = tag.render
+    html.onclick = {
+      event: MouseEvent =>
+        input() = Movements.toFigure(figure)
+    }
+    html
+  }
+
+  protected def makeVideoMarker(figure: String) = {
+    val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Video Outline large icon", onclick := {
       //println(s"mouse down on $num")
     }))
     val html = tag.render

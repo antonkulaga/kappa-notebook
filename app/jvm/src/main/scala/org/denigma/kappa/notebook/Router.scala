@@ -21,24 +21,28 @@ class Router(files: File)(implicit fm: Materializer, system: ActorSystem) extend
 
   loginController.addUser(LoginInfo("admin", "test2test", "test@email"))
 
-
   val transport = new WebSocketManager(system, new FileManager(files))
 
   def loadFiles: Route = pathPrefix("files" ~ Slash) {
     getFromDirectory(files.path.toString)
   }
 
-  def routes = new Head().routes ~ loadFiles ~
-    new Registration(
-      loginController.loginByName,
-      loginController.loginByEmail,
-      loginController.register,
-      sessionController.userByToken,
-      sessionController.makeToken
-    )
-      .routes ~
-    new Pages().routes ~ new WebSockets(
+  lazy val registrationRoutes = new Registration(
+    loginController.loginByName,
+    loginController.loginByEmail,
+    loginController.register,
+    sessionController.userByToken,
+    sessionController.makeToken
+  ).routes
+
+  lazy val websocketsRoutes = new WebSockets(
     //loginController.loginByName,
     //loginController.loginByEmail,
     transport.openChannel).routes
+
+  lazy val headRoutes = new Head().routes
+
+  lazy val pagesRoutes =  new Pages().routes
+
+  def routes = headRoutes ~ loadFiles ~ registrationRoutes ~ websocketsRoutes ~ headRoutes ~ pagesRoutes
 }

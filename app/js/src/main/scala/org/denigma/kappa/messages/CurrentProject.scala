@@ -8,7 +8,7 @@ object CurrentProject {
   protected implicit def toMap(st: SortedSet[KappaFile]): Map[String, KappaFile] = st.map(f=> (f.name, f)).toMap
 
   def apply(name: String, place: String, allFiles: List[Map[String, KappaFile]] ): CurrentProject = {
-    CurrentProject(name, place, allFiles(0),  allFiles(1),  allFiles(2),  allFiles(3),  allFiles(4), true)
+    CurrentProject(name, place, allFiles.head,  allFiles(1),  allFiles(2),  allFiles(3),  allFiles(4), true)
   }
 
   def fromKappaProject(kappaProject: KappaProject) = {
@@ -52,7 +52,7 @@ case class CurrentProject(name: String,
 
   protected def update(fun: Map[String, KappaFile] =>  Map[String, KappaFile] ) = {
     val updated = for(mp <- allFilesList) yield fun(mp)
-    CurrentProject(name, path, updated)
+    CurrentProject.apply(name, path, updated)
   }
 
   def markSaved(files: Set[String]): CurrentProject = this.update{

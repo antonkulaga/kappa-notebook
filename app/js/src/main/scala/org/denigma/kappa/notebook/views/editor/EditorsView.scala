@@ -122,14 +122,6 @@ class EditorsBinder(view: WithMirrors, defaultMode: String = "htmlmixed") extend
 
   override def elementPartial(el: Element, ats: Map[String, String]): PartialFunction[(String, String), Unit] = {
     case ("editor", v) if !view.contains(v) =>
-      import scala.scalajs.js.timers._
-      println(v+"   =============ADD EDITOR=========")
-      //println(el.outerHTML)
-      //setTimeout(200)
-      //{
-        //a delay to do it after binding
-        //println(s"adding editor for name $v")
-        view.addEditor(v, el, ats.getOrElse("mode", defaultMode))
-      //}
+      view.addEditor(v, el, ats.getOrElse("mode", defaultMode))
   }
 }

@@ -1,17 +1,19 @@
 package org.denigma.kappa.notebook.views.figures
 
+import im.conversant.apps.youtube.{Player, PlayerEvents, PlayerOptions, PlayerVars}
 import org.denigma.binding.binders.GeneralBinder
+import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.{GoToFigure, KappaMessage}
-import org.scalajs.dom
-
-import scala.collection.immutable
 import org.denigma.kappa.notebook.views.common.{TabHeaders, TabItem}
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import org.denigma.binding.extensions._
+
+import scala.collection.immutable
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+
 /**
   * Created by antonkulaga on 08/06/16.
   */
@@ -32,7 +34,7 @@ class FiguresView(val elem: Element,
   val empty = items.map(its=>its.isEmpty)
 
   input.onChange {
-    case GoToFigure(image)=> selected() = image
+    case GoToFigure(figure)=> selected() = figure
     case other => //do nothing
   }
 
@@ -42,7 +44,10 @@ class FiguresView(val elem: Element,
       val value = this.items.now(item) //buggy but hope it will work
       value match {
         case img: Image => new ImgView(el, selected, Var(img)).withBinder(v=>new CodeBinder(v))
+        case vid: Video if vid.url.contains("youtube") || vid.url.contains(YouTubeView.WATCH) =>
+          new YouTubeView(el, selected, Var(vid)).withBinder(v=>new CodeBinder(v))
         case vid: Video => new VideoView(el, selected, Var(vid)).withBinder(v=>new CodeBinder(v))
+
       }
   }
 
@@ -50,41 +55,11 @@ class FiguresView(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
-
 }
 
-class ImgView(val elem: Element, val selected: Var[String], val image: Var[Image]) extends FigureView
-{
-  val src = image.map(i => "/files/"+i.url)
-
-  override def update(value: Figure) =  value match {
-    case v @ Image(name, url)=>
-      image() = v
-      this
-
-    case _ => dom.console.error("not a valid Image Item")
-      this
-  }
-}
-
-class VideoView(val elem: Element, val selected: Var[String], val video: Var[Video]) extends FigureView
-{
-  //val src = image.map(i => "/files/"+i)
-
-  override def update(value: Figure) =  value match {
-    case v @ Video(name, url)=>
-      video() = v
-      this
-
-    case other => dom.console.error("not a valid Video Item")
-      this
-  }
-}
 
 trait FigureView extends BindableView with TabItem with UpdatableView[Figure]
 
-case class Image(name: String, url: String) extends Figure
-case class Video(name: String, url: String) extends Figure
 
 trait Figure
 {

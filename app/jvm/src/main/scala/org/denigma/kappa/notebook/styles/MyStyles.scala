@@ -2,6 +2,15 @@ package org.denigma.kappa.notebook.styles
 
 import scalacss.Defaults._
 
+trait PanelStyles extends StyleSheet.Standalone{
+  import dsl._
+/*
+  "#ProjectsPanel" -{
+    maxWidth()
+  }
+  */
+}
+
 
 /**
   * Created by antonkulaga on 06/04/16.
@@ -10,7 +19,7 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
 {
   import dsl._
 
-  val totalWidth = 5120 px//5632.0 px
+  val totalWidth = 300 vw //5120 px//5632.0 px
 
   ".selectable" -{
     cursor.pointer

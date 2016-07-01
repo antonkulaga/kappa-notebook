@@ -10,6 +10,8 @@ import org.denigma.binding.views.{BindableView, UpdatableView}
 import org.denigma.codemirror._
 import org.denigma.codemirror.extensions._
 import org.denigma.kappa.messages.KappaFile
+import org.denigma.kappa.messages.ServerMessages.SyntaxErrors
+import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
 import rx._
@@ -28,7 +30,8 @@ class CodeTab(val elem: Element,
               val source: Var[KappaFile],
               val selected: Var[String],
               val editorUpdates: Var[EditorUpdates],
-              val kappaCursor: Var[Option[(Editor, PositionLike)]]
+              val kappaCursor: Var[Option[(Editor, PositionLike)]],
+              val errors: Rx[List[WebSimError]]
              )  
   extends BindableView 
     with EditorView 
@@ -97,6 +100,7 @@ class CodeTab(val elem: Element,
     config.lint = true
     CodeMirror.addLint(codeMode){
       text => {
+        println("lint works!!!!!!!!!!!!!!!!!!!!")
         new js.Array()
       }
     }

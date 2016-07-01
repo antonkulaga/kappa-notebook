@@ -13,6 +13,9 @@ trait LintedConfiguration extends EditorConfiguration {
   var lint: Boolean = js.native
 }
 
+@ScalaJSDefined
+class LintObject(val message: String, val severity: String, val from: Int, val to: Int) extends js.Object
+
 object Lint {
 
   val gutters: String = "CodeMirror-lint-markers"

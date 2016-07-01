@@ -6,6 +6,7 @@ import org.denigma.binding.views.{BindableView, ItemsMapView}
 import org.denigma.codemirror._
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.ServerMessages.{ParseModel, SyntaxErrors}
+import org.denigma.kappa.messages.WebSimMessages.{WebSimError, WebSimRange}
 import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage, KappaProject}
 import org.denigma.kappa.notebook.views.common.TabHeaders
 import org.scalajs.dom.raw.Element
@@ -17,6 +18,7 @@ import org.denigma.binding.extensions._
 import org.denigma.kappa.messages.KappaMessage.ServerCommand
 import org.scalajs.dom
 
+import scala.Predef
 import scala.collection.immutable._
 import scala.scalajs.js
 import scala.concurrent.duration._
@@ -59,6 +61,15 @@ class KappaCodeEditor(val elem: Element,
   override type Item = String
 
   val syntaxErrors = Var(SyntaxErrors.empty)
+  val errorsByFiles: Rx[Map[KappaFile, List[WebSimError]]] = syntaxErrors.map{
+    case ers => ers.errors.groupBy{
+      case er @ WebSimError(_, _, WebSimRange(filename, _, _)) =>
+        if(items.now.contains(filename)) {
+          dom.console.error(s"received errors for $filename for which the file does not exist!")
+          items.now(filename)
+        } else KappaFile("", filename, "")
+    }
+  }
 
   val errors: Rx[String] = syntaxErrors.map(er => if(er.isEmpty) "" else er.errors.map(s=>s.message).reduce(_ + "\n" + _))
 
@@ -98,8 +109,10 @@ class KappaCodeEditor(val elem: Element,
     case (el, _) =>
       el.id = item //dirty trick
       val value: Var[KappaFile] = keyVar(item)
-      val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor).withBinder(v => new CodeBinder(v) )
-      println(selected.now)
+      val itemErrors = Rx{
+        errorsByFiles().get(value()).getOrElse(Nil)
+      }
+      val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor, itemErrors).withBinder(v => new CodeBinder(v) )
       selected() = item
       view
 

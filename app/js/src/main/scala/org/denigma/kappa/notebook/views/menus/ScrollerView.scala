@@ -29,6 +29,7 @@ class ScrollerView(val elem: Element,
 
         case head::Nil =>
           scrollHistory() = Nil
+          dom.window.history.back()
           scrollPanel.scrollLeft = head.currentPosition
 
         case head::tail =>
@@ -44,7 +45,7 @@ class ScrollerView(val elem: Element,
   }
   val scrollHistory: Var[List[ScrollPosition]] = Var(List.empty[ScrollPosition])
 
-  val hasHistory = scrollHistory.map(v=>v.length > 1)
+  val hasHistory = scrollHistory.map(v=>v.nonEmpty)
 
   protected def historyState: Option[ScrollPosition] = dom.window.history.state match {
     case some if js.isUndefined(some) => None

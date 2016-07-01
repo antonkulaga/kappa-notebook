@@ -18,12 +18,14 @@ import scala.collection.immutable._
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
-class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],  input: Var[KappaMessage], output: Var[KappaMessage]) extends ItemsSetView {
+class CurrentProjectView(val elem: Element,
+                         currentProject: Var[CurrentProject],
+                         input: Var[KappaMessage],
+                         output: Var[KappaMessage]) extends ItemsSetView {
 
   override type Item = KappaFile
 
   override type ItemView = ProjectFileView
-
 
   val sourceMap = currentProject.map(p=>p.sourceMap)
 
@@ -81,15 +83,15 @@ class CurrentProjectView(val elem: Element, currentProject: Var[CurrentProject],
     case resp @ FileResponses.SavedFiles(pname, Left(names)) if pname == currentProject.now.name =>
       val proj = currentProject.now
       currentProject() = { proj.markSaved(names) }
-      println("save resp")
-      pprint.pprintln(resp)
+      //println("save resp")
+      //pprint.pprintln(resp)
 
     case resp @ FileResponses.SavedFiles(pname, Right(files)) if pname == currentProject.now.name =>
       val proj = currentProject.now
       currentProject() = {
-        println("mark saved with addition!")
-        pprint.pprintln(resp)
-        proj.markSaved(files)
+        //println("mark saved with addition!")
+        //pprint.pprintln(resp)
+        proj.updateWithSaved(files)
       }
 
     case _=> //do nothing

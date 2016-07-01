@@ -10,7 +10,7 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
 {
   import dsl._
 
-  val totalWidth = 5120 px//5632.0 px
+  val totalWidth = 5632.0 px//5120 px
 
   ".selectable" -{
     cursor.pointer

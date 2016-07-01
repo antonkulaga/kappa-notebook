@@ -5,7 +5,9 @@ import boopickle.CompositePickler
 import scala.collection.immutable._
 import boopickle.DefaultBasic._
 
-object KappaProject {
+import scala.List
+
+object KappaProject extends FileFilters{
 
   implicit val classPickler: Pickler[KappaProject] = boopickle.Default.generatePickler[KappaProject]
 

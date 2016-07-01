@@ -19,8 +19,6 @@ class ProjectsPanelView(val elem: Element,
                         val output: Var[KappaMessage]
                        ) extends BindableView {
 
-  val isSaved = currentProject.map(p => p.saved)
-
   override lazy val injector = defaultInjector
     .register("ProjectsView")((el, args) => new ProjectsView(el, input, output).withBinder(n => new CodeBinder(n)))
     .register("CurrentProjectView")((el, args) => new CurrentProjectView(el, currentProject, input, output).withBinder(n => new CodeBinder(n)))

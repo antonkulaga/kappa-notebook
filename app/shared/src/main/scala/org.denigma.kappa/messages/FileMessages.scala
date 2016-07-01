@@ -72,9 +72,13 @@ object KappaFile
 {
   implicit val classPickler: Pickler[KappaFile] = boopickle.Default.generatePickler[KappaFile]
 
-  implicit val ordering: Ordering[KappaFile] with Object {def compare(x: KappaFile, y: KappaFile): Int} = new Ordering[KappaFile] {
-    override def compare(x: KappaFile, y: KappaFile): Int = x.path.compare(y.path) match {
-      case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
+  implicit val ordering: Ordering[KappaFile] = new Ordering[KappaFile] {
+    override def compare(x: KappaFile, y: KappaFile): Int = x.name.compare(y.name) match {
+      case 0 =>
+        x.path.compare(y.path) match {
+          case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
+          case other => other
+        }
       case other => other
     }
   }

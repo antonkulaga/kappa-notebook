@@ -6,6 +6,14 @@ import org.scalajs.dom.raw.Element
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import scalajs.concurrent.JSExecutionContext.Implicits.queue
+import org.scalajs.dom
+import org.scalajs.dom.raw.Element
+import rx._
+import rx.Ctx.Owner.Unsafe.Unsafe
+import scalatags.JsDom.all
+import scalatags.JsDom.all._
+import scalajs.js
+import org.scalajs.dom.ext._
 
 
 
@@ -45,15 +53,25 @@ class YouTubeView(val elem: Element, val selected: Var[String], val video: Var[V
     PlayerEvents(onPlayerReady _, onPlayerError _, onPlayerStateChange _)
   }
 
+  lazy val figureId = this.id + "_figure"
+
   override def bindView() = {
+    if(!elem.children.exists(e=>e.id == figureId)) {
+      val dataKey = "data-bind-src".attr
+      val child = div(all.id := figureId)
+      elem.appendChild(child.render)
+    }
     super.bindView()
+    initPlayer(figureId)
+  }
+
+  def initPlayer(ident: String) = {
     YouTubeView.activateAPI().foreach{
       case _=>
-        println("initiating player")
-        val player = new Player("player", PlayerOptions(
+        val player = new Player(ident, PlayerOptions(
           //width = "100%",
           //height = "100%",
-          videoId = videoID.now, //url is shortened to id
+          videoId = videoID.now,
           events =  playerEvents,
           playerVars = PlayerVars(
             playsinline = 1.0

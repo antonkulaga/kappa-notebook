@@ -1,21 +1,16 @@
 package org.denigma.kappa.notebook.views.project
-import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, ItemsSetView}
+import org.denigma.binding.binders.Events
+import org.denigma.binding.views.BindableView
 import org.denigma.controls.papers.Bookmark
-import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.MainTabs
-import org.scalajs.dom
 import org.scalajs.dom._
-import org.scalajs.dom.raw.{BlobPropertyBag, Element}
+import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 
 import scala.collection.immutable._
-import scala.scalajs.js
-import scala.scalajs.js.typedarray.Uint8Array
 
 class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[String], input: Var[KappaMessage], output: Var[KappaMessage]) extends BindableView {
 
@@ -36,7 +31,7 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
   val isVideo: Rx[Boolean] = fileType.map(f=>f==FileType.video)
   val isPaper: Rx[Boolean] = fileType.map(f=>f==FileType.pdf)
 
-  val runnable = Rx{
+  val runnable: Dynamic[Boolean] = Rx{
     isSource() && file.active
   }
 

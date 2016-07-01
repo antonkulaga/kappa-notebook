@@ -5,10 +5,10 @@ import org.denigma.codemirror.Editor
 import org.denigma.codemirror.extensions._
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages.{Go, GoToFigure, GoToPaper, KappaMessage}
-import org.denigma.kappa.notebook.parsers.{VideoParser, CommentLinksParser, ImageParser, PaperParser}
+import org.denigma.kappa.notebook.parsers.{CommentLinksParser, ImageParser, PaperParser, VideoParser}
 import org.denigma.kappa.notebook.views.MainTabs
 import org.denigma.kappa.notebook.views.actions.Movements
-import org.denigma.kappa.notebook.views.figures.{Figure, Image}
+import org.denigma.kappa.notebook.views.figures.{Figure, Image, Video}
 import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
 import rx._
@@ -78,14 +78,14 @@ class CommentsWatcher(
     }
     images.collectFirst{
       case ((n, line), result) if n == currentNum =>
-        addFigure(result)
-        val marker = makeImageMarker(result)
+        addImage(result)
+        val marker = makeFigureMarker(result, "Image")
         editor.setGutterMarker(n, "breakpoints", marker)
     }
     videos.collectFirst{
       case ((n, line), result) if n == currentNum =>
-        addFigure(result)
-        val marker = makeVideoMarker(result)
+        addVideo(result)
+        val marker = makeFigureMarker(result, "Video")
         editor.setGutterMarker(n, "breakpoints", marker)
     }
     papers.collectFirst{
@@ -104,35 +104,32 @@ class CommentsWatcher(
     */
   }
 
-  protected def addFigure(image: String) = {
-    val src = if(image.contains("://") || image.startsWith("/")) image else currentProjectName.now + "/" + image
+  protected def cleanSrc(figure: String) = if(figure.contains("://") || figure.startsWith("/")) figure else currentProjectName.now + "/" + figure
+
+  protected def addImage(figure: String) = {
+    val src = cleanSrc(figure)
     if(!figures.now.contains(src)) {
-      figures() = figures.now.updated(image, Image(image, src))
+      figures() = figures.now.updated(figure, Image(figure, src))
+    }
+  }
+
+  protected def addVideo(figure: String) = {
+    val src = cleanSrc(figure)
+    if(!figures.now.contains(src)) {
+      figures() = figures.now.updated(figure, Video(figure, src))
     }
   }
 
   protected def makeURIMarker(link: String): Anchor = {
     val tag = a(href := link, target := "blank",
-      i(`class` := "label File Pdf Outline large icon", id :="class_icon"+Math.random()),
+      i(`class` := "label File Pdf Outline icon", id :="class_icon"+Math.random()),
       " "
     )
     tag.render
   }
 
-  protected def makeImageMarker(figure: String) = {
-    val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Image Outline large icon", onclick := {
-      //println(s"mouse down on $num")
-    }))
-    val html = tag.render
-    html.onclick = {
-      event: MouseEvent =>
-        input() = Movements.toFigure(figure)
-    }
-    html
-  }
-
-  protected def makeVideoMarker(figure: String) = {
-    val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Video Outline large icon", onclick := {
+  protected def makeFigureMarker(figure: String, icon: String) = {
+    val tag = button(`class` := "ui icon tiny button", i(`class` := s"label File $icon Outline icon", onclick := {
       //println(s"mouse down on $num")
     }))
     val html = tag.render
@@ -144,7 +141,7 @@ class CommentsWatcher(
   }
 
   protected def makePageMarker(paper: String) = {
-    val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline large icon", onclick := {
+    val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline icon", onclick := {
       //println(s"mouse down on $num")
       }))
     val html = tag.render

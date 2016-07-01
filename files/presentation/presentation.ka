@@ -23,6 +23,7 @@
 #### Signatures
 
 #^ :image plasmid.png
+#^ :video https://www.youtube.com/watch?v=HFwSnqYC5LA
 
 
 %agent: pLac(up, binding, down)

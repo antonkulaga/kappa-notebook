@@ -44,7 +44,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val currentProject: Var[CurrentProject] = Var(CurrentProject.fromKappaProject(KappaProject.default))
 
-  val sourceMap: Var[Map[String, KappaFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(sourceMap = s, saved = false))
+  val sourceMap: Var[Map[String, KappaFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(sourceMap = s))
 
   val location: Var[Bookmark] = Var(Bookmark("", 1, Nil))
 

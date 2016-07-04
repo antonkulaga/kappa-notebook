@@ -7,28 +7,36 @@ import org.denigma.binding.views.BindableView
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.Session
-import org.denigma.controls.papers.{Bookmark, PaperLoader}
-import org.denigma.kappa.messages.ServerMessages.KappaServerErrors
+import org.denigma.controls.papers.Bookmark
+import org.denigma.kappa.messages.ServerMessages.{KappaServerErrors, ServerConnection}
 import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook._
+import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.views.annotations.AnnotatorNLP
 import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor, KappaWatcher}
-import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView, Image, Video}
+import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView}
 import org.denigma.kappa.notebook.views.menus.MainMenuView
-import org.denigma.kappa.notebook.views.papers.{PapersView, WebSocketPaperLoader}
+import org.denigma.kappa.notebook.views.papers.PapersView
 import org.denigma.kappa.notebook.views.project.ProjectsPanelView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.denigma.kappa.notebook.views.visual.VisualPanelView
 import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
-import org.denigma.kappa.notebook._
-import org.scalajs.dom
-import org.scalajs.dom.raw.{HTMLElement, Element, PopStateEvent}
+import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
 import rx._
-import scala.scalajs.js
-import org.denigma.binding.extensions._
-import org.denigma.kappa.notebook.extensions._
+
+
+object ServerConnections {
+  lazy val default = ServerConnections(ServerConnection.default.name, Map(ServerConnection.default.name->ServerConnection.default))
+}
+
+case class ServerConnections(currentServer: String, all: Map[String, ServerConnection])
+{
+  lazy val currentConnection: Option[ServerConnection] = all.get(currentServer)
+
+  lazy val isConnected: Boolean = currentConnection.isDefined
+}
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
@@ -54,10 +62,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
-  val allTheCode = Var("")
-
-  val allCodeToRun = Var("")
-
+  val serverConfiguration: Var[ServerConnections] = Var(ServerConnections.default)
 
 
   override def bindView() = {
@@ -82,9 +87,9 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
       currentProject() = CurrentProject.fromKappaProject(proj)
 
 
-    case KappaMessage.ServerResponse(ers: ServerErrors) =>  serverErrors() = ers
+    case KappaMessage.ServerResponse(server, ers: ServerErrors) =>  serverErrors() = ers
 
-    case KappaMessage.ServerResponse(ers: KappaServerErrors) => kappaServerErrors() = ers
+    case KappaMessage.ServerResponse(server, ers: KappaServerErrors) => kappaServerErrors() = ers
 
     case Failed(operation, ers, username) =>  kappaServerErrors() = kappaServerErrors.now.copy(errors = kappaServerErrors.now.errors ++ ers)
 
@@ -131,13 +136,13 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("KappaEditor"){
       case (el, args) =>
-        val editor = new KappaCodeEditor(el, sourceMap, input, output, kappaCursor, editorsUpdates).withBinder(n => new CodeBinder(n))
+        val editor = new KappaCodeEditor(el, sourceMap, input, output, kappaCursor, editorsUpdates, serverConfiguration).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Editor)
         editor
     }
     .register("Simulations") {
       case (el, params) =>
-        val v = new SimulationsView(el, sourceMap, input, output).withBinder(new CodeBinder(_))
+        val v = new SimulationsView(el, sourceMap, input, output, serverConfiguration).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Simulations)
         v
     }

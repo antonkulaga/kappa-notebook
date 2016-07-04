@@ -1,5 +1,6 @@
 object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions with OtherJVM
 {
+
 	val scala = "2.11.8"
 
 	val kappaNotebook = "0.0.12"
@@ -81,7 +82,7 @@ trait SharedVersions
 
 trait WebJarsVersions{
 
-	val jquery =  "3.0.0"
+	val jquery =  "2.2.4"//"3.0.0"
 
 	val jquerySVG = "1.5.0"
 
@@ -95,7 +96,7 @@ trait WebJarsVersions{
 
 	val d3js = "3.5.17"
 
-	val videoJS = "5.10.7"
+	val malihuScrollBar: String = "3.1.3"
 
 }
 

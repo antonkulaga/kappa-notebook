@@ -37,37 +37,39 @@ class KappaServerActor extends Actor with ActorLogging {
 
 
   protected def runIfServerExists: PartialFunction[ServerMessage, Unit] ={
-    case RunAtServer(username, serverName, LaunchModel(_, parameters, _), userRef, interval) if servers.contains(serverName)=>
+    case RunAtServer(username, serverName, lm: LaunchModel, userRef, interval) if servers.contains(serverName)=>
 
       val sink: Sink[server.flows.Runnable[server.flows.SimulationContactResult], Any] = Sink.foreach {
         case (Left( (token, res: SimulationStatus, connectionMap)), model) =>
 
-          val mess = SimulationResult(serverName, res, token, Some(model))
+          val mess = SimulationResult(res, token, Some(model))
           //log.info("result is:\n "+mess)
 
-          userRef ! ServerResponse( SimulationResult(serverName, res, token, Some(model)) )
+          userRef ! ServerResponse( serverName, SimulationResult( res, token, Some(model)) )
 
         case (Right(errors), model) =>
-          val mess = SyntaxErrors(serverName, errors, Some(model))
+          println("MODEL =")
+          pprint.pprintln(model)
+          val mess = SyntaxErrors(errors, Some(model))
           //log.info("result is with errors "+mess)
-          userRef ! ServerResponse( mess )
+          userRef ! ServerResponse(serverName, mess )
       }
       val server = servers(serverName)
-      server.runStreamed(parameters, sink, interval)
+      server.runStreamed(lm, sink, interval)
 
     case RunAtServer(username, serverName, p: ParseModel, userRef, interval) if servers.contains(serverName)=>
 
       val sink: Sink[server.ContactMapResult, Any] = Sink.foreach {
         case Left( connectionMap) =>
 
-          val mess = ParseResult(serverName, connectionMap)
+          val mess = ParseResult(connectionMap)
           //println("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS   " +mess)
-          userRef ! ServerResponse( mess )
+          userRef ! ServerResponse(serverName, mess )
 
         case Right(errors) =>
-          val mess = SyntaxErrors(serverName, errors)
+          val mess = SyntaxErrors(errors, p.)
           //println("RRRRRRRRRRRRRRRRRRRRSSSSSSSSSSSSSSSS   " +mess)
-          userRef ! ServerResponse( mess )
+          userRef ! ServerResponse(serverName, mess )
       }
       val server = servers(serverName)
       server.parse(ParseCode(p.code), sink)
@@ -86,7 +88,7 @@ class KappaServerActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
 
-    case ServerCommand(message) => onServerCommands(message)
+    case ServerCommand(server, message) => onServerCommands(message)
 
     case run: RunAtServer => onServerCommands(run)
 

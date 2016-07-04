@@ -5,30 +5,28 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView}
 import org.denigma.codemirror._
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.ServerMessages.{ParseModel, SyntaxErrors}
+import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
+import org.denigma.kappa.messages.ServerMessages.{ParseModel, ServerConnection, SyntaxErrors}
 import org.denigma.kappa.messages.WebSimMessages.{WebSimError, WebSimRange}
-import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage, KappaProject}
+import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage}
+import org.denigma.kappa.notebook.views.ServerConnections
 import org.denigma.kappa.notebook.views.common.TabHeaders
+import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
-import org.denigma.kappa
 import rx._
-import org.denigma.binding.extensions._
-import org.denigma.kappa.messages.KappaMessage.ServerCommand
-import org.scalajs.dom
-
-import scala.Predef
 import scala.collection.immutable._
-import scala.scalajs.js
 import scala.concurrent.duration._
+
 
 class KappaCodeEditor(val elem: Element,
                       val items: Var[Map[String, KappaFile]],
                       val input: Var[KappaMessage],
                       val output: Var[KappaMessage],
                       val kappaCursor: Var[Option[(Editor, PositionLike)]],
-                      val editorUpdates: Var[EditorUpdates]) extends BindableView
+                      val editorUpdates: Var[EditorUpdates],
+                      val connections: Rx[ServerConnections]
+                     ) extends BindableView
   with ItemsMapView
 {
 
@@ -36,24 +34,15 @@ class KappaCodeEditor(val elem: Element,
 
   override type ItemView = CodeTab
 
-
-  /*
-  protected def concat() = {
-    items.now.values.foldLeft(""){
-      case (acc, e)=> acc + "\n"+ e.content
-    }
-  }
-
-  val codeToCheck: Var[String] = Var(concat())
-  */
+  val isConnected = connections.map(c=>c.isConnected)
 
   items.afterLastChange(800 millis){
     its=>
-      println("sending files for checking")
+      //println("sending files for checking")
       val files = its.values.collect{
         case fl => fl.name -> fl.content
       }.toList
-      output() = ServerCommand(ParseModel("localhost", files))
+      output() = ServerCommand(connections.now.currentServer, ParseModel(files))
   }
 
   val selected: Var[String] = Var("")
@@ -61,15 +50,49 @@ class KappaCodeEditor(val elem: Element,
   override type Item = String
 
   val syntaxErrors = Var(SyntaxErrors.empty)
-  val errorsByFiles: Rx[Map[KappaFile, List[WebSimError]]] = syntaxErrors.map{
-    case ers => ers.errors.groupBy{
+  val errorsByFiles: Rx[Map[KappaFile, List[WebSimError]]] =
+    syntaxErrors.map{
+      case ers =>
+        println("errors are "+ers)
+        val byfiles = ers.errorsByFiles()
+        println("BYFILES ARE = "+byfiles)
+        byfiles match {
+          case Some(some) =>
+            some.foldLeft(Map.empty[KappaFile, List[WebSimError]]){
+              case (acc, (filename, er)) if items.now.contains(filename) =>
+               val fl = items.now(filename)
+                val result: Map[KappaFile, List[WebSimError]] = if(acc.contains(fl)) acc.updated(fl, er::acc(fl)) else acc.updated(fl, List(er))
+                result
+
+              case (acc, (filename, er)) =>
+                dom.console.error(s"received errors for $filename for which the file does not exist!")
+                val fl = KappaFile("", filename, "")
+                val result: Map[KappaFile, List[WebSimError]] = if(acc.contains(fl)) acc.updated(fl, er::acc(fl)) else acc.updated(fl, List(er))
+                result
+            }
+          case None => Map.empty[KappaFile, List[WebSimError]]
+        }
+    }
+    /*syntaxErrors.map{
+    case ers =>
+
+      val v = ers.errors.groupBy{
       case er @ WebSimError(_, _, WebSimRange(filename, _, _)) =>
         if(items.now.contains(filename)) {
-          dom.console.error(s"received errors for $filename for which the file does not exist!")
+          dom.console.error(s"file exists " + filename)
+          dom.console.error(s"all files " + items.now)
           items.now(filename)
-        } else KappaFile("", filename, "")
-    }
+        }
+        else
+        {
+          dom.console.error(s"received errors for $filename for which the file does not exist!")
+          KappaFile("", filename, "")
+        }
+      }
+      //println("ERRORS = " + v)
+      v
   }
+  */
 
   val errors: Rx[String] = syntaxErrors.map(er => if(er.isEmpty) "" else er.errors.map(s=>s.message).reduce(_ + "\n" + _))
 
@@ -84,14 +107,11 @@ class KappaCodeEditor(val elem: Element,
     case Go.ToSource(name, from, to)=>
       selected() = name
 
-    case s: SyntaxErrors=>
-      dom.console.error("get syntax errors: \n"+s)
+    case ServerResponse(server, s: SyntaxErrors) =>
       syntaxErrors() = s
 
     case other => //do nothing
   }
-
-
 
   protected def keyVar(key: Key) = {
     require(items.now.contains(key), s"we are adding an Item view for key(${key}) that does not exist")
@@ -110,7 +130,7 @@ class KappaCodeEditor(val elem: Element,
       el.id = item //dirty trick
       val value: Var[KappaFile] = keyVar(item)
       val itemErrors = Rx{
-        errorsByFiles().get(value()).getOrElse(Nil)
+        errorsByFiles().getOrElse(value(), Nil)
       }
       val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor, itemErrors).withBinder(v => new CodeBinder(v) )
       selected() = item

@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.services
 import java.time.LocalDateTime
 
 import akka.NotUsed
-import akka.actor.{Cancellable, ActorSystem}
+import akka.actor.{ActorSystem, Cancellable}
 import akka.http.scaladsl.Http.HostConnectionPool
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
@@ -17,6 +17,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util._
 import akka.http.extensions._
 import WebSimMessages._
+import org.denigma.kappa.messages.ServerMessages.LaunchModel
 
 trait PoolMessage
 {
@@ -46,7 +47,7 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   type SimulationContactResult= Either[(Token, SimulationStatus, ContactMap), List[WebSimError]]
 
-  type Runnable[T] = (T, RunModel) //type that contains the result and initial run parameters
+  type Runnable[T] = (T, LaunchModel) //type that contains the result and initial run parameters
 
   implicit val system: ActorSystem
 
@@ -117,17 +118,17 @@ trait PooledWebSimFlows extends WebSimFlows {
       case (params, either)=> either -> params
     }
 
-  val runModelFlow: Flow[RunModel, (TokenContactResult, RunModel), NotUsed] = {
+  val runModelFlow: Flow[LaunchModel, (TokenContactResult, LaunchModel), NotUsed] = {
     val parseFlow = parseModelFlow.via(timePool.via(safeParseUnmarshalFlow.sync))
 
-    val leftMaps: Flow[(ParseResult, RunModel), Runnable[ContactMap], NotUsed] = Flow[Runnable[ParseResult]].collect { case (Left(mp), initial) => mp -> initial }
+    val leftMaps: Flow[(ParseResult, LaunchModel), Runnable[ContactMap], NotUsed] = Flow[Runnable[ParseResult]].collect { case (Left(mp), initial) => mp -> initial }
 
-    val rightErrors: Flow[Runnable[ParseResult], (TokenContactResult, RunModel), NotUsed] = Flow[Runnable[ParseResult]].collect { case (Right(res), initial) => Right(res) -> initial }
+    val rightErrors: Flow[Runnable[ParseResult], (TokenContactResult, LaunchModel), NotUsed] = Flow[Runnable[ParseResult]].collect { case (Right(res), initial) => Right(res) -> initial }
 
-    val tokFlow: Flow[(ContactMap, RunModel), TokenResult, NotUsed]=
+    val tokFlow: Flow[(ContactMap,LaunchModel), TokenResult, NotUsed]=
       Flow[Runnable[ContactMap]].map{ case (mp, model)=> model}.via(runModelRequestFlow).via(timePool.via(safeTokenUnmarshalFlow.sync))
 
-    val zipRun = ZipWith[RunModel, ParseResult, Runnable[ParseResult]] {
+    val zipRun = ZipWith[LaunchModel, ParseResult, Runnable[ParseResult]] {
       case (model, result) => result -> model
     }
 
@@ -136,12 +137,12 @@ trait PooledWebSimFlows extends WebSimFlows {
     }
 
 
-    val flow: Flow[RunModel, (TokenContactResult, RunModel), NotUsed] = Flow.fromGraph(GraphDSL.create() { implicit builder =>
+    val flow: Flow[LaunchModel, (TokenContactResult, LaunchModel), NotUsed] = Flow.fromGraph(GraphDSL.create() { implicit builder =>
       import GraphDSL.Implicits._
 
-      val runcast = builder.add(Broadcast[RunModel](2))
+      val runcast = builder.add(Broadcast[LaunchModel](2))
 
-      val parse: FlowShape[RunModel, ParseResult] = builder.add(parseFlow)
+      val parse: FlowShape[LaunchModel, ParseResult] = builder.add(parseFlow)
 
       val runZipper = builder.add(zipRun)
 
@@ -198,7 +199,7 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   lazy val syncSimulationStream: Flow[Token, (Token, SimulationStatus), NotUsed] = simulationStream(300 millis, 1)
 
-  def simulationResultStream(updateInterval: FiniteDuration, parallelism: Int): Flow[RunModel, Runnable[SimulationContactResult], NotUsed] =
+  def simulationResultStream(updateInterval: FiniteDuration, parallelism: Int): Flow[LaunchModel, Runnable[SimulationContactResult], NotUsed] =
     runModelFlow.flatMapMerge(parallelism, {
       case (Left((token, contacts)), model) =>
         val source = Source.tick(0 millis, updateInterval, token)
@@ -215,7 +216,7 @@ trait PooledWebSimFlows extends WebSimFlows {
     }
     )
 
-  lazy val syncSimulationResultStream: Flow[RunModel, Runnable[SimulationContactResult], NotUsed] = simulationResultStream(300 millis, 1)
+  lazy val syncSimulationResultStream: Flow[LaunchModel, Runnable[SimulationContactResult], NotUsed] = simulationResultStream(300 millis, 1)
 
   val stopFlow: Flow[Token, (Token, SimulationStatus), NotUsed] = stopRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
     case (token, result)=> token -> result

@@ -1,29 +1,24 @@
 package org.denigma.kappa.notebook.views.editor
 
-import org.denigma.codemirror.addons.Lint
-import org.denigma.codemirror.addons.Lint._
-import fastparse.all._
-import org.denigma.binding.binders.{Events, GeneralBinder}
+import org.denigma.binding.binders.Events
 import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, UpdatableView}
 import org.denigma.codemirror._
+import org.denigma.codemirror.addons._
 import org.denigma.codemirror.extensions._
 import org.denigma.kappa.messages.KappaFile
-import org.denigma.kappa.messages.ServerMessages.SyntaxErrors
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.notebook.views.common.TabItem
-import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
-import rx._
 import org.scalajs.dom
 import org.scalajs.dom.Event
-import org.denigma.binding.extensions._
-import scala.util._
-import scala.scalajs.js
+import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
+
+import scala.scalajs.js
+import scala.util._
 //import org.denigma.kappa.notebook.extensions._
-import scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scala.concurrent.duration._
 
 class CodeTab(val elem: Element,
               name: String,
@@ -53,6 +48,12 @@ class CodeTab(val elem: Element,
       //println("active value for "+id+" is false and display is "+elem.style.display)
   }
 
+  errors.onChange{
+    case ers=>
+      println("CODE TAB ERRORS detected!")
+      editor.setOption("lint", LintOptions.static(ers.map(e=> e:LintFound)))
+  }
+
   val code = Var(source.now.content)
   code.onChange{
     case str =>
@@ -79,7 +80,7 @@ class CodeTab(val elem: Element,
           override val ch: Int = c.ch.toInt
         })
       case Some((e, prev)) if prev.line !=cur || prev.ch != c.ch.toInt || e != ed =>
-        editor.addLineClass(cur, "background", "focused")
+        editor.addLineClass(cur, "background", "focusLý Kim Quyêned")
         editor.removeLineClass(prev, "background", "focused")
         kappaCursor() = Some(editor, new PositionLike {override val line: Int = cur
           override val ch: Int = c.ch.toInt
@@ -97,15 +98,7 @@ class CodeTab(val elem: Element,
       .viewportMargin(Integer.MAX_VALUE)
       .gutters(js.Array(Lint.gutters, "CodeMirror-linenumbers", "breakpoints"))
     val config: EditorConfiguration = params
-    config.lint = true
-    CodeMirror.addLint(codeMode){
-      text => {
-        println("lint works!!!!!!!!!!!!!!!!!!!!")
-        new js.Array()
-      }
-    }
-
-    CodeMirror.fromTextArea(area, params)
+    CodeMirror.fromTextArea(area, config)
   }
   
 
@@ -151,7 +144,7 @@ class CodeTab(val elem: Element,
     val value = doc.getValue()
     if(value != code.now) code() = value
 
-    editor.setOption("lint", true) //trigger linting
+    //editor.setOption("lint", true) //trigger linting
     //println("lint = true")
     //updateCursor()
   }

@@ -15,16 +15,8 @@ import scala.scalajs.js
 import scala.scalajs.js.annotation.{ScalaJSDefined, JSExport}
 import scala.util.{Failure, Success, Try}
 
-class MainMenuView(
-                   val elem: Element,
-                   val input: Var[KappaMessage],
-                   val scrollPanel: Element,
-                   val items: Var[List[(String, Element)]] ) extends BindableView with ItemsSeqView{
+trait FixedItemsSeqView extends ItemsSeqView{
 
-  type Item =  (String, Element)
-  type ItemView = MainMenuItemView
-
-  val menuMap: Rx[Map[String, ViewElement]] = items.map(list=>list.toMap)
 
   lazy val zipped = items.zipped
 
@@ -72,6 +64,27 @@ class MainMenuView(
     }
   }
 
+
+
+  protected def switchElements(from: Element, to: Element) = {
+    val nextFrom = from.nextElementSibling
+    val nextTo = to.nextElementSibling
+    from.parentElement.insertBefore(to, nextFrom)
+    to.parentElement.insertBefore(from, nextTo)
+  }
+}
+
+class MainMenuView(
+                   val elem: Element,
+                   val input: Var[KappaMessage],
+                   val scrollPanel: Element,
+                   val items: Var[List[(String, Element)]] ) extends BindableView with FixedItemsSeqView{
+
+  type Item =  (String, Element)
+  type ItemView = MainMenuItemView
+
+  val menuMap: Rx[Map[String, ViewElement]] = items.map(list=>list.toMap)
+
   protected def insertNear(from: Item, to: Item) = {
     val its = items.now
     items() = its.foldLeft(List.empty[Item]){
@@ -79,13 +92,6 @@ class MainMenuView(
       case (acc, el) if el == to => from::acc
       case (acc, el) => el::acc
     }.reverse
-  }
-
-  protected def switchElements(from: Element, to: Element) = {
-    val nextFrom = from.nextElementSibling
-    val nextTo = to.nextElementSibling
-    from.parentElement.insertBefore(to, nextFrom)
-    to.parentElement.insertBefore(from, nextTo)
   }
 
   def park(to: ItemView, targetName: String) = {

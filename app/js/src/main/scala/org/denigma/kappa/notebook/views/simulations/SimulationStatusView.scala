@@ -6,25 +6,29 @@ import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.KappaMessage.ServerCommand
+import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult}
+import org.denigma.kappa.messages.WebSimMessages.{KappaPlot, RunModel, SimulationStatus}
 import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook.views.ServerConnections
 import org.denigma.kappa.notebook.views.common._
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw.{Element, Event}
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 import rx._
 
+import scala.Predef.Map
 import scala.collection.immutable._
 import scala.util._
-import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult}
-import org.denigma.kappa.messages.WebSimMessages.{KappaPlot, RunModel, SimulationStatus}
 
 
 class SimulationsView(val elem: Element,
                       val sourceMap: Rx[Map[String, KappaFile]],
                       val input: Rx[KappaMessage],
-                      val output: Var[KappaMessage])
+                      val output: Var[KappaMessage],
+                      val serverConnections: Var[ServerConnections]
+                     )
 
   extends BindableView with Uploader /*with TabItem*/ with ItemsMapView //with ItemsSetView
 {
@@ -35,7 +39,7 @@ class SimulationsView(val elem: Element,
 
   val selectTab = Var("")
 
-  override type Item = (Int, RunModel)
+  override type Item = (Int, Option[LaunchModel])
 
   override type Value = SimulationStatus
 
@@ -47,19 +51,12 @@ class SimulationsView(val elem: Element,
 
   val consoleOutput = Var("")
 
-  protected def concat() = {
-    sourceMap.now.values.foldLeft(""){
-      case (acc, e)=> acc + "\n"+ e.content
-    }
-  }
-
-
-  val items: Var[Map[(Int, RunModel), SimulationStatus]] = Var(Map.empty[(Int, RunModel), SimulationStatus])
+  val items: Var[Map[Key, Value]] = Var(Map.empty[Key, Value])
 
   input.foreach{
-    case KappaMessage.ServerResponse( SimulationResult(server, status, token, params) ) =>
+    case KappaMessage.ServerResponse(server, SimulationResult(status, token, params) ) =>
       //println("percent: "+ status.percentage)
-      items() = items.now.updated((token, params.getOrElse(status.runParameters)), status)
+      items() = items.now.updated((token, params), status)
     //if(errors.now.nonEmpty) errors() = List.empty
     case other => //do nothing
   }
@@ -98,15 +95,16 @@ class SimulationsView(val elem: Element,
       view
   })
 
+
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selectTab).withBinder(new GeneralBinder(_)))
-    .register("runner")((el, args) => new RunnerView(el, output, concat).withBinder(n => new CodeBinder(n)))
+    .register("runner")((el, args) => new RunnerView(el, output, serverConnections, sourceMap).withBinder(n => new CodeBinder(n)))
 
 }
 
 class SimulationStatusView(val elem: Element,
                            token: Int,
-                           params: RunModel,
+                           params: Option[LaunchModel],
                            val selected: Var[String],
                            val simulation: Var[SimulationStatus] = Var(SimulationStatus.empty))
   extends BindableView with UpdatableView[SimulationStatus] with TabItem

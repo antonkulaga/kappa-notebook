@@ -2,9 +2,9 @@ package org.denigma.kappa.messages
 
 import boopickle.CompositePickler
 
-import scala.collection.immutable.{List, Nil}
+import scala.collection.immutable._
 import boopickle.DefaultBasic._
-import org.denigma.kappa.messages.WebSimMessages.{ContactMap, RunModel, SimulationStatus, WebSimError}
+import org.denigma.kappa.messages.WebSimMessages._
 
 object ServerMessages {
 
@@ -54,29 +54,81 @@ object ServerMessages {
 
   object SyntaxErrors {
     implicit val classPickler: Pickler[SyntaxErrors] = boopickle.Default.generatePickler[SyntaxErrors]
-    lazy val empty = SyntaxErrors("", Nil)
+    lazy val empty = SyntaxErrors(Nil, Nil)
   }
 
-  case class SyntaxErrors(server: String, errors: List[WebSimError], initialParams: Option[RunModel] = None) extends ServerMessage
+  case class SyntaxErrors(errors: List[WebSimError], files: List[(String, String)]) extends ServerMessage
   {
     def isEmpty = errors.isEmpty
+    def errorsByFiles(): Option[List[(String, WebSimError)]] = initialParams map {
+      case params =>
+        println("PARAMS ARE = "+initialParams)
+        println("file sizes are = ")
+        println(params.fileSizes)
+       errors.map{
+          case er =>
+            (params.fileLocation(er.range.from_position), params.fileLocation(er.range.to_position))
+             match {
+              case (Some( (f , from) ), Some( (_, to)) ) =>
+                val newRange = er.range.copy(from_position = from , to_position = to)
+                println("ERROR WEBSIM FILE IS "+er.range.file)
+                f -> er.copy(range = newRange)
+                //er.copy(range = er.range.copy(from = from, to = to))
+              case _ =>
+                println("cannot find file for the range +" + er.range)
+                "" -> er
+            }
+        }
+    }
   }
 
   object SimulationResult {
     implicit val classPickler: Pickler[SimulationResult] = boopickle.Default.generatePickler[SimulationResult]
   }
-  case class SimulationResult(server: String, simulationStatus: SimulationStatus, token: Int, initialParams: Option[RunModel] = None) extends ServerMessage
+  case class SimulationResult(simulationStatus: SimulationStatus, token: Int, initialParams: Option[LaunchModel] = None) extends ServerMessage
 
   object LaunchModel {
     implicit val classPickler: Pickler[LaunchModel] = boopickle.Default.generatePickler[LaunchModel]
+
+    def fromRunModel(file: String, model: RunModel) = LaunchModel(List(file->model.code), max_events = model.max_events, max_time = model.max_time, nb_plot = model.nb_plot)
   }
-  case class LaunchModel(server: String, parameters: RunModel, counter: Int = 0) extends ServerMessage
+
+  trait FileContainer {
+    def files: List[(String, String)]
+
+      //https://github.com/antonkulaga/kappa-notebook/blob/master/websim/shared/src/main/scala/org/denigma/kappa/messages/WebSimMessages.scala
+
+    lazy val fileSizes = files.foldLeft(List.empty[((Int, Int), String)]){
+      case (Nil, (name, content)) => ((1, content.length), name)::Nil
+
+      case ((((prevFrom, prevTo)), prevName)::tail, (name, content)) =>
+        val from = prevTo+1
+        ((from, from + content.length), name)::((prevFrom, prevTo), prevName)::tail
+    }.reverse
+
+    def fileLocation(location: Location): Option[(String, Location)] = {
+      val line = location.line
+      fileSizes.collectFirst {
+        case ((from, to), name) if line >= from && line <= to => name -> location.copy(line = line - from)
+      }
+  }
+
+  case class LaunchModel( files: List[(String, String)],
+                         nb_plot: Option[Int] = Some(250),
+                         max_events: Option[Int],
+                         max_time: Option[Double] = None,
+                          runName: String = "") extends ServerMessage with FileContainer{
+
+
+    lazy val parameters = RunModel(fullCode, nb_plot, max_events, max_time)
+
+  }
 
   object ParseModel {
     implicit val classPickler: Pickler[ParseModel] = boopickle.Default.generatePickler[ParseModel]
   }
 
-  case class ParseModel(server: String, files: List[(String, String)]) extends ServerMessage
+  case class ParseModel(files: List[(String, String)]) extends ServerMessage
   {
     def lineToFileLine(num: Int): Option[(String, Int, String)] = zippedCode.find{
       case (_, i, _) => i == num
@@ -99,7 +151,7 @@ object ServerMessages {
   object ParseResult {
     implicit val classPickler: Pickler[ParseResult] = boopickle.Default.generatePickler[ParseResult]
   }
-  case class ParseResult(server: String, contactMap: ContactMap) extends ServerMessage
+  case class ParseResult(contactMap: ContactMap) extends ServerMessage
 
 }
 

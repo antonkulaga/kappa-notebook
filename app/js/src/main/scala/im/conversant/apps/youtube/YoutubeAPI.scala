@@ -112,6 +112,7 @@ object PlayerOptions {
 
 
 
+@js.native
 @JSName("YT.Player")
 class Player protected() extends js.Object {
   def this(divId:String, settings:PlayerOptions) = this()

@@ -14,7 +14,7 @@ import scala.concurrent.duration.{FiniteDuration, _}
 import scala.util._
 import akka.http.extensions._
 import WebSimMessages._
-import org.denigma.kappa.messages.ServerMessages.ServerConnection
+import org.denigma.kappa.messages.ServerMessages.{LaunchModel, ServerConnection}
 
 class WebSimClientFlows(host: String = "localhost", port: Int = 8080)
                        (implicit val system: ActorSystem, val mat: ActorMaterializer)
@@ -56,7 +56,7 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
   }
   def parse(code: String): Future[ContactMapResult]  = parse(ParseCode(code))
 
-  def launch(model: RunModel): Future[(flows.TokenContactResult, RunModel)] = {
+  def launch(model: LaunchModel): Future[(flows.TokenContactResult, LaunchModel)] = {
     val source = Source.single(model) // give one model
     source.via(flows.runModelFlow) runWith Sink.head
   }
@@ -66,18 +66,18 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
     source.via(flows.simulationStatusFlow).map(_._2) runWith Sink.head
   }
 
-  def run(model: RunModel): Future[flows.Runnable[flows.SimulationContactResult]] =  {
+  def run(model: LaunchModel): Future[flows.Runnable[flows.SimulationContactResult]] =  {
     val source = Source.single(model)
     source.via(flows.syncSimulationResultStream).runWith(Sink.last)
   }
 
-  def run(model: RunModel,
+  def run(model: LaunchModel,
           updateInterval: FiniteDuration,
           parallelism: Int = 1): Future[flows.Runnable[flows.SimulationContactResult]] = {
     runStreamed(model, Sink.last, updateInterval, parallelism)
   }
 
-  def runStreamed[T](model: RunModel,
+  def runStreamed[T](model: LaunchModel,
                      sink: Sink[flows.Runnable[flows.SimulationContactResult], T],
                      updateInterval: FiniteDuration, parallelism: Int = 1): T = {
     val source = Source.single(model)

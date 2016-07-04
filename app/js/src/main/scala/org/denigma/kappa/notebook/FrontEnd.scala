@@ -6,10 +6,13 @@ import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.login.{AjaxSession, LoginView}
 import org.denigma.kappa.notebook.views.NotebookView
+import org.denigma.malihu.scrollbar.mCustomScrollbarParams
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 
+import scala.scalajs.js
 import scala.scalajs.js.annotation.JSExport
+import org.querki.jquery.JQuery
 
 /**
  * Just a simple view for the whole app, if interested ( see https://github.com/antonkulaga/scala-js-binding )

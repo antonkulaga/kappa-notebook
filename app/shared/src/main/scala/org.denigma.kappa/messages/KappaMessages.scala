@@ -9,13 +9,13 @@ object KappaMessage{
     implicit val classPickler: Pickler[ServerCommand] = boopickle.Default.generatePickler[ServerCommand]
   }
 
-  case class ServerCommand(serverMessage: ServerMessage) extends KappaMessage
+  case class ServerCommand(server: String, serverMessage: ServerMessage) extends KappaMessage
 
   object ServerResponse {
     implicit val classPickler: Pickler[ServerResponse] = boopickle.Default.generatePickler[ServerResponse]
   }
 
-  case class ServerResponse(serverMessage: ServerMessage) extends KappaMessage
+  case class ServerResponse(server: String, serverMessage: ServerMessage) extends KappaMessage
 
 
   object Container {

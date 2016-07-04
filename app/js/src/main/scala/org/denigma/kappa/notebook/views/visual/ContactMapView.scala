@@ -77,8 +77,8 @@ class ContactMapView(val elem: Element,  val input: Var[KappaMessage]) extends B
 
   input.onChange{
 
-    case KappaMessage.ServerResponse(ServerMessages.ParseResult(_, cmap))=>
-      println("assigning contact map!")
+    case KappaMessage.ServerResponse(server, ServerMessages.ParseResult(cmap))=>
+      //println("assigning contact map!")
       contactMap() = cmap
 
     //case KappaMessage.ServerResponse(ServerMessages.LaunchModel) =>
@@ -87,11 +87,5 @@ class ContactMapView(val elem: Element,  val input: Var[KappaMessage]) extends B
   }
 
   lazy val renderer = new ContactMapRenderer(elem.id, false)
-
-
-  override def bindView() = {
-    super.bindView()
-    println("contact map initialized!!!")
-  }
 
 }

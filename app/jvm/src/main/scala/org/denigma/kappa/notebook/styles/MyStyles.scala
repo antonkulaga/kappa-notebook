@@ -63,7 +63,7 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
 
   ".graph" -(
     borderColor(blue),
-    borderWidth(3 px)
+    borderWidth(4 px)
     )
 
   ".pages.row" - {

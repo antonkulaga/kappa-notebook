@@ -10,8 +10,6 @@ import boopickle.DefaultBasic._
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
-
-import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
 
 class UserActor(val username: String, servers: ActorRef, val fileManager: FileManager) extends FileMessenger with ProjectMessenger
@@ -28,13 +26,12 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
   }
 
   protected def simulationMessages: Receive  = {
-    case ServerCommand(l: ServerMessages.LaunchModel)=>
-      val toServer = RunAtServer(username, l.server, l, self, 100 millis)
-      //println("RUN QT SERVER: "+toServer)
+    case ServerCommand(server, l: ServerMessages.LaunchModel)=>
+      val toServer = RunAtServer(username, server, l, self, 100 millis)
       servers ! toServer
 
-    case ServerCommand(p: ServerMessages.ParseModel) =>
-      val toServer = RunAtServer(username, p.server, p, self, 100 millis)
+    case ServerCommand(server, p: ServerMessages.ParseModel) =>
+      val toServer = RunAtServer(username, server, p, self, 100 millis)
       servers ! toServer
   }
 

@@ -59,9 +59,9 @@ object Dependencies {
 
 		"org.webjars" % "three.js" % Versions.threeJS,
 
-		"org.webjars" % "d3js" % Versions.d3js
+		"org.webjars" % "d3js" % Versions.d3js,
 
-		//"org.webjars.npm" % "video.js" % Versions.videoJS
+		"org.webjars.bower" % "malihu-custom-scrollbar-plugin" % Versions.malihuScrollBar
 
 	))
 

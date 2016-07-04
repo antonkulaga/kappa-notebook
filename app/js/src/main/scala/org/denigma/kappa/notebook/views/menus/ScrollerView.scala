@@ -12,12 +12,17 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import scala.scalajs.js
 import scala.scalajs.js.JSON
 import scala.scalajs.js.annotation.ScalaJSDefined
+import org.querki.jquery.$
+import org.denigma.malihu.scrollbar.JQueryScrollbar._
+import org.denigma.malihu.scrollbar._
 
 class ScrollerView(val elem: Element,
                    scrollPanel: Element,
                    input: Rx[KappaMessage],
                    menuMap: Rx[Map[String, Element]]
                   ) extends BindableView{
+
+  lazy val scroller: JQueryScrollbar = initScroller()
 
   val backClick = Var(Events.createMouseEvent())
   backClick.onChange{
@@ -75,8 +80,9 @@ class ScrollerView(val elem: Element,
   protected def scrollTo(ident: String) = {
     sq.byId(ident) match {
       case Some(element)=>
-        val left = element.offsetLeft
-        scrollPanel.scrollLeft = left
+        //val left = element.offsetLeft
+        //scrollPanel.scrollLeft = left
+        scroller.scrollTo("#"+ident)
       case None =>
         dom.console.error("cannot scroll to "+ident)
     }
@@ -99,6 +105,12 @@ class ScrollerView(val elem: Element,
     super.bindView()
     dom.window.onpopstate = popStateHandler _
     input.onChange(onMessage)
+    initScroller()
+  }
+
+  protected def initScroller(): JQueryScrollbar = {
+    val params = new mCustomScrollbarParams(axis = "yx", advanced = new mCustomScrollbarAdvancedParams(true))
+    $(scrollPanel).mCustomScrollbar(params)
   }
 
   protected def onMessage(message: KappaMessage): Unit = message match {

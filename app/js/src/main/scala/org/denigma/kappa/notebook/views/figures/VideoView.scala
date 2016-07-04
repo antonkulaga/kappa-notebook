@@ -16,7 +16,7 @@ class VideoView(val elem: Element, val selected: Var[String], val video: Var[Vid
   //val src = image.map(i => "/files/"+i)
 
   override def update(value: Figure) =  value match {
-    case v @ Video(title, url)=>
+    case v @ Video(_, url)=>
       video() = v
       this
 

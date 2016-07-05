@@ -50,8 +50,18 @@ class CodeTab(val elem: Element,
 
   errors.onChange{
     case ers=>
-      println("CODE TAB ERRORS detected!")
-      editor.setOption("lint", LintOptions.static(ers.map(e=> e:LintFound)))
+      import scalajs.js.JSConverters._
+      //println("CODE TAB ERRORS detected!")
+      val found: List[LintFound] = ers.map{case e=> e:LintFound}
+      import scalajs.js.JSConverters._
+      def gts(text: String, options: LintOptions, cm: Editor): js.Array[LintFound] = {
+        found.toJSArray
+      }
+      val fun: js.Function3[String, LintOptions, Editor, js.Array[LintFound]] = gts _
+
+      editor.setOption("lint", js.Dynamic.literal(
+        getAnnotations = fun
+      ))
   }
 
   val code = Var(source.now.content)

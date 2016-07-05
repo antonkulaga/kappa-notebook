@@ -1,34 +1,39 @@
 package org.denigma.codemirror.addons
 
+import org.denigma.binding.extensions._
 import org.denigma.codemirror._
+import org.denigma.kappa.messages.WebSimMessages.WebSimError
 
 import scala.scalajs.js
-import org.denigma.binding.extensions._
-import org.denigma.kappa.messages.WebSimMessages.WebSimError
-import org.scalajs.dom
-
-import scala.concurrent.Future
-import scala.scalajs.js.JSConverters._
 import scala.scalajs.js.annotation.{JSName, ScalaJSDefined}
-import scala.scalajs.js.{Array, JSON, |}
-import scala.util.{Failure, Success}
-import scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.scalajs.js.{Array, |}
+
 @js.native
 trait LintedConfiguration extends EditorConfiguration {
   var lint: Boolean | LintOptions = js.native
 }
 
 @ScalaJSDefined
-class SyncLintOptions(lintFun: (String, LintOptions, Editor)=>js.Array[LintFound]) extends LintOptions(false)
+class StaticLintOptions(value: js.Array[LintFound]) extends LintOptions(false)
+{
+  def getAnnotations(text: String, options: LintOptions, cm: Editor): Array[LintFound] = {
+    println("static annotations work")
+    value
+  }
+}
+
+@ScalaJSDefined
+class SyncLintOptions(lintFun: (String, LintOptions, Editor) => js.Array[LintFound]) extends LintOptions(false)
 {
   //document string, an options object, and an editor instance, return an array of {message, severity, from, to}
 
-  def getAnnotations(text: String, options: LintOptions, cm: Editor): Array[LintFound] = {
+  def getAnnotations(text: String, options: LintOptions, cm: Editor): js.Array[LintFound] = {
     println("annotations work")
-     lintFun(text, options, cm)
-  }
 
+    lintFun(text, options, cm)
+  }
 }
+
 
 /*
 @ScalaJSDefined
@@ -48,15 +53,16 @@ class AsyncSyncLintOptions(lintFun: (String, LintOptions, Editor) => Future[js.A
 object LintOptions {
 
   def static(value: List[LintFound]): LintOptions = static(js.Array(value:_*))
-  def static(value: js.Array[LintFound]): LintOptions = new SyncLintOptions(
-    {
-      case _ =>value
-    }
-  )
+
+  def static(value: js.Array[LintFound]): LintOptions = {
+    def handler(st: String, opt: LintOptions, ed: Editor): Array[LintFound] = value
+    new SyncLintOptions(handler)
+  }
 
 }
 @ScalaJSDefined
 class LintOptions(val async: Boolean) extends js.Object
+
 
 object LintFound {
   implicit def fromWebSimError(error: WebSimError): LintFound = {

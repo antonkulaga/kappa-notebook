@@ -53,46 +53,22 @@ class KappaCodeEditor(val elem: Element,
   val errorsByFiles: Rx[Map[KappaFile, List[WebSimError]]] =
     syntaxErrors.map{
       case ers =>
-        println("errors are "+ers)
+        //println("errors are "+ers)
         val byfiles = ers.errorsByFiles()
-        println("BYFILES ARE = "+byfiles)
-        byfiles match {
-          case Some(some) =>
-            some.foldLeft(Map.empty[KappaFile, List[WebSimError]]){
-              case (acc, (filename, er)) if items.now.contains(filename) =>
-               val fl = items.now(filename)
-                val result: Map[KappaFile, List[WebSimError]] = if(acc.contains(fl)) acc.updated(fl, er::acc(fl)) else acc.updated(fl, List(er))
-                result
+        //println("BYFILES ARE = "+byfiles)
+        byfiles.foldLeft(Map.empty[KappaFile, List[WebSimError]]){
+          case (acc, (filename, er)) if items.now.contains(filename) =>
+           val fl = items.now(filename)
+            val result: Map[KappaFile, List[WebSimError]] = if(acc.contains(fl)) acc.updated(fl, er::acc(fl)) else acc.updated(fl, List(er))
+            result
 
-              case (acc, (filename, er)) =>
-                dom.console.error(s"received errors for $filename for which the file does not exist!")
-                val fl = KappaFile("", filename, "")
-                val result: Map[KappaFile, List[WebSimError]] = if(acc.contains(fl)) acc.updated(fl, er::acc(fl)) else acc.updated(fl, List(er))
-                result
-            }
-          case None => Map.empty[KappaFile, List[WebSimError]]
+          case (acc, (filename, er)) =>
+            dom.console.error(s"received errors for $filename for which the file does not exist!")
+            val fl = KappaFile("", filename, "")
+            val result: Map[KappaFile, List[WebSimError]] = if(acc.contains(fl)) acc.updated(fl, er::acc(fl)) else acc.updated(fl, List(er))
+            result
         }
     }
-    /*syntaxErrors.map{
-    case ers =>
-
-      val v = ers.errors.groupBy{
-      case er @ WebSimError(_, _, WebSimRange(filename, _, _)) =>
-        if(items.now.contains(filename)) {
-          dom.console.error(s"file exists " + filename)
-          dom.console.error(s"all files " + items.now)
-          items.now(filename)
-        }
-        else
-        {
-          dom.console.error(s"received errors for $filename for which the file does not exist!")
-          KappaFile("", filename, "")
-        }
-      }
-      //println("ERRORS = " + v)
-      v
-  }
-  */
 
   val errors: Rx[String] = syntaxErrors.map(er => if(er.isEmpty) "" else er.errors.map(s=>s.message).reduce(_ + "\n" + _))
 
@@ -135,6 +111,5 @@ class KappaCodeEditor(val elem: Element,
       val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor, itemErrors).withBinder(v => new CodeBinder(v) )
       selected() = item
       view
-
   }
 }

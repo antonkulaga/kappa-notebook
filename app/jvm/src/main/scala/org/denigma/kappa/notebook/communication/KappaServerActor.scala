@@ -10,7 +10,6 @@ import org.denigma.kappa.notebook.services.WebSimClient
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
-import scala.util.Either
 
 class KappaServerActor extends Actor with ActorLogging {
 
@@ -48,9 +47,8 @@ class KappaServerActor extends Actor with ActorLogging {
           userRef ! ServerResponse( serverName, SimulationResult( res, token, Some(model)) )
 
         case (Right(errors), model) =>
-          println("MODEL =")
-          pprint.pprintln(model)
-          val mess = SyntaxErrors(errors, Some(model))
+          //println("FILES =")
+          val mess = SyntaxErrors(errors, model.files)
           //log.info("result is with errors "+mess)
           userRef ! ServerResponse(serverName, mess )
       }
@@ -67,7 +65,7 @@ class KappaServerActor extends Actor with ActorLogging {
           userRef ! ServerResponse(serverName, mess )
 
         case Right(errors) =>
-          val mess = SyntaxErrors(errors, p.)
+          val mess = SyntaxErrors(errors, p.files)
           //println("RRRRRRRRRRRRRRRRRRRRSSSSSSSSSSSSSSSS   " +mess)
           userRef ! ServerResponse(serverName, mess )
       }

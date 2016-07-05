@@ -57,11 +57,31 @@ object ServerMessages {
     lazy val empty = SyntaxErrors(Nil, Nil)
   }
 
-  case class SyntaxErrors(errors: List[WebSimError], files: List[(String, String)]) extends ServerMessage
+  case class SyntaxErrors(errors: List[WebSimError], files: List[(String, String)]) extends ServerMessage with FileContainer
   {
     def isEmpty = errors.isEmpty
-    def errorsByFiles(): Option[List[(String, WebSimError)]] = initialParams map {
+
+    def errorsByFiles(): List[(String, WebSimError)] = {
+      this.errors.map {
+        case er =>
+          (fileLocation(er.range.from_position), fileLocation(er.range.to_position))
+          match {
+            case (Some((f, from)), Some((_, to))) =>
+              val newRange = er.range.copy(from_position = from, to_position = to)
+              //println("ERROR WEBSIM FILE IS " + er.range.file)
+              f -> er.copy(range = newRange)
+            //er.copy(range = er.range.copy(from = from, to = to))
+            case _ =>
+              println("cannot find file for the range +" + er.range)
+              "" -> er
+          }
+      }
+    }
+    /*initialParams map {
       case params =>
+
+
+        this.
         println("PARAMS ARE = "+initialParams)
         println("file sizes are = ")
         println(params.fileSizes)
@@ -79,8 +99,9 @@ object ServerMessages {
                 "" -> er
             }
         }
-    }
+    }*/
   }
+
 
   object SimulationResult {
     implicit val classPickler: Pickler[SimulationResult] = boopickle.Default.generatePickler[SimulationResult]
@@ -96,14 +117,18 @@ object ServerMessages {
   trait FileContainer {
     def files: List[(String, String)]
 
-      //https://github.com/antonkulaga/kappa-notebook/blob/master/websim/shared/src/main/scala/org/denigma/kappa/messages/WebSimMessages.scala
+    lazy val fullCode = files.foldLeft("") {
+      case (acc, (name, content)) => acc + content + "\n"
+    }
 
-    lazy val fileSizes = files.foldLeft(List.empty[((Int, Int), String)]){
-      case (Nil, (name, content)) => ((1, content.length), name)::Nil
+    //https://github.com/antonkulaga/kappa-notebook/blob/master/websim/shared/src/main/scala/org/denigma/kappa/messages/WebSimMessages.scala
 
-      case ((((prevFrom, prevTo)), prevName)::tail, (name, content)) =>
-        val from = prevTo+1
-        ((from, from + content.length), name)::((prevFrom, prevTo), prevName)::tail
+    lazy val fileSizes = files.foldLeft(List.empty[((Int, Int), String)]) {
+      case (Nil, (name, content)) => ((1, content.length), name) :: Nil
+
+      case ((((prevFrom, prevTo)), prevName) :: tail, (name, content)) =>
+        val from = prevTo + 1
+        ((from, from + content.length), name) ::((prevFrom, prevTo), prevName) :: tail
     }.reverse
 
     def fileLocation(location: Location): Option[(String, Location)] = {
@@ -111,14 +136,15 @@ object ServerMessages {
       fileSizes.collectFirst {
         case ((from, to), name) if line >= from && line <= to => name -> location.copy(line = line - from)
       }
+    }
   }
 
   case class LaunchModel( files: List[(String, String)],
                          nb_plot: Option[Int] = Some(250),
                          max_events: Option[Int],
                          max_time: Option[Double] = None,
-                          runName: String = "") extends ServerMessage with FileContainer{
-
+                         runName: String = "") extends ServerMessage with FileContainer
+  {
 
     lazy val parameters = RunModel(fullCode, nb_plot, max_events, max_time)
 

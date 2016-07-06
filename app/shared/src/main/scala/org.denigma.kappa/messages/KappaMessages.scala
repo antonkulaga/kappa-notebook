@@ -35,6 +35,7 @@ object KappaMessage{
     .addConcreteType[Disconnected]
     .addConcreteType[Done]
     .addConcreteType[Failed]
+    .addConcreteType[IncomingFailed]
     .addConcreteType[Container]
     .addConcreteType[KappaUser]
     .addConcreteType[ServerCommand]
@@ -86,4 +87,10 @@ object Failed{
 }
 
 case class Failed(operation: KappaMessage, errors: List[String], user: String) extends KappaMessage
+
+object IncomingFailed{
+  implicit val classPickler: Pickler[IncomingFailed] = boopickle.Default.generatePickler[IncomingFailed]
+}
+
+case class IncomingFailed(reason: String, user: String) extends KappaMessage
 

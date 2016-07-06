@@ -54,7 +54,7 @@ trait ScalaJSVersions {
 
 	val d3jsFacade = "0.3.3"
 
-	val pdfJSFacade = "0.8.0-0.0.2"
+	val pdfJSFacade = "0.8.0-0.0.3"
 
 }
 
@@ -70,7 +70,7 @@ trait SharedVersions
 
 	val scalaCSS = "0.4.1"
 
-	val scalaTest = "3.0.0-RC3"
+	val scalaTest = "3.0.0-RC4"
 
 	val fastparse = "0.3.7"
 

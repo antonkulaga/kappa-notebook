@@ -35,7 +35,7 @@ class RunnerView(val elem: Element,
 
   val implicitSignature = Var(true)
 
-  val gluttony: Var[Boolean] = Var(false)
+  // val gluttony: Var[Boolean] = Var(false)
 
   protected val maxTime = time.map(t => if(t > 0) Some(t) else None)
   protected val maxEvents = events.map(ev=> if(ev> 0) Some(ev) else None)

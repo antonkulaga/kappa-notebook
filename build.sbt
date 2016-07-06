@@ -36,6 +36,7 @@ lazy val commonSettings = Seq(
   scalaVersion := Versions.scala,
   organization := "org.denigma",
   scalacOptions ++= Seq( "-feature", "-language:_" ),
+  javacOptions ++= Seq("-encoding", "UTF-8"),
   // Enable JAR export for staging
   exportJars := true,
   parallelExecution in Test := false,

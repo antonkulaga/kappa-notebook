@@ -54,7 +54,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
           wsClient.inProbe.request(1).expectNextPF {
             case BinaryMessage.Strict(bytes) if {
               Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
-                case c:Connected => true
+                case c: Connected => true
                 case _ => false
               }
             } => println("connected works")
@@ -63,6 +63,8 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
             case BinaryMessage.Strict(bytes) if {
               Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
                 case ServerResponse(server, s: SimulationResult) =>
+                  println("FLUX MAPS = ")
+                  pprint.pprintln(s.simulationStatus.flux_maps)
                   true
                 case _ =>
                   false
@@ -134,5 +136,35 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
         }
     }
 
+    /*
+    "get fluxes" in {
+      val wsClient = WSProbe()
+      WS("/channel/notebook?username=tester4", wsClient.flow) ~> routes ~>
+        check {
+          // check response for WS Upgrade headers
+          checkConnection(wsClient)
+
+          val model = abc
+          val params = ParseModel(List("abc"->abc))
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(params))
+          wsClient.sendMessage(pack(d))
+          wsClient.inProbe.request(1).expectNextPF {
+            case BinaryMessage.Strict(bytes) if {
+              val mes = Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer)
+              mes match {
+                case ServerResponse(server, ServerMessages.ParseResult(cm)) =>
+                  //println("expected errors are: "+ errors)
+                  true
+                case _ =>
+                  false
+              }
+            } =>
+
+          }
+          wsClient.sendCompletion()
+          //wsClient.expectCompletion()
+        }
+    }
+    */
   }
 }

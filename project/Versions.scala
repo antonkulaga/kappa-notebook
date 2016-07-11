@@ -1,5 +1,6 @@
 object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions with OtherJVM
 {
+	var sourcecode = "0.1.1"
 
 	val scala = "2.11.8"
 
@@ -29,7 +30,7 @@ trait OtherJVM {
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.7"
+	val akka = "2.4.8"
 
 	val circeHttp = "1.7.0"
 
@@ -77,6 +78,12 @@ trait SharedVersions
 	val quicklens = "1.4.7"
 
 	val booPickle = "1.2.0"
+
+	//val booPickle = "1.2.4"
+
+	val pprint: String ="0.4.1"
+
+
 }
 
 

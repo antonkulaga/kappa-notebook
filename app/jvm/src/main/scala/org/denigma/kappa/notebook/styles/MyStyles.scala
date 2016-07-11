@@ -34,16 +34,6 @@ object MyStyles extends TextLayerStyles with DragDropStyles with TabGridsStyles 
     cursor.pointer
   }
 
-  "html" - (
-    height(100 %%),
-    overflowX.auto
-  )
-
-  "body" - (
-    height(100 %%),
-    overflowX.auto
-    )
-
   "#Notebook" -(
     maxHeight(95 vh),
     minWidth(totalWidth)

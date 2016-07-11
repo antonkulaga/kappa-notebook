@@ -105,8 +105,8 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
 
     case result: ServerResponse =>
       val d = Pickle.intoBytes[KappaMessage](result)
-      println("send server response:")
-      pprint.pprintln(result)
+      //println("send server response:")
+      //pprint.pprintln(result)
       send(d)
 
     case result: Connected =>

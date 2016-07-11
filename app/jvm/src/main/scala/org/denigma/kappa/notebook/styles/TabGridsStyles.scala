@@ -21,7 +21,8 @@ trait TabGridsStyles extends StyleSheet.Standalone {
   ".tab.page" -(
     //overflowY.scroll,
     //overflowX.scroll,
-    minHeight(98.0 vh)
+    minHeight(90.0 vh),
+    height(100.0 %%)
     )
 
   ".tab.flexible.page" -(

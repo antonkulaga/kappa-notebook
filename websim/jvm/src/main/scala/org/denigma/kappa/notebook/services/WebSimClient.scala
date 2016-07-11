@@ -15,11 +15,20 @@ import scala.util._
 import akka.http.extensions._
 import WebSimMessages._
 import org.denigma.kappa.messages.ServerMessages.{LaunchModel, ServerConnection}
+import pprint.PPrint.PPrint
 
 class WebSimClientFlows(host: String = "localhost", port: Int = 8080)
                        (implicit val system: ActorSystem, val mat: ActorMaterializer)
   extends PooledWebSimFlows
 {
+
+  override def debug[T: PPrint](value: T) = {
+    println("let us debug!")
+    implicit val config = pprint.Config(width = Int.MaxValue)
+    val str = pprint.tokenize(value).reduce(_+_)
+    system.log.debug(str)
+  }
+
   val base = "/v1"
 
   val defaultParallelism = 1

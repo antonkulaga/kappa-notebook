@@ -8,11 +8,18 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages._
+import pprint.PPrint
 
 /**
   * Basic idea of the API is that we create a flow for each type of request to websim API, then those flows are applied to http pool
   */
 trait WebSimFlows extends CirceSupport{
+
+
+  protected def debug[T: PPrint](something: T) = {
+    pprint.pprintln(something)
+  }
+
 
   type Token = Int
 
@@ -43,6 +50,7 @@ trait WebSimFlows extends CirceSupport{
   protected val runModelRequestFlow: Flow[LaunchModel, HttpRequest, NotUsed] = Flow[LaunchModel].map{
     case model =>
       val json = model.parameters.asJson.noSpaces
+      debug(json)
       val data = HttpEntity(ContentTypes.`application/json`, json)
       HttpRequest(uri = s"$base/process", method = HttpMethods.POST, entity =  data)
   }

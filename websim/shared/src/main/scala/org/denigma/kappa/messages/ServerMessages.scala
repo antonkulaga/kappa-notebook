@@ -77,29 +77,6 @@ object ServerMessages {
           }
       }
     }
-    /*initialParams map {
-      case params =>
-
-
-        this.
-        println("PARAMS ARE = "+initialParams)
-        println("file sizes are = ")
-        println(params.fileSizes)
-       errors.map{
-          case er =>
-            (params.fileLocation(er.range.from_position), params.fileLocation(er.range.to_position))
-             match {
-              case (Some( (f , from) ), Some( (_, to)) ) =>
-                val newRange = er.range.copy(from_position = from , to_position = to)
-                println("ERROR WEBSIM FILE IS "+er.range.file)
-                f -> er.copy(range = newRange)
-                //er.copy(range = er.range.copy(from = from, to = to))
-              case _ =>
-                println("cannot find file for the range +" + er.range)
-                "" -> er
-            }
-        }
-    }*/
   }
 
 

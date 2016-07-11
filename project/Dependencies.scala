@@ -88,7 +88,11 @@ object Dependencies {
 
 		"com.lihaoyi" %%% "fastparse" % Versions.fastparse,
 
-		"me.chrons" %%% "boopickle" % Versions.booPickle
+		"me.chrons" %%% "boopickle" % Versions.booPickle,
+
+		"com.lihaoyi" %%% "pprint" % Versions.pprint,
+
+		"com.lihaoyi" %% "sourcecode" % Versions.sourcecode
 
 
 	))

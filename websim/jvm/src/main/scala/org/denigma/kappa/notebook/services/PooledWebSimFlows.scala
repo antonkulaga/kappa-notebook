@@ -18,6 +18,8 @@ import scala.util._
 import akka.http.extensions._
 import WebSimMessages._
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
+import pprint.PPrint
+
 
 trait PoolMessage
 {
@@ -181,9 +183,22 @@ trait PooledWebSimFlows extends WebSimFlows {
     flow
   }
 
+  protected def unmarshalSimulationStatus() = Flow[TryResponse].map{
+      case (Success(resp), time) =>
+
+        debug("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCc")
+        debug(resp._3)
+        debug("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCc")
+        Unmarshal(resp).to[SimulationStatus].recoverWith{
+          case th=> wrongUnmarshal(th, resp)
+        }
+      case (Failure(exception), time) =>
+        Future.failed(exception)
+    }
+
 
   val simulationStatusFlow: Flow[Token, (Token, SimulationStatus), NotUsed] =
-    simulationStatusRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
+    simulationStatusRequestFlow.inputZipWith(timePool.via(/*unmarshalFlow[SimulationStatus]*/unmarshalSimulationStatus()).sync){
       case (token, result)=> token -> result
   }
 

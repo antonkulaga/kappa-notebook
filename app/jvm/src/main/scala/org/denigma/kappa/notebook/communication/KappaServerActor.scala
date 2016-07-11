@@ -42,6 +42,7 @@ class KappaServerActor extends Actor with ActorLogging {
         case (Left( (token, res: SimulationStatus, connectionMap)), model) =>
 
           val mess = SimulationResult(res, token, Some(model))
+          //log.info("LEGEND = "+res.plot.get.legend)
           //log.info("result is:\n "+mess)
 
           userRef ! ServerResponse( serverName, SimulationResult( res, token, Some(model)) )

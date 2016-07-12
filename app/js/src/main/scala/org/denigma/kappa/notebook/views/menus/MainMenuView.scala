@@ -14,7 +14,7 @@ import rx._
 import scala.scalajs.js
 import scala.scalajs.js.annotation.{ScalaJSDefined, JSExport}
 import scala.util.{Failure, Success, Try}
-
+/*
 trait FixedItemsSeqView extends ItemsSeqView{
 
 
@@ -63,22 +63,13 @@ trait FixedItemsSeqView extends ItemsSeqView{
         reDraw(revCur, added, template)
     }
   }
-
-
-
-  protected def switchElements(from: Element, to: Element) = {
-    val nextFrom = from.nextElementSibling
-    val nextTo = to.nextElementSibling
-    from.parentElement.insertBefore(to, nextFrom)
-    to.parentElement.insertBefore(from, nextTo)
-  }
 }
-
+*/
 class MainMenuView(
                    val elem: Element,
                    val input: Var[KappaMessage],
                    val scrollPanel: Element,
-                   val items: Var[List[(String, Element)]] ) extends BindableView with FixedItemsSeqView{
+                   val items: Var[List[(String, Element)]] ) extends BindableView with /*Fixed*/ItemsSeqView{
 
   type Item =  (String, Element)
   type ItemView = MainMenuItemView
@@ -92,6 +83,13 @@ class MainMenuView(
       case (acc, el) if el == to => from::acc
       case (acc, el) => el::acc
     }.reverse
+  }
+
+  protected def switchElements(from: Element, to: Element) = {
+    val nextFrom = from.nextElementSibling
+    val nextTo = to.nextElementSibling
+    from.parentElement.insertBefore(to, nextFrom)
+    to.parentElement.insertBefore(from, nextTo)
   }
 
   def park(to: ItemView, targetName: String) = {

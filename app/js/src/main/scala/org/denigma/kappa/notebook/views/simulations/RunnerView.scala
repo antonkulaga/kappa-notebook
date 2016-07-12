@@ -11,7 +11,6 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import com.softwaremill.quicklens._
 import org.denigma.kappa.notebook.views.ServerConnections
-import org.denigma.kappa.notebook.views.menus.FixedItemsSeqView
 
 
 class RunnerView(val elem: Element,

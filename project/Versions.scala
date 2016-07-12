@@ -6,9 +6,9 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val kappaNotebook = "0.0.12"
 
-	val binding = "0.8.10"
+	val binding = "0.8.12"
 
-	val bindingControls = "0.0.17"
+	val bindingControls = "0.0.19"
 
 	val betterFiles = "2.16.0"
 
@@ -63,7 +63,7 @@ trait ScalaJSVersions {
 trait SharedVersions
 {
 
-	val annotator = "0.0.4"
+	val annotator = "0.0.5"
 
 	val circe = "0.4.1"
 
@@ -77,9 +77,7 @@ trait SharedVersions
 
 	val quicklens = "1.4.7"
 
-	val booPickle = "1.2.0"
-
-	//val booPickle = "1.2.4"
+	val booPickle = "1.2.4"
 
 	val pprint: String ="0.4.1"
 

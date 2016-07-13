@@ -21,11 +21,12 @@ import org.denigma.kappa.notebook.views.project.ProjectsPanelView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.denigma.kappa.notebook.views.visual.VisualPanelView
 import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
+import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-
+import org.scalajs.dom.ext._
 
 object ServerConnections {
   lazy val default = ServerConnections(ServerConnection.default.name, Map(ServerConnection.default.name->ServerConnection.default))
@@ -63,6 +64,8 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
   val serverConfiguration: Var[ServerConnections] = Var(ServerConnections.default)
+
+  lazy val scrollable: Element = this.viewElement.parentElement
 
 
   override def bindView() = {
@@ -120,7 +123,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     .register("MainMenuView") {
       case (el, args) =>
         elem.parentElement
-        new MainMenuView(el, input, elem.parentElement, menu).withBinder(n => new CodeBinder(n))
+        new MainMenuView(el, input, scrollable, menu).withBinder(n => new CodeBinder(n))
     }
     .register("ProjectsPanel"){
       case (el, args) =>

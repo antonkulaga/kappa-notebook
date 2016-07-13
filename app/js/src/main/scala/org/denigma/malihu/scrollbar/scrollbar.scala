@@ -35,7 +35,7 @@ class mCustomScrollbarParams(val axis: String,
 
 
 @ScalaJSDefined
-class mCustomScrollbarAdvancedParams(val autoExpandHorizontalScroll: Boolean) extends js.Object{
+class mCustomScrollbarAdvancedParams(val autoExpandHorizontalScroll: Boolean, val updateOnContentResize: Boolean = true, val updateOnBrowserResize:Boolean = true) extends js.Object{
 
 }
 

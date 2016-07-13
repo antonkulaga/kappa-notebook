@@ -8,7 +8,7 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages.{ParseModel, ServerConnection, SyntaxErrors}
 import org.denigma.kappa.messages.WebSimMessages.{WebSimError, WebSimRange}
-import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage}
+import org.denigma.kappa.messages.{ServerMessages, Go, KappaFile, KappaMessage}
 import org.denigma.kappa.notebook.views.ServerConnections
 import org.denigma.kappa.notebook.views.common.TabHeaders
 import org.scalajs.dom
@@ -82,6 +82,9 @@ class KappaCodeEditor(val elem: Element,
   input.onChange{
     case Go.ToSource(name, from, to)=>
       selected() = name
+
+    case KappaMessage.ServerResponse(server, ServerMessages.ParseResult(cmap)) => //hide syntax errors when parsing succedded
+      syntaxErrors() = SyntaxErrors.empty
 
     case ServerResponse(server, s: SyntaxErrors) =>
       syntaxErrors() = s

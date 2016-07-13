@@ -23,7 +23,7 @@ class WebSimClientFlows(host: String = "localhost", port: Int = 8080)
 {
 
   override def debug[T: PPrint](value: T) = {
-    println("let us debug!")
+    //println("let us debug!")
     implicit val config = pprint.Config(width = Int.MaxValue)
     val str = pprint.tokenize(value).reduce(_+_)
     system.log.debug(str)

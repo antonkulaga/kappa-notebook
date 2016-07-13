@@ -109,7 +109,7 @@ class ScrollerView(val elem: Element,
   }
 
   protected def initScroller(): JQueryScrollbar = {
-    val params = new mCustomScrollbarParams(axis = "yx", advanced = new mCustomScrollbarAdvancedParams(true))
+    val params = new mCustomScrollbarParams(axis = "x", advanced = new mCustomScrollbarAdvancedParams(true))
     $(scrollPanel).mCustomScrollbar(params)
   }
 

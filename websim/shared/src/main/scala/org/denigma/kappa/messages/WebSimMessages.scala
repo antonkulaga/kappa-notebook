@@ -23,7 +23,6 @@ object WebSimMessages {
       .addConcreteType[Observable]
       .addConcreteType[KappaPlot]
       .addConcreteType[RunModel]
-      .addConcreteType[FluxData]
       .addConcreteType[FluxMap]
       .addConcreteType[AgentState]
       .addConcreteType[TokenState]
@@ -115,19 +114,18 @@ object WebSimMessages {
     lazy val timePoints: List[Double] = observables.foldLeft(List.empty[Double])((acc, o)=> o.time::acc).reverse
   }
 
-  object FluxData {
-    import boopickle.DefaultBasic._
-    implicit val classPickler: Pickler[FluxData] = boopickle.Default.generatePickler[FluxData]
-  }
-
-  case class FluxData(flux_name: String/*, flux_start: List[Int]*/) extends WebSimMessage
-
   object FluxMap {
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[FluxMap] = boopickle.Default.generatePickler[FluxMap]
   }
 
-  case class FluxMap(flux_rules: List[String], flux_data: Option[FluxData]/*, flux_end: Double*/) extends WebSimMessage
+  case class FluxMap(
+                      flux_begin_time: Double,
+                      flux_end_time: Double,
+                      flux_rules: List[String],
+                      flux_hits: List[Int],
+                      flux_fluxs: List[List[Double]],
+                      flux_name: String) extends WebSimMessage
 
   object AgentState {
     import boopickle.DefaultBasic._

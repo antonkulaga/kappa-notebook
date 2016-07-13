@@ -185,10 +185,6 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   protected def unmarshalSimulationStatus() = Flow[TryResponse].map{
       case (Success(resp), time) =>
-
-        debug("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCc")
-        debug(resp._3)
-        debug("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCc")
         Unmarshal(resp).to[SimulationStatus].recoverWith{
           case th=> wrongUnmarshal(th, resp)
         }
@@ -198,7 +194,7 @@ trait PooledWebSimFlows extends WebSimFlows {
 
 
   val simulationStatusFlow: Flow[Token, (Token, SimulationStatus), NotUsed] =
-    simulationStatusRequestFlow.inputZipWith(timePool.via(/*unmarshalFlow[SimulationStatus]*/unmarshalSimulationStatus()).sync){
+    simulationStatusRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]/*unmarshalSimulationStatus()*/).sync){
       case (token, result)=> token -> result
   }
 

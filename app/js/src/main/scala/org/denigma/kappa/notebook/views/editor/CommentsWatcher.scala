@@ -129,9 +129,14 @@ class CommentsWatcher(
   }
 
   protected def makeFigureMarker(figure: String, icon: String) = {
+    /*
     val tag = button(`class` := "ui icon tiny button", i(`class` := s"label File $icon Outline icon", onclick := {
       //println(s"mouse down on $num")
     }))
+    */
+    val tag = i(`class` := s"label pointed File $icon Outline icon", onclick := {
+      //println(s"mouse down on $num")
+    })
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
@@ -141,9 +146,15 @@ class CommentsWatcher(
   }
 
   protected def makePageMarker(paper: String) = {
+    /*
     val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline icon", onclick := {
       //println(s"mouse down on $num")
       }))
+    */
+
+    val tag = i(`class` := s"pointed label File Code Outline icon", onclick := {
+      //println(s"mouse down on $num")
+    })
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>

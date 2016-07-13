@@ -20,13 +20,7 @@ import org.scalajs.dom.ext._
 class YouTubeView(val elem: Element, val selected: Var[String], val video: Var[Video]) extends FigureView {
 
 
- lazy val videoID =video.map{
-   case v if v.url.contains(YouTubeView.WATCH) =>
-     val i = v.url.indexOf(YouTubeView.WATCH)
-     v.url.substring(i+YouTubeView.WATCH.length)
-
-   case v => v.url
- } //"HFwSnqYC5LA"
+ lazy val videoID =video.map(v=>YouTubeView.idFromURL(v.url)) //"HFwSnqYC5LA"
 
   override def update(value: Figure) =  value match {
     case v @ Video(name, url)=>
@@ -89,6 +83,14 @@ import scala.scalajs.js
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 object YouTubeView {
+
+  def idFromURL(str: String): String = str match {
+    case url if url.contains(YouTubeView.WATCH) =>
+      val i = url.indexOf(YouTubeView.WATCH)
+      url.substring(i+YouTubeView.WATCH.length)
+
+    case v => v
+  }
 
   val WATCH = "watch?v="
 

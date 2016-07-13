@@ -106,8 +106,17 @@ lazy val app = crossProject
     libraryDependencies ++= Dependencies.compilers.value ++ Dependencies.otherJvm.value,
     scalaJSDevStage := scalaJSDevTaskStage.value,
     (emitSourceMaps in fullOptJS) := true,
-    pipelineStages in Assets := Seq(scalaJSDevStage, gzip), //for run configuration
-    //(fullClasspath in Runtime) += (packageBin in Assets).value, //to package production deps
+    pipelineStages in Assets := {
+      val stages = sys.env.get("APP_MODE") match {
+        case Some(str) if str.toLowerCase.startsWith("prod") =>
+          println("PROJECT IS IN PRODUCTION MODE")
+          Seq(scalaJSProd, gzip)
+        case other =>
+          println("PROJECT IS IN DEVELOPMENT MODE")
+          Seq(scalaJSDevStage, gzip)
+      }
+      stages
+    },
     libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value ++ Dependencies.ammonite.value,
     initialCommands in (Test, console) := Console.out
   )

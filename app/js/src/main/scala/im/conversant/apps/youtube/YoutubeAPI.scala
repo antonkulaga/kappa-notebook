@@ -4,6 +4,7 @@ import scala.scalajs.js
 import js.annotation._
 import org.scalajs.dom._
 
+@js.native
 trait Event extends js.Object {
   val target:  js.UndefOr[Player] = js.native
   val data: js.UndefOr[js.Object] = js.native
@@ -23,6 +24,7 @@ object Event {
 
 
 //https://developers.google.com/youtube/
+@js.native
 trait PlayerEvents extends js.Object {
   val onReady:  js.UndefOr[(Event) => Any] = js.native
   val onStateChange: js.UndefOr[(Event) => Any] = js.native
@@ -44,7 +46,7 @@ object PlayerEvents {
 }
 
 
-
+@js.native
 trait VideoIdStartOptions extends js.Object {
   var videoId:js.UndefOr[String] = js.native
   var startSeconds:js.UndefOr[Double] = js.native
@@ -68,6 +70,7 @@ object VideoIdStartOptions {
   }
 }
 
+@js.native
 trait PlayerVars extends js.Object {
   var playsinline:js.UndefOr[Double] = js.native
 }
@@ -83,7 +86,7 @@ object PlayerVars {
 }
 
 
-
+@js.native
 trait PlayerOptions extends js.Object {
   var height:String = js.native
   var width:String = js.native

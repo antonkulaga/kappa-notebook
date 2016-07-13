@@ -1,5 +1,6 @@
+@import org.denigma.kappa.notebook.utils.Mode
 @(into:String = "main",leftSidebar:Boolean = false)
-<script src="/resources/kappa-notebook-fastopt.js"></script>
+<script src="/resources/kappa-notebook@{Mode.current}"></script>
 <script>
         $( document ).ready(function() {
             selectionchange.start();

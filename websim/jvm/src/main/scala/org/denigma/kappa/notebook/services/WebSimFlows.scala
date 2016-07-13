@@ -50,7 +50,7 @@ trait WebSimFlows extends CirceSupport{
   protected val runModelRequestFlow: Flow[LaunchModel, HttpRequest, NotUsed] = Flow[LaunchModel].map{
     case model =>
       val json = model.parameters.asJson.noSpaces
-      debug(json)
+      //debug(json)
       val data = HttpEntity(ContentTypes.`application/json`, json)
       HttpRequest(uri = s"$base/process", method = HttpMethods.POST, entity =  data)
   }

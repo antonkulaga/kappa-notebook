@@ -13,11 +13,9 @@ Note: sometimes it can be broken as I use this address as a playground.
 Building from source and running examples
 -----------------------------------------
 
-*WARNING*: I AM ADOPTING TO NEW API SO LATEST COMMIT DOES NOT COMPILE!!!
-
 To build from source:
 Install [sbt](http://www.scala-sbt.org/)
-Make sure that [KaSim Server](https://github.com/Kappa-Dev/KaSim) is up and running in your system
+Make sure that [KaSim Server](https://github.com/Kappa-Dev/KaSim) is up and running in your system (see instructions of building it from source below)
 Type the following commands:
 ```scala
 $ sbt // to open sbt console

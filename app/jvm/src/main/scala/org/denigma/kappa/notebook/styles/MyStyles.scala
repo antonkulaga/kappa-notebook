@@ -8,7 +8,11 @@ trait PanelStyles extends StyleSheet.Standalone{
   import dsl._
 
   "#ProjectsPanel" -{
-    minWidth(310 px)
+    minWidth(200 px)
+  }
+
+  "#VisualPanel" -{
+    minWidth(360 px)
   }
 }
 
@@ -106,7 +110,7 @@ object MyStyles extends TextLayerStyles
     )
 
   ".pages.row" - {
-    maxHeight(96 vh)
+    maxHeight(90 vh)
     }
 
   ".focused" - (

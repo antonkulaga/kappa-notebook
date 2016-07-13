@@ -29,7 +29,7 @@ object KappaMessage{
     def andThen(message: KappaMessage): Container = copy(messages :+ message)
   }
 
-  implicit val simpleMessagePickler: CompositePickler[KappaMessage] = compositePickler[KappaMessage]
+  implicit val classPickler: CompositePickler[KappaMessage] = compositePickler[KappaMessage]
     .addConcreteType[ServerErrors]
     .addConcreteType[Connected]
     .addConcreteType[Disconnected]
@@ -41,12 +41,17 @@ object KappaMessage{
     .addConcreteType[ServerCommand]
     .addConcreteType[ServerResponse]
     .addConcreteType[FileResponses.SavedFiles]
+    .addConcreteType[KeepAlive]
     .join(KappaFileMessage.kappaFilePickler)
     .join(UIMessage.UIMessagePickler)
 
 }
 
 trait KappaMessage
+object KeepAlive {
+  implicit val classPickler: Pickler[KeepAlive] = boopickle.Default.generatePickler[KeepAlive]
+}
+case class KeepAlive(username: String) extends KappaMessage //to overcome buggy akka timeouts
 
 object ServerErrors {
   implicit val classPickler: Pickler[ServerErrors] = boopickle.Default.generatePickler[ServerErrors]

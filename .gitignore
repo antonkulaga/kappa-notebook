@@ -1,6 +1,7 @@
 /org.denigma.kappa/messages/ServerMessages.scala
 *.class
 *.log
+logs
 
 # sbt specific
 .cache/

@@ -10,6 +10,7 @@ import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import com.softwaremill.quicklens._
+import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.views.ServerConnections
 
 
@@ -46,7 +47,8 @@ class RunnerView(val elem: Element,
       case (key, value) => key -> value.content
     }.toList
     val params = LaunchModel(items, nb_plot = self.nbPlot.now, max_events = self.maxEvents.now, max_time = self.maxTime.now)
-    sender() = ServerCommand(serverConnections.now.currentServer, params)
+    val message = ServerCommand(serverConnections.now.currentServer, params)
+    sender.push(message)
   }
 
   val run = Var(org.denigma.binding.binders.Events.createMouseEvent)

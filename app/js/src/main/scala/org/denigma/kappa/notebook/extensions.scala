@@ -32,6 +32,11 @@ object extensions {
       }
       variable
     }
+
+    def push(value: T) = {
+      source.Internal.value = value
+      source.propagate()
+    }
   }
 
   implicit class ParsedExt[T](source: Parsed[T]) {

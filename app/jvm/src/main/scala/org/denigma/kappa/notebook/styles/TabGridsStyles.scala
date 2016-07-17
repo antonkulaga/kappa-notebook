@@ -1,12 +1,8 @@
 package org.denigma.kappa.notebook.styles
 import scalacss.Defaults._
 import scalacss.Defaults._
-trait TabGridsStyles extends StyleSheet.Standalone {
+trait TabGridsStyles extends StyleSheet.Standalone with SimulationStyles {
   import dsl._
-
-  ".attached.tab.segment" -(
-    overflowY.auto
-    )
 
   ".ui.column" -(
     overflowY.auto  important,
@@ -14,21 +10,16 @@ trait TabGridsStyles extends StyleSheet.Standalone {
     )
 
   ".ui.number.input" -(
-    maxWidth(50 px)
+    maxWidth(40 px)
     )
 
+}
 
-  ".tab.page" -(
-    //overflowY.scroll,
-    //overflowX.scroll,
-    minHeight(80.0 vh),
-    height(100.0 %%)
+trait SimulationStyles extends StyleSheet.Standalone {
+  import dsl._
+
+  ".simulation.tab" -(
+    overflowX.visible,
+    overflowY.visible
     )
-
-  ".tab.flexible.page" -(
-    overflowY.auto,
-    overflowX.auto,
-    height(100.0 %%)
-    )
-
 }

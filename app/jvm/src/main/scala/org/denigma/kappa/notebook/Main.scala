@@ -7,6 +7,7 @@ import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
 import better.files._
 import com.typesafe.config.Config
+import com.typesafe.sslconfig.akka.AkkaSSLConfig
 import net.ceedubs.ficus.Ficus._
 
 

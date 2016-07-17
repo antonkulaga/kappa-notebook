@@ -1,19 +1,26 @@
 @()
-<section data-view="runner">
+<section class="ui attached segment tab" data-view="Parameters" data-class-active-if="active">
 
-<table class="ui celled padded yellow table" >
-  <caption>Run parameters</caption>
-  <tr>
-    <!--
+  <h3 class="ui header">Console output</h3>
+  <textarea data-code="console" data-mode="kappa"></textarea>
+
+  <table class="ui celled padded yellow table" >
+    <caption>Initial launch parameters</caption>
+    <tr>
+        <!--
     <td>Model name</td>
     <td><input class="ui small input" data-bind="fileName"></td>
     --><td>Events</td>
-    <td><input class="ui small number input" data-bind="events"></td>
-    <td>Max. time</td>
-    <td><input class="ui small number input" data-bind="time"></td>
-    <td>Points</td>
-    <td><input class="ui small number input" data-bind="points"></td>
-  </tr>
-</table>
-<button class="ui button" data-event-click="run">Run model</button>
+      <td data-bind="events"></td>
+      <td>Max. time</td>
+      <td  data-bind="time"><input class="ui small number input"></td>
+      <td>Points</td>
+      <td  data-bind="points"></td>
+    </tr>
+  </table>
+
+  <h3 class="ui header">Executed code</h3>
+  <textarea data-code="code" data-mode="kappa"></textarea>
+
+
 </section>

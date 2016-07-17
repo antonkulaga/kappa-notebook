@@ -65,7 +65,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val serverConfiguration: Var[ServerConnections] = Var(ServerConnections.default)
 
-  lazy val scrollable: Element = this.viewElement.parentElement
+  lazy val scrollable: Element = sq.byId("MainRow").get//this.viewElement//.parentElement
 
 
   override def bindView() = {

@@ -132,7 +132,7 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
     .orElse(onOtherMessage)
 
   context.system.scheduler.schedule(10 seconds, 20 seconds){ //TODO: rewrite to timeout configs
-    println(s"keep $username alive")
+    //println(s"keep $username alive")
     val d = Pickle.intoBytes[KappaMessage](KeepAlive(username))
     send(d)
   }

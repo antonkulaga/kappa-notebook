@@ -1,13 +1,18 @@
-<section id="Notebook" data-view="Notebook">
+<section id="Notebook" data-view="Notebook" class="ui grid">
+    <section class="row">
     @menu()
-    <section class="ui blue secondary segment padded celled grid" id="MainGrid">
-        <div class="ui pages row" id="MainRow">
-            @projects.html.index()
-            @visualizations.html.index()
-            @editor.html.index()
-            @simulations.html.index()
-            @figures.html.index()
-            @papers.html.index()
+    </section>
+    <section id="MainRow" class="row" data-mcs-theme="rounded-dots-dark">
+        <div class="ui blue secondary segment celled grid" id="MainGrid">
+            <div class="ui pages row">
+                @projects.html.index()
+                @visualizations.html.index()
+                @editor.html.index()
+                @simulations.html.index()
+                @figures.html.index()
+                @papers.html.index()
+            </div>
         </div>
     </section>
+
 </section>

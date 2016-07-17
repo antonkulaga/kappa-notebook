@@ -1,0 +1,9 @@
+@()
+<section data-template="true" class="ui bottom attached active tab segment" data-class-active-if="active">
+  <div class="ui top attached pointing menu">
+    <a class="item" data-set-tab-on-click="plot" data-class-active-if="Plot.active">Plot</a>
+    <a class="item" data-set-tab-on-click="parameters" data-class-active-if="Parameters.active">Parameters</a>
+  </div>
+  @plot()
+  @parameters()
+</section>

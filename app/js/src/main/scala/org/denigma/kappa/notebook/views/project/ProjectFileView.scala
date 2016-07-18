@@ -4,6 +4,7 @@ import org.denigma.binding.views.BindableView
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.MainTabs
+import org.denigma.kappa.notebook.views.actions.Movements
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -16,15 +17,8 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
 
   val editable = Var(false)
 
-  val name = Var(file.name)
-  val fileType: Rx[FileType.Value] = name.map{
-    case n if n.endsWith(".pdf") => FileType.pdf
-    case n if n.endsWith(".txt") => FileType.txt
-    case n if n.endsWith(".ka") | n.endsWith(".ttl") => FileType.source
-    case n if n.endsWith(".svg") | n.endsWith(".png") | n.endsWith(".jpg") | n.endsWith(".gif") => FileType.image
-    case n if n.endsWith(".avi") => FileType.video
-    case other => FileType.other
-  }
+  val name: Rx[String] = Var(file.name)
+  val fileType: Rx[FileType.Value] = Var(file.fileType)
 
   val isSource: Rx[Boolean] = fileType.map(f=>f==FileType.source)
   val isImage: Rx[Boolean] = fileType.map(f=>f==FileType.image)
@@ -52,6 +46,8 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
   }
 
   protected def goToFile() = {
+    input() = Movements.toFile(file)
+    /*
     fileType.now match {
       case FileType.pdf => input() =
         KappaMessage.Container()
@@ -71,6 +67,7 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
 
       case other => //do nothing
     }
+    */
   }
 
   val removeClick: Var[MouseEvent] = Var(Events.createMouseEvent())

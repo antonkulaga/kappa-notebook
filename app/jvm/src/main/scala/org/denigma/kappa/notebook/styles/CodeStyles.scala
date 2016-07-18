@@ -5,14 +5,14 @@ import org.denigma.controls.papers.MediaQueries
 import scalacss.mutable.StyleSheet
 
 import scalacss.Defaults._
-trait CodeStyles extends StyleSheet.Standalone with MediaQueries{
+trait CodeStyles extends MainStyles{
 
   import dsl._
 
   ".CodeMirror" -(
     height.auto important,
     minHeight(15.0 vh),
-    maxHeight(100 %%),
+    maxHeight(gridMaxHeight),
     width(100 %%),
     &("pre") -(
       onTiny -(fontSize(8 pt) important),
@@ -21,8 +21,6 @@ trait CodeStyles extends StyleSheet.Standalone with MediaQueries{
       onMedium -(fontSize(11 pt) important),
       onLarge -(fontSize(12 pt) important)
       )
-    //height(100.0 %%) important
-    // width.auto important
     )
 
   ".CodeMirror-scroll" -(

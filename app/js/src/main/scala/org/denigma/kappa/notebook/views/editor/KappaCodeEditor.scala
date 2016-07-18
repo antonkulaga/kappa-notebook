@@ -9,8 +9,7 @@ import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages.{ParseModel, ServerConnection, SyntaxErrors}
 import org.denigma.kappa.messages.WebSimMessages.{WebSimError, WebSimRange}
 import org.denigma.kappa.messages.{ServerMessages, Go, KappaFile, KappaMessage}
-import org.denigma.kappa.notebook.views.ServerConnections
-import org.denigma.kappa.notebook.views.common.TabHeaders
+import org.denigma.kappa.notebook.views.common.{ServerConnections, TabHeaders}
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -53,9 +52,7 @@ class KappaCodeEditor(val elem: Element,
   val errorsByFiles: Rx[Map[KappaFile, List[WebSimError]]] =
     syntaxErrors.map{
       case ers =>
-        //println("errors are "+ers)
         val byfiles = ers.errorsByFiles()
-        //println("BYFILES ARE = "+byfiles)
         byfiles.foldLeft(Map.empty[KappaFile, List[WebSimError]]){
           case (acc, (filename, er)) if items.now.contains(filename) =>
            val fl = items.now(filename)
@@ -70,14 +67,7 @@ class KappaCodeEditor(val elem: Element,
         }
     }
 
-  val errors: Rx[String] = syntaxErrors.map(er => if(er.isEmpty) "" else er.errors.map(s=>s.message).reduce(_ + "\n" + _))
-
-  val hasErrors = errors.map(e=>e != "")
-
   val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
-
-  override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
 
   input.onChange{
     case Go.ToSource(name, from, to)=>
@@ -88,6 +78,7 @@ class KappaCodeEditor(val elem: Element,
 
     case ServerResponse(server, s: SyntaxErrors) =>
       syntaxErrors() = s
+      //s.errors.foreach(e=>println("FORM "+e.range.from_position.chr))
 
     case other => //do nothing
   }
@@ -115,4 +106,9 @@ class KappaCodeEditor(val elem: Element,
       selected() = item
       view
   }
+
+  override lazy val injector = defaultInjector
+    .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
+    .register("errors")((el, args) => new ErrorsView(el, input, errorsByFiles).withBinder(new GeneralBinder(_)))
+
 }

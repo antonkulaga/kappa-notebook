@@ -101,7 +101,7 @@ trait WebJarsVersions{
 
 	val d3js = "3.5.17"
 
-	val malihuScrollBar: String = "3.1.3"
+	val malihuScrollBar: String = "3.1.5"
 
 }
 

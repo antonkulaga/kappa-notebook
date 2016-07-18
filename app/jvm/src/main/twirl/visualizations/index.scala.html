@@ -1,15 +1,21 @@
 @()
 <section class="ui two wide column page segment mCustomScrollbar" data-view="VisualPanel" id="VisualPanel">
-    <div class="ui equal width grid">
-      <div class = "row">
-        <section class="column segment">
-          @rules()
-        </section>
-      </div>
-      <div class = "row">
-        <section class="column segment">
-        @contact_map()
-        </section>
-      </div>
+
+  <div class="equal width row">
+    <div class="column">
+      @commons.html.header("Visualizations")
     </div>
+  </div>
+  <div class="equal width content row">
+    <section class="column segment">
+      <div class="ui top attached pointing menu">
+        <a class="active item" data-set-selected-on-click="contact_map" data-class-active-if="contactActive">Contact Map</a>
+        <a class="active item" data-set-selected-on-click="rules" data-class-active-if="rulesActive">Rules</a>
+      </div>
+      <section class="ui attached segment tab" data-class-active-if="contactActive">
+        @contact_map()
+      </section>
+        @rules()
+    </section>
+  </div>
 </section>

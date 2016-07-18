@@ -12,7 +12,6 @@ import rx._
 import com.softwaremill.quicklens._
 import org.denigma.binding.binders.Events
 import org.denigma.kappa.notebook.extensions._
-import org.denigma.kappa.notebook.views.ServerConnections
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom.Event
 import rx.Rx.Dynamic

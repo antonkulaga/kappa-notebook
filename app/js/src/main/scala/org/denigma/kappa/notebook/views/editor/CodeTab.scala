@@ -7,7 +7,7 @@ import org.denigma.binding.views.{BindableView, UpdatableView}
 import org.denigma.codemirror._
 import org.denigma.codemirror.addons._
 import org.denigma.codemirror.extensions._
-import org.denigma.kappa.messages.KappaFile
+import org.denigma.kappa.messages.{FileRequests, KappaFile}
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
@@ -39,6 +39,15 @@ class CodeTab(val elem: Element,
 
   override def mode = "Kappa"
 
+  val notSaved = source.map(s => !s.saved)
+
+  /*
+  val saveClick = Var(Events.createMouseEvent())
+  saveClick.triggerLater{
+    val saveRequest = FileRequests.Save("", List(source.now), rewrite = true, getSaved = true)
+  }
+  */
+
   active.onChange{
     case true =>
       //println("active value for "+id+" is true and display is "+elem.style.display)
@@ -51,7 +60,7 @@ class CodeTab(val elem: Element,
   errors.onChange{
     case ers=>
       import scalajs.js.JSConverters._
-      //println("CODE TAB ERRORS detected!")
+      //dom.console.error(s"CodeTab $name ERRORS: "+ers.toList.mkString("\n"))
       val found: List[LintFound] = ers.map{case e=> e:LintFound}
       import scalajs.js.JSConverters._
       def gts(text: String, options: LintOptions, cm: Editor): js.Array[LintFound] = {

@@ -1,26 +1,13 @@
 package org.denigma.kappa.notebook.views.simulations
 
 
-import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.binding.commons.Uploader
-import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
-import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult}
-import org.denigma.kappa.messages.WebSimMessages.{KappaPlot, RunModel, SimulationStatus}
-import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.views.ServerConnections
+import org.denigma.binding.views.{BindableView, UpdatableView}
+import org.denigma.kappa.messages.ServerMessages.LaunchModel
+import org.denigma.kappa.messages.WebSimMessages.{KappaPlot, SimulationStatus}
 import org.denigma.kappa.notebook.views.common._
-import org.scalajs.dom
-import org.scalajs.dom.MouseEvent
-import org.scalajs.dom.raw.{Element, Event}
+import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
 import rx._
-
-import scala.Predef.Map
-import scala.collection.immutable._
-import scala.util._
 
 class SimulationRunView(val elem: Element,
                         token: Int,

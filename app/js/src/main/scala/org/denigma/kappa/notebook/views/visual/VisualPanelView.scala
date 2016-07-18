@@ -8,10 +8,21 @@ import org.denigma.kappa.notebook.views.project.ProjectsView
 import org.denigma.kappa.notebook.views.visual.rules.GraphView
 import org.scalajs.dom.raw.Element
 import rx._
+import rx.Ctx.Owner.Unsafe.Unsafe
+
+import scala.collection.immutable.SortedSet
 
 class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[KappaMessage]) extends BindableView{
 
   val currentLine: Rx[String] = kappaWatcher.text
+
+  val selected: Var[String] = Var("contact_map")
+
+  val rulesActive = selected.map(s=>s=="rules")
+  val contactActive = selected.map(s=>s=="contact_map")
+
+
+  //val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
 
   override lazy val injector = defaultInjector
     .register("ContactMapView") {

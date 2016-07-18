@@ -5,7 +5,7 @@ trait TabGridsStyles extends StyleSheet.Standalone with SimulationStyles {
   import dsl._
 
   ".ui.column" -(
-    overflowY.auto  important,
+    overflowY.auto,
     padding(0 px)  important
     )
 

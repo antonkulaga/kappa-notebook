@@ -16,7 +16,10 @@ object MyStyles extends MainStyles
     fontSize(0.9 em)
   }
 
-
+  ".noscroll" -(
+    overflowX.hidden important,
+    overflowY.hidden important
+    )
 
   "#runner" -(
     width(100 %%)

@@ -1,9 +1,17 @@
 @()
-<section class="ui three wide column page segment mCustomScrollbar" data-view="KappaEditor" id="KappaEditor">
-  @commons.html.header("Editor")
-  <div class="ui top attached tabular menu" data-view="headers">
-    <a data-template="true" class="item" data-on-click="select" data-bind="caption"  data-class-active-if="active"></a>
+<section class="ui three wide column page segment tab padded grid" data-view="KappaEditor" id="KappaEditor">
+  <div class="equal width row">
+    <div class="column">
+      @commons.html.header("Editor")
+    </div>
   </div>
-  <section data-show-if="hasErrors" class="ui warning message" data-bind="errors" id="errors"></section>
-  @editor.html.code()
+  <div class="equal width content row">
+    @editor.html.errors()
+    <div class="attached noscroll tab segment">
+      <div class="ui top attached tabular menu" data-view="headers">
+        <a data-template="true" class="item" data-on-click="select" data-bind="caption"  data-class-active-if="active"></a>
+      </div>
+      @editor.html.code()
+    </div>
+  </div>
 </section>

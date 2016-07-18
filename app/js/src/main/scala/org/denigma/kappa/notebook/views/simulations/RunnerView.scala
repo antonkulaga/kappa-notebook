@@ -6,12 +6,12 @@ import org.denigma.kappa.messages.{KappaFile, KappaMessage}
 import org.denigma.kappa.messages.KappaMessage.ServerCommand
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages.RunModel
+import org.denigma.kappa.notebook.views.common.ServerConnections
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import com.softwaremill.quicklens._
 import org.denigma.kappa.notebook.extensions._
-import org.denigma.kappa.notebook.views.ServerConnections
 
 
 class RunnerView(val elem: Element,

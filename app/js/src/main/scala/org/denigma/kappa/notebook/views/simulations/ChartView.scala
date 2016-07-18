@@ -1,25 +1,18 @@
 package org.denigma.kappa.notebook.views.simulations
 
-import org.denigma.binding.binders.{Events, GeneralBinder, ReactiveBinder}
-import org.denigma.binding.macroses._
-import org.denigma.binding.views.BindableView
+import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.controls.charts._
-import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaSeries
 import org.denigma.kappa.messages.WebSimMessages.KappaPlot
 import org.scalajs.dom
+import org.scalajs.dom.ext._
 import org.scalajs.dom.raw.{Element, SVGElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx._
-import org.scalajs.dom.ext._
 import rx.Rx.Dynamic
-import org.denigma.binding.extensions._
-import org.denigma.kappa.notebook.views.common.TabItem
-import org.scalajs.dom._
+import rx._
 
 import scala.collection.immutable._
-import scala.scalajs.js
-import scala.util.{Failure, Try}
+import org.denigma.binding.extensions._
 
 
 
@@ -30,8 +23,6 @@ class ChartView(val elem: Element,
                val plot: Rx[KappaPlot],
                val selected: Var[String]
               ) extends FlexibleLinearPlot{
-
-  pprint.pprintln("PLOT VIEW WORK")
 
 
   val active: rx.Rx[Boolean] = selected.map(value => value == "plot")
@@ -85,12 +76,28 @@ class ChartView(val elem: Element,
  def getFirst[T](pf: PartialFunction[Element,T]): Option[T] = pf.lift(elem).orElse(elem.children.collectFirst(pf))
 
  import org.denigma.binding.extensions._
- val saveChart = Var(Events.createMouseEvent())
- saveChart.triggerLater{
-   getFirst[String]{ case svg: SVGElement => svg.outerHTML} match {
-     case Some(html)=>  saveAs(title.now+".svg", html)
-     case None=> dom.console.error("cannot find svg element among childrens") //note: buggy
+ val savePlot = Var(Events.createMouseEvent())
+ savePlot.triggerLater{
+   elem.selectByClass("plot") match {
+     case null =>
+       dom.console.error("chart svg elemement does not exist")
+
+     case svg: SVGElement =>
+       saveAs(title.now+".svg", svg.outerHTML)
+
+     case _ =>
+       dom.console.error("cannot find chart SVG element")
+
    }
+
+   /*
+   getFirst[String]{ case svg: SVGElement => svg.outerHTML} match {
+     case Some(html)=>
+       saveAs(title.now+".svg", html)
+     case None=>
+       dom.console.error("cannot find svg element among childrens") //note: buggy
+   }
+   */
  }
 
  override lazy val injector = defaultInjector

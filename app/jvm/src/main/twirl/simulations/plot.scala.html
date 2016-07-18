@@ -3,7 +3,7 @@
   <table class="ui table">
     <tr>
       <td rowspan="2">
-        <svg xmlns:svg="http://www.w3.org/2000/svg" width="100%" data-bind-viewBox="viewBox" preserveAspectRatio = "xMinYMin meet">
+        <svg class="plot" xmlns:svg="http://www.w3.org/2000/svg" width="100%" data-bind-viewBox="viewBox" preserveAspectRatio = "xMinYMin meet">
           <text class="title" data-bind-y="paddingY" font-size="18pt" data-bind-x="halfWidth" data-bind="title"></text>
           <svg class="lines" data-bind-x="left" data-bind-y="top">
             <svg data-template="true">
@@ -26,7 +26,7 @@
     </tr>
     <tr>
       <td class="collapsing">
-        <button class="ui small button" data-event-click="saveChart">Save chart</button>
+        <button class="ui small button" data-event-click="savePlot">Save plot</button>
       </td>
     </tr>
   </table>

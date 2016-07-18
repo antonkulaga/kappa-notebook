@@ -60,6 +60,9 @@ object WebSimMessages {
   }
 
   case class WebSimError(severity: String, message: String, range: WebSimRange) extends WebSimMessage
+  {
+    lazy val fullMessage = s"[$severity] $message :${range.from_position.line}:${range.from_position.chr}-${range.to_position.line}:${range.to_position.chr}"
+  }
 
   object WebSimNode {
     import boopickle.DefaultBasic._

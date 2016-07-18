@@ -1,0 +1,19 @@
+@()
+<table data-view="errors" data-show-if="hasErrors" class="ui small selectable celled table" id="errors">
+  <tr>
+    <th>Message</th>
+    <th>Severity</th>
+    <th>Filename</th>
+    <th>Start</th>
+    <th>End</th>
+  </tr>
+  <tr data-event-click="goClick" data-class-negative-if="isError" data-template="true">
+    <td data-bind="message"></td>
+    <td data-bind="severity"></td>
+    <td data-bind="fileName"></td>
+    <td class="collapsed cell" data-bind="fromLine"></td>
+    <!--<td class="collapsed cell" data-bind="fromChar"></td>-->
+    <td class="collapsed cell"  data-bind="toLine"></td>
+    <!--<td class="collapsed cell"  data-bind="toChar"></td>-->
+  </tr>
+</table>

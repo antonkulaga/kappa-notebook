@@ -10,7 +10,8 @@ import scalacss.mutable.StyleSheet.Standalone
 /**
   * Created by antonkulaga on 7/17/16.
   */
-class MainStyles extends Standalone with MediaQueries{
+class MainStyles extends Standalone with MediaQueries
+{
   import dsl._
 
   lazy val rowMaxHeight = 98 vh
@@ -24,17 +25,15 @@ class MainStyles extends Standalone with MediaQueries{
     onLarge -fontSize(12 pt)
     )
 
-  "#MainRow" -(
-    maxHeight(rowMaxHeight)
-    )
+  "#MainRow" - maxHeight(rowMaxHeight)
 
   "#MainGrid" -(
     maxHeight(gridMaxHeight),
     onTiny   -width(380 vw),
     onLittle -width(375 vw),
     onSmall  -width(350 vw),
-    onMedium -width(325 vw),
-    onLarge  -width(300 vw)
+    onMedium -width(320 vw),
+    onLarge  -width(290 vw)
     )
 
   "#main" -(
@@ -51,9 +50,7 @@ class MainStyles extends Standalone with MediaQueries{
     cursor.pointer
   }
 
-  ".pointed" -(
-    cursor.pointer
-    )
+  ".pointed" - cursor.pointer
 
   ".page.tab" - (
     overflowY.hidden important,
@@ -66,18 +63,14 @@ class MainStyles extends Standalone with MediaQueries{
     borderStyle.dashed
     )
 
-  ".attached.tab.segment" -(
-    overflowY.auto
-    )
+  ".attached.tab.segment" - overflowY.auto
 
   ".selectable" -{
     cursor.pointer
   }
 
 
-  ".focused" - (
-    backgroundColor.ghostwhite
-    )
+  ".focused" - backgroundColor.ghostwhite
 
 
   ".content.row" - (
@@ -87,10 +80,11 @@ class MainStyles extends Standalone with MediaQueries{
     )
 
   ".tab.page" -(
-    //overflowY.scroll,
+    overflowY.hidden important,
+    overflowX.hidden important,
     //overflowX.scroll,
-    minHeight(80.0 vh),
-    height(100.0 %%)
+    minHeight(80.0 vh) important
+    //height(100.0 %%)
     )
 
   ".tab.flexible.page" -(

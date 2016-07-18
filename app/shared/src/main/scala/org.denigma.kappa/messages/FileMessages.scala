@@ -89,6 +89,15 @@ object KappaFile
 * */
 case class KappaFile(path: String, name: String, content: String, saved: Boolean = false, active: Boolean = true) extends KappaPath {
 
+  lazy val fileType: FileType.Value = name match {
+    case n if n.endsWith(".pdf") => FileType.pdf
+    case n if n.endsWith(".txt") => FileType.txt
+    case n if n.endsWith(".ka") | n.endsWith(".ttl") => FileType.source
+    case n if n.endsWith(".svg") | n.endsWith(".png") | n.endsWith(".jpg") | n.endsWith(".gif") => FileType.image
+    case n if n.endsWith(".avi") => FileType.video
+    case other => FileType.other
+  }
+
   /*
   def relativeTo(parentPath: String): KappaFile = {
     val np = (parentPath, path) match {

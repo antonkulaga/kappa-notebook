@@ -8,7 +8,6 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult}
 import org.denigma.kappa.messages.WebSimMessages.SimulationStatus
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.views.ServerConnections
 import org.denigma.kappa.notebook.views.common._
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe

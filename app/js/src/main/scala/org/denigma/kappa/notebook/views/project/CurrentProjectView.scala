@@ -51,8 +51,6 @@ class CurrentProjectView(val elem: Element,
   addFile.triggerIf(canCreate){ case ev=>
     val file = KappaFile("", newFileName.now, "", saved = false)
     val saveRequest = FileRequests.Save(projectName.now, List(file), rewrite = false, getSaved = true)
-    println("adding file!!!!")
-    pprint.pprintln(saveRequest)
     output() = saveRequest
     //output() = //org.denigma.kappa.messages.FileRequests.Save(projectName.now, List())
   }

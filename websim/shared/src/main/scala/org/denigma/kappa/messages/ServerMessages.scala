@@ -94,17 +94,23 @@ object ServerMessages {
   trait FileContainer {
     def files: List[(String, String)]
 
+    lazy val fileLines = files.map{
+      case (key, value) => key -> value.split("\n")
+    }
+
     lazy val fullCode = files.foldLeft("") {
       case (acc, (name, content)) => acc + content + "\n"
     }
 
     //https://github.com/antonkulaga/kappa-notebook/blob/master/websim/shared/src/main/scala/org/denigma/kappa/messages/WebSimMessages.scala
 
-    lazy val fileSizes = files.foldLeft(List.empty[((Int, Int), String)]) {
+    lazy val fileSizes: scala.List[((Int, Int), String)] = fileLines.foldLeft(List.empty[((Int, Int), String)]) {
       case (Nil, (name, content)) => ((1, content.length), name) :: Nil
 
-      case ((((prevFrom, prevTo)), prevName) :: tail, (name, content)) =>
-        val from = prevTo + 1
+      case (
+          (((prevFrom, prevTo)), prevName) :: tail, (name, content)
+        ) =>
+        val from = prevTo
         ((from, from + content.length), name) ::((prevFrom, prevTo), prevName) :: tail
     }.reverse
 

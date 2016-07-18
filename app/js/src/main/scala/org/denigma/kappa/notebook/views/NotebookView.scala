@@ -13,6 +13,7 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.views.annotations.AnnotatorNLP
+import org.denigma.kappa.notebook.views.common.ServerConnections
 import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor, KappaWatcher}
 import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView}
 import org.denigma.kappa.notebook.views.menus.MainMenuView
@@ -27,17 +28,6 @@ import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import org.scalajs.dom.ext._
-
-object ServerConnections {
-  lazy val default = ServerConnections(ServerConnection.default.name, Map(ServerConnection.default.name->ServerConnection.default))
-}
-
-case class ServerConnections(currentServer: String, all: Map[String, ServerConnection])
-{
-  lazy val currentConnection: Option[ServerConnection] = all.get(currentServer)
-
-  lazy val isConnected: Boolean = currentConnection.isDefined
-}
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
 {

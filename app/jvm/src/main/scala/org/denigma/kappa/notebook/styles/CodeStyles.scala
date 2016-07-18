@@ -13,13 +13,13 @@ trait CodeStyles extends MainStyles{
     height.auto important,
     minHeight(15.0 vh),
     maxHeight(gridMaxHeight),
-    width(100 %%),
+    width(100 %%) important,
     &("pre") -(
       onTiny -(fontSize(8 pt) important),
       onLittle -(fontSize(9 pt) important),
-      onSmall -(fontSize(10 pt) important),
-      onMedium -(fontSize(11 pt) important),
-      onLarge -(fontSize(12 pt) important)
+      onSmall -(fontSize(9 pt) important),
+      onMedium -(fontSize(10 pt) important),
+      onLarge -(fontSize(10 pt) important)
       )
     )
 

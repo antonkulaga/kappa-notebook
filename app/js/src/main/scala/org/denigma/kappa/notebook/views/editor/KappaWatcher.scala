@@ -56,10 +56,15 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val text: Rx[String] = cursor.map{
     case None => ""
-    case Some((ed: Editor, lines)) =>
-      val t = ed.getDoc().getLine(lines.line)
-      t
+    case Some((ed: Editor, lines)) => getKappaLine(ed, lines.line)
  }
+
+  protected def getKappaLine(ed: Editor, line: Int, acc: String = ""): String = {
+    val doc = ed.getDoc()
+    val t = doc.getLine(line)
+    if(t.trim.endsWith("\\") && (line+ 1)< doc.lineCount()) getKappaLine(ed, line + 1, acc + t) else t
+  }
+
   text.onChange(t=>parseText(t))
 
   protected def parseText(line: String) = {

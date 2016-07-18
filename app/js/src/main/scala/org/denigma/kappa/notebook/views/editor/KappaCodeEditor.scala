@@ -8,7 +8,7 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages.{ParseModel, ServerConnection, SyntaxErrors}
 import org.denigma.kappa.messages.WebSimMessages.{WebSimError, WebSimRange}
-import org.denigma.kappa.messages.{ServerMessages, Go, KappaFile, KappaMessage}
+import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage, ServerMessages}
 import org.denigma.kappa.notebook.views.common.{ServerConnections, TabHeaders}
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
@@ -38,9 +38,8 @@ class KappaCodeEditor(val elem: Element,
   items.afterLastChange(800 millis){
     its=>
       //println("sending files for checking")
-      val files = its.values.collect{
-        case fl => fl.name -> fl.content
-      }.toList
+      val files: List[(String, String)] = its.values.map{  case fl => (fl.name , fl.content) }.toList
+      dom.console.log("files to send: "+files.map(nc=>nc._1).mkString(" | "))
       output() = ServerCommand(connections.now.currentServer, ParseModel(files))
   }
 
@@ -49,6 +48,30 @@ class KappaCodeEditor(val elem: Element,
   override type Item = String
 
   val syntaxErrors = Var(SyntaxErrors.empty)
+
+  val errorsInFiles: Rx[List[(KappaFile, WebSimError)]] = syntaxErrors.map{ case ers => ers.errorsByFiles().map{
+
+    case (filename, er) =>
+      if(filename==""){
+        val message = "error is out of bounds!"
+        dom.console.error(message)
+        dom.console.log("all errors "+ers.errors.mkString("\n"))
+        dom.console.log("all filenames " + ers.files.map(kv=>kv._1).mkString(" | "))
+      }
+      if(!items.now.contains(filename)) dom.console.error(s"error refers to the $filename that was not found")
+      (items.now(filename) , er)
+    }
+  }
+
+  val errorsByFiles: Rx[Map[KappaFile, List[WebSimError]]] = errorsInFiles.map
+  {
+    case byfiles => byfiles.groupBy{
+        case (key, value) => key
+      }.mapValues{
+        case v => v.map(_._2)
+      }
+  }
+  /*
   val errorsByFiles: Rx[Map[KappaFile, List[WebSimError]]] =
     syntaxErrors.map{
       case ers =>
@@ -66,6 +89,7 @@ class KappaCodeEditor(val elem: Element,
             result
         }
     }
+  */
 
   val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
 
@@ -84,7 +108,7 @@ class KappaCodeEditor(val elem: Element,
   }
 
   protected def keyVar(key: Key) = {
-    require(items.now.contains(key), s"we are adding an Item view for key(${key}) that does not exist")
+    //require(items.now.contains(key), s"we are adding an Item view for key(${key}) that does not exist")
     val initialValue = this.items.now(key)
     val v = Var(initialValue)
     v.onChange{
@@ -109,6 +133,6 @@ class KappaCodeEditor(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
-    .register("errors")((el, args) => new ErrorsView(el, input, errorsByFiles).withBinder(new GeneralBinder(_)))
+    .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles).withBinder(new GeneralBinder(_)))
 
 }

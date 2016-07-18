@@ -99,6 +99,7 @@ object ServerMessages {
     }
 
     lazy val fullCode = files.foldLeft("") {
+      case (acc, (name, content)) if content.endsWith("\n") => acc + content
       case (acc, (name, content)) => acc + content + "\n"
     }
 

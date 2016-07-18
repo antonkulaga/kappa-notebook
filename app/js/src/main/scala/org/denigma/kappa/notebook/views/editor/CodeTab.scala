@@ -50,6 +50,8 @@ class CodeTab(val elem: Element,
 
   active.onChange{
     case true =>
+      if(editor!=null) editor.refresh()
+      //editor.setSize("100")
       //println("active value for "+id+" is true and display is "+elem.style.display)
       //elem.display = "initial"
     case false =>
@@ -116,6 +118,8 @@ class CodeTab(val elem: Element,
       .readOnly(readOnly)
       .viewportMargin(Integer.MAX_VALUE)
       .gutters(js.Array(Lint.gutters, "CodeMirror-linenumbers", "breakpoints"))
+      .lineWrapping(true)
+
     val config: EditorConfiguration = params
     CodeMirror.fromTextArea(area, config)
   }

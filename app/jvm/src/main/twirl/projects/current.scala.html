@@ -2,11 +2,11 @@
 <div class="ui blue segment" data-view="CurrentProjectView">
   <h5 class="ui blue header">Current project = <b data-bind="name"></b></h5>
 
-    <table class="ui celled small compact unstackable table">
+    <table class="ui celled small compact unstackable table mcustomscrollbar"  data-mcs-theme="rounded-dots-dark">
         <thead>
             <tr>
                 <th>Files</th>
-                <th>Actions</th>
+                <th class="collapsed">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -15,7 +15,7 @@
                     <i class="selectable label" data-class="icon" data-click="fileClick"></i>
                     <span data-bind-contenteditable="editable" data-click="fileClick" data-bind="name"></span>
                 </td>
-                <td>
+                <td class="collapsed">
                     <span class="ui icon mini buttons">
                         <button class="ui button" data-click="removeClick"><i class="red remove icon"></i></button>
                         <button class="ui button" data-click="renameClick"><i class="edit icon"></i></button>

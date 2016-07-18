@@ -1,6 +1,13 @@
-%agent: pLac(up, binding, down)
-%agent: pTet(up, binding, down)
-%agent: pL(up, binding, down)
-%agent: LacI(dna)
-%agent: TetR(dna)
-%agent: cl(dna)
+%agent: DNA(downstream, binding, type\
+	~BBaR0000p2\
+    ~BBaR0010p2\
+    ~BBaR0040p2\
+    ~BBaR0000p3\
+    ~BBaR0051p3\
+    ,upstream)
+%agent: Repressor(dna)
+%agent: RNAP(dna)
+%agent: LacI(dna,lactose)
+%agent: TetR(dna,atc)
+%agent: cI(dna)
+

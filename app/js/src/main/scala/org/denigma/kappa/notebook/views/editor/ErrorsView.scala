@@ -9,18 +9,9 @@ import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
-/**
-  * Created by antonkulaga on 18/07/16.
-  */
-class ErrorsView(val elem: Element, input: Var[KappaMessage], errorsByFile: Rx[Map[KappaFile, List[WebSimError]]]) extends ItemsSeqView {
+class ErrorsView(val elem: Element, input: Var[KappaMessage], val items: Rx[List[(KappaFile, WebSimError)]]) extends ItemsSeqView {
 
-  //val hasErrors = syntaxErrors.map(er => !er.isEmpty)
-  //override val items: Rx[Seq[Item]] = syntaxErrors.map(er=>er.errors)
-
-  val hasErrors = errorsByFile.map(f=>f.nonEmpty)
-  val items: Rx[List[(KappaFile, WebSimError)]] = errorsByFile.map{
-    case mp => mp.toList.flatMap{ case (key, ers) => ers.map(e=>key->e)}
-  }
+  val hasErrors = items.map(f=>f.nonEmpty)
 
   override def newItemView(item: Item): ItemView = this.constructItemView(item){
     case (el, _)=> new WebSimErrorView(el, input, item._1, item._2).withBinder(v=>new GeneralBinder(v))

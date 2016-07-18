@@ -121,12 +121,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
         addMenuItem(el, MainTabs.Projects)
         v
      }
-    .register("VisualPanel"){
-      case (el, args) =>
-        val v = new VisualPanelView(el, kappaWatcher, input).withBinder(n => new CodeBinder(n))
-        addMenuItem(el, MainTabs.Visualizations)
-        v
-    }
     .register("KappaEditor"){
       case (el, args) =>
         val editor = new KappaCodeEditor(el, sourceMap, input, output, kappaCursor, editorsUpdates, serverConfiguration).withBinder(n => new CodeBinder(n))
@@ -139,10 +133,10 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
         addMenuItem(el, MainTabs.Simulations)
         v
     }
-    .register("Papers") {
-      case (el, params) =>
-        val v = new PapersView(el, location, currentProjectName, connector, kappaCursor).withBinder(new CodeBinder(_))
-        addMenuItem(el, MainTabs.Papers)
+    .register("VisualPanel"){
+      case (el, args) =>
+        val v = new VisualPanelView(el, kappaWatcher, input).withBinder(n => new CodeBinder(n))
+        addMenuItem(el, MainTabs.Visualizations)
         v
     }
     .register("Annotator"){
@@ -157,5 +151,12 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
         addMenuItem(el, MainTabs.Figures)
         v
     }
+    .register("Papers") {
+      case (el, params) =>
+        val v = new PapersView(el, location, currentProjectName, connector, kappaCursor).withBinder(new CodeBinder(_))
+        addMenuItem(el, MainTabs.Papers)
+        v
+    }
+
 }
 

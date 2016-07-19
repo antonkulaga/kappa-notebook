@@ -18,7 +18,6 @@ import rx._
 
 import scala.scalajs.js
 import scala.util._
-//import org.denigma.kappa.notebook.extensions._
 
 class CodeTab(val elem: Element,
               name: String,
@@ -50,10 +49,8 @@ class CodeTab(val elem: Element,
 
   active.onChange{
     case true =>
-      if(editor!=null) editor.refresh()
-      //editor.setSize("100")
-      //println("active value for "+id+" is true and display is "+elem.style.display)
-      //elem.display = "initial"
+      if(this._editor!=null) editor.refresh()
+
     case false =>
       elem.style.display = "none"
       //println("active value for "+id+" is false and display is "+elem.style.display)
@@ -101,7 +98,7 @@ class CodeTab(val elem: Element,
           override val ch: Int = c.ch.toInt
         })
       case Some((e, prev)) if prev.line !=cur || prev.ch != c.ch.toInt || e != ed =>
-        editor.addLineClass(cur, "background", "focusLý Kim Quyêned")
+        editor.addLineClass(cur, "background", "focused")
         editor.removeLineClass(prev, "background", "focused")
         kappaCursor() = Some(editor, new PositionLike {override val line: Int = cur
           override val ch: Int = c.ch.toInt
@@ -121,6 +118,7 @@ class CodeTab(val elem: Element,
       .lineWrapping(true)
 
     val config: EditorConfiguration = params
+    //config.dyn.scrollbarStyle = null
     CodeMirror.fromTextArea(area, config)
   }
   

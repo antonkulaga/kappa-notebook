@@ -9,11 +9,17 @@ trait CodeStyles extends MainStyles{
 
   import dsl._
 
+  val maxCodeHeight = 72 vh
+
   ".CodeMirror" -(
+    //overflowY.auto,
+    //overflow.visible important,
     height.auto important,
-    minHeight(15.0 vh),
-    maxHeight(gridMaxHeight),
-    width(100 %%) important,
+    //height(maxCodeHeight),
+    //height.auto important,
+    //minHeight(15.0 vh),
+    maxHeight(maxCodeHeight) important,
+    //width(100 %%) important,
     &("pre") -(
       onTiny -(fontSize(8 pt) important),
       onLittle -(fontSize(9 pt) important),
@@ -23,10 +29,21 @@ trait CodeStyles extends MainStyles{
       )
     )
 
+  ".CodeMirror-linenumber" -(
+    onTiny -(fontSize(8 pt) important),
+    onLittle -(fontSize(9 pt) important),
+    onSmall -(fontSize(9 pt) important),
+    onMedium -(fontSize(10 pt) important),
+    onLarge -(fontSize(10 pt) important)
+    )
+
+
   ".CodeMirror-scroll" -(
-    overflow.visible,
-    height.auto
+    maxHeight(maxCodeHeight) important
+    //maxHeight(85 vh)
     )//-(overflowX.auto,overflowY.hidden)
+
+
 
   ".breakpoints" - (
     width( 1 em)

@@ -1,13 +1,13 @@
 @()
-<section class="ui three wide column page segment tab padded grid" data-view="KappaEditor" id="KappaEditor">
+<section class="ui three wide column page segment tab grid" data-view="KappaEditor" id="KappaEditor">
   <div class="equal width row">
     <div class="column">
       @commons.html.header("Editor")
     </div>
   </div>
-  <div class="equal width content row">
-    @editor.html.errors()
-    <div class="attached noscroll tab segment">
+  <div class="equal width row">
+    <div class="attached wide tab column segment">
+      @editor.html.errors()
       <div class="ui top attached tabular menu" data-view="headers">
         <a data-template="true" class="item" data-on-click="select" data-bind="caption"  data-class-active-if="active"></a>
       </div>

@@ -52,11 +52,6 @@ class MainStyles extends Standalone with MediaQueries
 
   ".pointed" - cursor.pointer
 
-  ".page.tab" - (
-    overflowY.hidden important,
-    overflowX.hidden important
-    )
-
   ".dockable" -(
     borderWidth(5 px)  important,
     borderColor  :=! "green" important,
@@ -78,19 +73,4 @@ class MainStyles extends Standalone with MediaQueries
     overflowX.auto,
     overflowY.auto
     )
-
-  ".tab.page" -(
-    overflowY.hidden important,
-    overflowX.hidden important,
-    //overflowX.scroll,
-    minHeight(80.0 vh) important
-    //height(100.0 %%)
-    )
-
-  ".tab.flexible.page" -(
-    overflowY.auto,
-    overflowX.auto,
-    height(100.0 %%)
-    )
-
 }

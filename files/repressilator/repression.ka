@@ -1,5 +1,7 @@
 ### Repression ###
 
+### Variables for kinnetic rates ###
+
 %var: 'repress_rnap_on' 1.66053878316273e-05 
 %var: 'repress_rnap_off' 1.0
 
@@ -8,7 +10,9 @@
 
 %var: 'lac_on' 0.00996323269897635
 %var: 'lac_off' 2.24
+%var: 'lac_off2' 0.09
 
+### Rules ###
 
 'Repressor binding (with RNAP){76996}' \
 	DNA(downstream!1,binding,type~BBaR0000p2), DNA(upstream!1,binding!2,type~BBaR0000p3), Repressor(dna), RNAP(dna!2) <-> \
@@ -21,4 +25,12 @@
   
 'LacI binding to R0010p2 (no LacI){77308}' \
   DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) <-> \
-  DNA(binding,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding!1,type~BBaR0010p2) @ 0.00996323269897635, 2.24
+  DNA(binding,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding!1,type~BBaR0010p2) \
+  @ 'lac_on', 'lac_off'
+  
+'LacI binding to R0010p3 (LacI bound){77311}' \
+  DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna!1),\
+  DNA(downstream!2,binding!1,type~BBaR0010p2), LacI(dna,lactose) <-> \
+  DNA(binding!1,type~BBaR0010p3,upstream!3), LacI(dna!2),\
+  DNA(downstream!3,binding!2,type~BBaR0010p2), LacI(dna!1,lactose) \
+  @ 'lac_on', 'lac_off2'

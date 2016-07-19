@@ -94,11 +94,11 @@ object ServerMessages {
   trait FileContainer {
     def files: List[(String, String)]
 
-    lazy val fileLines = files.map{
-      case (key, value) => key -> value.split("\n")
+    lazy val fileLines: scala.List[(String, Array[String])] = files.map{
+      case (key, value) => key -> value.split("\n", -1)
     }
 
-    lazy val fullCode = files.foldLeft("") {
+    lazy val fullCode: String = files.foldLeft("") {
       case (acc, (name, content)) if content.endsWith("\n") => acc + content
       case (acc, (name, content)) => acc + content + "\n"
     }
@@ -147,7 +147,7 @@ object ServerMessages {
     lazy val zippedCode: scala.List[(String, Int, String)] = files.foldLeft(List.empty[(String, Int, String)]){
       case (acc, (name, value))=>
         val start = if(acc.isEmpty) 1 else acc.head._2
-        val arr: List[(String, Int, String)] = value.split("\n").zipWithIndex.map{
+        val arr: List[(String, Int, String)] = value.split("\n", -1).zipWithIndex.map{
           case (str, index) => (name , index + start , str)
         }.toList
         arr ++ acc

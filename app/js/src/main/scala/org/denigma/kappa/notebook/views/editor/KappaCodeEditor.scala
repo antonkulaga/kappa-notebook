@@ -7,7 +7,7 @@ import org.denigma.codemirror._
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages.{ParseModel, ServerConnection, SyntaxErrors}
-import org.denigma.kappa.messages.WebSimMessages.{WebSimError, WebSimRange}
+import org.denigma.kappa.messages.WebSimMessages.{Location, WebSimError, WebSimRange}
 import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage, ServerMessages}
 import org.denigma.kappa.notebook.views.common.{ServerConnections, TabHeaders}
 import org.scalajs.dom
@@ -50,7 +50,6 @@ class KappaCodeEditor(val elem: Element,
   val syntaxErrors = Var(SyntaxErrors.empty)
 
   val errorsInFiles: Rx[List[(KappaFile, WebSimError)]] = syntaxErrors.map{ case ers => ers.errorsByFiles().map{
-
     case (filename, er) =>
       if(filename==""){
         val message = "error is out of bounds!"
@@ -71,25 +70,6 @@ class KappaCodeEditor(val elem: Element,
         case v => v.map(_._2)
       }
   }
-  /*
-  val errorsByFiles: Rx[Map[KappaFile, List[WebSimError]]] =
-    syntaxErrors.map{
-      case ers =>
-        val byfiles = ers.errorsByFiles()
-        byfiles.foldLeft(Map.empty[KappaFile, List[WebSimError]]){
-          case (acc, (filename, er)) if items.now.contains(filename) =>
-           val fl = items.now(filename)
-            val result: Map[KappaFile, List[WebSimError]] = if(acc.contains(fl)) acc.updated(fl, er::acc(fl)) else acc.updated(fl, List(er))
-            result
-
-          case (acc, (filename, er)) =>
-            dom.console.error(s"received errors for $filename for which the file does not exist!")
-            val fl = KappaFile("", filename, "")
-            val result: Map[KappaFile, List[WebSimError]] = if(acc.contains(fl)) acc.updated(fl, er::acc(fl)) else acc.updated(fl, List(er))
-            result
-        }
-    }
-  */
 
   val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
 
@@ -102,7 +82,6 @@ class KappaCodeEditor(val elem: Element,
 
     case ServerResponse(server, s: SyntaxErrors) =>
       syntaxErrors() = s
-      //s.errors.foreach(e=>println("FORM "+e.range.from_position.chr))
 
     case other => //do nothing
   }

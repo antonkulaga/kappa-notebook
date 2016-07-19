@@ -49,7 +49,7 @@ trait EditorView extends BindableView with EditorMaker with WithMirrors{
   def editorUpdates: Var[EditorUpdates] //used to subscribe editor to changes
 
 
-  private var _editor: Editor = null
+  protected var _editor: Editor = null
   def editor: Editor = {
     if (_editor == null) dom.console.error("editor is NULL!")
     _editor

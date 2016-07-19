@@ -9,7 +9,7 @@ trait CodeStyles extends MainStyles{
 
   import dsl._
 
-  val maxCodeHeight = 72 vh
+  val maxCodeHeight = 70 vh
 
   ".CodeMirror" -(
     //overflowY.auto,
@@ -40,7 +40,14 @@ trait CodeStyles extends MainStyles{
 
   ".CodeMirror-scroll" -(
     maxHeight(maxCodeHeight) important
+      /*
+    onTiny -(fontSize(72 pt) important),
+    onLittle -(fontSize(9 pt) important),
+    onSmall -(fontSize(9 pt) important),
+    onMedium -(fontSize(10 pt) important),
+    onLarge -(fontSize(10 pt) important)
     //maxHeight(85 vh)
+    */
     )//-(overflowX.auto,overflowY.hidden)
 
 

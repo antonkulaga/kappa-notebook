@@ -72,7 +72,9 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
 
   val removeClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   removeClick.triggerLater{
-    output() = FileRequests.Remove(parentName.now, file.name)
+    val message = s"Do you really want to remove '${file.name}' file?"
+    val confirmation = window.confirm(message)
+    if(confirmation) output() = FileRequests.Remove(parentName.now, file.name)
   }
 
   val saveClick: Var[MouseEvent] = Var(Events.createMouseEvent())

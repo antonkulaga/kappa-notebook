@@ -4,6 +4,7 @@ import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView}
 import org.denigma.kappa.messages.ProjectRequests.GetList
 import org.denigma.kappa.messages._
+import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw.Element
 import rx._
@@ -78,7 +79,9 @@ class ProjectTitleView(val elem: Element, val project: KappaProject, val selectP
 
   val removeClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   removeClick.triggerLater{
-    toServer() = KappaMessage.Container().andThen(ProjectRequests.Remove(project.name)).andThen(GetList)
+    val message = s"Do you really want to remove '${project.name}' project?"
+    val confirmation = dom.window.confirm(message)
+    if(confirmation) toServer() = KappaMessage.Container().andThen(ProjectRequests.Remove(project.name)).andThen(GetList)
   }
 
   val downloadClick: Var[MouseEvent] = Var(Events.createMouseEvent())

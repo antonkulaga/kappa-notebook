@@ -49,7 +49,7 @@ class CodeTab(val elem: Element,
 
   active.onChange{
     case true =>
-      if(this._editor!=null) editor.refresh()
+      //if(this._editor!=null) editor.refresh()
 
     case false =>
       elem.style.display = "none"

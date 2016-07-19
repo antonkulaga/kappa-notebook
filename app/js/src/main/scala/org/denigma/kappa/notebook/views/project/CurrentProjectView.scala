@@ -45,7 +45,9 @@ class CurrentProjectView(val elem: Element,
     val name = fileName()
     !sources.contains(name)
   }
-  val unsaved: Dynamic[Map[String, KappaFile]] = sourceMap.map{ sm=> sm.collect{ case (key, value) if !value.saved => key -> value } }
+  val unsaved: Rx[Map[String, KappaFile]] = sourceMap.map{ sm=> sm.collect{ case (key, value) if !value.saved => key -> value } }
+
+  val hasUnsaved: Rx[Boolean] = unsaved.map(u=>u.nonEmpty)
 
   val addFile = Var(Events.createMouseEvent())
   addFile.triggerIf(canCreate){ case ev=>
@@ -62,6 +64,14 @@ class CurrentProjectView(val elem: Element,
     println("uploading file!!!!")
     val uploadRequest = FileRequests.Save(projectName.now, List(k), rewrite = false, getSaved = true)
     output() = uploadRequest
+  }
+
+  val saveAll = Var(Events.createMouseEvent())
+  saveAll.triggerLater{
+    val toSave = unsaved.now.values.toList
+    val saveRequest = FileRequests.Save(projectName = projectName.now, toSave, rewrite = true)
+    println("save ALL!")
+    output() = saveRequest
   }
 
   val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.allFiles)

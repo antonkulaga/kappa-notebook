@@ -1,2 +1,20 @@
-### RNAP binding ###
+### RNAP BINDING ###
+%var: 'rnap_on' 0.000830269391581363
+%var: 'rnap_on_repress' 8.30269391581363e-07
+
+'RNAP binding (no repressor){76998}' \
+DNA(downstream!1,binding,type~BBaR0000p2), DNA(upstream!1,binding,type~BBaR0000p3), RNAP(dna,rna) -> \
+DNA(downstream!1,binding,type~BBaR0000p2), DNA(upstream!1,binding!3,type~BBaR0000p3), RNAP(dna!3,rna) \
+@ 'rnap_on'
+  
+'RNAP binding (with repressor){76997}' \
+  DNA(downstream!1,binding!3,type~BBaR0000p2), DNA(upstream!1,binding,type~BBaR0000p3), Repressor(dna!3), RNAP(dna,rna) -> \
+  DNA(downstream!1,binding!2,type~BBaR0000p2), DNA(upstream!1,binding!3,type~BBaR0000p3), Repressor(dna!2), RNAP(dna!3,rna) \
+  @ 'rnap_on_repress'
+  
+'RNAP binding to R0010 (no LacI){77312}' \
+  DNA(binding,type~BBaR0010p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0010p4), RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0010p2) -> \
+  DNA(binding,type~BBaR0010p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0010p4), \
+  RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0010p2) \
+  @ 'rnap_on'
 

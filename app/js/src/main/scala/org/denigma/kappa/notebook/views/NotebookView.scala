@@ -145,6 +145,12 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
         addMenuItem(el, MainTabs.Annotations)
         v
     }
+    .register("Bookmarks"){
+      case (el, args) =>
+        val v = new AnnotatorNLP(el).withBinder(new GeneralBinder(_))
+        addMenuItem(el, MainTabs.Annotations)
+        v
+    }
     .register("Figures") {
       case (el, params) =>
         val v = new FiguresView(el, figures, input).withBinder(new CodeBinder(_))

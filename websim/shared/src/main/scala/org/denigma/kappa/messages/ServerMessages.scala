@@ -52,7 +52,7 @@ object ServerMessages {
   }
   case class Connect(server: ServerConnection) extends ServerMessage
 
-  object SyntaxErrors {
+ object SyntaxErrors {
     implicit val classPickler: Pickler[SyntaxErrors] = boopickle.Default.generatePickler[SyntaxErrors]
     lazy val empty = SyntaxErrors(Nil, Nil)
   }

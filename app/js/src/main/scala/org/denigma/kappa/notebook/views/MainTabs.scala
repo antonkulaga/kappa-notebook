@@ -10,5 +10,6 @@ object MainTabs {
   val Simulations = "Simulations"
   val Papers = "Papers"
   val Annotations = "Annotations"
+  val Bookmarks = "Bookmarks"
   val Figures = "Figures"
 }

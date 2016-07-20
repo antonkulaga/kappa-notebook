@@ -8,7 +8,10 @@
     <th>End</th>
   </tr>
   <tr data-event-click="goClick" data-class-negative-if="isError" data-template="true">
-    <td data-bind="message"></td>
+    <td data-bind="message"
+      data-bind-data-tooltip="tooltip"
+      data-position="bottom center"
+    ></td>
     <td data-bind="severity"></td>
     <td data-bind="fileName"></td>
     <td class="collapsed cell" data-bind="fromLine"></td>

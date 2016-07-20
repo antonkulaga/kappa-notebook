@@ -34,6 +34,29 @@ class FixedBinder[View<: BindableView](view: View, recover: Option[ReactiveBinde
   mpText, mpKey,
   mpUI, mpWheel, mpFocus, mpDrag) {
 
+  //TODO: fix this ugly piece of code
+  override protected def bindProperty(el: Element, rxName: String, prop: String): Unit = {
+    //println("PROPERTY BIND TO "+prop)
+    if (strings.contains(rxName))
+    {
+      propertyOnRx(el, prop, strings(rxName))(js.Any.fromString)
+    }
+    else if (doubles.contains(rxName))
+    {
+      propertyOnRx(el, prop, doubles(rxName))(js.Any.fromDouble)
+    }
+    else if (ints.contains(rxName))
+    {
+      propertyOnRx(el, prop, ints(rxName))(js.Any.fromInt)
+    }
+    else if (bools.contains(rxName))
+    {
+      propertyOnRx(el, prop, bools(rxName))(js.Any.fromBoolean)
+    }
+    else cannotFind(el, rxName, prop, allValues)
+  }
+
+
   protected lazy val specialAttributes = Map("viewbox"->"viewBox", "preserveaspectratio"-> "preserveAspectRatio")
 
   protected def setAttribute[T](e: Element, prop: String, value: T)(implicit conv: T => js.Any) = {

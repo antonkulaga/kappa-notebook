@@ -1,0 +1,28 @@
+@()
+<section class="ui column mCustomScrollbar" data-mcs-theme="dark" id="annotations" data-view="annotations">
+  <section data-template="true" class="ui segment" data-class-orange-if="highlighted">
+    <table class="ui celled orange unstackable table">
+      <tbody>
+        <tr>
+          <th>Mention</th>
+          <td colspan="3"><h2 class="ui header" data-bind="text"></h2></td>
+        </tr>
+        <tr>
+          <th>Labels</th>
+          <td data-bind="labels"></td>
+          <th>Found By Rule</th>
+          <td data-bind="foundBy"></td>
+        </tr>
+        <tr>
+          <th>Arguments</th>
+          <td data-bind="arguments"></td>
+          <th>Interval</th>
+          <td data-bind="interval"></td>
+        </tr>
+      </tbody>
+      <tfoot data-inner-html="other">
+
+      </tfoot>
+    </table>
+  </section>
+</section>

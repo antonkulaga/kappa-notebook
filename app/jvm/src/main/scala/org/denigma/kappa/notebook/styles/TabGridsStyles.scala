@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.styles
 import scalacss.Defaults._
 import scalacss.Defaults._
-trait TabGridsStyles extends MainStyles with SimulationStyles {
+trait TabGridsStyles extends MainStyles {
   import dsl._
 
   ".ui.column" -(
@@ -50,14 +50,13 @@ trait TabGridsStyles extends MainStyles with SimulationStyles {
     height(100.0 %%)
     )
 
-
-}
-
-trait SimulationStyles extends StyleSheet.Standalone {
-  import dsl._
-
   ".simulation.tab" -(
     overflowX.visible,
     overflowY.visible
     )
+
+  "#ProjectsPanel" -(
+    minWidth(345 px) important
+    )
+
 }

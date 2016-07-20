@@ -27,12 +27,19 @@ class ImgView(val elem: Element, val selected: Var[String], val image: Var[Image
 
   lazy val figureId = this.id + "_figure"
 
-  override def bindView() = {
+  protected def addFigure() = {
     if(!elem.children.exists(e=>e.id == figureId)) {
       val dataKey = "data-bind-src".attr
-      val child = img(all.id := figureId, dataKey := "src", `class` := "ui huge image")
-      elem.appendChild(child.render)
+      val figure = img(all.id := figureId, dataKey := "src" /*,`class` := "ui huge image"*/)
+      elem.appendChild(figure.render)
+
+      val link = a(all.id := figureId+"_link", "open in a separate window", target := "_blank",href :="src")
+      elem.appendChild(link.render)
     }
+  }
+
+  override def bindView() = {
+    addFigure()
     super.bindView()
     //<img data-bind-src="src" class="ui huge image">
   }

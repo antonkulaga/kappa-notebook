@@ -110,8 +110,7 @@ trait FileMessenger extends Messenger {
       val path: File = fileManager.root / projectName
       val rels = files.map(f=>f.copy(path = (path / f.name).pathAsString))
       for{f <- rels} {
-        println("write file")
-        pprint.pprintln(f)
+        println(s"write kappa file ${f.name} of length ${f.content.length} in project $projectName")
         fileManager.writeFile(projectName, f)
       }
       val reply = FileResponses.SavedFiles(projectName, Left(rels.map(v=>v.name).toSet))
@@ -125,8 +124,7 @@ trait FileMessenger extends Messenger {
       val kappaFiles: Map[String, KappaFile] = (
         for{f <- rels}
           yield {
-            println("write file 2")
-            pprint.pprintln(f)
+            println(s"write kappa file ${f.name} of length ${f.content.length} in project $projectName")
             fileManager.writeFile(projectName, f)
             f.name -> f.copy(saved = true)
           }

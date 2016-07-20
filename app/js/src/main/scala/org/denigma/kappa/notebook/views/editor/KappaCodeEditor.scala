@@ -49,6 +49,8 @@ class KappaCodeEditor(val elem: Element,
 
   val syntaxErrors = Var(SyntaxErrors.empty)
 
+  val fullCode = syntaxErrors.map(ers=>ers.fullCode)
+
   val errorsInFiles: Rx[List[(KappaFile, WebSimError)]] = syntaxErrors.map{ case ers => ers.errorsByFiles().map{
     case (filename, er) =>
       if(filename==""){
@@ -112,6 +114,6 @@ class KappaCodeEditor(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
-    .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles).withBinder(new GeneralBinder(_)))
+    .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles, fullCode).withBinder(new GeneralBinder(_)))
 
 }

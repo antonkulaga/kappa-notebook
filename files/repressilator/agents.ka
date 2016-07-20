@@ -1,17 +1,31 @@
-### AGENTS DECLARATIONS ###
+### Repressilator model ###
+# the work on this tutorial is in progress the model is not yet completed
+#
+# The model is based on Tomson's version of repressilator
+#^ :in_paper Kanamori.pdf
+# Modified by Edinbourg IGEM team
+#^ :image 800px-Ed10-OverallPathway.png
 
 # Plasmid parts are instances of DNA agent where type is the type of a part
+
 %agent: DNA(downstream, binding, type\
 	~BBaR0000p2 #^ http://parts.igem.org/Part:BBa_R0000 \
     ~BBaR0010p2 #^ http://parts.igem.org/Part:BBa_R0010 \
     ~BBaR0040p2 #^ http://parts.igem.org/Part:BBa_R0040 \
-    ~BBaR0000p3 #^ http://parts.igem.org/Part:BBa_R0000 \
+    ~BBaR0051p2 #^ http://parts.igem.org/Part:BBa_R0051 \
+   	~BBaR0000p3 #^ http://parts.igem.org/Part:BBa_R0000 \
     ~BBaR0051p3 #^ http://parts.igem.org/Part:BBa_R0051 \
     ~BBaR0010p3 #^ http://parts.igem.org/Part:BBa_R0010 \
+    ~BBaR0040p3 #^ http://parts.igem.org/Part:BBa_R0040 \
+    ~BBaR0010p4  #^ http://parts.igem.org/Part:BBa_R0010 \
     ,upstream)
-%agent: Repressor(dna)
-%agent: RNAP(dna)
-%agent: LacI(dna,lactose) #^ http://www.uniprot.org/uniprot/P03023
-%agent: TetR(dna,atc)
-%agent: cI(dna)
 
+%agent: Repressor(dna)
+
+%agent: RNAP(dna, rna)
+
+%agent: LacI(dna,lactose) #^ http://www.uniprot.org/uniprot/P03023
+
+%agent: TetR(dna,atc)
+
+%agent: cI(dna)

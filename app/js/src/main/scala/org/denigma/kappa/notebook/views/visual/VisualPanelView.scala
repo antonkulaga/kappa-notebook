@@ -16,7 +16,7 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
 
   val currentLine: Rx[String] = kappaWatcher.text
 
-  val selected: Var[String] = Var("contact_map")
+  val selected: Var[String] = Var("rules")//Var("contact_map")
 
   val rulesActive = selected.map(s=>s=="rules")
   val contactActive = selected.map(s=>s=="contact_map")

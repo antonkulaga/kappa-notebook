@@ -27,6 +27,11 @@ class PublicationView(val elem: Element,
   extends  LoadedPaperView with TabItem with UpdatableView[Paper]
 {
 
+  scale.onChange{
+    case value =>
+      println(s"scale changed to $value")
+  }
+
   val selected: Rx[String] = location.map(l=>l.paper)
 
   val selections  = Var(List.empty[TextLayerSelection])
@@ -89,17 +94,13 @@ class PublicationView(val elem: Element,
     println("update is not implemented")
     this
   }
-
-  override lazy val injector = defaultInjector
-    .register("Bookmarks")((el, args) => new BookmarksView(el, location, null).withBinder(new GeneralBinder(_)))
-
 }
 
 trait LoadedPaperView extends BindableView {
 
   lazy val page: Var[Int] = Var(1)
 
-  lazy val scale = Var(1.4)
+  lazy val scale = Var(1.6)
 
   def paper: Paper
 

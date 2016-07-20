@@ -1,0 +1,39 @@
+@()
+<section class="ui equal width grid" style="height: 100%; width: 100%">
+  <div class="equal width row">
+
+  </div>
+  <div class="equal width row">
+    <section class="column">
+      <h3 class="ui dividing header">Annotation:</h3>
+      <div id="annotation">
+
+      </div>
+      <div class="ui reply form">
+        <h6>Text to send for annotation:</h6>
+        <div class="field">
+          <textarea id="text" data-bind="text" title="Text to send for annotation:"></textarea>
+        </div>
+        <label class="ui blue label"data-show-if="waitingConnection">
+          Waiting for websocket connection...
+        </label>
+        <label class="ui blue label"data-show-if="waitingServer">
+          Waiting for NLP server to start...
+        </label>
+        <button class="ui blue labeled icon button" data-event-click="send" data-show-if="ready">
+          <i class="icon edit"></i> Annotate
+        </button>
+        <label class="ui blue label"data-show-if="annotating">
+          Annotating...
+        </label>
+
+      </div>
+    </section>
+  </div>
+
+  <div class="equal width row">
+    <section class="column">
+    @annotations.html.mentions()
+    </section>
+  </div>
+</section>

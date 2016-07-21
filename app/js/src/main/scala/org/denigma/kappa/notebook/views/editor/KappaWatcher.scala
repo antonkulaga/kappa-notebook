@@ -6,7 +6,7 @@ import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel._
 import org.denigma.kappa.notebook.parsers.KappaParser
 import org.denigma.kappa.notebook.views.visual._
-import org.denigma.kappa.notebook.views.visual.rules.{AgentNode, KappaEdge, GraphLayout}
+import org.denigma.kappa.notebook.views.visual.rules.{AgentNode, KappaEdge}
 import org.scalajs.dom.svg.SVG
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -62,7 +62,8 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
   protected def getKappaLine(ed: Editor, line: Int, acc: String = ""): String = {
     val doc = ed.getDoc()
     val t = doc.getLine(line)
-    if(t.trim.endsWith("\\") && (line+ 1)< doc.lineCount()) getKappaLine(ed, line + 1, acc + t) else t
+    val result = acc + t
+    if(t.trim.endsWith("\\") && (line+ 1)< doc.lineCount()) getKappaLine(ed, line + 1, result) else result
   }
 
   text.onChange(t=>parseText(t))

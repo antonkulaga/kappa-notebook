@@ -1,6 +1,7 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.extensions._
+import org.denigma.kappa.notebook.views.visual.rules.layouts.GraphLayout
 import org.denigma.threejs.extensions.Container3D
 import org.denigma.threejs.extensions.controls.JumpCameraControls
 import org.denigma.threejs.extras._

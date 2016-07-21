@@ -4,6 +4,7 @@ import org.denigma.binding.extensions._
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.{Agent, KappaNamedElement, _}
 import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
+import org.denigma.kappa.notebook.views.visual.rules.layouts.LayoutInfo
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all.attrs._

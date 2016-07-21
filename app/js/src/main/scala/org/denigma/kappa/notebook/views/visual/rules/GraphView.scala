@@ -2,6 +2,7 @@ package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.extensions.{sq, _}
 import org.denigma.binding.views.BindableView
+import org.denigma.kappa.notebook.views.visual.rules.layouts.GraphLayout
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe

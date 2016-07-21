@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views.visual.rules
+package org.denigma.kappa.notebook.views.visual.rules.layouts
 
 import org.denigma.threejs.PerspectiveCamera
 

@@ -49,7 +49,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
           isWebSocketUpgrade shouldEqual true
           val params = RunModel(abc, Some(1000), max_events = Some(10000))
           println("SERVER NAME = "+serverName)
-          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(LaunchModel(params)))
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(serverName, LaunchModel.fromRunModel(abc, params)))
           wsClient.sendMessage(pack(d))
           wsClient.inProbe.request(1).expectNextPF {
             case BinaryMessage.Strict(bytes) if {
@@ -86,15 +86,15 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
           val model = abc
             .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
             .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
-          val params = LaunchModel(RunModel(model, Some(1000), max_events = Some(10000)))
-          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(params))
+          val params = RunModel(model, Some(1000), max_events = Some(10000))
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(serverName, LaunchModel.fromRunModel(abc, params)))
           wsClient.sendMessage(pack(d))
 
           wsClient.inProbe.request(1).expectNextPF {
             case BinaryMessage.Strict(bytes) if {
               val mes = Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer)
               mes match {
-                case ServerResponse(server, SyntaxErrors(file, errors, _)) =>
+                case ServerResponse(server, SyntaxErrors(_, _)) =>
                   //println("expected errors are: "+ errors)
                   true
                 case _ => false
@@ -116,7 +116,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
 
           val model = abc
           val params = ParseModel(List("abc"->abc))
-          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(params))
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(serverName, params))
           wsClient.sendMessage(pack(d))
           wsClient.inProbe.request(1).expectNextPF {
             case BinaryMessage.Strict(bytes) if {

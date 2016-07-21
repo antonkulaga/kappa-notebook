@@ -31,6 +31,10 @@ object MyStyles extends MainStyles
     flexWrap.nowrap,
     alignContent.stretch
     )
+
+  ".ui.table td.collapsing" -(
+    padding(0 px) important
+    )
 }
 
 

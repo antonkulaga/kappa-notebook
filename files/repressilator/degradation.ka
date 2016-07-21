@@ -1,0 +1,10 @@
+### Degradation ###
+
+%var: 'rna_degrad' 0.0058 
+%var: 'protein_degrad' 0.00115 
+
+'RNA degradation{76543}' RNA(binding,downstream) -> @ 'rna_degrad'
+'Repressor degradation{77212}' Repressor(dna) ->  @ 'protein_degrad'
+'LacI degradation{77288}' LacI(dna) ->  @ 'protein_degrad'
+'TetR degradation{77287}' TetR(dna) ->  @ 'protein_degrad'
+'cI degradation{77286}' cI(dna) ->  @ 'protein_degrad'

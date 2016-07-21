@@ -1,56 +1,91 @@
 ### Repressilator model ###
 # the work on this tutorial is in progress the model is not yet completed
+
+# This model has active core repressilator, active red green and blue light
+# emission, and active red green and blue light sensing to activate the
+# corresponding transcription factors. It does not have the binding of these
+# light initiated transcription factors to DNA, and the relevant promoters on
+# the DNA (BBaK191007,BBaR0082, BBaR0PHO) are not present.
 #
+# Observations are levels of LacI, TetR and cI.
+
 # The model is based on Tomson's version of repressilator
 #^ :in_paper Kanamori.pdf
 # Modified by Edinbourg IGEM team
 #^ :image 800px-Ed10-OverallPathway.png
+#^ :image kappa_biobrick.jpg
 
-# Plasmid parts are instances of DNA agent where type is the type of a part
+#Anton: I AM VERY CONFUSED BY p1/p2/p3 in plasmids id-s
 
-# parts names are emcoded in type where p# is the plasmid number
-%agent: DNA(downstream, binding, upstream, type\
-	~BBaC0000	#^ http://parts.igem.org/Part:BBaC0000  \
-	~BBaB0011	#^ http://parts.igem.org/Part:BBaC0011  \
-	~BBaC0012	#^ http://parts.igem.org/Part:BBaC0012  \
-    ~BBaB0034	#^ http://parts.igem.org/Part:BBaB0034  \
-    #1st plasmid promoters:\
-	~BBaR0010p1	#^ http://parts.igem.org/Part:BBaR0010  \
+# Plasmid parts are instances of DNA agent where type is the id of genetic part
+%agent: DNA(downstream, binding, upstream, type \
+	# WHAT IS THIS PART???\
+	~BBaK0000 \
+    # WHAT IS THIS PART???\
+	~BBaB0000 \
+    # transcription terminator\
+   	#^ http://parts.igem.org/Part:BBaC0011 \
+	~BBaB0011 \
+    # ribosome binding site\
+    #^ http://parts.igem.org/Part:BBaB0034 \
+	~BBaB0034 \
+    # tetR coding sequence\
+    #^ http://parts.igem.org/Part:BBaC0040\
+    ~BBaC0040 \
+    ~BBaC0000	#^ http://parts.igem.org/Part:BBaC0000  \
+    # lacI coding sequence\
+    #^ http://parts.igem.org/Part:BBaC0012 \
+	~BBaC0012 \
+    #lambda-cI coding sequence\
+    #^ http://parts.igem.org/Part:BBaC0051  \
+    ~BBaC0051 \
+    ~BBaR0011 #^ http://parts.igem.org/Part:BBa_R0011  	\
+    #p1:\
+	~BBaR0000p1 # part does not exist\
+    ~BBaR0010p1 #^ http://parts.igem.org/Part:BBaR0010  \
+    ~BBaR0011p1	#^ http://parts.igem.org/Part:BBaR0011  \
+    ~BBaR0040p1	#^ http://parts.igem.org/Part:BBaR0040  \
     ~BBaR0051p1 #^ http://parts.igem.org/Part:BBa_R0051 \
-	#2nd plasmid promoters:\
+    #p2:\
     ~BBaR0000p2 #^ http://parts.igem.org/Part:BBa_R0000 \
-    ~BBaR0010p2 #^ http://parts.igem.org/Part:BBa_R0010 \
+    ~BBaR0010p2 #^ http://parts.igem.org/Part:BBa_R0010p2 \
     ~BBaR0040p2 #^ http://parts.igem.org/Part:BBa_R0040 \
-    ~BBaR0051p2 #^ http://parts.igem.org/Part:BBa_R0051 \
-   	#3rd plasmid promoters:\
+    # lambda-cI promoter\
+    #^ http://parts.igem.org/Part:BBa_R0051 \
+    ~BBaR0051p2 \
+   	#p3:\
     ~BBaR0000p3 #^ http://parts.igem.org/Part:BBa_R0000 \
     ~BBaR0010p3 #^ http://parts.igem.org/Part:BBa_R0010 \
     ~BBaR0040p3 #^ http://parts.igem.org/Part:BBa_R0040 \
     ~BBaR0051p3 #^ http://parts.igem.org/Part:BBa_R0051 \
-    #4th plasmid promoters:\
+    #p4:\
     ~BBaR0010p4 #^ http://parts.igem.org/Part:BBa_R0010 \
     ~BBaR0040p4 #^ http://parts.igem.org/Part:BBa_R0040 \
     ~BBaR0051p4 #^ http://parts.igem.org/Part:BBa_R0051 \
     )
     
 %agent: RNA(downstream, binding, upstream, type\
-	~BBaC0000 #^ http://parts.igem.org/Part:BBaC0000 \
+    # WHAT IS THIS PART???\
+	~BBaB0000 \
+	~BBaB0034 #^ http://parts.igem.org/Part:BBaB0034 \
+    ~BBaC0000 #^ http://parts.igem.org/Part:BBaC0000 \
     ~BBaC0012 #^ http://parts.igem.org/Part:BBaC0012 \
-	#RNA of promoters:\
+    ~BBaC0040 #^ http://parts.igem.org/Part:BBaC0040 \
+    ~BBaC0051 #^ http://parts.igem.org/Part:BBaC0051 \
+    ~BBaK0000 #^ http://parts.igem.org/Part:BBaK0000 \
+    #RNA of promoters:\
 	~BBaR0000 #^ http://parts.igem.org/Part:BBa_R0000 \
     ~BBaR0010 #^ http://parts.igem.org/Part:BBa_R0010 \
+    ~BBaR0011 #^ http://parts.igem.org/Part:BBa_R0011 \
     ~BBaR0040 #^ http://parts.igem.org/Part:BBa_R0040 \
     ~BBaR0051 #^ http://parts.igem.org/Part:BBa_R0051 \
     )
 
 %agent: Repressor(dna)
-
-%agent: Ribosome(rna)
-
 %agent: RNAP(dna, rna) #^https://en.wikipedia.org/wiki/RNA_polymerase
-
+%agent: Ribosome(rna)
 %agent: LacI(dna,lactose) #^ http://www.uniprot.org/uniprot/P03023
-
 %agent: TetR(dna,atc) #^ https://www.addgene.org/tetracycline/#off
-
 %agent: cI(dna)
+%agent: IPTG(laci)
+%agent: ATC(tetr)

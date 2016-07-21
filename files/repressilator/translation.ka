@@ -1,28 +1,26 @@
-### Transcription initiation ###
+### Translation initiation ###
 
-'Transcription initiation{58498}'\
-  DNA(binding!1,type~BBaR0000p3,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
-  	DNA(binding,type~BBaR0000p3,downstream!3), RNAP(dna!1,rna!2), \
-  	DNA(upstream!3,binding!1), RNA(binding,upstream,downstream!2,type~BBaR0000)\
-    	@ 10.0
-    
-'Transcription initiation of R0051{77270}'\
-  DNA(binding!1,type~BBaR0051p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
-  	DNA(binding,type~BBaR0051p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1),\
-  	RNA(binding,upstream,downstream!2,type~BBaR0051) \
-    	@ 10.0
-        
-'Transcription initiation of R0010{77316}'\
-  DNA(binding!1,type~BBaR0010p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
-  	DNA(binding,type~BBaR0010p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1),\
-  	RNA(binding,upstream,downstream!2,type~BBaR0010)\
-    	@ 10.0
-        
-'Transcription initiation of R0040{77305}'\
-  DNA(binding!1,type~BBaR0040p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
-  	DNA(binding,type~BBaR0040p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1), \
-  	RNA(binding,upstream,downstream!2,type~BBaR0040) \
-  		@ 10.0
+%var: 'tr_init' 0.167
+
+'Translation initiation{77010}'\
+  RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0000), Ribosome(rna!2) ->\
+  	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0000), Ribosome(rna!2) \
+  		@'tr_init'
+
+'LacI translation initiation{77282}'\
+  	RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0012), Ribosome(rna!2) ->\
+  	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0012), Ribosome(rna!2)\
+  	@ 'tr_init'
+
+'TetR translation initiation{77281}'\
+  RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0040), Ribosome(rna!2) ->\
+  	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0040), Ribosome(rna!2) \
+  	@ 'tr_init'
+
+'cI translation initiation{77280}'\
+  RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0051), Ribosome(rna!2) ->\
+  	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0051), Ribosome(rna!2) \
+  	@ 'tr_init'
 
 ### Translation ###
 
@@ -45,3 +43,11 @@
   RNA(binding!1,type~BBaC0051), Ribosome(rna!1) -> \
   	RNA(binding,type~BBaC0051), Ribosome(rna), cI(dna) \
   		@ 10.0
+        
+### Ribosome falloff ###
+
+'Ribosome falloff{76777}'\
+  Ribosome(rna!1), RNA(binding!1) ->\
+  	Ribosome(rna), RNA(binding) \
+  		@ 0.01
+

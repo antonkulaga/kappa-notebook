@@ -1,7 +1,7 @@
 @()
 <div class="ui blue segment" data-view="ProjectsView">
   @commons.html.header("Projects")
-  <div class="ui celled animated list">
+  <div class="ui celled small animated list">
     <div class="item" data-template="true" >
       <div class="right floated content">
         <span class="ui icon mini buttons">
@@ -15,7 +15,7 @@
         <div data-bind="name" class="header"></div>
       </div>
     </div>
-    <div class="ui segment">
+    <div>
       <input class="ui tiny input" placeholder="create project" data-bind="newProjectName">
       <button data-event-click="createProjectClick" class="ui tiny positive button"><i class="add circle icon"></i>project</button>
     </div>

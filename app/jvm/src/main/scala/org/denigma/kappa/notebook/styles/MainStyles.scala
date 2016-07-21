@@ -14,8 +14,8 @@ class MainStyles extends Standalone with MediaQueries
 {
   import dsl._
 
-  lazy val rowMaxHeight = 98 vh
-  lazy val gridMaxHeight = 90 vh
+  lazy val rowMaxHeight = 95 vh
+  lazy val gridMaxHeight = 88 vh
 
   "html"-(
     onTiny -fontSize(8 pt),
@@ -24,8 +24,9 @@ class MainStyles extends Standalone with MediaQueries
     onMedium -fontSize(11 pt),
     onLarge -fontSize(12 pt)
     )
+
   "body" -(
-    overflowX.hidden
+    //overflowY.hidden
     )
 
   "#MainRow" - maxHeight(rowMaxHeight)

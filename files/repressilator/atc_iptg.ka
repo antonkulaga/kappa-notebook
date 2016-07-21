@@ -1,0 +1,22 @@
+### ATC ###
+
+'ATC addition{77334}'  -> ATC(tetr) @ 0.0
+'ATC washout{77333}' ATC(tetr) ->  @ 0.0
+
+### IPTG ###
+
+'IPTG addition{77331}'  -> IPTG(laci) @ 0.0
+'IPTG washout{77329}' IPTG(laci) ->  @ 0.0
+
+
+### IPTG/ATC binding ###
+
+'Binding of IPTG to LacI{77327}'\
+  IPTG(laci), LacI(dna,lactose) <->\
+  	IPTG(laci!1), LacI(dna,lactose!1) \
+    	@ 0.00166053878316273,0.02
+
+'Binding of ATC to TetR{77325}'\
+  TetR(dna,atc), ATC(tetr) <->\
+  	TetR(dna,atc!1), ATC(tetr!1) \
+    	@ 1.66053878316273,0.001

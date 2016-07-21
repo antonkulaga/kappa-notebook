@@ -5,7 +5,7 @@ import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, UpdatableView}
 import org.denigma.codemirror._
-import org.denigma.codemirror.addons._
+import org.denigma.codemirror.addons.lint._
 import org.denigma.codemirror.extensions._
 import org.denigma.kappa.messages.{FileRequests, KappaFile}
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
@@ -33,6 +33,7 @@ class CodeTab(val elem: Element,
     with UpdatableView[KappaFile]
     with TabItem
 {
+  val wrapLines: Var[Boolean] = Var(false)
 
   override lazy val id: String = name
 
@@ -114,8 +115,9 @@ class CodeTab(val elem: Element,
       .value(textValue)
       .readOnly(readOnly)
       .viewportMargin(Integer.MAX_VALUE)
-      .gutters(js.Array(Lint.gutters, "CodeMirror-linenumbers", "breakpoints"))
-      .lineWrapping(true)
+       .extraKeys(js.Dictionary( ("Alt-F", "findPersistent")))
+      .gutters(js.Array(gutters, "CodeMirror-linenumbers", "breakpoints"))
+      .lineWrapping(wrapLines.now)
 
     val config: EditorConfiguration = params
     //config.dyn.scrollbarStyle = null

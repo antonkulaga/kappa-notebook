@@ -1,0 +1,47 @@
+### Transcription initiation ###
+
+'Transcription initiation{58498}'\
+  DNA(binding!1,type~BBaR0000p3,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
+  	DNA(binding,type~BBaR0000p3,downstream!3), RNAP(dna!1,rna!2), \
+  	DNA(upstream!3,binding!1), RNA(binding,upstream,downstream!2,type~BBaR0000)\
+    	@ 10.0
+    
+'Transcription initiation of R0051{77270}'\
+  DNA(binding!1,type~BBaR0051p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
+  	DNA(binding,type~BBaR0051p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1),\
+  	RNA(binding,upstream,downstream!2,type~BBaR0051) \
+    	@ 10.0
+        
+'Transcription initiation of R0010{77316}'\
+  DNA(binding!1,type~BBaR0010p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
+  	DNA(binding,type~BBaR0010p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1),\
+  	RNA(binding,upstream,downstream!2,type~BBaR0010)\
+    	@ 10.0
+        
+'Transcription initiation of R0040{77305}'\
+  DNA(binding!1,type~BBaR0040p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
+  	DNA(binding,type~BBaR0040p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1), \
+  	RNA(binding,upstream,downstream!2,type~BBaR0040) \
+  		@ 10.0
+
+### Translation ###
+
+'Coding sequence translation{77005}' \
+  RNA(binding!1,type~BBaC0000), Ribosome(rna!1) ->\
+  	RNA(binding,type~BBaC0000), Ribosome(rna), Repressor(dna)\
+    @ 10.0
+
+'LacI translation{77285}' \
+  RNA(binding!1,type~BBaC0012), Ribosome(rna!1) ->\
+  	RNA(binding,type~BBaC0012), Ribosome(rna), LacI(dna,lactose) \
+    	@ 10.0
+
+'TetR translation{77284}' \
+  RNA(binding!1,type~BBaC0040), Ribosome(rna!1) -> \
+  	RNA(binding,type~BBaC0040), Ribosome(rna), TetR(dna,atc) \
+  		@ 10.0
+
+'cI translation{77283}' \
+  RNA(binding!1,type~BBaC0051), Ribosome(rna!1) -> \
+  	RNA(binding,type~BBaC0051), Ribosome(rna), cI(dna) \
+  		@ 10.0

@@ -23,9 +23,11 @@
 ### Rules ###
 
 'Repressor binding (with RNAP){76996}' \
-	DNA(downstream!1,binding,type~BBaR0000p2), DNA(upstream!1,binding!2,type~BBaR0000p3), Repressor(dna), RNAP(dna!2) <-> \
-  	DNA(downstream!1,binding!2,type~BBaR0000p2), DNA(upstream!1,binding!3,type~BBaR0000p3), Repressor(dna!2), RNAP(dna!3) \
-    @ 'repress_rnap_on','repress_rnap_off'
+	DNA(downstream!1,binding,type~BBaR0000p2), DNA(upstream!1,binding!2,type~BBaR0000p3), \
+    Repressor(dna), RNAP(dna!2) <-> \
+  		DNA(downstream!1,binding!2,type~BBaR0000p2), DNA(upstream!1,binding!3,type~BBaR0000p3), \
+        Repressor(dna!2), RNAP(dna!3) \
+    		@ 'repress_rnap_on','repress_rnap_off'
     
 'Repressor binding (no RNAP){76995}' \
   DNA(downstream!1,binding,type~BBaR0000p2), DNA(upstream!1,binding,type~BBaR0000p3), Repressor(dna) <-> \

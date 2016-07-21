@@ -24,6 +24,9 @@ class MainStyles extends Standalone with MediaQueries
     onMedium -fontSize(11 pt),
     onLarge -fontSize(12 pt)
     )
+  "body" -(
+    overflowX.hidden
+    )
 
   "#MainRow" - maxHeight(rowMaxHeight)
 

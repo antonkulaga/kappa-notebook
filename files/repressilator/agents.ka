@@ -8,24 +8,49 @@
 
 # Plasmid parts are instances of DNA agent where type is the type of a part
 
-%agent: DNA(downstream, binding, type\
-	~BBaR0000p2 #^ http://parts.igem.org/Part:BBa_R0000 \
+# parts names are emcoded in type where p# is the plasmid number
+%agent: DNA(downstream, binding, upstream, type\
+	~BBaC0000	#^ http://parts.igem.org/Part:BBaC0000  \
+	~BBaB0011	#^ http://parts.igem.org/Part:BBaC0011  \
+	~BBaC0012	#^ http://parts.igem.org/Part:BBaC0012  \
+    ~BBaB0034	#^ http://parts.igem.org/Part:BBaB0034  \
+    #1st plasmid promoters:\
+	~BBaR0010p1	#^ http://parts.igem.org/Part:BBaR0010  \
+    ~BBaR0051p1 #^ http://parts.igem.org/Part:BBa_R0051 \
+	#2nd plasmid promoters:\
+    ~BBaR0000p2 #^ http://parts.igem.org/Part:BBa_R0000 \
     ~BBaR0010p2 #^ http://parts.igem.org/Part:BBa_R0010 \
     ~BBaR0040p2 #^ http://parts.igem.org/Part:BBa_R0040 \
     ~BBaR0051p2 #^ http://parts.igem.org/Part:BBa_R0051 \
-   	~BBaR0000p3 #^ http://parts.igem.org/Part:BBa_R0000 \
-    ~BBaR0051p3 #^ http://parts.igem.org/Part:BBa_R0051 \
+   	#3rd plasmid promoters:\
+    ~BBaR0000p3 #^ http://parts.igem.org/Part:BBa_R0000 \
     ~BBaR0010p3 #^ http://parts.igem.org/Part:BBa_R0010 \
     ~BBaR0040p3 #^ http://parts.igem.org/Part:BBa_R0040 \
-    ~BBaR0010p4  #^ http://parts.igem.org/Part:BBa_R0010 \
-    ,upstream)
+    ~BBaR0051p3 #^ http://parts.igem.org/Part:BBa_R0051 \
+    #4th plasmid promoters:\
+    ~BBaR0010p4 #^ http://parts.igem.org/Part:BBa_R0010 \
+    ~BBaR0040p4 #^ http://parts.igem.org/Part:BBa_R0040 \
+    ~BBaR0051p4 #^ http://parts.igem.org/Part:BBa_R0051 \
+    )
+    
+%agent: RNA(downstream, binding, upstream, type\
+	~BBaC0000 #^ http://parts.igem.org/Part:BBaC0000 \
+    ~BBaC0012 #^ http://parts.igem.org/Part:BBaC0012 \
+	#RNA of promoters:\
+	~BBaR0000 #^ http://parts.igem.org/Part:BBa_R0000 \
+    ~BBaR0010 #^ http://parts.igem.org/Part:BBa_R0010 \
+    ~BBaR0040 #^ http://parts.igem.org/Part:BBa_R0040 \
+    ~BBaR0051 #^ http://parts.igem.org/Part:BBa_R0051 \
+    )
 
 %agent: Repressor(dna)
 
-%agent: RNAP(dna, rna)
+%agent: Ribosome(rna)
+
+%agent: RNAP(dna, rna) #^https://en.wikipedia.org/wiki/RNA_polymerase
 
 %agent: LacI(dna,lactose) #^ http://www.uniprot.org/uniprot/P03023
 
-%agent: TetR(dna,atc)
+%agent: TetR(dna,atc) #^ https://www.addgene.org/tetracycline/#off
 
 %agent: cI(dna)

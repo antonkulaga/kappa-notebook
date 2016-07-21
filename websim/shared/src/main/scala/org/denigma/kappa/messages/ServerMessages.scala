@@ -112,7 +112,7 @@ object ServerMessages {
           (((prevFrom, prevTo)), prevName) :: tail, (name, content)
         ) =>
         val from = prevTo
-        ((from, from + content.length), name) ::((prevFrom, prevTo), prevName) :: tail
+        ((from, from + content.length -1), name) ::((prevFrom, prevTo), prevName) :: tail
     }.reverse
 
     def fileLocation(location: Location): Option[(String, Location)] = {

@@ -1,0 +1,14 @@
+### Initial conditions ###
+
+%init: 700  (RNAP(dna,rna))
+%init: 18000  (Ribosome(rna))
+%init: 1  (DNA(upstream,downstream!1,binding,type~BBaR0051p1), DNA(upstream!1,downstream!2,binding,type~BBaR0051p2),\
+            DNA(upstream!2,downstream!3,binding,type~BBaR0051p3), DNA(upstream!3,downstream!4,binding,type~BBaR0051p4),\
+            DNA(upstream!4,downstream!5,binding,type~BBaB0034), DNA(upstream!5,downstream!6,binding,type~BBaC0012),\
+            DNA(upstream!6,downstream,binding,type~BBaB0011))
+
+#TODO: extend initial conditions
+
+%obs: 'TetR' TetR()
+%obs: 'cI' cI()
+%obs: 'LacI' LacI()

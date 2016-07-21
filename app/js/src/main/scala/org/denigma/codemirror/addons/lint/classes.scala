@@ -1,4 +1,4 @@
-package org.denigma.codemirror.addons
+package org.denigma.codemirror.addons.lint
 
 import org.denigma.binding.extensions._
 import org.denigma.codemirror._
@@ -34,22 +34,6 @@ class SyncLintOptions(lintFun: (String, LintOptions, Editor) => js.Array[LintFou
   }
 }
 
-
-/*
-@ScalaJSDefined
-class AsyncSyncLintOptions(lintFun: (String, LintOptions, Editor) => Future[js.Array[LintFound]]) extends LintOptions(true)
-{
-  //document string, an options object, and an editor instance, return an array of {message, severity, from, to}
-
-  def getAnnotations(text: String, callback: js.Function2[Editor, js.Array[LintFound], Unit]): Unit= {
-    lintFun(text, options, cm).onComplete{
-      case Success(value) => callback(value)
-      case Failure(th) => dom.console.error("cannot lint because of "+th)
-    }
-  }
-
-}
-*/
 object LintOptions {
 
   def static(value: List[LintFound]): LintOptions = static(js.Array(value:_*))
@@ -80,26 +64,3 @@ object LintFound {
 
 @ScalaJSDefined
 class LintFound(val from: PositionLike, val to: PositionLike, val severity: String, val message: String) extends js.Object
-
-
-object Lint {
-
-  val gutters: String = "CodeMirror-lint-markers"
-
-  implicit def extendedConfiguration(config: EditorConfiguration): LintedConfiguration =
-    config.asInstanceOf[LintedConfiguration]
-
-  type LintHandler = js.Function1[String, js.Array[LintFound]]
-
-  implicit class ExtendedCodemirror(obj: CodeMirror.type) {
-
-    def addLint(mode: String)(fun: String=> js.Array[LintFound]): Unit = addLint(mode, fun)
-
-    def addLint(mode: String, fun: LintHandler): Unit = {
-      CodeMirror.dyn.registerHelper("lint", mode, fun)
-    }
-
-  }
-}
-
-

@@ -45,7 +45,7 @@ lazy val commonSettings = Seq(
   unmanagedClasspath in Compile <++= unmanagedResources in Compile,
   libraryDependencies ++= Dependencies.commonShared.value ++ Dependencies.testing.value,
   updateOptions := updateOptions.value.withCachedResolution(true) //to speed up dependency resolution
-) ++ eclipseSettings
+) //++ eclipseSettings
 
 
 val scalaJSDevStage  = Def.taskKey[Pipeline.Stage]("Apply fastOptJS on all Scala.js projects")
@@ -127,7 +127,7 @@ lazy val appJVM = app.jvm settings (scalaJSProjects := Seq(appJS))
 
 lazy val root = Project("root",file("."),settings = commonSettings)
   .settings(
-    name := "kappa-notebook",
+    name := "kappa-notebook-root",
     version := Versions.kappaNotebook,
     mainClass in Compile := (mainClass in appJVM in Compile).value,
     (fullClasspath in Runtime) += (packageBin in appJVM in Assets).value,

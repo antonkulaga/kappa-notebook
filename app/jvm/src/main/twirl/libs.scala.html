@@ -8,59 +8,12 @@
 <link rel="stylesheet" href="/lib/Semantic-UI/semantic.css" />
 <script type="text/javascript" src="/lib/Semantic-UI/semantic.js"></script>
 
-<link rel="stylesheet" href="/lib/codemirror/lib/codemirror.css" type="text/css">
-<script type="text/javascript" src="/lib/codemirror/lib/codemirror.js"></script>
-<script type="text/javascript" src="/lib/codemirror/mode/htmlmixed/htmlmixed.js"></script>
-<script type="text/javascript" src="/lib/codemirror/mode/sparql/sparql.js"></script>
-<script type="text/javascript" src="/lib/codemirror/mode/turtle/turtle.js"></script>
-<script type="text/javascript" src="/lib/codemirror/mode/xml/xml.js"></script>
-<script type="text/javascript" src="/lib/codemirror/addon/mode/simple.js"></script>
-
-<script type="text/javascript" src="/lib/codemirror/addon/hint/show-hint.js"></script>
-
-<link rel="stylesheet" type="text/css" href="/lib/codemirror/addon/lint/lint.css"/>
-<script type="text/javascript" src="/lib/codemirror/addon/lint/lint.js"></script>
-
-<script type="text/javascript" src="/lib/codemirror/addon/fold/foldcode.js"></script>
-
-<link rel="stylesheet" type="text/css" href="/lib/codemirror/addon/fold/foldgutter.css "/>
-<script type="text/javascript" src="/lib/codemirror/addon/fold/brace-fold.js"></script>
-<script type="text/javascript" src="/lib/codemirror/addon/fold/foldgutter.js"></script>
-<script type="text/javascript" src="/lib/codemirror/addon/fold/indent-fold.js "></script>
-<script type="text/javascript" src="/lib/codemirror/addon/fold/comment-fold.js"></script>
-
-<script type="text/javascript" src="/lib/codemirror/addon/fold/foldcode.js"></script>
-
-
 <script type="text/javascript" src="/lib/d3js/d3.min.js"></script>
 
-
-<link rel="stylesheet" type="text/css" href="/resources/brat/static/style-vis.css"/>
-
-<script src="/resources/brat/client/src/configuration.js"></script>
-<script src="/resources/brat/client/src/util.js"></script>
-<script src="/resources/brat/client/src/annotation_log.js"></script>
-<script src="/resources/brat/client/lib/webfont.js"></script>
-
-<script src="/resources/brat/client/src/dispatcher.js"></script>
-<script src="/resources/brat/client/src/url_monitor.js"></script>
-<script src="/resources/brat/client/src/visualizer.js"></script>
-
-<script src="/resources/websim/common.js"></script>
-<script src="/resources/websim/contact.js"></script>
-<link rel="stylesheet" href="/resources/websim/contact.css" type="text/css">
-<script src="/resources/websim/flux.js"></script>
-<script src="/resources/websim/Kappa.js"></script>
-<script src="/resources/brat/client/src/configuration.js"></script>
-
-
-<!--<link rel="stylesheet" href="/resources/pdf/text_layer_builder.css" />-->
-<script src="/resources/pdf/pdf.js"></script>
-<script src="/resources/pdf/ui_utils.js"></script>
-<script src="/resources/pdf/text_layer_builder.js"></script>
-
-
-<script src="/resources/selectionchange.js"></script>
+@includes.html.CodeMirror()
+@includes.html.brat()
+@includes.html.WebSim()
+@includes.html.pdf()
 
 <script type="text/javascript" src="/lib/three.js/three.js"></script>
 <script src="/resources/threejs/CSS3DRenderer.js"></script>

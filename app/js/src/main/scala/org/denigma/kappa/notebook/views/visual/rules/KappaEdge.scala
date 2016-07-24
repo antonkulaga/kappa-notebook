@@ -1,6 +1,7 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.kappa.model.KappaModel
+import org.denigma.kappa.notebook.layouts.ForceEdge
 import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook.views.visual.utils.LineParams
 import rx._
@@ -8,29 +9,69 @@ import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all.attrs
 import org.denigma.threejs.{Side => _, _}
 import org.scalajs.dom.svg.SVG
 
+trait KappaEdge extends ForceEdge {
 
-class KappaEdge(val data: KappaModel.Link, val from: AgentNode, val to: AgentNode, val s: SVG, lp: LineParams = LineParams()) extends KappaView {
+  override type FromNode <: KappaNode
+  override type ToNode <: KappaNode
+
+  def sourcePos: Vector3 = from.view.container.position
+  def targetPos: Vector3 = to.view.container.position
+
+}
+
+trait ArrowEdge extends KappaEdge {
+
+
+  def lineParams: LineParams
+
+  def direction: Vector3 = new Vector3().subVectors(targetPos, sourcePos)
+
+  def middle: Vector3 = new Vector3((sourcePos.x + targetPos.x) / 2,(sourcePos.y + targetPos.y) / 2, (sourcePos.z + targetPos.z) / 2)
+
+  val arrow = new ArrowHelper(direction.normalize(), sourcePos, direction.length(), lineParams.lineColor, lineParams.headLength, lineParams.headWidth)
+
+  protected def posArrow() = {
+    arrow.position.set(sourcePos.x, sourcePos.y, sourcePos.z) // = sourcePos
+    arrow.setDirection(direction.normalize())
+    arrow.setLength(direction.length()-10, lineParams.headLength, lineParams.headWidth)
+  }
+
+
+  def update(): Unit = {
+    posArrow()
+  }
+
+
+}
+
+class KappaSightEdge(val from: AgentNode, val to: SightNode, val lineParams: LineParams = LineParams()) extends ArrowEdge{
+  override type FromNode = AgentNode
+  override type ToNode = SightNode
+
+  update()
+
+}
+
+class KappaStateEdge(val from: SightNode, val to: StateNode, val lineParams: LineParams = LineParams()) extends ArrowEdge{
+  override type FromNode = SightNode
+  override type ToNode = StateNode
+
+  update()
+}
+
+
+class KappaLinkEdge(val data: KappaModel.Link, val from: SightNode, val to: SightNode, val s: SVG, lp: LineParams = LineParams()) extends KappaEdge
+{
+  val view: KappaEdgeView = new KappaEdgeView(data.label, 16, 10, s)
+
+  type FromNode = SightNode
+  type ToNode = SightNode
 
   lazy val fontSize = 14.0
 
   lazy val padding = 3.0
 
   type Data = KappaModel.Link
-
-  lazy val gradientName = "GradModif"
-
-  protected lazy val defaultGradient =
-    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
-      stop(offset := "0%", stopColor := "white"),
-      stop(offset := "100%", stopColor := "deepskyblue")
-    )
-
-  lazy val gradient = Var(defaultGradient)
-
-  def sourcePos: Vector3 = from.sidePosition(data.fromSide)
-  def targetPos: Vector3 = to.sidePosition(data.toSide)
-
-  def middle: Vector3 = new Vector3((sourcePos.x + targetPos.x) / 2,(sourcePos.y + targetPos.y) / 2, (sourcePos.z + targetPos.z) / 2)
 
   def direction: Vector3 = new Vector3().subVectors(targetPos, sourcePos)
 
@@ -40,16 +81,18 @@ class KappaEdge(val data: KappaModel.Link, val from: AgentNode, val to: AgentNod
     arrow.setLength(direction.length()-10, lp.headLength, lp.headWidth)
   }
 
+  def middle: Vector3 = new Vector3((sourcePos.x + targetPos.x) / 2,(sourcePos.y + targetPos.y) / 2, (sourcePos.z + targetPos.z) / 2)
+
   protected def posSprite() = {
     val m = middle
-    view.position.set(m.x, m.y, m.z)
+    view.container.position.set(m.x, m.y, m.z)
   }
 
   import lp._
   val arrow = new ArrowHelper(direction.normalize(), sourcePos, direction.length(), lineColor, headLength, headWidth)
 
-  from.updateSideStroke(data.fromSide, lp.hexColor)
-  to.updateSideStroke(data.toSide, lp.hexColor)
+  //from.updateSideStroke(data.fromSide, lp.hexColor)
+  //to.updateSideStroke(data.toSide, lp.hexColor)
 
 
   def update() = {
@@ -57,7 +100,7 @@ class KappaEdge(val data: KappaModel.Link, val from: AgentNode, val to: AgentNod
     posSprite()
   }
 
-  this.render()
+  this.view.render()
   this.update()
 
 }

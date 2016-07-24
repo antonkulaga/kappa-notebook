@@ -1,7 +1,9 @@
-package org.denigma.kappa.notebook.views.visual.rules.drawing
+package org.denigma.kappa.notebook.views.visual.rules.bordered
 
+import org.denigma.kappa.notebook.views.visual.rules.drawing.Rectangle
 import org.scalajs.dom
 
+@deprecated
 case class SideBorder[T](
                           left: List[(T, Rectangle)],
                           top: List[(T, Rectangle)] = Nil,
@@ -10,8 +12,6 @@ case class SideBorder[T](
 {
 
 }
-
-
 
 object SideBorder {
 

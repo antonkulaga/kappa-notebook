@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.extensions._
-import org.denigma.kappa.notebook.views.visual.rules.layouts.GraphLayout
+import org.denigma.kappa.notebook.layouts.GraphLayout
 import org.denigma.threejs.extensions.Container3D
 import org.denigma.threejs.extensions.controls.JumpCameraControls
 import org.denigma.threejs.extras._
@@ -9,16 +9,26 @@ import org.denigma.threejs.{Object3D, PerspectiveCamera, WebGLRendererParameters
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw._
 import rx._
-
+import rx.Ctx.Owner.Unsafe.Unsafe
 
 class Visualizer (val container: HTMLElement,
-                  val width: Double,
-                  val height: Double,
+                  val widthRx: Rx[Double],
+                  val heightRx: Rx[Double],
                   val layouts: Rx[Vector[GraphLayout]],
                   override val distance: Double
                  )
   extends Container3D
 {
+  override def width = widthRx.now
+  override def height = heightRx.now
+
+  val size = Rx{widthRx() -> heightRx()}
+  size.foreach(wh=>resize(wh._1, wh._2))
+
+  protected def resize(w: Double, h:Double) = {
+    cssRenderer.setSize(w, h)
+    renderer.setSize(w, h)
+  }
 
   override protected def initRenderer= {
     val params = scalajs.js.Dynamic.literal(
@@ -34,13 +44,13 @@ class Visualizer (val container: HTMLElement,
     vr.domElement.style.top	  = "0"
     vr.domElement.style.margin	  = "0"
     vr.domElement.style.padding  = "0"
-    vr.setSize(width,height)
+    vr.setSize(width ,height)
     vr
   }
 
   override protected def initCSSRenderer = {
     val rendererCSS = new HtmlRenderer()
-    rendererCSS.setSize(width,height)
+    rendererCSS.setSize(width, height)
     rendererCSS.domElement.style.position = "absolute"
     rendererCSS.domElement.style.left	  = "0"
     rendererCSS.domElement.style.top	  = "0"

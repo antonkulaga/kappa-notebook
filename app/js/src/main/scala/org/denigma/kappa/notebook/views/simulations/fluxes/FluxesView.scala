@@ -14,7 +14,9 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import scala.collection.immutable.SortedSet
 
 
-class FluxesView(val elem: Element, val items: Rx[List[FluxMap]]) extends ItemsSeqView{
+class FluxesView(val elem: Element, val items: Rx[List[FluxMap]], tab: Rx[String]) extends ItemsSeqView{
+
+  val active: Rx[Boolean] = selected.map(s=>s=="fluxes")
 
   val selected: Var[String] = Var("")
 

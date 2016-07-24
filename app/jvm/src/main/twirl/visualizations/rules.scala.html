@@ -1,39 +1,31 @@
 @()
 <section class="ui attached segment tab" data-class-active-if="rulesActive">
   <div class="ui equal width grid">
-    <div class="row">
+    <div class="equal width row">
       <section class="column">
-        <h4 class="ui blue header">Left side</h4>
-      </section>
+      <h4 class="ui blue header">Input (left side)</h4>
+      <div id = "LeftGraph" data-view="LeftGraph" data-param-container="left-container">
+        <div id="left-container" class="graph container"></div>
+      </div>
+    </section>
+    </div>
+    <div class="equal width row">
       <section class="segment column">
-        <h4 class="ui blue header">Right side</h4>
-      </section>
-    </div>
-    <div class="row">
-      <section class="column">
-        <div class="ui blue segment">
-          <div id = "LeftGraph" data-view="LeftGraph" data-param-container="left-container">
-            <div id="left-container" class="graph"></div>
-          </div>
-        </div>
-      </section>
-      <section class="column">
-        <div class="ui blue segment">
-          <div id = "RightGraph" data-view="RightGraph"  data-param-container="right-container">
-            <div id="right-container" class="graph"></div>
-          </div>
+        <h4 class="ui blue header">Output (right side)</h4>
+        <div id = "RightGraph" data-view="RightGraph"  data-param-container="right-container">
+          <div id="right-container" class="graph container"></div>
         </div>
       </section>
     </div>
-    <div class="row">
+    <div class="equal width row">
       <div class="column">
         <div class="ui blue segment">
-          <b>Current line: </b> <span data-bind="currentLine"></span>
           <i class="ui label">Legend:</i>
           <span class="ui red label">removed</span>,
           <span class="ui green label">added</span>,
           <span class="ui violet label">changed</span>
         </div>
+        <b>Current line: </b> <span data-bind="currentLine"></span>
       </div>
     </div>
   </div>

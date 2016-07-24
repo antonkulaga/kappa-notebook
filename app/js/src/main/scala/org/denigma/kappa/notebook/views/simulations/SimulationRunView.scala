@@ -3,10 +3,12 @@ package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.views.{BindableView, UpdatableView}
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
-import org.denigma.kappa.messages.WebSimMessages.{KappaPlot, SimulationStatus}
+import org.denigma.kappa.messages.WebSimMessages.{FluxMap, KappaPlot, SimulationStatus}
 import org.denigma.kappa.notebook.views.common._
+import org.denigma.kappa.notebook.views.simulations.fluxes.FluxesView
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 import rx._
 
 class SimulationRunView(val elem: Element,
@@ -21,7 +23,7 @@ class SimulationRunView(val elem: Element,
 
   val plot: Rx[KappaPlot] = simulation.map(s=>s.plot.getOrElse(KappaPlot.empty))
 
-  val fluxMap = simulation.map(s=>s.flux_maps)
+  val fluxMap: Rx[List[FluxMap]] = simulation.map(s=>s.flux_maps)
 
 
   //val selected = simulation.map(s=>s.st)
@@ -40,10 +42,8 @@ class SimulationRunView(val elem: Element,
       case (el, _) =>
         new LaunchParametersView(el, simulation, tab).withBinder(new FixedBinder(_))
     }
-/*
-    .register("FluxMaps") {
+    .register("Fluxes") {
       case (el, params) =>
-        new Flux(el, Var(id), plot).withBinder(new FixedBinder(_))
+        new FluxesView(el, fluxMap, tab).withBinder(new FixedBinder(_))
     }
-  */
 }

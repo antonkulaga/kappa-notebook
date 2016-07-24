@@ -16,6 +16,11 @@ object MyStyles extends MainStyles
     fontSize(0.9 em)
   }
 
+  ".plot" -(
+      maxWidth(600 px),
+      maxHeight(65 vh)
+    )
+
   ".noscroll" -(
     overflowX.hidden important,
     overflowY.hidden important
@@ -34,6 +39,16 @@ object MyStyles extends MainStyles
 
   ".ui.table td.collapsing" -(
     padding(0 px) important
+    )
+
+  ".graph.container" -(
+    minHeight(300 px),
+    minWidth(300 px)
+    )
+  ".graph.container:before" -(
+      content := "",
+      display.block,
+      paddingTop(100 %%)
     )
 }
 

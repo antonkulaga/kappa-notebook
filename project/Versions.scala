@@ -18,7 +18,7 @@ trait OtherJVM {
 
 	val bcrypt = "2.4"
 
-	val ammonite = "0.6.2"
+	val ammonite = "0.7.0"
 
 	val apacheCodec = "1.10"
 

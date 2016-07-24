@@ -117,8 +117,8 @@ lazy val app = crossProject
       }
       stages
     },
-    libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value ++ Dependencies.ammonite.value,
-    initialCommands in (Test, console) := Console.out
+    libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value// ++ Dependencies.ammonite.value,
+    //initialCommands in (Test, console) := Console.out
   )
   .jvmConfigure(p => p.enablePlugins(SbtTwirl, SbtWeb, PlayScalaJS))
 

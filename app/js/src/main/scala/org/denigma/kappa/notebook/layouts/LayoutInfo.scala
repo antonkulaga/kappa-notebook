@@ -1,14 +1,13 @@
-package org.denigma.kappa.notebook.views.visual.rules.layouts
+package org.denigma.kappa.notebook.layouts
 
 import org.denigma.threejs.Vector3
 
-class LayoutInfo
+class LayoutInfo(val mass: Double = 1.0)
 {
 
   val pos: Vector3 = new Vector3(0, 0, 0)
 
   val offset: Vector3 = new Vector3(0, 0, 0)
-
 
   var force: Double = 0
 

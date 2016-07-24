@@ -76,7 +76,8 @@ object KappaFile
     override def compare(x: KappaFile, y: KappaFile): Int = x.name.compare(y.name) match {
       case 0 =>
         x.path.compare(y.path) match {
-          case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
+          case 0 =>
+            x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
           case other => other
         }
       case other => other

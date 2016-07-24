@@ -1,12 +1,12 @@
 package org.denigma.kappa.notebook.views.editor
 
 import fastparse.core.Parsed
-import org.denigma.codemirror.{Editor, LineInfo, PositionLike}
+import org.denigma.codemirror.{Doc, Editor, LineInfo, PositionLike}
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel._
 import org.denigma.kappa.notebook.parsers.KappaParser
 import org.denigma.kappa.notebook.views.visual._
-import org.denigma.kappa.notebook.views.visual.rules.{AgentNode, KappaEdge}
+import org.denigma.kappa.notebook.views.visual.rules.{AgentNode, KappaEdge, RulesForceLayout}
 import org.scalajs.dom.svg.SVG
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -14,16 +14,15 @@ import org.denigma.binding.extensions._
 import org.denigma.threejs.extras.HtmlSprite
 import rx.Rx.Dynamic
 import org.denigma.kappa.notebook.extensions._
-import org.denigma.kappa.notebook.views.visual.rules.layouts._
+import org.denigma.kappa.notebook.layouts._
 
 import scalatags.JsDom
-
 import scala.collection.immutable.SortedSet
 
 /**
   * Created by antonkulaga on 11/03/16.
   */
-class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[EditorUpdates], s: SVG)  {
+class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[EditorUpdates])  {
 
   val kappaParser = new KappaParser
 
@@ -37,33 +36,38 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   //lazy val painter: SpritePainter = new SpritePainter(agentFontSize, padding, s)
 
-  val leftPattern: WatchPattern = new WatchPattern(s)
+  //val leftPattern: WatchPattern = new WatchPattern(s)
 
-  val rightPattern: WatchPattern = new WatchPattern(s)
+  //val rightPattern: WatchPattern = new WatchPattern(s)
+
+  val leftPattern: Var[Pattern] = Var(Pattern.empty)
+
+  val rightPattern: Var[Pattern] = Var(Pattern.empty)
+
 
   val direction: Var[KappaModel.Direction] = Var(KappaModel.Left2Right)
 
   //protected val graivityForce = new Gravity(ForceLayoutParams.default2D.attractionMult, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
 
-  protected val borderForce = new BorderForce(ForceLayoutParams.default2D.repulsionMult, 10, 0.9, ForceLayoutParams.default2D.center)
-
-  protected val forces: Vector[Force[AgentNode, KappaEdge]] = Vector(
-    new Repulsion(ForceLayoutParams.default2D.repulsionMult),
-    new Attraction(ForceLayoutParams.default2D.attractionMult),
-    borderForce
-  )
-
-
   val text: Rx[String] = cursor.map{
     case None => ""
-    case Some((ed: Editor, lines)) => getKappaLine(ed, lines.line)
+    case Some((ed: Editor, lines)) => getEditorLine(ed, lines.line)
  }
 
-  protected def getKappaLine(ed: Editor, line: Int, acc: String = ""): String = {
+  protected def getKappaLine(getLine: Double => String)(line: Int, count: Int, acc: String = ""): String = {
+    val t = getLine(line).trim
+    if(t.endsWith("\\") && (line+ 1)< count) {
+      val newLine =" " + (t.indexOf("#") match {
+        case -1 => t.dropRight(1)
+        case index => t.dropRight(t.length - index)
+      })
+      getKappaLine(getLine)(line + 1, count, acc+ newLine)
+    } else (acc+ " " + t).trim
+  }
+
+  protected def getEditorLine(ed: Editor, line: Int, acc: String = ""): String = {
     val doc = ed.getDoc()
-    val t = doc.getLine(line)
-    val result = acc + t
-    if(t.trim.endsWith("\\") && (line+ 1)< doc.lineCount()) getKappaLine(ed, line + 1, result) else result
+    getKappaLine(doc.getLine)(line, doc.lineCount().toInt, acc)
   }
 
   text.onChange(t=>parseText(t))
@@ -75,28 +79,32 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       agentParser.parse(line).onSuccess{
         case result =>
           val value = Pattern(List(result))
-          leftPattern.refresh(value, forces)
-          rightPattern.refresh(Pattern.empty, forces)
+          leftPattern() = value
+          rightPattern() = Pattern.empty
+          //leftPattern.refresh(value, forces)
+          //rightPattern.refresh(Pattern.empty, forces)
 
       }.onFailure{
         input=>
           ruleParser.parse(input).onSuccess{
             case rule =>
               direction() = rule.direction
-              leftPattern.refresh(rule.left, forces)
-              rightPattern.refresh(rule.right, forces)
+              leftPattern() = rule.left
+              rightPattern() = rule.right
+
+              //leftPattern.refresh(rule.left, forces)
+              //rightPattern.refresh(rule.right, forces)
+              /*
               for {
                 n <- leftPattern.nodes.now
               }
-                if(rule.removed.contains(n.data)) n.markDeleted()
-                else if(rule.added.contains(n.data)) n.markAdded()
+                if(rule.removed.contains(n.agent)) n.markDeleted() else if(rule.added.contains(n.agent)) n.markAdded()
 
               for {
                 n <- rightPattern.nodes.now
               }
-                if(rule.added.contains(n.data)) n.markAdded()
-                else
-                if(rule.modified.contains(n.data)) n.markChanged()
+                if(rule.added.contains(n.agent)) n.markAdded() else if(rule.modified.contains(n.agent)) n.markChanged()
+              */
               /*
               val (chLeft, chRight) = rule
               for{
@@ -131,7 +139,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
 
 }
-
+/*
 class WatchPattern(s: SVG) {
 
   val pattern = Var(Pattern.empty)
@@ -153,6 +161,7 @@ class WatchPattern(s: SVG) {
 
   val nodes: Rx[Vector[AgentNode]] = agentMap.map(mp => mp.values.toVector)//agents.toSyncVector(agent2node)((a, n)=> n.data == a)
 
+  /*
   val edges: Rx[Vector[KappaEdge]] = Rx{
     val mp = agentMap()
     val ls = links()
@@ -169,13 +178,15 @@ class WatchPattern(s: SVG) {
     //println("EDGES NUMBER = "+result.length)
     result
   }
+  */
 
   def refresh(value: Pattern, forces: Vector[Force[AgentNode, KappaEdge]] ): Unit =  if(value != pattern.now) {
     layouts() = Vector.empty
     pattern() = value
-    layouts() = Vector(new ForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces))
+    //layouts() = Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces))
   }
 
   def clean() = refresh(Pattern.empty, Vector.empty)
 
 }
+*/

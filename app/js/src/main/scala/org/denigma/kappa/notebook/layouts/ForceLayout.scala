@@ -1,10 +1,11 @@
-package org.denigma.kappa.notebook.views.visual.rules.layouts
+package org.denigma.kappa.notebook.layouts
 
-import org.denigma.kappa.notebook.views.visual.rules.layouts.LayoutMode.LayoutMode
-import org.denigma.kappa.notebook.views.visual.rules.{AgentNode, KappaEdge}
+import org.denigma.kappa.notebook.layouts.LayoutMode.LayoutMode
 import org.denigma.kappa.notebook.views.visual.utils.Randomizable
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
 import rx._
+
+import scala.collection.immutable._
 
 object ForceLayoutParams {
 
@@ -35,24 +36,39 @@ object LayoutMode extends Enumeration {
 }
 
 
-class ForceLayout(
+trait ForceNode
+{
+  def layoutInfo: LayoutInfo
+  def position: Vector3
 
-                   val graphNodes: Rx[Vector[AgentNode]],
-                   val graphEdges: Rx[Vector[KappaEdge]],
-                   val mode: LayoutMode,
-                   val forces: Vector[Force[AgentNode, KappaEdge]]
-                 ) extends GraphLayout  with Randomizable
+}
+
+trait ForceEdge {
+
+  type FromNode <: ForceNode
+  type ToNode <: ForceNode
+
+  def from: FromNode
+  def to: ToNode
+
+  def update(): Unit
+}
+
+trait ForceLayout extends GraphLayout  with Randomizable
 {
 
-  type Node = AgentNode
-  type Edge = KappaEdge
+  type Node <: ForceNode //= AgentNode
+  type Edge <: ForceEdge //= KappaEdge
 
-  def nodes: Vector[AgentNode] = graphNodes.now
-  def edges: Vector[KappaEdge] = graphEdges.now
+  def mode: LayoutMode
+  def forces: Vector[Force[Node, Edge]]
+
+  def nodes: Rx[Vector[Node]]
+  def edges: Rx[Vector[Edge]]
 
   def info(node: Node): LayoutInfo = node.layoutInfo
 
-  def defRandomDistance = 30
+  def defRandomDistance = 50
 
   def randomPos()=  mode match {
     case LayoutMode.TwoD =>
@@ -78,32 +94,37 @@ class ForceLayout(
 
   def active = _active
 
-  def start(width: Double, height: Double, camera: PerspectiveCamera): Unit = {
+  protected def randomize(nds: Vector[Node]) = {
+    for(n <- nds) info(n).init(randomPos())
+  }
 
-    for(n <- nodes) info(n).init(randomPos())
+  def start(width: Double, height: Double, camera: PerspectiveCamera): Unit = {
+    randomize(nodes.now)
     var temperature = width / 50.0
     layoutIterations = 0
     active = true
   }
 
-  def tick(width: Double, height: Double, camera: PerspectiveCamera) = if(keepGoing(nodes.size))
-  {
-    var forceConstant: Double = Math.sqrt(height * width / nodes.size)
-
-    for(force <- forces)
+  def tick(width: Double, height: Double, camera: PerspectiveCamera) = {
+    if(keepGoing(nodes.now.size))
     {
-      force.tick(width, height, camera, nodes, edges, forceConstant)
-      this.position(nodes)
+      var forceConstant: Double = Math.sqrt(height * width / nodes.now.size)
+
+      for(force <- forces)
+      {
+        force.tick(width, height, camera, nodes.now, edges.now, forceConstant)
+        this.position(nodes.now)
+      }
+      temperature *= (1 - (layoutIterations / this.maxIterations))
+      layoutIterations += 1
+      this.update(this.edges.now)
     }
-    temperature *= (1 - (layoutIterations / this.maxIterations))
-    layoutIterations += 1
-    this.update(this.edges)
   }
 
   def position(nodes: Vector[Node]) = {
     for {i <- nodes.indices} {
       val node = nodes(i)//.view
-      val view = node.view
+      //val view = node.view
       val l = info(node)
 
       val length = Math.max(EPSILON, l.offset.length())
@@ -111,9 +132,9 @@ class ForceLayout(
       l.pos.y += (l.offset.y / length) * Math.min(length, temperature)
       l.pos.z += (l.offset.z / length) * Math.min(length, temperature)
 
-      view.position.x -= (view.position.x - l.pos.x) / 10
-      view.position.y -= (view.position.y - l.pos.y) / 10
-      view.position.z -= (view.position.z - l.pos.z) / 10
+      node.position.x -= (node.position.x - l.pos.x) / 10
+      node.position.y -= (node.position.y - l.pos.y) / 10
+      node.position.z -= (node.position.z - l.pos.z) / 10
     }
   }
 

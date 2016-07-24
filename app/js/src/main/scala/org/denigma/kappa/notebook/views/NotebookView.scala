@@ -101,7 +101,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val kappaCursor: Var[Option[(Editor, PositionLike)]] = Var(None)
 
-  val kappaWatcher: KappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates, s)
+  val kappaWatcher: KappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates)
 
   val menu: Var[List[(String, Element)]] = Var(List.empty[(String, Element)])
 
@@ -127,16 +127,16 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
         addMenuItem(el, MainTabs.Editor)
         editor
     }
+    .register("VisualPanel"){
+      case (el, args) =>
+        val v = new VisualPanelView(el, kappaWatcher, input, s).withBinder(n => new CodeBinder(n))
+        addMenuItem(el, MainTabs.Visualizations)
+        v
+    }
     .register("Simulations") {
       case (el, params) =>
         val v = new SimulationsView(el, sourceMap, input, output, serverConfiguration).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Simulations)
-        v
-    }
-    .register("VisualPanel"){
-      case (el, args) =>
-        val v = new VisualPanelView(el, kappaWatcher, input).withBinder(n => new CodeBinder(n))
-        addMenuItem(el, MainTabs.Visualizations)
         v
     }
     .register("Annotator"){

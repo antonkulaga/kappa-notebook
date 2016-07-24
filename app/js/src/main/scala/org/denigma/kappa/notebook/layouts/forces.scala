@@ -1,18 +1,14 @@
-package org.denigma.kappa.notebook.views.visual.rules.layouts
+package org.denigma.kappa.notebook.layouts
 
 import org.denigma.kappa.notebook.views.visual.rules.drawing.Rectangle
-import org.denigma.kappa.notebook.views.visual.rules.layouts.LayoutMode.LayoutMode
-import org.denigma.kappa.notebook.views.visual.rules.{AgentNode, KappaEdge}
-import org.denigma.kappa.notebook.views.visual.utils.Randomizable
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
-import rx._
 
 
-class Attraction(val attractionMult: Double, EPSILON: Double = 0.00001) extends Force[AgentNode, KappaEdge] {
+class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Double, EPSILON: Double = 0.00001, compare: (Edge#FromNode, Edge#ToNode) => (Double, Double) ) extends Force[Node, Edge] {
 
 
-  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[AgentNode], edges: Vector[KappaEdge], forceConstant: Double) = {
-    val attraction = attractionMult * forceConstant
+  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
+    val attractionGlobal = attractionMult * forceConstant
     for {i <- edges.indices} {
       val edge = edges(i)
       //val l1 = edge.from.view.layout
@@ -25,20 +21,22 @@ class Attraction(val attractionMult: Double, EPSILON: Double = 0.00001) extends 
       val deltaZ = l1.pos.z - l2.pos.z
 
       val distance = Math.max(EPSILON, l1.pos.distanceTo(l2.pos))
+      val (m1, m2) = compare(edge.from, edge.to)
 
-      val force = distance  / attraction
+      val force1= distance  / (attractionGlobal * m2)
+      val force2 = distance  / (attractionGlobal * m1)
 
-      l1.force -= force
-      l2.force += force
+      l1.force -= force1
+      l2.force += force2
 
-      l1.offset.x -= deltaX  * force
-      l1.offset.y -= deltaY  * force
-      l1.offset.z -= deltaZ  * force
+      l1.offset.x -= deltaX  * force1
+      l1.offset.y -= deltaY  * force1
+      l1.offset.z -= deltaZ  * force1
 
 
-      l2.offset.x += deltaX  * force
-      l2.offset.y += deltaY  * force
-      l2.offset.z += deltaZ  * force
+      l2.offset.x += deltaX  * force2
+      l2.offset.y += deltaY  * force2
+      l2.offset.z += deltaZ  * force2
     }
   }
 
@@ -91,7 +89,7 @@ class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double
 
 }
 */
-class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double, center: Vector3) extends Force[AgentNode, KappaEdge] {
+class BorderForce[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double, val threshold: Double, mult: Double, center: Vector3) extends Force[Node, Edge] {
 
   def border(width: Double, height: Double) = Rectangle.fromCorners(center.x - width / 2, center.y - height / 2, center.x + width / 2, center.y + height / 2)
 
@@ -110,7 +108,7 @@ class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double
   }
 
 
-  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[AgentNode], edges: Vector[KappaEdge], forceConstant: Double) = {
+  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
     val repulsion = repulsionMult * forceConstant
     val rect = border(width *  mult, height * mult)
     for {
@@ -138,19 +136,18 @@ class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double
 
 }
 
-class Gravity(val attractionMult: Double, val gravityMult: Double, center: Vector3,  EPSILON: Double = 0.00001) extends Force[AgentNode, KappaEdge] {
+class Gravity[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Double, val gravityMult: Double, center: Vector3,  EPSILON: Double = 0.00001) extends Force[Node, Edge] {
 
-  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[AgentNode], edges: Vector[KappaEdge], forceConstant: Double) = {
+  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
     val attraction = attractionMult * forceConstant
     for {i <- nodes.indices}
     {
       val no1 = nodes(i)
-      val n1 = no1.view
       val l1 = no1.layoutInfo
       if(i==0) l1.setOffsets(0, 0, 0)
 
       l1.force = 0
-      l1.init(n1.position)
+      l1.init(no1.position)
 
       val deltaX = l1.pos.x - center.x
       val deltaY = l1.pos.y - center.y
@@ -170,47 +167,49 @@ class Gravity(val attractionMult: Double, val gravityMult: Double, center: Vecto
 }
 
 
-class Repulsion(val repulsionMult: Double, EPSILON: Double = 0.00001) extends Force[AgentNode, KappaEdge] {
+class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double, EPSILON: Double = 0.00001, compareRepulstion: (Node, Node) => (Double, Double)) extends Force[Node, Edge] {
 
-  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[AgentNode], edges: Vector[KappaEdge], forceConstant: Double) = {
+  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
     val repulsion = repulsionMult * forceConstant
     for {i <- nodes.indices}
     {
       val no1 = nodes(i)
-      val n1 = no1.view
+      //val n1 = no1.view
       val l1 = no1.layoutInfo
       if(i==0) l1.setOffsets(0, 0, 0)
 
       l1.force = 0
-      l1.init(n1.position)
+      l1.init(no1.position)
 
       for {j <- (i + 1) until  nodes.size; if i != j} {
         val no2 = nodes(j)
-        val n2 = no2.view
         val l2 = no2.layoutInfo
-        l2.init(n2.position)
+        l2.init(no2.position)
 
         val deltaX = l1.pos.x - l2.pos.x
         val deltaY = l1.pos.y - l2.pos.y
         val deltaZ = l1.pos.z - l2.pos.z
+        val (m1, m2) = compareRepulstion(no1, no2)
 
         val distance = Math.max(EPSILON, l1.pos.distanceTo(l2.pos))
+        val distSquared  = Math.pow(distance, 2)
 
-
-        val force =  (repulsion * repulsion) / Math.pow(distance, 2)
-        l1.force += force
-        l1.offset.x = l1.offset.x + (deltaX / distance) * force
-        l1.offset.y = l1.offset.y + (deltaY / distance) * force
-        l1.offset.z = l1.offset.z + (deltaZ / distance) * force
+        val force1 =  (repulsion * repulsion) * m1 / distSquared
+        l1.force += force1
+        l1.offset.x = l1.offset.x + (deltaX / distance) * force1
+        l1.offset.y = l1.offset.y + (deltaY / distance) * force1
+        l1.offset.z = l1.offset.z + (deltaZ / distance) * force1
 
         if(i==0){
           l2.setOffsets(0,0,0)
         }
 
-        l2.force += force
-        l2.offset.x = l2.offset.x - (deltaX / distance) * force
-        l2.offset.y = l2.offset.y - (deltaY / distance) * force
-        l2.offset.z = l2.offset.z - (deltaZ / distance) * force
+        val force2 = (repulsion * repulsion)  * m2 / distSquared
+
+        l2.force += force2
+        l2.offset.x = l2.offset.x - (deltaX / distance) * force2
+        l2.offset.y = l2.offset.y - (deltaY / distance) * force2
+        l2.offset.z = l2.offset.z - (deltaZ / distance) * force2
       }
     }
   }

@@ -46,11 +46,11 @@ class KappaParser extends CommentLinksParser
 
   val state: P[State] = P("~" ~ name).map(s=> State(s) )
 
-  val side: P[Sight] = P(name ~ state.rep ~ linkLabel.rep)
-    .map{ case (n, states, links) => Sight(n, states.toSet, links.toSet) }
+  val side: P[Site] = P(name ~ state.rep ~ linkLabel.rep)
+    .map{ case (n, states, links) => Site(n, states.toSet, links.toSet) }
 
   val agent: P[Agent] = P(name ~ "(" ~ side.? ~ (optSpaces ~ "," ~ optSpaces ~ side).rep ~ ")").map{
-    case (n, sideOpt, sides2) => Agent(n,  sideOpt.map(List(_)).getOrElse(List.empty[Sight]) ::: sides2.toList)
+    case (n, sideOpt, sides2) => Agent(n,  sideOpt.map(List(_)).getOrElse(List.empty[Site]) ::: sides2.toList)
   }
 
   val agentDecl: P[Agent] = P(optSpaces ~ "%agent:" ~ optSpaces ~ agent)

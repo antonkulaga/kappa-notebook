@@ -26,13 +26,13 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       }
 
       inside(parser.agent.parse("A(x,c~u!1)")) {
-        case res@Parsed.Success(v, index: Int) if v == Agent("A", List(Sight("x", Set(), Set()), Sight("c", Set(State("u")), Set("1")))) =>
+        case res@Parsed.Success(v, index: Int) if v == Agent("A", List(Site("x", Set(), Set()), Site("c", Set(State("u")), Set("1")))) =>
       }
 
       val A = "%agent: A(x,c) # Declaration of agent A"
 
       inside(parser.agentDecl.parse(A)) {
-        case res@Parsed.Success(v, index: Int) if v == KappaModel.Agent("A", List(Sight("x"), Sight("c"))) =>
+        case res@Parsed.Success(v, index: Int) if v == KappaModel.Agent("A", List(Site("x"), Site("c"))) =>
       }
 
     }
@@ -71,7 +71,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
         case res@Parsed.Success(v, index: Int) if v.name == "a binds to b"
           && v.left.agents.length == 3
           && v.right.agents.length == 3
-          && v.right.agents.tail.head == Agent("B", List(Sight("x", Set(), Set("1"))))
+          && v.right.agents.tail.head == Agent("B", List(Site("x", Set(), Set("1"))))
         =>
       }
       val withoutName = "A(x),B(x),C(x!_) <-> A(x!1),B(x!1),C(x!_) @ 'on_rate','off_rate'"
@@ -79,7 +79,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
         case res@Parsed.Success(v, index: Int) if v.name == "a binds to b"
           && v.left.agents.length == 3
           && v.right.agents.length == 3
-          && v.right.agents.tail.head == Agent("B", List(Sight("x", Set(), Set("1"))))
+          && v.right.agents.tail.head == Agent("B", List(Site("x", Set(), Set("1"))))
         =>
       }
     }

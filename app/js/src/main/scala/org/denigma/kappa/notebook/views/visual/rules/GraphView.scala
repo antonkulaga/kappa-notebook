@@ -2,6 +2,7 @@ package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
+import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.Agent
 import org.denigma.kappa.notebook.layouts._
 import org.denigma.kappa.notebook.views.visual.utils.LineParams
@@ -11,18 +12,21 @@ import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import org.denigma.kappa.notebook.extensions._
+import rx.Rx.Dynamic
 
+import scala.List
+import scala.Predef.Map
 import scala.collection.immutable._
 
 case class KappaNodeVisualSettings(font: Double, padding: Double)
-case class KappaEdgeVisualSettings(fond: Double, padding: Double, line: LineParams)
+case class KappaEdgeVisualSettings(font: Double, padding: Double, line: LineParams)
 
 //new KappaAgentView(agent.name, 24.0, 10, s )
 
 case class VisualSettings(
                            canvas: SVG,
                            agent: KappaNodeVisualSettings = KappaNodeVisualSettings(26, 8),
-                           sight: KappaNodeVisualSettings  = KappaNodeVisualSettings(16, 6),
+                           sites: KappaNodeVisualSettings  = KappaNodeVisualSettings(16, 6),
                            state: KappaNodeVisualSettings = KappaNodeVisualSettings(14, 4),
                            link: KappaEdgeVisualSettings = KappaEdgeVisualSettings(14, 4, LineParams()),
                            otherArrows: LineParams = LineParams()
@@ -32,7 +36,7 @@ case class VisualSettings(
 class GraphView(val elem: Element,
                 val agents: Rx[SortedSet[Agent]],
                 val containerName: String,
-                visualSettings: VisualSettings
+                val visualSettings: VisualSettings
                ) extends BindableView {
 
   lazy val size: (Double, Double) = elem.getBoundingClientRect() match {
@@ -50,13 +54,16 @@ class GraphView(val elem: Element,
     new KappaAgentView(agent.agent.name, visualSettings.agent.font, visualSettings.agent.padding, visualSettings.canvas)
   }
 
-  implicit protected def createSightNodeView(sight: SightNode): KappaSightView = {
-    new KappaSightView(sight.sight.name, visualSettings.sight.font, visualSettings.sight.padding, visualSettings.canvas)
+  implicit protected def createSiteNodeView(site: SiteNode): KappaSiteView = {
+    new KappaSiteView(site.site.name, visualSettings.sites.font, visualSettings.sites.padding, visualSettings.canvas)
   }
-
 
   implicit protected def createStateNodeView(state: StateNode): KappaStateView = {
     new KappaStateView(state.state.name, visualSettings.state.font, visualSettings.state.padding, visualSettings.canvas)
+  }
+
+  implicit protected def createLinkView(edge: KappaLinkEdge): KappaLinkView = {
+    new KappaLinkView(edge.link.label, visualSettings.link.font, visualSettings.link.padding, visualSettings.canvas)
   }
 
   protected val gravityForce = new Gravity[KappaNode, KappaEdge](ForceLayoutParams.default2D.attractionMult / 4, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
@@ -65,22 +72,22 @@ class GraphView(val elem: Element,
   protected val borderForce = new BorderForce[KappaNode, KappaEdge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
 
   protected def compareRepulsion(node1: KappaNode, node2: KappaNode): (Double, Double) = (node1, node2) match {
-    case (from: AgentNode, to: SightNode) => (0.5, 0.5)
-    case (from: SightNode, to: AgentNode) => (0.5, 0.5)
+    case (from: AgentNode, to: SiteNode) => (0.5, 0.5)
+    case (from: SiteNode, to: AgentNode) => (0.5, 0.5)
     case (from: AgentNode, to: AgentNode) =>(1, 1)
-    case (from: SightNode, to: StateNode) => (0.4, 0.4)
-    case (from: StateNode, to: SightNode) => (0.2, 0.2)
-    case (from: SightNode, to: SightNode) => (0.5, 0.5)
+    case (from: SiteNode, to: StateNode) => (0.4, 0.4)
+    case (from: StateNode, to: SiteNode) => (0.2, 0.2)
+    case (from: SiteNode, to: SiteNode) => (0.5, 0.5)
     case other => (1, 1)
   }
 
   protected def compareSpring[Edge<: KappaEdge](node1: Edge#FromNode, node2: Edge#ToNode): (Double, Double) = (node1, node2) match {
-    case (from: AgentNode, to: SightNode) => (1, 1)
-    case (from: SightNode, to: AgentNode) => (1, 1)
+    case (from: AgentNode, to: SiteNode) => (1, 1)
+    case (from: SiteNode, to: AgentNode) => (1, 1)
     case (from: AgentNode, to: AgentNode) =>(1, 1)
-    case (from: SightNode, to: SightNode) =>(1, 1)
-    case (from: SightNode, to: StateNode) =>(1, 1)
-    case (from: StateNode, to: SightNode) =>(1, 1)
+    case (from: SiteNode, to: SiteNode) =>(1, 1)
+    case (from: SiteNode, to: StateNode) =>(1, 1)
+    case (from: StateNode, to: SiteNode) =>(1, 1)
     case other => (1, 1)
   }
 
@@ -93,16 +100,22 @@ class GraphView(val elem: Element,
 
   val agentNodes: Var[Set[AgentNode]] = Var(Set.empty[AgentNode])
 
-  val sightNodes: Rx[Set[SightNode]] = agentNodes.map(ags => ags.flatMap(ag=>ag.children))
+  val siteNodes: Rx[Set[SiteNode]] = agentNodes.map(ags => ags.flatMap(ag=>ag.children))
 
-  val stateNodes: Rx[Set[StateNode]] = sightNodes.map(sn => sn.flatMap(s =>s.children))
+  val stateNodes: Rx[Set[StateNode]] = siteNodes.map(sn => sn.flatMap(s =>s.children))
 
-  val links: Rx[Map[String, List[SightNode]]] = sightNodes.map{
-    case sns => sns.toList.flatMap(sns =>  sns.sight.links.map(l=> (sns , l))).groupBy(_._2).mapValues(lst => lst.map(_._1))
+  val links: Rx[Map[String, List[SiteNode]]] = siteNodes.map{
+    case sNodes =>
+      sNodes.toList
+        .flatMap(node =>  node.site.links.map(l=> (node , l)))
+        .groupBy{case (site, link)=> link}
+        .mapValues(lst => lst.map{
+          case (key, value) => key })
   }
 
+
   val allNodes: Rx[Set[KappaNode]] = Rx{
-    agentNodes() ++ sightNodes() ++ stateNodes()//++ links()
+    agentNodes() ++ siteNodes() ++ stateNodes()//++ links()
   }
 
   val nodes: Rx[Vector[KappaNode]] = allNodes.map(n=>n.toVector)//Var(Vector.empty[KappaNode])
@@ -115,7 +128,7 @@ class GraphView(val elem: Element,
     width,
     height,
     layouts,
-    800.0
+    700.0
   )
   protected def onAgentsUpdate(removed: Set[Agent], added: Set[Agent]) = {
     val addedNodes = added.map(a => new AgentNode(a))
@@ -159,11 +172,28 @@ class GraphView(val elem: Element,
     }
   }
 
+  protected def createLinkEdges(mp: Map[String, List[SiteNode]]): List[KappaEdge] = {
+    mp.collect{
+      //case (key, site::Nil) => //let us skip this for the sake of simplicity
+      case (key, site1::site2::Nil) =>   new KappaLinkEdge(key, site1, site2)(createLinkView): KappaEdge
+      //case (key, other) => throw  new Exception(s"too many sites for the link $key ! Sights are: $other")
+    }.toList
+  }
+
+  protected def onLinkChanged(removed: Map[String, List[SiteNode]], added: Map[String, List[SiteNode]], updated: Map[String, (List[SiteNode], List[SiteNode])]) = {
+
+    edges() = edges.now.filterNot{
+      case edge: KappaLinkEdge => removed.contains(edge.link.label) || updated.contains(edge.link.label)
+      case other => false
+    } ++ createLinkEdges(added) ++ createLinkEdges(updated.mapValues(_._2))
+
+  }
+
   protected def foldEdges(acc: List[KappaEdge], node: KappaNode): List[KappaEdge] = {
     node match {
-      case n: SightNode => new KappaSightEdge(n.parent, n) :: acc
+      case n: SiteNode => new KappaSiteEdge(n.parent, n) :: acc
       case n: StateNode => new KappaStateEdge(n.parent, n) :: acc
-      case _ => acc
+      case _ => acc //note: we process link edges separately
     }
   }
 
@@ -172,7 +202,11 @@ class GraphView(val elem: Element,
     allNodes.updates.foreach{
       case upd => onNodesChanges(upd.removed, upd.added)
     }
-    edges.removedInserted.onChange{case (removed, inserted)=> onEdgesChanges(removed.toList, inserted.toList)}
+    links.updates.foreach{
+      case upd =>
+        onLinkChanged(upd.removed, upd.added, upd.updated)
+    }
+    edges.removedInserted.foreach{case (removed, inserted)=> onEdgesChanges(removed.toList, inserted.toList)}
     layouts.now.foreach(_.start(viz.width, viz.height, viz.camera))
   }
 

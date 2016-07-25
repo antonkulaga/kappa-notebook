@@ -22,7 +22,7 @@ trait KappaNode extends ForceNode {
   def position = view.container.position
 }
 
-class SightNode(val parent: AgentNode, val sight: KappaModel.Sight)(implicit val fun: SightNode => KappaSightView, val stateFun: StateNode => KappaStateView) extends KappaOrganizedNode{
+class SiteNode(val parent: AgentNode, val site: KappaModel.Site)(implicit val fun: SiteNode => KappaSiteView, val stateFun: StateNode => KappaStateView) extends KappaOrganizedNode{
 
   type ChildNode = StateNode
 
@@ -30,10 +30,10 @@ class SightNode(val parent: AgentNode, val sight: KappaModel.Sight)(implicit val
 
   lazy val layoutInfo: LayoutInfo = new LayoutInfo(0.6)
 
-  lazy val children: List[ChildNode] = sight.states.map(st=> new StateNode(this, st)(stateFun)).toList
+  lazy val children: List[ChildNode] = site.states.map(st=> new StateNode(this, st)(stateFun)).toList
 }
 
-class StateNode(val parent: SightNode, val state: KappaModel.State)(implicit val fun: StateNode => KappaStateView) extends KappaNode {
+class StateNode(val parent: SiteNode, val state: KappaModel.State)(implicit val fun: StateNode => KappaStateView) extends KappaNode {
   val view = fun(this)
 
   lazy val layoutInfo: LayoutInfo = new LayoutInfo(0.3)
@@ -41,9 +41,14 @@ class StateNode(val parent: SightNode, val state: KappaModel.State)(implicit val
 
 
 //val data: Agent, val fontSize: Double, val padding: Double, val s: SVG
-class AgentNode(val agent: KappaModel.Agent)(implicit val fun: AgentNode => KappaAgentView, val sightFun: SightNode => KappaSightView, val stateFun: StateNode => KappaStateView) extends KappaOrganizedNode
+class AgentNode(val agent: KappaModel.Agent)
+               (implicit
+                val fun: AgentNode => KappaAgentView,
+                val siteFun: SiteNode => KappaSiteView,
+                val stateFun: StateNode => KappaStateView)
+  extends KappaOrganizedNode
 {
-  type ChildNode = SightNode
+  type ChildNode = SiteNode
 
   lazy val layoutInfo: LayoutInfo = new LayoutInfo(1)
 
@@ -65,7 +70,7 @@ class AgentNode(val agent: KappaModel.Agent)(implicit val fun: AgentNode => Kapp
     view.labelStroke() = "blue"
   }
 
-  val children: List[SightNode] = agent.sights.map(si=>new SightNode(this, si)(sightFun, stateFun))
+  val children: List[SiteNode] = agent.sites.map(si=>new SiteNode(this, si)(siteFun, stateFun))
 
   /*
   def updateSideStroke(side: Side, color: String) = {

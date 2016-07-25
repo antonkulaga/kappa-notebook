@@ -23,7 +23,7 @@ class SimulationRunView(val elem: Element,
 
   val plot: Rx[KappaPlot] = simulation.map(s=>s.plot.getOrElse(KappaPlot.empty))
 
-  val fluxMap: Rx[List[FluxMap]] = simulation.map(s=>s.flux_maps)
+  val fluxMap: Dynamic[Map[String, FluxMap]] = simulation.map(s=>s.flux_maps.map(fl=>fl.flux_name ->fl).toMap)
 
 
   //val selected = simulation.map(s=>s.st)

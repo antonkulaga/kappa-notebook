@@ -18,13 +18,13 @@ object KappaModel {
     }
   }
 
-  case class Link(fromAgent: Agent, toAgent: Agent, fromSide: Sight, toSide: Sight, label: String) extends KappaNamedElement
+  case class Link(fromAgent: Agent, toAgent: Agent, fromSide: Site, toSide: Site, label: String) extends KappaNamedElement
   {
     def name = label
 
-    require(fromAgent.sightSet.contains(fromSide), s"from Agent($fromAgent) should contain fromSide($fromSide)")
+    require(fromAgent.siteSet.contains(fromSide), s"from Agent($fromAgent) should contain fromSide($fromSide)")
 
-    require(toAgent.sightSet.contains(toSide), s"from Agent($toAgent) should contain fromSide($toSide)")
+    require(toAgent.siteSet.contains(toSide), s"from Agent($toAgent) should contain fromSide($toSide)")
 
   }
 
@@ -36,19 +36,19 @@ object KappaModel {
   {
     protected def isNamed(key: String) = key != "_" && key !="?"
 
-    protected lazy val linkTuples: List[(String, (Sight, Agent))] = for{
+    protected lazy val linkTuples: List[(String, (Site, Agent))] = for{
       a <- agents
       (name, side) <-a.links
     } yield(name, (side, a))
 
     //TODO: think about a potential bug with two ? and _
-    lazy val allLinks: Map[String, List[(Sight, Agent)]] = linkTuples.groupBy(_._1).map{ case (key, value) => key -> value.map(v=>v._2)}
+    lazy val allLinks: Map[String, List[(Site, Agent)]] = linkTuples.groupBy(_._1).map{ case (key, value) => key -> value.map(v=>v._2)}
 
-    lazy val danglingLinks: Map[String, List[(Sight, Agent)]] = allLinks.collect{
+    lazy val danglingLinks: Map[String, List[(Site, Agent)]] = allLinks.collect{
       case (key, value) if value.length < 2 && isNamed(key) => key -> value
     }
 
-    lazy val duplicatedLinks: Map[String, List[(Sight, Agent)]] = allLinks.collect{
+    lazy val duplicatedLinks: Map[String, List[(Site, Agent)]] = allLinks.collect{
       case (key, value) if value.length > 2 && isNamed(key) => key -> value
     }
 
@@ -62,7 +62,7 @@ object KappaModel {
     }
 
     private def sameAgent(one: Agent, two: Agent): Boolean = {
-      one.name==two.name && one.sightNames == two.sightNames
+      one.name==two.name && one.siteNames == two.siteNames
     }
 
     def sameAgents(pat: Pattern): List[(Agent, Agent)] = agents.zip(pat.agents).takeWhile(ab=>sameAgent(ab._1, ab._2))
@@ -78,7 +78,7 @@ object KappaModel {
     lazy val added = if(same.length==right.agents.length) Nil else right.agents.takeRight(right.agents.length - same.length)
 
     lazy val modified = same.filter{
-      case (one, two)=> one.sightSet != two.sightSet
+      case (one, two)=> one.siteSet != two.siteSet
     }
 
     lazy val modifiedLeft = modified.map(_._1)
@@ -96,8 +96,8 @@ object KappaModel {
 
   case class State(name: String) extends KappaNamedElement
 
-  case class Sight(name: String, states: Set[State] = Set.empty, links: Set[String] = Set.empty) extends KappaNamedElement {
-    def ~(state: State): Sight = {
+  case class Site(name: String, states: Set[State] = Set.empty, links: Set[String] = Set.empty) extends KappaNamedElement {
+    def ~(state: State): Site = {
       copy(states = states + state)
     }
 
@@ -111,14 +111,14 @@ object KappaModel {
     }
   }
 
-  case class Agent(name: String, sights: List[Sight] = List.empty, extra: String = "") extends KappaNamedElement
+  case class Agent(name: String, sites: List[Site] = List.empty, extra: String = "") extends KappaNamedElement
   {
-    lazy val sightSet = sights.toSet
+    lazy val siteSet = sites.toSet
 
-    lazy val sightNames = sights.map(s=>s.name)
+    lazy val siteNames = sites.map(s=>s.name)
 
-    lazy val links: List[(String, Sight)] = for {
-        s <- sights
+    lazy val links: List[(String, Site)] = for {
+        s <- sites
         l <- s.links
       } yield l -> s
 

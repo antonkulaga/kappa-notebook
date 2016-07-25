@@ -14,35 +14,24 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import scala.collection.immutable.SortedSet
 
 
-class FluxesView(val elem: Element, val items: Rx[List[FluxMap]], tab: Rx[String]) extends ItemsSeqView{
+class FluxesView(val elem: Element, val items: Rx[Map[String, FluxMap]], tab: Rx[String]) extends ItemsMapView{
 
-  val active: Rx[Boolean] = selected.map(s=>s=="fluxes")
+  val active: Rx[Boolean] = tab.map(s=>s=="fluxes")
 
   val selected: Var[String] = Var("")
 
   val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
 
-  type Item = FluxMap
+  type Item = String
+
+  type Value = FluxMap
 
   type ItemView = FluxView
 
-  protected def defaultWidth: Double = elem.getBoundingClientRect().width
-
-  protected def defaultHeight: Double = Math.max(150.0, dom.window.innerHeight / 4)
-
-  lazy val container = elem.selectByClass("graph")
-
-/*
-  val viz = new Visualizer(container,
-    defaultWidth,
-    defaultHeight,
-    layouts,
-    500.0
-  )
-*/
-
   override def newItemView(item: Item): FluxView = constructItemView(item){
-    case (el, mp) => new FluxView(el, item).withBinder(v=> new FixedBinder(v))
+    case (el, mp) =>
+      selected() = item
+      new FluxView(el, item, Var(items.now(item)), selected).withBinder(v=> new FixedBinder(v))
   }
 
   override lazy val injector = defaultInjector

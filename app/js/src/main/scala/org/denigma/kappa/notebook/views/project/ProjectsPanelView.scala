@@ -4,7 +4,7 @@ import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.editor.KappaWatcher
-import org.denigma.kappa.notebook.views.visual.rules.GraphView
+import org.denigma.kappa.notebook.views.visual.rules.RulesGraphView
 import org.scalajs.dom.raw.Element
 import rx.Rx.Dynamic
 import rx._

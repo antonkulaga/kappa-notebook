@@ -1,15 +1,11 @@
 package org.denigma.kappa.notebook.views.simulations.fluxes
 
-import org.denigma.binding.extensions.sq
-import org.denigma.binding.views.{BindableView, ItemsMapView, ItemsSeqView}
+import org.denigma.binding.views.{ItemsMapView, ItemsSeqView}
 import org.denigma.kappa.messages.WebSimMessages.FluxMap
-import org.denigma.kappa.notebook.views.common.{TabHeaders, FixedBinder}
-import org.denigma.kappa.notebook.views.visual.rules.Visualizer
-import org.scalajs.dom
+import org.denigma.kappa.notebook.views.common.{FixedBinder, TabHeaders}
 import org.scalajs.dom.raw.Element
-import org.denigma.binding.extensions._
-import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
 
 import scala.collection.immutable.SortedSet
 

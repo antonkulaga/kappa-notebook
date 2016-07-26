@@ -44,6 +44,15 @@ trait TabGridsStyles extends MainStyles {
     //overflowY.scroll
     )
 
+  ".tab.smallpage" -(
+    overflowY.auto,
+    onTiny -(maxHeight(50 vh) important),
+    onLittle -(maxHeight(53 vh) important),
+    onSmall -(maxHeight(55 vh) important),
+    onMedium -(maxHeight(58 vh) important),
+    onLarge -(maxHeight(60 vh) important)
+    )
+
   ".tab.flexible.page" -(
     overflowY.auto,
     overflowX.auto,

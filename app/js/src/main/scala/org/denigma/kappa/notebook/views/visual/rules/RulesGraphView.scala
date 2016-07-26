@@ -2,28 +2,20 @@ package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
-import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.Agent
-import org.denigma.kappa.notebook.layouts._
-import org.denigma.kappa.notebook.views.visual.utils.LineParams
+import org.denigma.kappa.notebook.extensions._
+import org.denigma.kappa.notebook.graph._
+import org.denigma.kappa.notebook.graph.layouts._
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element}
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import org.denigma.kappa.notebook.extensions._
-import rx.Rx.Dynamic
 
-import scala.List
-import scala.Predef.Map
 import scala.collection.immutable._
 
-case class KappaNodeVisualSettings(font: Double, padding: Double)
-case class KappaEdgeVisualSettings(font: Double, padding: Double, line: LineParams)
 
-//new KappaAgentView(agent.name, 24.0, 10, s )
-
-case class VisualSettings(
+case class RulesVisualSettings(
                            canvas: SVG,
                            agent: KappaNodeVisualSettings = KappaNodeVisualSettings(26, 8),
                            sites: KappaNodeVisualSettings  = KappaNodeVisualSettings(16, 6),
@@ -33,10 +25,10 @@ case class VisualSettings(
                          )
 
 
-class GraphView(val elem: Element,
-                val agents: Rx[SortedSet[Agent]],
-                val containerName: String,
-                val visualSettings: VisualSettings
+class RulesGraphView(val elem: Element,
+                     val agents: Rx[SortedSet[Agent]],
+                     val containerName: String,
+                     val visualSettings: RulesVisualSettings
                ) extends BindableView {
 
   lazy val size: (Double, Double) = elem.getBoundingClientRect() match {
@@ -49,6 +41,11 @@ class GraphView(val elem: Element,
   val height: Var[Double] = Var(size._2)
 
   val container = sq.byId(containerName).get
+
+  type Node = KappaNode
+
+  type Edge = KappaEdge
+
 
   implicit protected def createAgentNodeView(agent: AgentNode): KappaAgentView = {
     new KappaAgentView(agent.agent.name, visualSettings.agent.font, visualSettings.agent.padding, visualSettings.canvas)
@@ -66,12 +63,12 @@ class GraphView(val elem: Element,
     new KappaLinkView(edge.link.label, visualSettings.link.font, visualSettings.link.padding, visualSettings.canvas)
   }
 
-  protected val gravityForce = new Gravity[KappaNode, KappaEdge](ForceLayoutParams.default2D.attractionMult / 4, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
-  protected val repulsionForce = new Repulsion[KappaNode, KappaEdge](ForceLayoutParams.default2D.repulsionMult, 0.00001, compareRepulsion)
-  protected val attractionForce = new Attraction[KappaNode, KappaEdge](ForceLayoutParams.default2D.attractionMult, 0.00001, compareSpring[KappaEdge])
-  protected val borderForce = new BorderForce[KappaNode, KappaEdge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
+  protected val gravityForce = new Gravity[Node, Edge](ForceLayoutParams.default2D.attractionMult / 4, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
+  protected val repulsionForce = new Repulsion[Node, Edge](ForceLayoutParams.default2D.repulsionMult, 0.00001, compareRepulsion)
+  protected val attractionForce = new Attraction[Node, Edge](ForceLayoutParams.default2D.attractionMult, 0.00001, compareSpring)
+  protected val borderForce = new BorderForce[Node, Edge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
 
-  protected def compareRepulsion(node1: KappaNode, node2: KappaNode): (Double, Double) = (node1, node2) match {
+  protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (node1, node2) match {
     case (from: AgentNode, to: SiteNode) => (0.5, 0.5)
     case (from: SiteNode, to: AgentNode) => (0.5, 0.5)
     case (from: AgentNode, to: AgentNode) =>(1, 1)
@@ -81,7 +78,7 @@ class GraphView(val elem: Element,
     case other => (1, 1)
   }
 
-  protected def compareSpring[Edge<: KappaEdge](node1: Edge#FromNode, node2: Edge#ToNode): (Double, Double) = (node1, node2) match {
+  protected def compareSpring(node1: Edge#FromNode, node2: Edge#ToNode): (Double, Double) = (node1, node2) match {
     case (from: AgentNode, to: SiteNode) => (1, 1)
     case (from: SiteNode, to: AgentNode) => (1, 1)
     case (from: AgentNode, to: AgentNode) =>(1, 1)
@@ -91,7 +88,7 @@ class GraphView(val elem: Element,
     case other => (1, 1)
   }
 
-  protected val forces: Vector[Force[ KappaNode, KappaEdge]] = Vector(
+  protected val forces: Vector[Force[ Node, Edge]] = Vector(
     repulsionForce,
     attractionForce,
     gravityForce,
@@ -114,13 +111,13 @@ class GraphView(val elem: Element,
   }
 
 
-  val allNodes: Rx[Set[KappaNode]] = Rx{
+  val allNodes: Rx[Set[Node]] = Rx{
     agentNodes() ++ siteNodes() ++ stateNodes()//++ links()
   }
 
-  val nodes: Rx[Vector[KappaNode]] = allNodes.map(n=>n.toVector)//Var(Vector.empty[KappaNode])
+  val nodes: Rx[Vector[Node]] = allNodes.map(n=>n.toVector)//Var(Vector.empty[Node])
 
-  val edges = Var(Vector.empty[KappaEdge])
+  val edges = Var(Vector.empty[Edge])
 
   val layouts = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
 
@@ -135,9 +132,9 @@ class GraphView(val elem: Element,
     agentNodes() = agentNodes.now.filterNot(a => removed.contains(a.agent)) ++ addedNodes
   }
 
-  def onNodesChanges(removed: Set[KappaNode], added: Set[KappaNode]): Unit = {
-    removed.foreach(r=> dom.console.log("REMOVED NODE "+r.view.label))
-    added.foreach(a=> dom.console.log("ADDED NODE "+a.view.label))
+  def onNodesChanges(removed: Set[Node], added: Set[Node]): Unit = {
+    //removed.foreach(r=> dom.console.log("REMOVED NODE "+r.view.label))
+    //added.foreach(a=> dom.console.log("ADDED NODE "+a.view.label))
 
     removed.foreach{ case n =>
       n.view.clearChildren()
@@ -146,14 +143,13 @@ class GraphView(val elem: Element,
     }
     added.foreach(n => viz.addSprite(n.view.container))
 
-    val es: List[KappaEdge] = added.foldLeft(List.empty[KappaEdge]){case (acc, node) => foldEdges(acc, node)}
+    val es: List[Edge] = added.foldLeft(List.empty[Edge]){case (acc, node) => foldEdges(acc, node)}
     if(added.nonEmpty || removed.nonEmpty)
       edges() = edges.now.filterNot(e => removed.contains(e.from) || removed.contains(e.to)) ++ es
   }
 
 
-  def onEdgesChanges(removed: List[KappaEdge], added: List[KappaEdge]): Unit = {
-    dom.console.log("edge changed!")
+  def onEdgesChanges(removed: List[Edge], added: List[Edge]): Unit = {
     for(r <- removed) r match {
       case link: KappaLinkEdge =>
         link.view.clearChildren()
@@ -172,10 +168,10 @@ class GraphView(val elem: Element,
     }
   }
 
-  protected def createLinkEdges(mp: Map[String, List[SiteNode]]): List[KappaEdge] = {
+  protected def createLinkEdges(mp: Map[String, List[SiteNode]]): List[Edge] = {
     mp.collect{
       //case (key, site::Nil) => //let us skip this for the sake of simplicity
-      case (key, site1::site2::Nil) =>   new KappaLinkEdge(key, site1, site2)(createLinkView): KappaEdge
+      case (key, site1::site2::Nil) =>   new KappaLinkEdge(key, site1, site2)(createLinkView): Edge
       //case (key, other) => throw  new Exception(s"too many sites for the link $key ! Sights are: $other")
     }.toList
   }
@@ -189,7 +185,7 @@ class GraphView(val elem: Element,
 
   }
 
-  protected def foldEdges(acc: List[KappaEdge], node: KappaNode): List[KappaEdge] = {
+  protected def foldEdges(acc: List[Edge], node: Node): List[Edge] = {
     node match {
       case n: SiteNode => new KappaSiteEdge(n.parent, n) :: acc
       case n: StateNode => new KappaStateEdge(n.parent, n) :: acc

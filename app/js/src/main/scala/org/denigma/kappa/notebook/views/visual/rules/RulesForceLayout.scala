@@ -1,12 +1,12 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
-import org.denigma.kappa.notebook.layouts.{Force, ForceLayout}
-import org.denigma.kappa.notebook.layouts.LayoutMode.LayoutMode
+import org.denigma.kappa.notebook.graph.layouts.{Force, ForceLayout}
+import org.denigma.kappa.notebook.graph.layouts.LayoutMode.LayoutMode
 import rx._
 import org.denigma.binding.extensions._
+import org.denigma.kappa.notebook.graph.{KappaEdge, KappaNode}
 
 class RulesForceLayout(
-
                    val nodes: Rx[Vector[KappaNode]],
                    val edges: Rx[Vector[KappaEdge]],
                    val mode: LayoutMode,

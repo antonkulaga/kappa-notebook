@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views.visual.rules.drawing
+package org.denigma.kappa.notebook.graph.drawing
 
 object SvgBundle {
   import scalatags.JsDom._

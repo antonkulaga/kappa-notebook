@@ -1,15 +1,15 @@
-package org.denigma.kappa.notebook.views.visual.rules
+package org.denigma.kappa.notebook.graph
 
 import org.denigma.binding.extensions._
-import org.denigma.kappa.notebook.layouts.GraphLayout
+import org.denigma.kappa.notebook.graph.layouts.GraphLayout
 import org.denigma.threejs.extensions.Container3D
 import org.denigma.threejs.extensions.controls.JumpCameraControls
 import org.denigma.threejs.extras._
 import org.denigma.threejs.{Object3D, PerspectiveCamera, WebGLRendererParameters}
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw._
-import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
 
 class Visualizer (val container: HTMLElement,
                   val widthRx: Rx[Double],

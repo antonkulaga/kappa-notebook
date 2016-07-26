@@ -21,7 +21,7 @@ import org.denigma.kappa.notebook.views.papers.PapersView
 import org.denigma.kappa.notebook.views.project.ProjectsPanelView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.denigma.kappa.notebook.views.visual.VisualPanelView
-import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
+import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
@@ -91,8 +91,11 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val commentManager = new CommentsWatcher(editorsUpdates, location, figures, currentProjectName, input)
 
+
+  //import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all
+  import scalatags.JsDom.all
   lazy val s: SVG = {
-    val t = svg(/*width :=  defaultWidth, height := defaultHeight*/).render
+    val t = svg(all.id := "canvas"/*width :=  defaultWidth, height := defaultHeight*/).render
     t.style.position = "absolute"
     t.style.top = "-9999"
     elem.appendChild(t)

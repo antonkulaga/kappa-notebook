@@ -1,7 +1,7 @@
-package org.denigma.kappa.notebook.layouts
+package org.denigma.kappa.notebook.graph.layouts
 
-import org.denigma.kappa.notebook.layouts.LayoutMode.LayoutMode
-import org.denigma.kappa.notebook.views.visual.utils.Randomizable
+import org.denigma.kappa.notebook.graph.Randomizable
+import org.denigma.kappa.notebook.graph.layouts.LayoutMode.LayoutMode
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
 import rx._
 
@@ -38,6 +38,7 @@ object LayoutMode extends Enumeration {
 
 trait ForceNode
 {
+
   def layoutInfo: LayoutInfo
   def position: Vector3
 

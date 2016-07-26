@@ -1,6 +1,7 @@
 package org.denigma.kappa.notebook.views.simulations
 
 
+import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.views.{BindableView, UpdatableView}
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages.{FluxMap, KappaPlot, SimulationStatus}
@@ -19,13 +20,11 @@ class SimulationRunView(val elem: Element,
   extends BindableView with UpdatableView[SimulationStatus] with TabItem
 {
 
-  val tab: Var[String] = Var("plot")
+  val tab: Var[String] = Var("fluxes")//Var("plot")
 
   val plot: Rx[KappaPlot] = simulation.map(s=>s.plot.getOrElse(KappaPlot.empty))
 
   val fluxMap: Dynamic[Map[String, FluxMap]] = simulation.map(s=>s.flux_maps.map(fl=>fl.flux_name ->fl).toMap)
-
-
   //val selected = simulation.map(s=>s.st)
   override def update(value: SimulationStatus) = {
     simulation() = value
@@ -43,7 +42,7 @@ class SimulationRunView(val elem: Element,
         new LaunchParametersView(el, simulation, tab).withBinder(new FixedBinder(_))
     }
     .register("Fluxes") {
-      case (el, params) =>
+      case (el, _) =>
         new FluxesView(el, fluxMap, tab).withBinder(new FixedBinder(_))
     }
 }

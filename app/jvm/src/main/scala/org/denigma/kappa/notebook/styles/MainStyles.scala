@@ -77,4 +77,9 @@ class MainStyles extends Standalone with MediaQueries
     overflowX.auto,
     overflowY.auto
     )
+
+  ".scrollable" -(
+      overflowX.auto,
+      overflowY.auto
+    )
 }

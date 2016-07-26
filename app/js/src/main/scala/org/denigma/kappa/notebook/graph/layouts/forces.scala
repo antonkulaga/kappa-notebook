@@ -1,6 +1,6 @@
-package org.denigma.kappa.notebook.layouts
+package org.denigma.kappa.notebook.graph.layouts
 
-import org.denigma.kappa.notebook.views.visual.rules.drawing.Rectangle
+import org.denigma.kappa.notebook.graph.drawing.Rectangle
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
 
 

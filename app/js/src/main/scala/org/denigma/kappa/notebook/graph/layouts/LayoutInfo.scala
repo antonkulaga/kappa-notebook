@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.layouts
+package org.denigma.kappa.notebook.graph.layouts
 
 import org.denigma.threejs.Vector3
 

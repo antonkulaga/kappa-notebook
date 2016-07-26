@@ -9,6 +9,7 @@ object MyStyles extends MainStyles
   with TabGridsStyles
   with ListStyles
   with CodeStyles
+  with VisualizationStyles
 {
   import dsl._
 
@@ -39,16 +40,6 @@ object MyStyles extends MainStyles
 
   ".ui.table td.collapsing" -(
     padding(0 px) important
-    )
-
-  ".graph.container" -(
-    minHeight(300 px),
-    minWidth(300 px)
-    )
-  ".graph.container:before" -(
-      content := "",
-      display.block,
-      paddingTop(100 %%)
     )
 }
 

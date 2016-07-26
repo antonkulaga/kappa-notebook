@@ -1,48 +1,9 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.notebook.layouts.ForceEdge
-import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all._
-import org.denigma.kappa.notebook.views.visual.utils.LineParams
-import rx._
-import org.denigma.kappa.notebook.views.visual.rules.drawing.SvgBundle.all.attrs._
+import org.denigma.kappa.notebook.graph.{ArrowEdge, KappaEdge, LineParams}
 import org.denigma.threejs.{Side => _, _}
-import org.scalajs.dom.svg.SVG
 
-trait KappaEdge extends ForceEdge {
-
-  override type FromNode <: KappaNode
-  override type ToNode <: KappaNode
-
-  def sourcePos: Vector3 = from.view.container.position
-  def targetPos: Vector3 = to.view.container.position
-
-}
-
-trait ArrowEdge extends KappaEdge {
-
-
-  def lineParams: LineParams
-
-  def direction: Vector3 = new Vector3().subVectors(targetPos, sourcePos)
-
-  def middle: Vector3 = new Vector3((sourcePos.x + targetPos.x) / 2,(sourcePos.y + targetPos.y) / 2, (sourcePos.z + targetPos.z) / 2)
-
-  val arrow = new ArrowHelper(direction.normalize(), sourcePos, direction.length(), lineParams.lineColor, lineParams.headLength, lineParams.headWidth)
-
-  protected def posArrow() = {
-    arrow.position.set(sourcePos.x, sourcePos.y, sourcePos.z) // = sourcePos
-    arrow.setDirection(direction.normalize())
-    arrow.setLength(direction.length()-10, lineParams.headLength, lineParams.headWidth)
-  }
-
-
-  def update(): Unit = {
-    posArrow()
-  }
-
-
-}
 
 class KappaSiteEdge(val from: AgentNode, val to: SiteNode, val lineParams: LineParams = LineParams()) extends ArrowEdge{
   override type FromNode = AgentNode

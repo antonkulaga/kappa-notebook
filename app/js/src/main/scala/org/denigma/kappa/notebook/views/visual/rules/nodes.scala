@@ -2,25 +2,8 @@ package org.denigma.kappa.notebook.views.visual.rules
 
 
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.notebook.layouts.{ForceNode, LayoutInfo}
-import org.scalajs.dom.svg.SVG
-
-
-trait KappaOrganizedNode extends KappaNode {
-  type ChildNode <: KappaNode
-
-  def children: List[ChildNode]
-
-}
-
-trait KappaNode extends ForceNode {
-
-  val view: KappaView
-
-  def layoutInfo: LayoutInfo
-
-  def position = view.container.position
-}
+import org.denigma.kappa.notebook.graph.layouts.LayoutInfo
+import org.denigma.kappa.notebook.graph.{KappaNode, KappaOrganizedNode}
 
 class SiteNode(val parent: AgentNode, val site: KappaModel.Site)(implicit val fun: SiteNode => KappaSiteView, val stateFun: StateNode => KappaStateView) extends KappaOrganizedNode{
 

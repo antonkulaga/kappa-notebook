@@ -3,9 +3,9 @@ package org.denigma.kappa.notebook.views.visual
 import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage
+import org.denigma.kappa.notebook.graph.LineParams
 import org.denigma.kappa.notebook.views.editor.KappaWatcher
-import org.denigma.kappa.notebook.views.visual.rules.{GraphView, VisualSettings}
-import org.denigma.kappa.notebook.views.visual.utils.LineParams
+import org.denigma.kappa.notebook.views.visual.rules.{RulesGraphView, RulesVisualSettings}
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -43,13 +43,13 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
         args.getOrElse("container", "graph-container").toString).withBinder(n => new CodeBinder(n)) }
     */
     .register("LeftGraph") {  (el, args) =>
-    new GraphView(el,
+    new RulesGraphView(el,
       kappaWatcher.leftPattern.map(p=>SortedSet(p.agents:_*)),
       args.getOrElse("container", "graph-container").toString,
-      VisualSettings(s)).withBinder(n => new CodeBinder(n)) }
+      RulesVisualSettings(s)).withBinder(n => new CodeBinder(n)) }
     .register("RightGraph") {  (el, args) =>
-      new GraphView(el,
+      new RulesGraphView(el,
         kappaWatcher.rightPattern.map(p=>SortedSet(p.agents:_*)),
-        args.getOrElse("container", "graph-container").toString, VisualSettings(s)).withBinder(n => new CodeBinder(n)) }
+        args.getOrElse("container", "graph-container").toString, RulesVisualSettings(s)).withBinder(n => new CodeBinder(n)) }
 
 }

@@ -1,11 +1,18 @@
 @()
-<section class="ui attached segment grid tab" data-view="Flux" data-class-active-if="active">
-    <div class="row">
+<section data-template="true" class="ui attached segment grid tab" data-class-active-if="active">
+    <div class="equal width row">
+    <section class="column" data-view="FluxGraphView">
+      <div class="graph container"></div>
+    </section>
+    </div>
+    <div class="equal width row">
         <section class="column">
-            <div class="ui blue segment">
-                <textarea data-code="code"></textarea>
-                <div class="graph container"></div>
-             </div>
+            <table>
+                <tr data-template="true">
+                    <td data-bind="rule"></td>
+                    <td data-bind="hits"></td>
+                </tr>
+            </table>
         </section>
     </div>
 </section>

@@ -6,7 +6,6 @@ import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel._
 import org.denigma.kappa.notebook.parsers.KappaParser
 import org.denigma.kappa.notebook.views.visual._
-import org.denigma.kappa.notebook.views.visual.rules.{AgentNode, KappaEdge, RulesForceLayout}
 import org.scalajs.dom.svg.SVG
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -14,7 +13,7 @@ import org.denigma.binding.extensions._
 import org.denigma.threejs.extras.HtmlSprite
 import rx.Rx.Dynamic
 import org.denigma.kappa.notebook.extensions._
-import org.denigma.kappa.notebook.layouts._
+import org.denigma.kappa.notebook.graph.layouts._
 
 import scalatags.JsDom
 import scala.collection.immutable.SortedSet

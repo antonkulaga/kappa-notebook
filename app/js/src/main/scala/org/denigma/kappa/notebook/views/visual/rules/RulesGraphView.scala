@@ -82,7 +82,7 @@ class RulesGraphView(val elem: Element,
 
   protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (massByNode(node1), massByNode(node2))
 
-  val minSpring = 100
+  val minSpring = 95
 
   def massByNode(node: KappaNode): Double = node match {
     case n: AgentNode => 1.5
@@ -129,15 +129,19 @@ class RulesGraphView(val elem: Element,
 
   val layouts = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
 
+  val iterationsPerFrame = Var(5)
+  val firstFrameIterations = Var(50)
+
   val viz = new Visualizer(container,
     width,
     height,
     layouts,
     900.0,
-    5,
-    20
+    iterationsPerFrame,
+    firstFrameIterations
   )
   protected def onAgentsUpdate(agentsRemoved: Set[Agent], agentsAdded: Set[Agent]) = {
+    firstFrameIterations() = 50
     val addedNodes = agentsAdded.map{
       case a =>
         val n = new AgentNode(a)

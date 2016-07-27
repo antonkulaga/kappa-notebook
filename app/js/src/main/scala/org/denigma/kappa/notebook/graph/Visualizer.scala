@@ -16,8 +16,8 @@ class Visualizer (val container: HTMLElement,
                   val heightRx: Rx[Double],
                   val layouts: Rx[Vector[GraphLayout]],
                   override val distance: Double,
-                  val ticksPerFrame: Int = 1,
-                  var ticksOnFirstFrame: Int = 1
+                  val ticksPerFrame: Var[Int] = Var(5),
+                  var ticksOnFirstFrame: Var[Int] = Var(20)
                  )
   extends Container3D
 {
@@ -108,9 +108,9 @@ class Visualizer (val container: HTMLElement,
   }
 
   override def onEnterFrame() = {
-    for(i <- 0 to ticksOnFirstFrame) tick()
-    ticksOnFirstFrame = 0
-    for(i <- 0 to ticksPerFrame) tick()
+    for(i <- 0 to ticksOnFirstFrame.now) tick()
+    ticksOnFirstFrame() = 0
+    for(i <- 0 to ticksPerFrame.now) tick()
     super.onEnterFrame()
   }
 

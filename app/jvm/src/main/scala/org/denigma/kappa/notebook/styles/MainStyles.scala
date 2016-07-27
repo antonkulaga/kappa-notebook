@@ -82,4 +82,8 @@ class MainStyles extends Standalone with MediaQueries
       overflowX.auto,
       overflowY.auto
     )
+
+  "#VisualPanel" - (
+      minWidth(650 px)
+    )
 }

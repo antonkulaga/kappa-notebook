@@ -1,85 +1,127 @@
-### RNAPolymerase binding ###
 
-%var: 'rnap_on' 0.000830269391581363
-%var: 'rnap_on2' 0.000714031676759972
-%var: 'rnap_on3' 7.14031676759972e-07
-%var: 'rnap_on_repress' 8.30269391581363e-07
+# Transcription factor binding to promoter region.
 
-'RNAP binding (no repressor){76998}' \
-  DNA(downstream!1,binding,type~BBaR0000p2), DNA(upstream!1,binding,type~BBaR0000p3), RNAP(dna,rna) -> \
-  	DNA(downstream!1,binding,type~BBaR0000p2), DNA(upstream!1,binding!3,type~BBaR0000p3), RNAP(dna!3,rna) \
-		@ 'rnap_on'
-  
-'RNAP binding (with repressor){76997}' \
-  DNA(downstream!1,binding!3,type~BBaR0000p2), DNA(upstream!1,binding,type~BBaR0000p3), \
-  Repressor(dna!3),RNAP(dna,rna) -> \
-  	DNA(downstream!1,binding!2,type~BBaR0000p2), DNA(upstream!1,binding!3,type~BBaR0000p3),\
-    Repressor(dna!2), RNAP(dna!3,rna) \
-  		@ 'rnap_on_repress'
-  
-'RNAP binding to R0010 (no LacI){77312}' \
-  DNA(binding,type~BBaR0010p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0010p4), \
-  RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0010p2) -> \
-  	DNA(binding,type~BBaR0010p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0010p4), \
-  	RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0010p2) \
-  		@ 'rnap_on2'
-  
-'RNAP binding to R0010 (LacI on p2){77313}' \
-  DNA(binding,type~BBaR0010p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0010p4), \
-  RNAP(dna,rna), DNA(downstream!2,binding!3,type~BBaR0010p2), LacI(dna!3) -> \
-  	DNA(binding,type~BBaR0010p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0010p4), \
-  	RNAP(dna!2,rna), DNA(downstream!3,binding!4,type~BBaR0010p2), LacI(dna!4) \
-  		@ 'rnap_on3'
-  
-'RNAP binding to R0010 (LacI on p3){77314}' \
-  DNA(binding!3,type~BBaR0010p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0010p4), \
-  RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0010p2), LacI(dna!3) -> \
-  	DNA(binding!4,type~BBaR0010p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0010p4), \
-  	RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0010p2), LacI(dna!4) \
-  	@ 'rnap_on3'
+%var: 'transcription factor binding rate' 0.01
 
-'RNAP binding to R0010 (LacI on p2 and p3){77315}' \
-  DNA(binding!3,type~BBaR0010p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0010p4), \
-  RNAP(dna,rna), DNA(downstream!2,binding!4,type~BBaR0010p2), LacI(dna!3), LacI(dna!4) -> \
-  	DNA(binding!4,type~BBaR0010p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0010p4), \
-  	RNAP(dna!2,rna),    DNA(downstream!3,binding!5,type~BBaR0010p2), LacI(dna!4), LacI(dna!5) \
-  		@ 'rnap_on3'
-  
-'RNAP binding to R0040 (no TetR){77301}' \
-  DNA(binding,type~BBaR0040p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0040p4), \
-  RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0040p2) -> \
-  	DNA(binding,type~BBaR0040p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0040p4), \
-  	RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0040p2) \
-  		@ 'rnap_on2'
-  
-'RNAP binding to R0040 (TetR on p2 and p3){77304}' \
-  DNA(binding!3,type~BBaR0040p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0040p4),\
-  RNAP(dna,rna), DNA(downstream!2,binding!4,type~BBaR0040p2), TetR(dna!3), TetR(dna!4) -> \
-  DNA(binding!4,type~BBaR0040p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0040p4), \
-  RNAP(dna!2,rna), DNA(downstream!3,binding!5,type~BBaR0040p2), TetR(dna!4), TetR(dna!5) \
-  @ 'rnap_on3'
-  
-'RNAP binding to R0051 (no cI){77266}' \
-  DNA(binding,type~BBaR0051p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0051p4),\
-  RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0051p2) -> \
-  	DNA(binding,type~BBaR0051p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0051p4), \
-  	RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0051p2) \
-  		@ 'rnap_on2'
-  
-    
-'RNAP binding to R0051 (cI on p2){77267}'\
-  DNA(binding,type~BBaR0051p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0051p4), \
-  RNAP(dna,rna), DNA(downstream!2,binding!3,type~BBaR0051p2), cI(dna!3) -> \
-  	DNA(binding,type~BBaR0051p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0051p4), \
-  	RNAP(dna!2,rna), DNA(downstream!3,binding!4,type~BBaR0051p2), cI(dna!4) \
-  		@ 'rnap_on3'
-  
-'RNAP binding to R0051 (cI on p3){77268}'\
-  DNA(binding!3,type~BBaR0051p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0051p4), \
-  RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0051p2), cI(dna!3) -> \
- 	DNA(binding!4,type~BBaR0051p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0051p4),\
-  	RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0051p2), cI(dna!4) \
-  		@ 7.14031676759972e-07
+'LacI binding to R0010p2 (no LacI)' \
+	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) -> \
+	DNA(binding,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding!1,type~BBaR0010p2) @ 'transcription factor binding rate'
+'LacI binding to R0010p2 (LacI bound)' \
+	DNA(binding!1,type~BBaR0010p3,upstream!2), LacI(dna!1), DNA(downstream!2,binding,type~BBaR0010p2), LacI(dna,lactose) -> \
+	DNA(binding!2,type~BBaR0010p3,upstream!3), LacI(dna!2), DNA(downstream!3,binding!1,type~BBaR0010p2), LacI(dna!1,lactose) @ 'transcription factor binding rate'
+'LacI binding to R0010p3 (no LacI)' \
+	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) -> \
+	DNA(binding!1,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding,type~BBaR0010p2) @ 'transcription factor binding rate'
+'LacI binding to R0010p3 (LacI bound)' \
+	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna!1), DNA(downstream!2,binding!1,type~BBaR0010p2), LacI(dna,lactose) -> \
+	DNA(binding!1,type~BBaR0010p3,upstream!3), LacI(dna!2), DNA(downstream!3,binding!2,type~BBaR0010p2), LacI(dna!1,lactose) @ 'transcription factor binding rate'
+'TetR binding to R0040p2 (no TetR)' \
+	DNA(binding,type~BBaR0040p3,upstream!2), TetR(dna,atc), DNA(downstream!2,binding,type~BBaR0040p2) -> \
+	DNA(binding,type~BBaR0040p3,upstream!3), TetR(dna!1,atc), DNA(downstream!3,binding!1,type~BBaR0040p2) @ 'transcription factor binding rate'
+'TetR binding to R0040p2 (TetR bound)' \
+	DNA(binding!1,type~BBaR0040p3,upstream!2), TetR(dna!1), TetR(dna,atc), DNA(downstream!2,binding,type~BBaR0040p2) -> \
+	DNA(binding!2,type~BBaR0040p3,upstream!3), TetR(dna!2), TetR(dna!1,atc), DNA(downstream!3,binding!1,type~BBaR0040p2) @ 'transcription factor binding rate'
+'TetR binding to R0040p3 (no TetR)' \
+	DNA(binding,type~BBaR0040p3,upstream!2), TetR(dna,atc), DNA(downstream!2,binding,type~BBaR0040p2) -> \
+	DNA(binding!1,type~BBaR0040p3,upstream!3), TetR(dna!1,atc), DNA(downstream!3,binding,type~BBaR0040p2) @ 'transcription factor binding rate'
+'TetR binding to R0040p3 (TetR bound)' \
+	DNA(binding,type~BBaR0040p3,upstream!2), TetR(dna,atc), TetR(dna!1), DNA(downstream!2,binding!1,type~BBaR0040p2) -> \
+	DNA(binding!2,type~BBaR0040p3,upstream!3), TetR(dna!2,atc), TetR(dna!1), DNA(downstream!3,binding!1,type~BBaR0040p2) @ 'transcription factor binding rate'
+'cI binding to R0051p2 (no cI)' \
+	DNA(binding,type~BBaR0051p3,upstream!2), cI(dna), DNA(downstream!2,binding,type~BBaR0051p2) -> \
+	DNA(binding,type~BBaR0051p3,upstream!3), cI(dna!1), DNA(downstream!3,binding!1,type~BBaR0051p2) @ 'transcription factor binding rate'
+'cI binding to R0051p2 (cI bound)' \
+	DNA(binding!1,type~BBaR0051p3,upstream!2), cI(dna), cI(dna!1), DNA(downstream!2,binding,type~BBaR0051p2) -> \
+	DNA(binding!2,type~BBaR0051p3,upstream!3), cI(dna!1), cI(dna!2), DNA(downstream!3,binding!1,type~BBaR0051p2) @ 'transcription factor binding rate'
+'cI binding to R0051p3 (no cI)' \
+	DNA(binding,type~BBaR0051p3,upstream!2), cI(dna), DNA(downstream!2,binding,type~BBaR0051p2) -> \
+	DNA(binding!1,type~BBaR0051p3,upstream!3), cI(dna!1), DNA(downstream!3,binding,type~BBaR0051p2) @ 'transcription factor binding rate'
+'cI binding to R0051p3 (cI bound)' \
+	DNA(binding,type~BBaR0051p3,upstream!2), cI(dna!1), cI(dna), DNA(downstream!2,binding!1,type~BBaR0051p2) -> \
+	DNA(binding!1,type~BBaR0051p3,upstream!3), cI(dna!2), cI(dna!1), DNA(downstream!3,binding!2,type~BBaR0051p2) @ 'transcription factor binding rate'
 
-  
-  
+%var: 'sole LacI transcription factor unbinding rate' 2.24
+%var: 'non-sole LacI transcription factor unbinding rate' 0.09
+%var: 'sole TetR transcription factor unbinding rate' 2.24
+%var: 'non-sole TetR transcription factor unbinding rate' 0.09
+%var: 'sole cI transcription factor unbinding rate' 2.24
+%var: 'non-sole cI transcription factor unbinding rate' 0.09
+
+'Reverse LacI binding to R0010p2 (no LacI)' \
+	DNA(binding,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding!1,type~BBaR0010p2) -> \
+	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) @ 'sole LacI transcription factor unbinding rate'
+'Reverse LacI binding to R0010p2 (LacI bound)' \
+	DNA(binding!2,type~BBaR0010p3,upstream!3), LacI(dna!2), DNA(downstream!3,binding!1,type~BBaR0010p2), LacI(dna!1,lactose) -> \
+	DNA(binding!1,type~BBaR0010p3,upstream!2), LacI(dna!1), DNA(downstream!2,binding,type~BBaR0010p2), LacI(dna,lactose) @ 'non-sole LacI transcription factor unbinding rate'
+'Reverse LacI binding to R0010p3 (no LacI)' \
+	DNA(binding!1,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding,type~BBaR0010p2) -> \
+	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) @ 'sole LacI transcription factor unbinding rate'
+'Reverse LacI binding to R0010p3 (LacI bound)' \
+	DNA(binding!1,type~BBaR0010p3,upstream!3), LacI(dna!2), DNA(downstream!3,binding!2,type~BBaR0010p2), LacI(dna!1,lactose) -> \
+	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna!1), DNA(downstream!2,binding!1,type~BBaR0010p2), LacI(dna,lactose) @ 'non-sole LacI transcription factor unbinding rate'
+'Reverse TetR binding to R0040p2 (no TetR)' \
+	DNA(binding,type~BBaR0040p3,upstream!3), TetR(dna!1,atc), DNA(downstream!3,binding!1,type~BBaR0040p2) -> \
+	DNA(binding,type~BBaR0040p3,upstream!2), TetR(dna,atc), DNA(downstream!2,binding,type~BBaR0040p2) @ 'sole TetR transcription factor unbinding rate'
+'Reverse TetR binding to R0040p2 (TetR bound)' \
+	DNA(binding!2,type~BBaR0040p3,upstream!3), TetR(dna!2), TetR(dna!1,atc), DNA(downstream!3,binding!1,type~BBaR0040p2) -> \
+	DNA(binding!1,type~BBaR0040p3,upstream!2), TetR(dna!1), TetR(dna,atc), DNA(downstream!2,binding,type~BBaR0040p2) @ 'non-sole TetR transcription factor unbinding rate'
+'Reverse TetR binding to R0040p3 (no TetR)' \
+	DNA(binding!1,type~BBaR0040p3,upstream!3), TetR(dna!1,atc), DNA(downstream!3,binding,type~BBaR0040p2) -> \
+	DNA(binding,type~BBaR0040p3,upstream!2), TetR(dna,atc), DNA(downstream!2,binding,type~BBaR0040p2) @ 'sole TetR transcription factor unbinding rate'
+'Reverse TetR binding to R0040p3 (TetR bound)' \
+	DNA(binding!2,type~BBaR0040p3,upstream!3), TetR(dna!2,atc), TetR(dna!1), DNA(downstream!3,binding!1,type~BBaR0040p2) -> \
+	DNA(binding,type~BBaR0040p3,upstream!2), TetR(dna,atc), TetR(dna!1), DNA(downstream!2,binding!1,type~BBaR0040p2) @ 'non-sole TetR transcription factor unbinding rate'
+'Reverse cI binding to R0051p2 (no cI)' \
+	DNA(binding,type~BBaR0051p3,upstream!3), cI(dna!1), DNA(downstream!3,binding!1,type~BBaR0051p2) -> \
+	DNA(binding,type~BBaR0051p3,upstream!2), cI(dna), DNA(downstream!2,binding,type~BBaR0051p2) @ 'sole cI transcription factor unbinding rate'
+'Reverse cI binding to R0051p2 (cI bound)' \
+	DNA(binding!2,type~BBaR0051p3,upstream!3), cI(dna!1), cI(dna!2), DNA(downstream!3,binding!1,type~BBaR0051p2) -> \
+	DNA(binding!1,type~BBaR0051p3,upstream!2), cI(dna), cI(dna!1), DNA(downstream!2,binding,type~BBaR0051p2) @ 'non-sole cI transcription factor unbinding rate'
+'Reverse cI binding to R0051p3 (no cI)' \
+	DNA(binding!1,type~BBaR0051p3,upstream!3), cI(dna!1), DNA(downstream!3,binding,type~BBaR0051p2) -> \
+	DNA(binding,type~BBaR0051p3,upstream!2), cI(dna), DNA(downstream!2,binding,type~BBaR0051p2) @ 'sole cI transcription factor unbinding rate'
+'Reverse cI binding to R0051p3 (cI bound)' \
+	DNA(binding!1,type~BBaR0051p3,upstream!3), cI(dna!2), cI(dna!1), DNA(downstream!3,binding!2,type~BBaR0051p2) -> \
+	DNA(binding,type~BBaR0051p3,upstream!2), cI(dna!1), cI(dna), DNA(downstream!2,binding!1,type~BBaR0051p2) @ 'non-sole cI transcription factor unbinding rate'
+
+# RNAP binding to promoter regions.
+
+%var: 'high RNAP binding rate' 0.0007
+%var: 'low RNAP binding rate' 7e-07
+
+'RNAP binding to R0010 (no LacI)' \
+	DNA(binding,type~BBaR0010p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0010p4), RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0010p2) -> \
+	DNA(binding,type~BBaR0010p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0010p4), RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0010p2) @ 'high RNAP binding rate'
+'RNAP binding to R0010 (LacI on p2)' \
+	DNA(binding,type~BBaR0010p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0010p4), RNAP(dna,rna), DNA(downstream!2,binding!3,type~BBaR0010p2), LacI(dna!3) -> \
+	DNA(binding,type~BBaR0010p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0010p4), RNAP(dna!2,rna), DNA(downstream!3,binding!4,type~BBaR0010p2), LacI(dna!4) @ 'low RNAP binding rate'
+'RNAP binding to R0010 (LacI on p3)' \
+	DNA(binding!3,type~BBaR0010p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0010p4), RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0010p2), LacI(dna!3) -> \
+	DNA(binding!4,type~BBaR0010p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0010p4), RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0010p2), LacI(dna!4) @ 'low RNAP binding rate'
+'RNAP binding to R0010 (LacI on p2 and p3)' \
+	DNA(binding!3,type~BBaR0010p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0010p4), RNAP(dna,rna), DNA(downstream!2,binding!4,type~BBaR0010p2), LacI(dna!3), LacI(dna!4) -> \
+	DNA(binding!4,type~BBaR0010p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0010p4), RNAP(dna!2,rna), DNA(downstream!3,binding!5,type~BBaR0010p2), LacI(dna!4), LacI(dna!5) @ 'low RNAP binding rate'
+'RNAP binding to R0040 (no TetR)' \
+	DNA(binding,type~BBaR0040p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0040p4), RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0040p2) -> \
+	DNA(binding,type~BBaR0040p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0040p4), RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0040p2) @ 'high RNAP binding rate'
+'RNAP binding to R0040 (TetR on p2)' \
+	DNA(binding,type~BBaR0040p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0040p4), RNAP(dna,rna), DNA(downstream!2,binding!3,type~BBaR0040p2), TetR(dna!3) -> \
+	DNA(binding,type~BBaR0040p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0040p4), RNAP(dna!2,rna), DNA(downstream!3,binding!4,type~BBaR0040p2), TetR(dna!4) @ 'low RNAP binding rate'
+'RNAP binding to R0040 (TetR on p3)' \
+	DNA(binding!3,type~BBaR0040p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0040p4), RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0040p2), TetR(dna!3) -> \
+	DNA(binding!4,type~BBaR0040p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0040p4), RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0040p2), TetR(dna!4) @ 'low RNAP binding rate'
+'RNAP binding to R0040 (TetR on p2 and p3)' \
+	DNA(binding!3,type~BBaR0040p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0040p4), RNAP(dna,rna), DNA(downstream!2,binding!4,type~BBaR0040p2), TetR(dna!3), TetR(dna!4) -> \
+	DNA(binding!4,type~BBaR0040p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0040p4), RNAP(dna!2,rna), DNA(downstream!3,binding!5,type~BBaR0040p2), TetR(dna!4), TetR(dna!5) @ 'low RNAP binding rate'
+'RNAP binding to R0051 (no cI)' \
+	DNA(binding,type~BBaR0051p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0051p4), RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0051p2) -> \
+	DNA(binding,type~BBaR0051p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0051p4), RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0051p2) @ 'high RNAP binding rate'
+'RNAP binding to R0051 (cI on p2)' \
+	DNA(binding,type~BBaR0051p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0051p4), RNAP(dna,rna), DNA(downstream!2,binding!3,type~BBaR0051p2), cI(dna!3) -> \
+	DNA(binding,type~BBaR0051p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0051p4), RNAP(dna!2,rna), DNA(downstream!3,binding!4,type~BBaR0051p2), cI(dna!4) @ 'low RNAP binding rate'
+'RNAP binding to R0051 (cI on p3)' \
+	DNA(binding!3,type~BBaR0051p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0051p4), RNAP(dna,rna), DNA(downstream!2,binding,type~BBaR0051p2), cI(dna!3) -> \
+	DNA(binding!4,type~BBaR0051p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0051p4), RNAP(dna!2,rna), DNA(downstream!3,binding,type~BBaR0051p2), cI(dna!4) @ 'low RNAP binding rate'
+'RNAP binding to R0051 (cI on p2 and p3)' \
+	DNA(binding!3,type~BBaR0051p3,upstream!2,downstream!1), DNA(upstream!1,binding,type~BBaR0051p4), RNAP(dna,rna), DNA(downstream!2,binding!4,type~BBaR0051p2), cI(dna!3), cI(dna!4) -> \
+	DNA(binding!4,type~BBaR0051p3,upstream!3,downstream!1), DNA(upstream!1,binding!2,type~BBaR0051p4), RNAP(dna!2,rna), DNA(downstream!3,binding!5,type~BBaR0051p2), cI(dna!4), cI(dna!5) @ 'low RNAP binding rate'

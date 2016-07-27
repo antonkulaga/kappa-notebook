@@ -1,162 +1,61 @@
-### Transcription initiation ###
 
-'Transcription initiation{58498}'\
-  DNA(binding!1,type~BBaR0000p3,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
-  	DNA(binding,type~BBaR0000p3,downstream!3), RNAP(dna!1,rna!2), \
-  	DNA(upstream!3,binding!1), RNA(binding,upstream,downstream!2,type~BBaR0000)\
-    	@ 10.0
-    
-'Transcription initiation of R0051{77270}'\
-  DNA(binding!1,type~BBaR0051p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
-  	DNA(binding,type~BBaR0051p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1),\
-  	RNA(binding,upstream,downstream!2,type~BBaR0051) \
-    	@ 10.0
-        
-'Transcription initiation of R0010{77316}'\
-  DNA(binding!1,type~BBaR0010p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
-  	DNA(binding,type~BBaR0010p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1),\
-  	RNA(binding,upstream,downstream!2,type~BBaR0010)\
-    	@ 10.0
-        
-'Transcription initiation of R0040{77305}'\
-  DNA(binding!1,type~BBaR0040p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) ->\
-  	DNA(binding,type~BBaR0040p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1), \
-  	RNA(binding,upstream,downstream!2,type~BBaR0040) \
-  		@ 10.0
+# Transcription.
 
-### RBS ###
+%var: 'transcription initiation rate' 10
+%var: 'transcription rate' 10
+%var: 'transcription termination rate' 10
 
-'RBS transcription{58497}'\
-  DNA(binding!1,downstream!2,type~BBaB0000), RNAP(dna!1,rna!3), \
-  DNA(upstream!2,binding), RNA(downstream!3) ->\
-  	DNA(binding,downstream!2,type~BBaB0000), RNAP(dna!1,rna!3), \
-  	DNA(upstream!2,binding!1), RNA(downstream!4),\
-    RNA(binding,upstream!4,downstream!3,type~BBaB0000) \
-    	@ 10.0
+'Transcription initiation of R0051' \
+	DNA(binding!1,type~BBaR0051p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) -> \
+	DNA(binding,type~BBaR0051p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1), RNA(binding,upstream,downstream!2,type~BBaR0051) @ 'transcription initiation rate'
+'Transcription initiation of R0010' \
+	DNA(binding!1,type~BBaR0010p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) -> \
+	DNA(binding,type~BBaR0010p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1), RNA(binding,upstream,downstream!2,type~BBaR0010) @ 'transcription initiation rate'
+'Transcription initiation of R0040' \
+	DNA(binding!1,type~BBaR0040p4,downstream!2), RNAP(dna!1,rna), DNA(upstream!2,binding) -> \
+	DNA(binding,type~BBaR0040p4,downstream!3), RNAP(dna!1,rna!2), DNA(upstream!3,binding!1), RNA(binding,upstream,downstream!2,type~BBaR0040) @ 'transcription initiation rate'
 
-'RBS BBa_B0034 transcription{77253}'\
-  DNA(binding!1,downstream!2,type~BBaB0034), RNAP(dna!1,rna!3),\
-  DNA(upstream!2,binding), RNA(downstream!3) ->\
-  	DNA(binding,downstream!2,type~BBaB0034), RNAP(dna!1,rna!3),\
-    DNA(upstream!2,binding!1), RNA(downstream!4),\
-    RNA(binding,upstream!4,downstream!3,type~BBaB0034) \
-    @ 10.0
- 
-### Transcription ###
+'RBS BBa_B0034 transcription' \
+	DNA(binding!1,downstream!2,type~BBaB0034), RNAP(dna!1,rna!3), DNA(upstream!2,binding), RNA(downstream!3) -> \
+	DNA(binding,downstream!2,type~BBaB0034), RNAP(dna!1,rna!3), DNA(upstream!2,binding!1), RNA(downstream!4), RNA(binding,upstream!4,downstream!3,type~BBaB0034) @ 'transcription rate'
 
-'Coding sequence transcription{77009}' \
-  DNA(binding!1,downstream!2,type~BBaC0000), RNAP(dna!1,rna!3),\
-  DNA(upstream!2,binding), RNA(downstream!3) -> \
-  	DNA(binding,downstream!2,type~BBaC0000), RNAP(dna!1,rna!3), \
-  	DNA(upstream!2,binding!1), RNA(downstream!4), \
-    RNA(binding,upstream!4,downstream!3,type~BBaC0000) \
-    @ 10.0
+'C0012 transcription' \
+	DNA(binding!1,downstream!2,type~BBaC0012), RNAP(dna!1,rna!3), DNA(upstream!2,binding), RNA(downstream!3) -> \
+	DNA(binding,downstream!2,type~BBaC0012), RNAP(dna!1,rna!3), DNA(upstream!2,binding!1), RNA(downstream!4), RNA(binding,upstream!4,downstream!3,type~BBaC0012) @ 'transcription rate'
+'C0051 transcription' \
+	DNA(binding!1,downstream!2,type~BBaC0051), RNAP(dna!1,rna!3), DNA(upstream!2,binding), RNA(downstream!3) -> \
+	DNA(binding,downstream!2,type~BBaC0051), RNAP(dna!1,rna!3), DNA(upstream!2,binding!1), RNA(downstream!4), RNA(binding,upstream!4,downstream!3,type~BBaC0051) @ 'transcription rate'
+'C0040 transcription' \
+	DNA(binding!1,downstream!2,type~BBaC0040), RNAP(dna!1,rna!3), DNA(upstream!2,binding), RNA(downstream!3) -> \
+	DNA(binding,downstream!2,type~BBaC0040), RNAP(dna!1,rna!3), DNA(upstream!2,binding!1), RNA(downstream!4), RNA(binding,upstream!4,downstream!3,type~BBaC0040) @ 'transcription rate'
 
-'C0012 transcription{77279}' \
-  DNA(binding!1,downstream!2,type~BBaC0012), RNAP(dna!1,rna!3), \
-  	DNA(upstream!2,binding), RNA(downstream!3) -> \
-  		DNA(binding,downstream!2,type~BBaC0012), RNAP(dna!1,rna!3), \
-  		DNA(upstream!2,binding!1), RNA(downstream!4), \
-    	RNA(binding,upstream!4,downstream!3,type~BBaC0012) \
-        	@ 10.0
+'Termination - B0011' \
+	DNA(binding!1,type~BBaB0011), RNAP(dna!1,rna!2), RNA(downstream!2) -> \
+	DNA(binding,type~BBaB0011), RNAP(dna,rna), RNA(downstream) @ 'transcription termination rate'
 
-'C0051 transcription{77272}' \
-  DNA(binding!1,downstream!2,type~BBaC0051), RNAP(dna!1,rna!3), \
-  	DNA(upstream!2,binding), RNA(downstream!3) -> \
-  		DNA(binding,downstream!2,type~BBaC0051), RNAP(dna!1,rna!3),\
-    	DNA(upstream!2,binding!1), RNA(downstream!4), \
-    	RNA(binding,upstream!4,downstream!3,type~BBaC0051) \
-        @ 10.0
+%var: 'RNAP falloff rate' 1.0
 
-'C0040 transcription{77278}' \
-  DNA(binding!1,downstream!2,type~BBaC0040), RNAP(dna!1,rna!3),\
-  	DNA(upstream!2,binding), RNA(downstream!3) -> \
-  	DNA(binding,downstream!2,type~BBaC0040), RNAP(dna!1,rna!3),\
-    	DNA(upstream!2,binding!1), RNA(downstream!4), \
-    	RNA(binding,upstream!4,downstream!3,type~BBaC0040) \
-        @ 10.0   
-       
-### Termination ###
+'RNAP falloff' \
+	DNA(binding!1,downstream!3), RNAP(dna!1,rna!2), RNA(downstream!2), DNA(upstream!3,binding!_) -> \
+	DNA(binding,downstream!1), RNAP(dna,rna), RNA(downstream), DNA(upstream!1,binding!_) @ 'RNAP falloff rate'
 
-'Termination{77013}' \
-  DNA(binding!1,type~BBaK0000), RNAP(dna!1,rna!2), RNA(downstream!2) -> \
-  DNA(binding,type~BBaK0000), RNAP(dna,rna), RNA(downstream) \
-  	@ 10.0
+# The following rule is not invoked in this particular model as BBaB0011 is always the last DNA agent in the sequence, hence no downstream agent
+#'B0011 terminator transcription (readthrough)' \
+#	DNA(binding!1,downstream!2,type~BBaB0011), RNAP(dna!1,rna!3), DNA(upstream!2,binding), RNA(downstream!3) -> \
+#	DNA(binding,downstream!2,type~BBaB0011), RNAP(dna!1,rna!3), DNA(upstream!2,binding!1), RNA(downstream!4), RNA(binding,upstream!4,downstream!3,type~BBaB0011) @ 0.5
 
-'Termination - B0011{77290}' \
-  DNA(binding!1,type~BBaB0011), RNAP(dna!1,rna!2), RNA(downstream!2) -> \
-  	DNA(binding,type~BBaB0011), RNAP(dna,rna), RNA(downstream) \
-    	@ 10.0
-
-
-### RNAP falloff ###
-
-'RNAP falloff{76542}'\
-  DNA(binding!1,downstream!3), RNAP(dna!1,rna!2), RNA(downstream!2), DNA(upstream!3,binding!_) ->\
-  	DNA(binding,downstream!1), RNAP(dna,rna), RNA(downstream), DNA(upstream!1,binding!_) \
-  	@ 1.0
-    
-### Readthrough ###
-
-'Terminator transcription (readthrough){77015}'\
-  DNA(binding!1,downstream!2,type~BBaK0000), RNAP(dna!1,rna!3), \
-  DNA(upstream!2,binding), RNA(downstream!3) ->\
-  	DNA(binding,downstream!2,type~BBaK0000), RNAP(dna!1,rna!3), \
-  	DNA(upstream!2,binding!1), RNA(downstream!4), \
-    RNA(binding,upstream!4,downstream!3,type~BBaK0000) \
-    	@ 1.0
-
-'B0011 terminator transcription (readthrough){77291}'\
-  DNA(binding!1,downstream!2,type~BBaB0011), RNAP(dna!1,rna!3),\
-  DNA(upstream!2,binding), RNA(downstream!3) ->\
-  	DNA(binding,downstream!2,type~BBaR0011), RNAP(dna!1,rna!3),\
-    DNA(upstream!2,binding!1), RNA(downstream!4),\
-    RNA(binding,upstream!4,downstream!3,type~BBaR0011) \
-    	@ 0.5
-
-'Promoter transcription (readthrough){77000}' \
-  DNA(binding,type~BBaR0000p3,downstream!2,upstream!3), RNAP(dna!1,rna!5), DNA(upstream!2,binding),\
-  DNA(upstream!4,downstream!3,binding,type~BBaR0000p2), \
-  DNA(downstream!4,binding!1,type~BBaR0000p1), RNA(downstream!5) ->\
-  	DNA(binding,type~BBaR0000p3,downstream!3,upstream!5), RNAP(dna!1,rna!6), \
-  	DNA(upstream!3,binding!1), DNA(upstream!4,downstream!5,binding,type~BBaR0000p2),\
-    DNA(downstream!4,binding,type~BBaR0000p1), RNA(downstream!2), \
-   	RNA(binding,upstream!2,downstream!6,type~BBaR0000) \
-    	@ 10.0
-
-'Transcription of R0051 (readthrough){77271}'\
-  DNA(binding,type~BBaR0051p3,downstream!2,upstream!3), RNAP(dna!1,rna!5),\
-  DNA(upstream!6,binding), DNA(upstream!4,downstream!3,binding,type~BBaR0051p2),\
-  DNA(downstream!4,binding!1,type~BBaR0051p1), RNA(downstream!5), \
-  DNA(upstream!2,downstream!6,binding,type~BBaR0051p4) ->\
-  	DNA(binding,type~BBaR0051p3,downstream!3,upstream!5), RNAP(dna!1,rna!6),\
-    DNA(upstream!7,binding!1), DNA(upstream!4,downstream!5,binding,type~BBaR0051p2),\
-    DNA(downstream!4,binding,type~BBaR0051p1), RNA(downstream!2),\
-    DNA(upstream!3,downstream!7,binding,type~BBaR0051p4),\
-    RNA(binding,upstream!2,downstream!6,type~BBaR0051) \
-    	@ 10.0
-
-'Transcription of R0010 (readthrough){77317}'\
-  DNA(binding,type~BBaR0010p3,downstream!2,upstream!3), RNAP(dna!1,rna!5),\
-  DNA(upstream!6,binding), DNA(upstream!4,downstream!3,binding,type~BBaR0010p2),\
-  DNA(downstream!4,binding!1,type~BBaR0010p1), RNA(downstream!5),\
-  DNA(upstream!2,downstream!6,binding,type~BBaR0010p4) ->\
-  	DNA(binding,type~BBaR0010p3,downstream!3,upstream!5), RNAP(dna!1,rna!6),\
-    DNA(upstream!7,binding!1), DNA(upstream!4,downstream!5,binding,type~BBaR0010p2),\
-    DNA(downstream!4,binding,type~BBaR0010p1), RNA(downstream!2), \
-    DNA(upstream!3,downstream!7,binding,type~BBaR0010p4),\
-    RNA(binding,upstream!2,downstream!6,type~BBaR0010)\
-    	@ 10.0
-
-'Transcription of R0040 (readthrough){77306}'\
-  DNA(binding,type~BBaR0040p3,downstream!2,upstream!3), RNAP(dna!1,rna!5),\
-  DNA(upstream!6,binding), DNA(upstream!4,downstream!3,binding,type~BBaR0040p2),\
-  DNA(downstream!4,binding!1,type~BBaR0040p1), RNA(downstream!5),\
-  DNA(upstream!2,downstream!6,binding,type~BBaR0040p4) ->\
-  	DNA(binding,type~BBaR0040p3,downstream!3,upstream!5), RNAP(dna!1,rna!6),\
-   	DNA(upstream!7,binding!1), DNA(upstream!4,downstream!5,binding,type~BBaR0040p2),\
-    DNA(downstream!4,binding,type~BBaR0040p1), RNA(downstream!2),\
-    DNA(upstream!3,downstream!7,binding,type~BBaR0040p4),\
-    RNA(binding,upstream!2,downstream!6,type~BBaR0040)\
-    	@ 10.0
-    
+'Transcription of R0051 (readthrough)' \
+	DNA(binding,type~BBaR0051p3,downstream!2,upstream!3), RNAP(dna!1,rna!5), DNA(upstream!6,binding), DNA(upstream!4,downstream!3,binding,type~BBaR0051p2), DNA(downstream!4,binding!1,type~BBaR0051p1), \
+	RNA(downstream!5), DNA(upstream!2,downstream!6,binding,type~BBaR0051p4) -> \
+	DNA(binding,type~BBaR0051p3,downstream!3,upstream!5), RNAP(dna!1,rna!6), DNA(upstream!7,binding!1), DNA(upstream!4,downstream!5,binding,type~BBaR0051p2), DNA(downstream!4,binding,type~BBaR0051p1), \
+	RNA(downstream!2), DNA(upstream!3,downstream!7,binding,type~BBaR0051p4), RNA(binding,upstream!2,downstream!6,type~BBaR0051) @ 'transcription rate'
+'Transcription of R0010 (readthrough)' \
+	DNA(binding,type~BBaR0010p3,downstream!2,upstream!3), RNAP(dna!1,rna!5), DNA(upstream!6,binding), DNA(upstream!4,downstream!3,binding,type~BBaR0010p2), DNA(downstream!4,binding!1,type~BBaR0010p1), \
+	RNA(downstream!5), DNA(upstream!2,downstream!6,binding,type~BBaR0010p4) -> \
+	DNA(binding,type~BBaR0010p3,downstream!3,upstream!5), RNAP(dna!1,rna!6), DNA(upstream!7,binding!1), DNA(upstream!4,downstream!5,binding,type~BBaR0010p2), DNA(downstream!4,binding,type~BBaR0010p1), \
+	RNA(downstream!2), DNA(upstream!3,downstream!7,binding,type~BBaR0010p4), RNA(binding,upstream!2,downstream!6,type~BBaR0010) @ 'transcription rate'
+'Transcription of R0040 (readthrough)' \
+	DNA(binding,type~BBaR0040p3,downstream!2,upstream!3), RNAP(dna!1,rna!5), DNA(upstream!6,binding), DNA(upstream!4,downstream!3,binding,type~BBaR0040p2), DNA(downstream!4,binding!1,type~BBaR0040p1), \
+	RNA(downstream!5), DNA(upstream!2,downstream!6,binding,type~BBaR0040p4) -> \
+	DNA(binding,type~BBaR0040p3,downstream!3,upstream!5), RNAP(dna!1,rna!6), DNA(upstream!7,binding!1), DNA(upstream!4,downstream!5,binding,type~BBaR0040p2), DNA(downstream!4,binding,type~BBaR0040p1), \
+	RNA(downstream!2), DNA(upstream!3,downstream!7,binding,type~BBaR0040p4), RNA(binding,upstream!2,downstream!6,type~BBaR0040) @ 'transcription rate'

@@ -26,12 +26,12 @@ class RunnerView(val elem: Element,
 
   def opt(n: Double): Option[Double] = if(n > 0.0) Some(n) else None
 
-  val events: Var[Int] = Var(10000)
+  val events: Var[Int] = Var(100000)
 
 
   var time: Var[Double] = Var(0.0)
 
-  val points: Var[Int] = Var(250)
+  val points: Var[Int] = Var(1000)
 
   val implicitSignature = Var(true)
 

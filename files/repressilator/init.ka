@@ -1,24 +1,21 @@
-### Initial conditions ###
+# Initial conditions, observables, and perturbations.
 
-%init: 700  RNAP(dna,rna)
-%init: 18000  Ribosome(rna)
+%var: 'operon count' 1
+%var: 'RNA polymerase count' 700
+%var: 'ribosome count' 18000
 
-#I AM VERY CONFUSED BY INITIAL CONDITIONS THAT THE MODEL PROVIDES, IT IS COPY-PASTING OF THE SAME LINES
-%init: 1 DNA(upstream,downstream!1,binding,type~BBaR0051p1), DNA(upstream!1,downstream!2,binding,type~BBaR0051p2),\
-            DNA(upstream!2,downstream!3,binding,type~BBaR0051p3), DNA(upstream!3,downstream!4,binding,type~BBaR0051p4),\
-            DNA(upstream!4,downstream!5,binding,type~BBaB0034), DNA(upstream!5,downstream!6,binding,type~BBaC0012),\
-            DNA(upstream!6,downstream,binding,type~BBaB0011)
-            
-%init: 1  (DNA(upstream,downstream!1,binding,type~BBaR0010p1), DNA(upstream!1,downstream!2,binding,type~BBaR0010p2),\
-            DNA(upstream!2,downstream!3,binding,type~BBaR0010p3), DNA(upstream!3,downstream!4,binding,type~BBaR0010p4),\
-            DNA(upstream!4,downstream!5,binding,type~BBaB0034), DNA(upstream!5,downstream!6,binding,type~BBaC0040),\
-            DNA(upstream!6,downstream,binding,type~BBaB0011))
-            
-%init: 1  (DNA(upstream,downstream!1,binding,type~BBaR0040p1), DNA(upstream!1,downstream!2,binding,type~BBaR0040p2),\
-            DNA(upstream!2,downstream!3,binding,type~BBaR0040p3), DNA(upstream!3,downstream!4,binding,type~BBaR0040p4),\
-            DNA(upstream!4,downstream!5,binding,type~BBaB0034), DNA(upstream!5,downstream!6,binding,type~BBaC0051),\
-            DNA(upstream!6,downstream,binding,type~BBaB0011))
+%init: 'RNA polymerase count' (RNAP(dna,rna))
+%init: 'ribosome count' (Ribosome(rna))
+%init: 'operon count' (DNA(upstream,downstream!4,binding,type~BBaR0051p1), DNA(upstream!4,downstream!5,binding,type~BBaR0051p2), DNA(upstream!5,downstream!6,binding,type~BBaR0051p3), \
+                       DNA(upstream!6,downstream!7,binding,type~BBaR0051p4), DNA(upstream!7,downstream!8,binding,type~BBaB0034), DNA(upstream!8,downstream!9,binding,type~BBaC0012), \
+                       DNA(upstream!9,downstream,binding,type~BBaB0011))
+%init: 'operon count' (DNA(upstream,downstream!6,binding,type~BBaR0010p1), \
+                       DNA(upstream!6,downstream!7,binding,type~BBaR0010p2), DNA(upstream!7,downstream!8,binding,type~BBaR0010p3), DNA(upstream!8,downstream!9,binding,type~BBaR0010p4), \
+                       DNA(upstream!9,downstream!10,binding,type~BBaB0034), DNA(upstream!10,downstream!11,binding,type~BBaC0040), DNA(upstream!11,downstream,binding,type~BBaB0011))
+%init: 'operon count' (DNA(upstream,downstream!4,binding,type~BBaR0040p1), DNA(upstream!4,downstream!5,binding,type~BBaR0040p2), DNA(upstream!5,downstream!6,binding,type~BBaR0040p3), \
+                       DNA(upstream!6,downstream!7,binding,type~BBaR0040p4), DNA(upstream!7,downstream!8,binding,type~BBaB0034), DNA(upstream!8,downstream!9,binding,type~BBaC0051), \
+                       DNA(upstream!9,downstream,binding,type~BBaB0011))
 
+%obs: 'LacI' LacI()
 %obs: 'TetR' TetR()
 %obs: 'cI' cI()
-%obs: 'LacI' LacI()

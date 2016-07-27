@@ -124,7 +124,7 @@ object ServerMessages {
   }
 
   case class LaunchModel( files: List[(String, String)],
-                         nb_plot: Option[Int] = Some(250),
+                         nb_plot: Option[Int] = Some(1000),
                          max_events: Option[Int],
                          max_time: Option[Double] = None,
                          runName: String = "") extends ServerMessage with FileContainer

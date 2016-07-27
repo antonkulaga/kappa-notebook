@@ -1,53 +1,36 @@
-### Translation initiation ###
 
-%var: 'tr_init' 0.167
+# Translation.
 
-'Translation initiation{77010}'\
-  RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0000), Ribosome(rna!2) ->\
-  	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0000), Ribosome(rna!2) \
-  		@'tr_init'
+%var: 'ribosome binding rate' 0.000166
 
-'LacI translation initiation{77282}'\
-  	RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0012), Ribosome(rna!2) ->\
-  	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0012), Ribosome(rna!2)\
-  	@ 'tr_init'
+'RBS BBa_B0034 Ribosome binding' \
+	RNA(binding,type~BBaB0034), Ribosome(rna) -> \
+	RNA(binding!1,type~BBaB0034), Ribosome(rna!1) @ 'ribosome binding rate'
 
-'TetR translation initiation{77281}'\
-  RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0040), Ribosome(rna!2) ->\
-  	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0040), Ribosome(rna!2) \
-  	@ 'tr_init'
+%var: 'translation initiation rate' 0.167
 
-'cI translation initiation{77280}'\
-  RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0051), Ribosome(rna!2) ->\
-  	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0051), Ribosome(rna!2) \
-  	@ 'tr_init'
+'LacI translation initiation' \
+	RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0012), Ribosome(rna!2) -> \
+	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0012), Ribosome(rna!2) @ 'translation initiation rate'
+'TetR translation initiation' \
+	RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0040), Ribosome(rna!2) -> \
+	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0040), Ribosome(rna!2) @ 'translation initiation rate'
+'cI translation initiation' \
+	RNA(binding!2,downstream!1), RNA(binding,upstream!1,type~BBaC0051), Ribosome(rna!2) -> \
+	RNA(binding,downstream!1), RNA(binding!2,upstream!1,type~BBaC0051), Ribosome(rna!2) @ 'translation initiation rate'
 
-### Translation ###
+%var: 'translation rate' 10
 
-'Coding sequence translation{77005}' \
-  RNA(binding!1,type~BBaC0000), Ribosome(rna!1) ->\
-  	RNA(binding,type~BBaC0000), Ribosome(rna), Repressor(dna)\
-    @ 10.0
+'LacI translation' \
+	RNA(binding!1,type~BBaC0012), Ribosome(rna!1) -> \
+	RNA(binding,type~BBaC0012), Ribosome(rna), LacI(dna,lactose) @ 'translation rate'
+'TetR translation' \
+	RNA(binding!1,type~BBaC0040), Ribosome(rna!1) -> \
+	RNA(binding,type~BBaC0040), Ribosome(rna), TetR(dna,atc) @ 'translation rate'
+'cI translation' \
+	RNA(binding!1,type~BBaC0051), Ribosome(rna!1) -> \
+	RNA(binding,type~BBaC0051), Ribosome(rna), cI(dna) @ 'translation rate'
 
-'LacI translation{77285}' \
-  RNA(binding!1,type~BBaC0012), Ribosome(rna!1) ->\
-  	RNA(binding,type~BBaC0012), Ribosome(rna), LacI(dna,lactose) \
-    	@ 10.0
+%var: 'ribosome falloff rate' 0.01
 
-'TetR translation{77284}' \
-  RNA(binding!1,type~BBaC0040), Ribosome(rna!1) -> \
-  	RNA(binding,type~BBaC0040), Ribosome(rna), TetR(dna,atc) \
-  		@ 10.0
-
-'cI translation{77283}' \
-  RNA(binding!1,type~BBaC0051), Ribosome(rna!1) -> \
-  	RNA(binding,type~BBaC0051), Ribosome(rna), cI(dna) \
-  		@ 10.0
-        
-### Ribosome falloff ###
-
-'Ribosome falloff{76777}'\
-  Ribosome(rna!1), RNA(binding!1) ->\
-  	Ribosome(rna), RNA(binding) \
-  		@ 0.01
-
+'Ribosome falloff' Ribosome(rna!1), RNA(binding!1) -> Ribosome(rna), RNA(binding) @ 'ribosome falloff rate'

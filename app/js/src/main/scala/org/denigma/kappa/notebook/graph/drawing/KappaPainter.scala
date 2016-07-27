@@ -14,7 +14,8 @@ trait KappaPainter {
 
   type Locatable = SVGElement with SVGLocatable
 
-  lazy val labelStroke:  Var[String] = Var("blue")
+  lazy val labelStrokeColor:  Var[String] = Var("blue")
+  lazy val labelStrokeWidth: Var[Double] = Var(4)
 
   def getTextBox(str: String, fSize: Double): Rectangle = {
     val svg = text(str, fontSize := fSize)
@@ -40,18 +41,18 @@ trait KappaPainter {
 
 
   def drawLabel(str: String, rectangle: Rectangle, textBox: Rectangle,
-                fSize: Double, grad: String): TypedTag[SVG] = {
-    val st = 2
+                fSize: Double, grad: String, rX: Double = 20, rY: Double = 20): TypedTag[SVG] = {
+    val st = labelStrokeWidth.now
     val r = rect(
-      stroke :=  labelStroke.now,
+      stroke :=  labelStrokeColor.now,
       fill := s"url(#${grad})",
       strokeWidth := st,
       height := rectangle.height,
       width := rectangle.width,
-      rx := 50, ry := 50
+      rx := rX, ry := rY
     )
     val startX = (rectangle.width - textBox.width) / 2
-    val startY = (rectangle.height - textBox.height) / 2 + textBox.height
+    val startY = (rectangle.height - textBox.height) - st + textBox.height
     val txt = text(str, fontSize := fSize, x := startX, y := startY)
     import scalatags.JsDom.implicits._
 

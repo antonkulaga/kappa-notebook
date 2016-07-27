@@ -15,7 +15,6 @@ class LayoutInfo(val mass: Double = 1.0)
     if(pos.x==0) pos.x = v.x
     if(pos.y==0) pos.y = v.y
     if(pos.z==0) pos.z = v.z
-
   }
 
   def setPoses(x: Double, y: Double, z: Double = 0) = { pos.x= x; pos.y = y; pos.z = z}

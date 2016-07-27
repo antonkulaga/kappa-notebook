@@ -38,19 +38,19 @@ class AgentNode(val agent: KappaModel.Agent)
   val view = fun(this)
 
   def markChanged() = {
-    view.labelStroke() = "violet"
+    view.labelStrokeColor() = "violet"
   }
 
   def markDeleted() = {
-    view.labelStroke() = "red"
+    view.labelStrokeColor() = "red"
   }
 
   def markAdded() = {
-    view.labelStroke() = "green"
+    view.labelStrokeColor() = "green"
   }
 
   def markDefault() = {
-    view.labelStroke() = "blue"
+    view.labelStrokeColor() = "blue"
   }
 
   val children: List[SiteNode] = agent.sites.map(si=>new SiteNode(this, si)(siteFun, stateFun))

@@ -111,11 +111,11 @@ object KappaModel {
     }
   }
 
-  case class Agent(name: String, sites: List[Site] = List.empty, extra: String = "") extends KappaNamedElement
+  case class Agent(name: String, sites: List[Site] = List.empty) extends KappaNamedElement
   {
     lazy val siteSet = sites.toSet
 
-    lazy val siteNames = sites.map(s=>s.name)
+    lazy val siteNames = siteSet.map(s=>s.name)
 
     lazy val links: List[(String, Site)] = for {
         s <- sites

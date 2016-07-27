@@ -62,7 +62,7 @@ class KappaLinkView(val label: String, val fontSize: Double, val padding: Double
   protected lazy val defaultGradient =
     linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
       stop(offset := "0%", stopColor := "white"),
-      stop(offset := "100%", stopColor := "deepskyblue")
+      stop(offset := "100%", stopColor := "ivory")
     )
 
   lazy val gradient = Var(defaultGradient)

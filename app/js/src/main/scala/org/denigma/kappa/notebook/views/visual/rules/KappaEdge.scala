@@ -5,7 +5,7 @@ import org.denigma.kappa.notebook.graph.{ArrowEdge, KappaEdge, LineParams}
 import org.denigma.threejs.{Side => _, _}
 
 
-class KappaSiteEdge(val from: AgentNode, val to: SiteNode, val lineParams: LineParams = LineParams()) extends ArrowEdge{
+class KappaSiteEdge(val from: AgentNode, val to: SiteNode, val lineParams: LineParams) extends ArrowEdge{
   override type FromNode = AgentNode
   override type ToNode = SiteNode
 
@@ -13,7 +13,7 @@ class KappaSiteEdge(val from: AgentNode, val to: SiteNode, val lineParams: LineP
 
 }
 
-class KappaStateEdge(val from: SiteNode, val to: StateNode, val lineParams: LineParams = LineParams()) extends ArrowEdge{
+class KappaStateEdge(val from: SiteNode, val to: StateNode, val lineParams: LineParams) extends ArrowEdge{
   override type FromNode = SiteNode
   override type ToNode = StateNode
 
@@ -21,7 +21,7 @@ class KappaStateEdge(val from: SiteNode, val to: StateNode, val lineParams: Line
 }
 
 
-class KappaLinkEdge(label: String, val from: SiteNode, val to: SiteNode, val lineParams: LineParams = LineParams())
+class KappaLinkEdge(label: String, val from: SiteNode, val to: SiteNode, val lineParams: LineParams)
       (implicit val fun: KappaLinkEdge => KappaLinkView)
   extends KappaEdge
 {

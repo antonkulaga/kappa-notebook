@@ -25,7 +25,7 @@ class FluxForceLayout(
     case (rs, is)=>
       randomize(is.toVector)
       var temperature = 500 / 50.0
-      layoutIterations = 0
+      layoutIterations() = 0
       active = true
   }
 }

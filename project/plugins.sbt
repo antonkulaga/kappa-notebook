@@ -2,7 +2,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.4.0") // advanced assets handli
 
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.8.0") //live refresh
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.6") // packaging for production
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.1") // packaging for production
 
 addSbtPlugin("com.vmunier" % "sbt-play-scalajs" % "0.3.1")
 
@@ -16,7 +16,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-gzip" % "1.0.0")
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.10")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.11")
 
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.1.10")
 

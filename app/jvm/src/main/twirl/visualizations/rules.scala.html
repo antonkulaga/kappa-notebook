@@ -2,20 +2,12 @@
 <section class="ui attached segment tab" data-class-active-if="rulesActive">
   <div class="ui equal width grid">
     <div class="equal width row">
-      <section class="column">
+      <section class="blue column segment">
       <h4 class="ui blue header">Input (left side)</h4>
       <div id = "LeftGraph" data-view="LeftGraph" data-param-container="left-container">
         <div id="left-container" class="graph container"></div>
       </div>
     </section>
-    </div>
-    <div class="equal width row">
-      <section class="segment column">
-        <h4 class="ui blue header">Output (right side)</h4>
-        <div id = "RightGraph" data-view="RightGraph"  data-param-container="right-container">
-          <div id="right-container" class="graph container"></div>
-        </div>
-      </section>
     </div>
     <div class="equal width row">
       <div class="column">
@@ -25,8 +17,16 @@
           <span class="ui green label">added</span>,
           <span class="ui violet label">changed</span>
         </div>
-        <b>Current line: </b> <span data-bind="currentLine"></span>
+        <b>Current line: </b> <small data-bind="currentLine"></small>
       </div>
+    </div>
+    <div class="equal width row">
+      <section class="blue column segment">
+        <h4 class="ui blue header">Output (right side)</h4>
+        <div id = "RightGraph" data-view="RightGraph"  data-param-container="right-container">
+          <div id="right-container" class="graph container"></div>
+        </div>
+      </section>
     </div>
   </div>
 </section>

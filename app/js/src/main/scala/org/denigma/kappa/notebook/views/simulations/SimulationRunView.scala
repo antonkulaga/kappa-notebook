@@ -20,7 +20,7 @@ class SimulationRunView(val elem: Element,
   extends BindableView with UpdatableView[SimulationStatus] with TabItem
 {
 
-  val tab: Var[String] = Var("fluxes")//Var("plot")
+  val tab: Var[String] = Var("plot")//Var("fluxes")
 
   val plot: Rx[KappaPlot] = simulation.map(s=>s.plot.getOrElse(KappaPlot.empty))
 
@@ -30,8 +30,6 @@ class SimulationRunView(val elem: Element,
     simulation() = value
     this
   }
-
-
   override lazy val injector = defaultInjector
     .register("Plot") {
       case (el, _) =>
@@ -39,7 +37,11 @@ class SimulationRunView(val elem: Element,
     }
     .register("Parameters") {
       case (el, _) =>
-        new LaunchParametersView(el, simulation, tab).withBinder(new FixedBinder(_))
+        new LaunchParametersView(el, simulation, params, tab).withBinder(new FixedBinder(_))
+    }
+    .register("Console") {
+      case (el, _) =>
+        new ConsoleView(el, simulation.map(s=>s.log_messages), tab).withBinder(new FixedBinder(_))
     }
     .register("Fluxes") {
       case (el, _) =>

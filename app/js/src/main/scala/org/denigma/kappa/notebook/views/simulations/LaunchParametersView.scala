@@ -13,11 +13,13 @@ import com.softwaremill.quicklens._
 import org.denigma.binding.binders.Events
 import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.views.common.TabItem
+import org.scalajs.dom
 import org.scalajs.dom.Event
 import rx.Rx.Dynamic
 
 class LaunchParametersView(val elem: Element,
                            val simulation: Rx[SimulationStatus],
+                           params: Option[LaunchModel],
                            val selected: Rx[String]
                        ) extends BindableView//FixedItemsSeqView
 {
@@ -39,8 +41,8 @@ class LaunchParametersView(val elem: Element,
     case (acc, e) => acc + "\n" + e
   })
 
-  val code = simulation.map(sim=>sim.code.getOrElse(""))
-
+  val code = simulation.map(sim=>sim.code.orElse(params.map(_.fullCode)).getOrElse("### NODE CODE AVALIABLE ###"))
+  dom.console.error(simulation.now.code.toString)
   //val points =  = simulation.map(sim=>sim.)
 
   val implicitSignature = Var(true)

@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.views.visual
 import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage
-import org.denigma.kappa.notebook.graph.LineParams
+import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.notebook.views.editor.KappaWatcher
 import org.denigma.kappa.notebook.views.visual.rules.{RulesGraphView, RulesVisualSettings}
 import org.scalajs.dom.raw.Element
@@ -11,7 +11,7 @@ import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
-import scala.collection.immutable.SortedSet
+import scala.collection.immutable._
 
 class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[KappaMessage], s: SVG) extends BindableView{
 
@@ -24,32 +24,34 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
 
   //val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
 
+  //val leftAgents = kappaWatcher.leftPattern.map(p=>SortedSet(p.agents:_*))
+  //val rightAgents = kappaWatcher.rightPattern.map(p=>SortedSet(p.agents:_*)
+
+  //val unchanged: Rx[Set[Agent]],
+  //val removed: Rx[Set[Agent]],
+  //val added: Rx[Set[Agent]],
+  //val updated: Rx[Set[Agent]],
+
+
   override lazy val injector = defaultInjector
     .register("ContactMapView") {
-      (el, args) =>new ContactMapView(el, input).withBinder(v=>new CodeBinder(v))
+      (el, args) =>new ContactMapView(el, input, contactActive).withBinder(v=>new CodeBinder(v))
     }
-    /*
-    .register("LeftGraph") {  (el, args) =>
-      new GraphView(el,
-        kappaWatcher.leftPattern.nodes,
-        kappaWatcher.leftPattern.edges,
-        kappaWatcher.leftPattern.layouts,
-        args.getOrElse("container", "graph-container").toString).withBinder(n => new CodeBinder(n)) }
-    .register("RightGraph") {  (el, args) =>
-      new GraphView(el,
-        kappaWatcher.rightPattern.nodes,
-        kappaWatcher.rightPattern.edges,
-        kappaWatcher.rightPattern.layouts,
-        args.getOrElse("container", "graph-container").toString).withBinder(n => new CodeBinder(n)) }
-    */
-    .register("LeftGraph") {  (el, args) =>
+    .register("LeftGraph") {
+      (el, args) =>
     new RulesGraphView(el,
-      kappaWatcher.leftPattern.map(p=>SortedSet(p.agents:_*)),
+      kappaWatcher.leftUnchanged,
+      kappaWatcher.removed,
+      Var(Set.empty[KappaModel.Agent]),
+      kappaWatcher.leftModified,
       args.getOrElse("container", "graph-container").toString,
       RulesVisualSettings(s)).withBinder(n => new CodeBinder(n)) }
     .register("RightGraph") {  (el, args) =>
       new RulesGraphView(el,
-        kappaWatcher.rightPattern.map(p=>SortedSet(p.agents:_*)),
+        kappaWatcher.rightUnchanged,
+        Var(Set.empty[KappaModel.Agent]),
+        kappaWatcher.added,
+        kappaWatcher.rightModified,
         args.getOrElse("container", "graph-container").toString, RulesVisualSettings(s)).withBinder(n => new CodeBinder(n)) }
 
 }

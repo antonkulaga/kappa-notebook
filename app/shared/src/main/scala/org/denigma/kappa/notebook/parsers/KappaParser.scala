@@ -58,9 +58,9 @@ class KappaParser extends CommentLinksParser
   val rulePart: P[Pattern] = P(agent ~ (optSpaces ~ "," ~ optSpaces ~ agent).rep).map{
     case (ag, agents) =>
       val ags = ag::agents.toList
-      val dist = ags.distinct
-      val dupl = ags.diff(dist).zipWithIndex.map{case (value, i)=> value.copy(extra = i.toString)} //make agents unique
-      Pattern(dist++dupl)
+      //val dist: List[Agent] = ags.distinct
+      //val dupl: List[Agent] = ags.diff(dist)//make agents unique
+      Pattern(ags)
   }
 
   val coeffs: P[(Either[String, Double], Option[Either[String, Double]])] = P("@" ~optSpaces ~ labelOrNumber ~ (optSpaces ~ ","~ optSpaces ~labelOrNumber).?)

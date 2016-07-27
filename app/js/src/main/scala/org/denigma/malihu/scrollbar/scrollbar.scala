@@ -28,14 +28,18 @@ trait JQueryScrollbar extends JQuery {
 @ScalaJSDefined
 class mCustomScrollbarParams(val axis: String,
                              //val theme: String,
-                             val advanced: mCustomScrollbarAdvancedParams
+                             val advanced: mCustomScrollbarAdvancedParams,
+                             val mouseWheel: MouseWheel = new MouseWheel()
                              /*val callbacks:  mCustomScrollbarCallbacks = js.native*/) extends js.Object{
 
 }
 
 
 @ScalaJSDefined
-class mCustomScrollbarAdvancedParams(val autoExpandHorizontalScroll: Boolean, val updateOnContentResize: Boolean = true, val updateOnBrowserResize:Boolean = true) extends js.Object{
+class mCustomScrollbarAdvancedParams(val autoExpandHorizontalScroll: Boolean,
+                                     val updateOnContentResize: Boolean = true,
+                                     val updateOnBrowserResize:Boolean = true
+                                    ) extends js.Object{
 
 }
 
@@ -47,4 +51,11 @@ class mCustomScrollbarCallbacks(val  onOverflowX: js.Function0[_], val onOverflo
 package object scrollbar {
   implicit def jq2Scrollbar(jq: JQuery): JQueryScrollbar =
     jq.asInstanceOf[JQueryScrollbar]
+}
+
+
+@ScalaJSDefined
+class MouseWheel(val enable: Boolean = true,
+                  val disableOver: js.Array[String] = js.Array("select","option","keygen","datalist","textarea")) extends js.Object {
+
 }

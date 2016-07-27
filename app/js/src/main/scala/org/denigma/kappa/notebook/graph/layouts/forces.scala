@@ -2,9 +2,12 @@ package org.denigma.kappa.notebook.graph.layouts
 
 import org.denigma.kappa.notebook.graph.drawing.Rectangle
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
+import org.scalajs.dom
 
 
-class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Double, EPSILON: Double = 0.00001, compare: (Edge#FromNode, Edge#ToNode) => (Double, Double) ) extends Force[Node, Edge] {
+class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Double, EPSILON: Double = 0.00001)
+                                                      (val compare: (Edge#FromNode, Edge#ToNode) => (Double, Double) )
+  extends Force[Node, Edge] {
 
 
   override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
@@ -37,6 +40,53 @@ class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Doubl
       l2.offset.x += deltaX  * force2
       l2.offset.y += deltaY  * force2
       l2.offset.z += deltaZ  * force2
+    }
+  }
+
+}
+
+
+
+case class SpringParams(length: Double, strength: Double = 1, mass1: Double = 1, mass2: Double = 1)
+
+class SpringForce[Node <: ForceNode, Edge <: ForceEdge](val springMult: Double, EPSILON: Double = 0.00001)
+                                                  (val compute: (Edge) => SpringParams )
+  extends Force[Node, Edge] {
+
+
+  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
+    val attractionGlobal = springMult * forceConstant
+    for {i <- edges.indices} {
+      val edge = edges(i)
+      //val l1 = edge.from.view.layout
+      //val l2 = edge.to.view.layout
+      val l1 = edge.from.layoutInfo
+      val l2 = edge.to.layoutInfo
+
+      val deltaX = l1.pos.x - l2.pos.x
+      val deltaY = l1.pos.y - l2.pos.y
+      val deltaZ = l1.pos.z - l2.pos.z
+
+      val distance = Math.max(EPSILON, l1.pos.distanceTo(l2.pos))
+      //val (m1, m2) = compare(edge.from, edge.to)
+      val SpringParams(length, strength, mass1, mass2) = compute(edge)
+
+      val force1= (distance - length)  * strength * mass2 * attractionGlobal / 2
+      val force2 = (distance - length) * strength * mass1 *  attractionGlobal / 2
+      //println(s"SPRING = (distance(${distance}) - length(${length}))  * springMult($springMult} * forceConstant ${forceConstant} = $force1")
+
+
+      l1.force -= force1
+      l2.force += force2
+
+      l1.offset.x -= deltaX / distance  * force1
+      l1.offset.y -= deltaY / distance  * force1
+      l1.offset.z -= deltaZ  / distance * force1
+
+
+      l2.offset.x += deltaX / distance  * force2
+      l2.offset.y += deltaY / distance * force2
+      l2.offset.z += deltaZ /distance * force2
     }
   }
 
@@ -89,7 +139,7 @@ class BorderForce(val repulsionMult: Double, val threshold: Double, mult: Double
 
 }
 */
-class BorderForce[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double, val threshold: Double, mult: Double, center: Vector3) extends Force[Node, Edge] {
+class BorderForce[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double, val threshold: Double, mult: Double, center: Vector3, EPSILON: Double = 0.1) extends Force[Node, Edge] {
 
   def border(width: Double, height: Double) = Rectangle.fromCorners(center.x - width / 2, center.y - height / 2, center.x + width / 2, center.y + height / 2)
 
@@ -123,7 +173,7 @@ class BorderForce[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Doubl
       val deltaY = toBorder(toVerBorders(rect, l1.pos.y))
       val deltaZ = 0
 
-      val distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2))
+      val distance = Math.max(Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2)), EPSILON)
       if(distance > 0) {
         val force =  (repulsion * repulsion) / Math.pow(distance, 2)
         l1.force += force
@@ -167,11 +217,15 @@ class Gravity[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Double, 
 }
 
 
-class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double, EPSILON: Double = 0.00001, compareRepulstion: (Node, Node) => (Double, Double)) extends Force[Node, Edge] {
+class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double, EPSILON: Double = 0.1)
+                                                     (compareRepulstion: (Node, Node) => (Double, Double))
+  extends Force[Node, Edge] {
+
+  var num = 0
 
   override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
     val repulsion = repulsionMult * forceConstant
-    for {i <- nodes.indices}
+    for {i <- nodes.indices}println
     {
       val no1 = nodes(i)
       //val n1 = no1.view
@@ -193,8 +247,14 @@ class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double,
 
         val distance = Math.max(EPSILON, l1.pos.distanceTo(l2.pos))
         val distSquared  = Math.pow(distance, 2)
-
-        val force1 =  (repulsion * repulsion) * m1 / distSquared
+        num = num + 1
+        val force1 =  (repulsion * repulsion) * m2 / distSquared
+        if(distance.isNaN) {
+          dom.console.error("NANANANANANANNA")
+          num = -10000
+        }
+        if(num>=0)
+        println(s"NUM $num at distance ${distance}: (repulsion(${repulsion}) * repulsion(${repulsion})) * m1(${m2}) / distSquared(${distSquared})) = $force1")
         l1.force += force1
         l1.offset.x = l1.offset.x + (deltaX / distance) * force1
         l1.offset.y = l1.offset.y + (deltaY / distance) * force1
@@ -204,7 +264,7 @@ class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double,
           l2.setOffsets(0,0,0)
         }
 
-        val force2 = (repulsion * repulsion)  * m2 / distSquared
+        val force2 = (repulsion * repulsion)  * m1 / distSquared
 
         l2.force += force2
         l2.offset.x = l2.offset.x - (deltaX / distance) * force2

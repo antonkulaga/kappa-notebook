@@ -6,7 +6,7 @@ import org.scalajs.dom.raw.{Element, SVGElement}
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
-import org.denigma.kappa.notebook.graph.{KappaEdgeVisualSettings, KappaNodeVisualSettings, LineParams}
+import org.denigma.kappa.notebook.graph.{Colors, KappaEdgeVisualSettings, KappaNodeVisualSettings, LineParams}
 import org.denigma.kappa.notebook.views.common.FixedBinder
 import org.scalajs.dom
 import org.scalajs.dom.svg.SVG
@@ -25,9 +25,7 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
   lazy val container = elem.selectByClass("graph")
 
   val fluxName: Rx[String] =  item.map(fl=>fl.flux_name)
-
   val start = item.map(fl=>fl.flux_begin_time)
-
   val end = item.map(fl=>fl.flux_begin_time)
   val other = item.map(fl => fl.flux_rules)
   val hits = item.map(fl => fl.flux_hits)
@@ -41,7 +39,8 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
     this
   }
 
-  override def items: Rx[SortedSet[RuleFlux]] = item.map(i => RuleFlux.fromFluxMap(i))
+  override val items: Rx[SortedSet[RuleFlux]] = item.map(i => RuleFlux.fromFluxMap(i))
+  items.foreach(i=>println("items are = "+items.now))
 
   override def newItemView(item: Item): ItemView = this.constructItemView(item){
     case (el, _) => new HitsView(el, item).withBinder(v => new FixedBinder(v))
@@ -54,6 +53,6 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
 
   override lazy val injector = defaultInjector
     .register("FluxGraphView") { case (el, args) =>
-      new FluxGraphView(el, items, new KappaNodeVisualSettings(16, 6), new KappaEdgeVisualSettings(14, 4, LineParams()), s).withBinder(v => new FixedBinder(v))
+      new FluxGraphView(el, items, new KappaNodeVisualSettings(16, 6), new KappaEdgeVisualSettings(14, 4, LineParams(Colors.blue)), s).withBinder(v => new FixedBinder(v))
     }
 }

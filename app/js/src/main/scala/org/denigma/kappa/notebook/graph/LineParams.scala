@@ -2,12 +2,22 @@ package org.denigma.kappa.notebook.graph
 
 import scala.util.Random
 
+object Colors {
+  val green = 0xA1CF64
+  val red = 0xD95C5C
+  val blue = 0x6ECFF5
+  val orange = 0xF05940
+  val purple = 0x564F8A
+  val teal = 0x00B5AD
+}
+
 object Defs extends Randomizable
 {
 
+
   val colors = List("green","red","blue",/*"orange",*/"purple","teal")
 
-  val colorMap: Map[String, Int] = Map("green"-> 0xA1CF64, "red"-> 0xD95C5C,"blue" -> 0x6ECFF5,/*"orange" ->0xF05940,*/"purple"-> 0x564F8A, "teal"-> 0x00B5AD)
+  val colorMap: Map[String, Int] = Map("green"-> Colors.green, "red"-> Colors.red,"blue" -> Colors.blue,/*"orange" ->0xF05940,*/"purple"-> Colors.purple, "teal"-> Colors.teal)
 
   def randColorName: String = colors(Random.nextInt(colors.size))
 
@@ -22,7 +32,7 @@ object Defs extends Randomizable
 
 }
 
-case class LineParams(lineColor: Int = Defs.color, headLength: Double = Defs.headLength, headWidth: Double = Defs.headWidth) {
+case class LineParams(lineColor: Int = Defs.color, headLength: Double = Defs.headLength, headWidth: Double = Defs.headWidth, thickness: Double = 3) {
 
   def hexColor = Integer.toHexString(lineColor)
   // def hex = lineColor.toInt

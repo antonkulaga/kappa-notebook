@@ -30,11 +30,12 @@ trait KappaView extends KappaPainter {
   lazy val labelBox = textBox.withPadding(padding, padding)
 
   protected val svg = Rx {
-    labelStroke()
+    labelStrokeColor()
+    val st = labelStrokeWidth()
     val grad = gradient()
     val rect = Rectangle(textBox.width, textBox.height).withPadding(padding * 2, padding)
     val lb: TypedTag[SVG] = drawLabel(label, rect, textBox, fontSize, gradientName)
-    drawSVG(rect.width, rect.height, List(gradient.now), List(lb))
+    drawSVG(rect.width + st *2, rect.height + st *2 , List(gradient.now), List(lb))
   }
 
   protected val sprite: Rx[HtmlSprite] = svg.map {
@@ -42,7 +43,7 @@ trait KappaView extends KappaPainter {
   }
 
   protected val spriteChange = sprite.zip
-  spriteChange.onChange{
+  spriteChange.foreach{
     case (old, n)=>
       if(old != n) {
         container.remove(old)

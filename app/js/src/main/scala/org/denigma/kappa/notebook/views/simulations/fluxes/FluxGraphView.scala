@@ -11,7 +11,6 @@ import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all.attrs._
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
 import org.scalajs.dom.svg.{LinearGradient, SVG}
 
-import scala.Vector
 import scala.collection.immutable._
 
 
@@ -96,17 +95,13 @@ class FluxGraphView(val elem: Element,
   }
 
   implicit protected def createLinkView(edge: Edge): RuleFluxEdgeView = {
-    new RuleFluxEdgeView(edge.value.toString, edgeVisual.font, edgeVisual.padding, edgeVisual.line, canvas)
+    val line = if(edge.value>0) edgeVisual.line.copy(lineColor = Colors.green) else edgeVisual.line.copy(lineColor = Colors.red)
+    new RuleFluxEdgeView(edge.value.toString, edgeVisual.font, edgeVisual.padding, line, canvas)
   }
 
   protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (node1, node2) match {
     case other => (1, 1)
   }
-
-  protected def compareSpring(node1: Edge#FromNode, node2: Edge#ToNode): (Double, Double) = (node1, node2) match {
-    case other => (1, 1)
-  }
-
 
   val nodesByName = items.map{
     case its => its.map(fl=>(fl.rule, new FluxNode(fl))).toMap
@@ -121,17 +116,33 @@ class FluxGraphView(val elem: Element,
     }.toVector
   }
 
-  protected val gravityForce = new Gravity[FluxNode, FluxEdge](ForceLayoutParams.default2D.attractionMult / 4, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
-  protected val repulsionForce = new Repulsion[FluxNode, FluxEdge](ForceLayoutParams.default2D.repulsionMult, 0.00001, compareRepulsion)
-  protected val attractionForce = new Attraction[FluxNode, FluxEdge](ForceLayoutParams.default2D.attractionMult, 0.00001, compareSpring)
-  protected val borderForce = new BorderForce[FluxNode, FluxEdge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
+  val min = edges.map(e => e.minBy(_.value).value)
+  val max = edges.map(e => e.maxBy(_.value).value)
+
+  protected def percent(value: Double): Double = (value , max.now, min.now) match {
+    case (v, m, _) if v > 0 => v / m
+    case (v, _, m) if v < 0 => v / m
+    case _ => 0.0
+  }
+
+  protected def computeSpring(edge: Edge) = {
+    val p = percent(edge.value)
+    val length = (1 - p) * 50 + 10
+    SpringParams(length, 0.5 + p * 2, 1, 1  )
+  }
+
+  //protected val gravityForce = new Gravity[FluxNode, FluxEdge](ForceLayoutParams.default2D.springMult / 4, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
+  protected val repulsionForce = new Repulsion[FluxNode, FluxEdge](ForceLayoutParams.default2D.repulsionMult)(compareRepulsion)
+  protected val springForce = new SpringForce[FluxNode, FluxEdge](ForceLayoutParams.default2D.springMult)(computeSpring)
+  //protected val borderForce = new BorderForce[FluxNode, FluxEdge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
 
 
   protected val forces: Vector[Force[ Node, Edge]] = Vector(
     repulsionForce,
-    attractionForce,
-    gravityForce,
-    borderForce
+    //attractionForce,
+    springForce
+    //gravityForc
+    //borderForce
   )
 
   val layouts = Var(Vector(new FluxForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
@@ -140,10 +151,10 @@ class FluxGraphView(val elem: Element,
     width,
     height,
     layouts,
-    700.0
+    1000.0
   )
 
-  def onEdgesChanges(removed: List[Edge], added: List[Edge]): Unit = {
+  def onEdgesChanges(removed: Seq[Edge], added: Seq[Edge]): Unit = {
     for(r <- removed){
         viz.removeSprite(r.view.container)
         viz.removeObject(r.view.container)
@@ -155,7 +166,7 @@ class FluxGraphView(val elem: Element,
     }
   }
 
-  def onNodesChanges(removed: Set[Node], added: Set[Node]): Unit = {
+  def onNodesChanges(removed: Seq[Node], added: Seq[Node]): Unit = {
     //removed.foreach(r=> dom.console.log("REMOVED NODE "+r.view.label))
     //added.foreach(a=> dom.console.log("ADDED NODE "+a.view.label))
 
@@ -165,16 +176,26 @@ class FluxGraphView(val elem: Element,
       viz.removeObject(n.view.container)
     }
     added.foreach(n => viz.addSprite(n.view.container))
-    println("INSERTED = "+added)
+    //println("REMOVED = "+removed)
+    //println("INSERTED = "+added)
   }
 
 
   protected def subscribeUpdates() = {
+    nodes.foreach{
+     case nds =>
+       println("NODES CHANGE")
+       nds.foreach(n=>println("node is "+ n))
+    }
     nodes.removedInserted.foreach{
-      case (removed, inserted) => onNodesChanges(removed.toSet, inserted.toSet)
+      case (removed, inserted) => onNodesChanges(removed.toList, inserted.toList)
     }
     edges.removedInserted.foreach{case (removed, inserted)=> onEdgesChanges(removed.toList, inserted.toList)}
     layouts.now.foreach(_.start(viz.width, viz.height, viz.camera))
+
+    //bug fix
+    onNodesChanges(Seq.empty, nodes.now)
+    onEdgesChanges(Seq.empty, edges.now)
   }
 
 

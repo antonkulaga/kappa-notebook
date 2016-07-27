@@ -402,8 +402,8 @@ function Render(id,contactMap){
     that.contactMap = contactMap;
     that.root = id?d3.select(id):d3.select('body');
     var node = that.root.node();
-    var width = Math.max(400, node.offsetWidth);
-    var height = Math.max(2*width/3, node.offsetHeight);
+    var width = Math.max(500, node.offsetWidth);
+    var height = Math.max(width, node.offsetHeight);
     that.layout = new Layout(contactMap,new Dimensions( height, width));
     that.svg = that.root
         .append('svg')

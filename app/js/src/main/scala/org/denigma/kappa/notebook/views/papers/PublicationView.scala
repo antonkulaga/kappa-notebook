@@ -100,7 +100,7 @@ trait LoadedPaperView extends BindableView {
 
   lazy val page: Var[Int] = Var(1)
 
-  lazy val scale = Var(1.6)
+  lazy val scale = Var(1.5)
 
   def paper: Paper
 

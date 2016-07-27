@@ -15,7 +15,9 @@ class Visualizer (val container: HTMLElement,
                   val widthRx: Rx[Double],
                   val heightRx: Rx[Double],
                   val layouts: Rx[Vector[GraphLayout]],
-                  override val distance: Double
+                  override val distance: Double,
+                  val ticksPerFrame: Int = 1,
+                  var ticksOnFirstFrame: Int = 1
                  )
   extends Container3D
 {
@@ -101,11 +103,14 @@ class Visualizer (val container: HTMLElement,
     cssScene.remove(htmlSprite)
   }
 
+  protected def tick() = {
+    this.layouts.now.foreach{case l=> l.tick(width, height, camera) }
+  }
+
   override def onEnterFrame() = {
-    this.layouts.now.foreach{case l=>
-      if(l.active) l.tick(width, height, camera)
-      //dom.console.info(s"l is ${l.active}")
-    }
+    for(i <- 0 to ticksOnFirstFrame) tick()
+    ticksOnFirstFrame = 0
+    for(i <- 0 to ticksPerFrame) tick()
     super.onEnterFrame()
   }
 

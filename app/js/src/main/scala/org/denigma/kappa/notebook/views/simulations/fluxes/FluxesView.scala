@@ -5,6 +5,7 @@ import org.denigma.kappa.messages.WebSimMessages.FluxMap
 import org.denigma.kappa.notebook.views.common.{FixedBinder, TabHeaders}
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 import rx._
 
 import scala.collection.immutable.SortedSet
@@ -13,6 +14,8 @@ import scala.collection.immutable.SortedSet
 class FluxesView(val elem: Element, val items: Rx[Map[String, FluxMap]], tab: Rx[String]) extends ItemsMapView{
 
   val active: Rx[Boolean] = tab.map(s=>s=="fluxes")
+
+  val notEmpty: Rx[Boolean] = items.map(its=>its.nonEmpty)
 
   val selected: Var[String] = Var("")
 

@@ -19,7 +19,7 @@ object MyStyles extends MainStyles
 
   ".plot" -(
       maxWidth(600 px),
-      maxHeight(65 vh)
+      maxHeight(60 vh)
     )
 
   ".noscroll" -(
@@ -40,6 +40,11 @@ object MyStyles extends MainStyles
 
   ".ui.table td.collapsing" -(
     padding(0 px) important
+    )
+
+  ".ui.segment.paper" -(
+    overflowY.auto,
+    maxHeight(58 vh)
     )
 }
 

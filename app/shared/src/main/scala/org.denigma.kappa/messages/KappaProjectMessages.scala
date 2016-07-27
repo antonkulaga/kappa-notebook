@@ -16,7 +16,7 @@ object KappaProject extends FileFilters{
     .join(ProjectResponses.pickler)
     .join(ProjectRequests.projectRequestPickler)
 
-  lazy val default: KappaProject = KappaProject(/*"repressilator"*/ "repressilator_light", saved = false)
+  lazy val default: KappaProject = KappaProject("repressilator"/*"repressilator_light"*/, saved = false)
 
   lazy val empty: KappaProject = KappaProject("", saved = false)
 

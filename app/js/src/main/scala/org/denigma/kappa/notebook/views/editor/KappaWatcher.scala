@@ -1,22 +1,15 @@
 package org.denigma.kappa.notebook.views.editor
 
-import fastparse.core.Parsed
-import org.denigma.codemirror.{Doc, Editor, LineInfo, PositionLike}
+import org.denigma.binding.extensions._
+import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel._
-import org.denigma.kappa.notebook.parsers.KappaParser
-import org.denigma.kappa.notebook.views.visual._
-import org.scalajs.dom.svg.SVG
-import rx._
-import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.binding.extensions._
-import org.denigma.threejs.extras.HtmlSprite
-import rx.Rx.Dynamic
 import org.denigma.kappa.notebook.extensions._
-import org.denigma.kappa.notebook.graph.layouts._
-
-import scalatags.JsDom
-import scala.collection.immutable.SortedSet
+import org.denigma.kappa.notebook.parsers.KappaParser
+import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
+import rx._
+import scala.collection.immutable._
 
 /**
   * Created by antonkulaga on 11/03/16.
@@ -29,16 +22,6 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val ruleParser = kappaParser.rule
 
-  lazy val agentFontSize: Double = 24
-
-  lazy val padding: Double= 10
-
-  //lazy val painter: SpritePainter = new SpritePainter(agentFontSize, padding, s)
-
-  //val leftPattern: WatchPattern = new WatchPattern(s)
-
-  //val rightPattern: WatchPattern = new WatchPattern(s)
-
   val leftPattern: Var[Pattern] = Var(Pattern.empty)
 
   val rightPattern: Var[Pattern] = Var(Pattern.empty)
@@ -50,15 +33,24 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val text: Rx[String] = cursor.map{
     case None => ""
-    case Some((ed: Editor, lines)) => getEditorLine(ed, lines.line)
+    case Some((ed: Editor, lines)) =>
+      val num = getStartNum(ed, lines.line)
+      getEditorLine(ed, num)
  }
 
+  protected def getStartNum(ed: Editor, line: Int): Int = {
+    val doc = ed.getDoc()
+    if(line > 1 && doc.getLine(line -1 ).trim.endsWith("\\")) getStartNum(ed, line -1) else line
+  }
+
   protected def getKappaLine(getLine: Double => String)(line: Int, count: Int, acc: String = ""): String = {
-    val t = getLine(line).trim
+    val t: String = getLine(line).trim
     if(t.endsWith("\\") && (line+ 1)< count) {
       val newLine =" " + (t.indexOf("#") match {
         case -1 => t.dropRight(1)
-        case index => t.dropRight(t.length - index)
+        case index =>
+          val withoutComment: String = t.dropRight(t.length - index)
+          withoutComment
       })
       getKappaLine(getLine)(line + 1, count, acc+ newLine)
     } else (acc+ " " + t).trim
@@ -71,6 +63,8 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   text.onChange(t=>parseText(t))
 
+  val isRule = Var(true)
+
   protected def parseText(line: String) = {
     if(line=="") {
 
@@ -78,6 +72,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       agentParser.parse(line).onSuccess{
         case result =>
           val value = Pattern(List(result))
+          isRule() = false
           leftPattern() = value
           rightPattern() = Pattern.empty
           //leftPattern.refresh(value, forces)
@@ -87,55 +82,70 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
         input=>
           ruleParser.parse(input).onSuccess{
             case rule =>
+              isRule() = true
               direction() = rule.direction
               leftPattern() = rule.left
               rightPattern() = rule.right
-
               //leftPattern.refresh(rule.left, forces)
               //rightPattern.refresh(rule.right, forces)
-              /*
-              for {
-                n <- leftPattern.nodes.now
-              }
-                if(rule.removed.contains(n.agent)) n.markDeleted() else if(rule.added.contains(n.agent)) n.markAdded()
 
-              for {
-                n <- rightPattern.nodes.now
-              }
-                if(rule.added.contains(n.agent)) n.markAdded() else if(rule.modified.contains(n.agent)) n.markChanged()
-              */
-              /*
-              val (chLeft, chRight) = rule
-              for{
-                r <- rule.removed
-                n <- leftPattern.nodes.now
-                if r == n.data
-              } {
-                if(chLeft.contains(r)) n.markChanged() else n.markDeleted()
-              }
-              for{
-                a <- rule.added
-                n <- rightPattern.nodes.now
-                if n.data == a
-              } {
-                if(chRight.contains(a)) n.markChanged() else n.markDeleted()
-              }
-              */
           }
       }
     }
   }
-
-  protected def changeHandler(editor: Editor, lines: Seq[(Int, String)]) =
-  {
-    for {
-      (num, line) <- lines
-    } {
-
-      //searchForAgents(editor, line , num)
-    }
+  val sameAgents = Rx{
+    val lp = leftPattern()
+    val rp = rightPattern()
+    lp.sameAgents(rp)
   }
 
+  val unchangedAgents: Rx[Set[Agent]] = Rx{
+    sameAgents().collect{ case (one, two) if one ==two => one}.toSet
+  }
+
+  val modifiedAgents: Rx[(List[Agent], List[Agent])] = sameAgents.map{
+      case ags =>
+        val unzip: (List[Agent], List[Agent]) = ags.filterNot{ case (one, two)=> one==two}.unzip{case (a, b)=> (a, b)}
+        unzip
+  }
+
+
+  val leftUnchanged = Rx{
+    println(s"IS RULE = ${isRule.now}")
+    if(isRule()) {
+      unchangedAgents()
+    } else leftPattern().agents.toSet
+  }
+  val rightUnchanged = Rx{
+    println(s"IS RULE2 = ${isRule.now}")
+    if(isRule()) unchangedAgents() else Set.empty[Agent]
+  }
+
+
+  val leftModified = modifiedAgents.map(_._1.toSet)
+  val rightModified = modifiedAgents.map(_._2.toSet)
+
+  val removed: Rx[Set[Agent]] = Rx{
+    val unchanged = leftUnchanged()
+    val mod = leftModified()
+    val same = unchanged ++ mod
+    val lp = leftPattern()
+    println("unchanged")
+    println(unchanged)
+    println("mod")
+    println(mod)
+    println("removed")
+    println(lp.agents.filterNot(same.contains).toSet)
+    lp.agents.filterNot(same.contains).toSet
+  }
+
+  val added: Rx[Set[Agent]] = Rx{
+    val unchanged = unchangedAgents()
+    val mod = rightModified()
+    val same = unchanged ++ mod
+    val rp = rightPattern()
+    rp.agents.filterNot(same.contains).toSet
+  }
 
 }
 /*

@@ -25,6 +25,7 @@ trait ArrowEdge extends KappaEdge {
   val arrow = new ArrowHelper(direction.normalize(), sourcePos, direction.length(), lineParams.lineColor, lineParams.headLength, lineParams.headWidth)
 
   protected def posArrow() = {
+
     arrow.position.set(sourcePos.x, sourcePos.y, sourcePos.z) // = sourcePos
     arrow.setDirection(direction.normalize())
     arrow.setLength(direction.length()-10, lineParams.headLength, lineParams.headWidth)

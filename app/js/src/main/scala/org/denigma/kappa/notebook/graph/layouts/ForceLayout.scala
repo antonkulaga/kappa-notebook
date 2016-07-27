@@ -4,19 +4,20 @@ import org.denigma.kappa.notebook.graph.Randomizable
 import org.denigma.kappa.notebook.graph.layouts.LayoutMode.LayoutMode
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
 import rx._
-
+import rx.Ctx.Owner.Unsafe.Unsafe
 import scala.collection.immutable._
 
 object ForceLayoutParams {
 
-  lazy val default2D = ForceLayoutParams(50, 0.8, 0.01, new Vector3(0.0, 0.0, 0.0))
+  lazy val default2D = ForceLayoutParams(0.9, 120, 0.01, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(50, 0.8, 0.01, new Vector3(0.0, 0.0, 0.0))
+  lazy val default3D = ForceLayoutParams(0.9, 120, 0.01, new Vector3(0.0, 0.0, 0.0))
 
 }
 
 case class ForceLayoutParams(
-                            attractionMult: Double,
+                            //attractionMult: Double,
+                            springMult: Double,
                             repulsionMult: Double,
                             gravityMult: Double,
                             center: Vector3,
@@ -67,9 +68,17 @@ trait ForceLayout extends GraphLayout  with Randomizable
   def nodes: Rx[Vector[Node]]
   def edges: Rx[Vector[Edge]]
 
+  var EPSILON = 0.01
+
+  val maxIterations = 500
+  val layoutIterations: Var[Double] = Var(0)
+  val temperature = Rx{
+    1 - layoutIterations() / maxIterations
+  }
+
   def info(node: Node): LayoutInfo = node.layoutInfo
 
-  def defRandomDistance = 50
+  def defRandomDistance = 400
 
   def randomPos()=  mode match {
     case LayoutMode.TwoD =>
@@ -78,15 +87,6 @@ trait ForceLayout extends GraphLayout  with Randomizable
 
     case LayoutMode.ThreeD => new Vector3(rand(defRandomDistance), rand(defRandomDistance), rand(defRandomDistance))
   }
-
-  val maxIterations = 400
-
-  var EPSILON = 0.00001
-
-  var layoutIterations = 0
-
-  var temperature = 1000 / 50.0
-  
 
   private var _active = false
   def active_=(value:Boolean) = if(_active!=value){
@@ -101,23 +101,21 @@ trait ForceLayout extends GraphLayout  with Randomizable
 
   def start(width: Double, height: Double, camera: PerspectiveCamera): Unit = {
     randomize(nodes.now)
-    var temperature = width / 50.0
-    layoutIterations = 0
+    layoutIterations() = 0
     active = true
   }
 
   def tick(width: Double, height: Double, camera: PerspectiveCamera) = {
     if(keepGoing(nodes.now.size))
     {
-      var forceConstant: Double = Math.sqrt(height * width / nodes.now.size)
+      var forceConstant: Double = 1.0//Math.sqrt(height * width / nodes.now.size) / 50
 
       for(force <- forces)
       {
         force.tick(width, height, camera, nodes.now, edges.now, forceConstant)
         this.position(nodes.now)
       }
-      temperature *= (1 - (layoutIterations / this.maxIterations))
-      layoutIterations += 1
+      layoutIterations() = layoutIterations.now + 1
       this.update(this.edges.now)
     }
   }
@@ -129,13 +127,23 @@ trait ForceLayout extends GraphLayout  with Randomizable
       val l = info(node)
 
       val length = Math.max(EPSILON, l.offset.length())
-      l.pos.x += (l.offset.x / length) * Math.min(length, temperature)
-      l.pos.y += (l.offset.y / length) * Math.min(length, temperature)
-      l.pos.z += (l.offset.z / length) * Math.min(length, temperature)
+      //println(s"Math.min(length($length), temperature($temperature))")
+      //l.pos.x += (l.offset.x / length) * Math.min(length, temperature)
+      //l.pos.y += (l.offset.y / length) * Math.min(length, temperature)
+      //l.pos.z += (l.offset.z / length) * Math.min(length, temperature)
 
-      node.position.x -= (node.position.x - l.pos.x) / 10
-      node.position.y -= (node.position.y - l.pos.y) / 10
-      node.position.z -= (node.position.z - l.pos.z) / 10
+      l.pos.x += l.offset.x / 3 + l.offset.x * temperature.now / 3
+      l.pos.y += l.offset.y / 3 + l.offset.y * temperature.now / 3
+      l.pos.z += l.offset.z / 3 * l.offset.z * temperature.now  / 3
+
+      val delta = node.position.x - l.pos.x
+      println("delta = "+delta)
+
+
+      node.position.x -= (node.position.x - l.pos.x)
+      node.position.y -= (node.position.y - l.pos.y)
+      node.position.z -= (node.position.z - l.pos.z)
+      l.setOffsets(0, 0, 0)
     }
   }
 
@@ -145,7 +153,7 @@ trait ForceLayout extends GraphLayout  with Randomizable
 
   }
 
-  def keepGoing(size: Int): Boolean  = size>0 && layoutIterations < this.maxIterations && temperature > 0.000001
+  def keepGoing(size: Int): Boolean  = size>0 && layoutIterations.now < this.maxIterations && temperature.now > 0.000001
 
   def pause() = {
     active = false
@@ -156,7 +164,7 @@ trait ForceLayout extends GraphLayout  with Randomizable
    */
   def stop() =
   {
-    layoutIterations = this.maxIterations
+    layoutIterations() = this.maxIterations
     active = false
   }
 

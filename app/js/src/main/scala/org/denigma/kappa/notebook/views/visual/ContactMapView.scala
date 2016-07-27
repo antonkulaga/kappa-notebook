@@ -65,14 +65,19 @@ class ContactMapRenderer(val id: String, isSnapshot: Boolean) extends js.Object 
 }
 
 
-class ContactMapView(val elem: Element,  val input: Var[KappaMessage]) extends BindableView {
+class ContactMapView(val elem: Element,  val input: Var[KappaMessage], val active: Rx[Boolean]) extends BindableView {
 
   val contactMap: Var[WebSimMessages.ContactMap] = Var(WebSimMessages.ContactMap.empty)
+  import scala.concurrent.duration._
 
-  contactMap.onChange{
-    case cm=>
+  Rx{
+    val cm = contactMap()
+    val act = active()
+    if(act) js.timers.setTimeout(300 millis)
+    {
       val nodes: js.Array[WebSimNodeJS] = js.Array(cm.contact_map.map(n=>n:WebSimNodeJS):_*)
       renderer.setData(nodes)
+    }
   }
 
   input.onChange{

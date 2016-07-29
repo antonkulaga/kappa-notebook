@@ -8,27 +8,30 @@ import rx._
 
 import scala.collection.immutable._
 
-class TabHeaders(val elem: Element, val items: Rx[SortedSet[String]], val selected: Var[String]) extends ItemsSetView {
+object TabHeaders {
+  implicit val getId: String => String = id => id
+}
 
+class TabHeaders(val elem: Element, val items: Rx[SortedSet[String]], val selected: Var[String])(implicit getCaption: String => String) extends ItemsSetView {
 
   override type Item =  String
 
   override type ItemView = TabHeaderItemView
 
-  override def newItemView(item: Item): TabHeaderItemView = constructItemView(item){
-    case (el, _) => new TabHeaderItemView(el, item,  selected).withBinder(new GeneralBinder(_))
+  override def newItemView(item: Item): ItemView= constructItemView(item){
+    case (el, _) => new TabHeaderItemView(el, item,  selected)(getCaption).withBinder(new GeneralBinder(_))
   }
 }
 
-class TabHeaderItemView(val elem: Element, viewId: String,  val selected: Var[String] ) extends BindableView {
+class TabHeaderItemView(val elem: Element, itemId: String,  val selected: Var[String] )(implicit getCaption: String => String) extends BindableView {
 
-  val caption: Var[String] = Var(viewId)
+  val caption: Var[String] = Var(getCaption(itemId))
 
-  val active: rx.Rx[Boolean] = selected.map(value => value == viewId)
+  val active: rx.Rx[Boolean] = selected.map(value => value == itemId)
 
   val select = Var(Events.createMouseEvent())
   select.triggerLater({
-    selected() = viewId
+    selected() = itemId
     }
   )
 }

@@ -51,7 +51,7 @@ class KappaCodeEditor(val elem: Element,
 
   val fullCode = syntaxErrors.map(ers=>ers.fullCode)
 
-  val errorsInFiles: Rx[List[(KappaFile, WebSimError)]] = syntaxErrors.map{ case ers => ers.errorsByFiles().map{
+  val errorsInFiles: Rx[List[(KappaFile, WebSimError)]] = syntaxErrors.map{ case ers => ers.errorsByFiles().flatMap{
     case (filename, er) =>
       if(filename==""){
         val message = "error is out of bounds!"
@@ -60,7 +60,7 @@ class KappaCodeEditor(val elem: Element,
         dom.console.log("all filenames " + ers.files.map(kv=>kv._1).mkString(" | "))
       }
       if(!items.now.contains(filename)) dom.console.error(s"error refers to the $filename that was not found")
-      (items.now(filename) , er)
+      items.now.collect{ case (str, file) if file.name == filename => file -> er }
     }
   }
 
@@ -73,7 +73,7 @@ class KappaCodeEditor(val elem: Element,
       }
   }
 
-  val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
+  val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(v => v.path))
 
   input.onChange{
     case Go.ToSource(name, from, to)=>
@@ -112,8 +112,14 @@ class KappaCodeEditor(val elem: Element,
       view
   }
 
+  def path2name(path: String) = path.lastIndexOf("/") match {
+    case -1 => path
+    case ind if ind == path.length -1 => path
+    case ind => path.substring(ind+1)
+  }
+
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new TabHeaders(el, headers, selected)(path2name).withBinder(new GeneralBinder(_)))
     .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles, fullCode).withBinder(new GeneralBinder(_)))
 
 }

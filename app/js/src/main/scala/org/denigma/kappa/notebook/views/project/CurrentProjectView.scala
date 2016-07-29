@@ -9,6 +9,7 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.MainTabs
 import org.scalajs.dom
 import org.scalajs.dom._
+import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{BlobPropertyBag, Element}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
@@ -18,10 +19,18 @@ import scala.collection.immutable._
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Uint8Array
 
+import org.scalajs.dom.ext._
+
+
 class CurrentProjectView(val elem: Element,
                          currentProject: Var[CurrentProject],
                          input: Var[KappaMessage],
-                         output: Var[KappaMessage]) extends ItemsSetView {
+                         output: Var[KappaMessage],
+                         uploadId: String
+                        ) extends ItemsSetView {
+
+
+  //lazy val uploadInput = sq.byId(uploadId).collect{ case i: Input => i}.get
 
   override type Item = KappaFile
 
@@ -59,11 +68,7 @@ class CurrentProjectView(val elem: Element,
 
   val uploadFile = Var(Events.createMouseEvent())
   uploadFile.triggerLater{
-    val name = fileName.now
-    val k = KappaFile("", name, "", saved = false)
-    println("uploading file!!!!")
-    val uploadRequest = FileRequests.Save(projectName.now, List(k), rewrite = false, getSaved = true)
-    output() = uploadRequest
+       // uploadInput.click()
   }
 
   val saveAll = Var(Events.createMouseEvent())
@@ -124,6 +129,31 @@ class CurrentProjectView(val elem: Element,
       output() = mes
   }
   import js.JSConverters._
+
+  override def subscribeUpdates() = {
+    super.subscribeUpdates()
+    //uploadInput.addEventListener[Event](Events.change, filesHandler _)
+  }
+  protected def filesHandler(event: org.scalajs.dom.Event) = {
+    println("on change files work")
+    val name = fileName.now
+
+    /*
+    val files = uploadInput.files.toList.foreach{
+      case f =>
+        /*
+        f.readAsArrayBuffer.onSuccess{
+          case result =>
+            println("byte buffer readinf finished")
+        }
+        */
+    }
+*/
+    //val toUplod = FileRequests.UploadBinary()
+    //val k = KappaFile("", name, "", saved = false)
+    //val uploadRequest = FileRequests.Save(projectName.now, List(k), rewrite = false, getSaved = true)
+    //output() = uploadRequest
+  }
 
   def saveBinaryAs(filename: String, data: Array[Byte]) = {
     //println(s"binary for $filename")

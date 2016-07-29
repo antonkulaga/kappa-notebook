@@ -28,7 +28,7 @@ class CommentsWatcher(
                        val input: Var[KappaMessage]
                      )  {
 
-  updates.afterLastChange(300 millis)(changeHandler) //subscription
+  updates.onChange(changeHandler) //subscription
 
   val commentsParser = new CommentLinksParser()
   def linkParser = commentsParser.link

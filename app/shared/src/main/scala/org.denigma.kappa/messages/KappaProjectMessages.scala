@@ -37,7 +37,7 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
 
   lazy val sources: SortedSet[KappaFile] = folder.files.filter(sourceFilter)
 
-  lazy val sourceMap: Map[String, KappaFile] = sources.map(f=> (f.name, f)).toMap
+  lazy val sourceMap: Map[String, KappaFile] = sources.map(f=> (f.path, f)).toMap
 
   lazy val papers: SortedSet[KappaFile] = folder.files.filter(paperFilter)
 

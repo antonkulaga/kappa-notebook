@@ -21,5 +21,5 @@ class ProjectsPanelView(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("ProjectsView")((el, args) => new ProjectsView(el, input, output).withBinder(n => new CodeBinder(n)))
-    .register("CurrentProjectView")((el, args) => new CurrentProjectView(el, currentProject, input, output).withBinder(n => new CodeBinder(n)))
+    .register("CurrentProjectView")((el, args) => new CurrentProjectView(el, currentProject, input, output, args.getOrElse("uploader", "fileUpload").toString).withBinder(n => new CodeBinder(n)))
 }

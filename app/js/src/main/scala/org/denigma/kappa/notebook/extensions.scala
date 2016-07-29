@@ -7,7 +7,12 @@ import fastparse.all.Parsed
 import fastparse.core.{Mutable, ParseCtx, Parser}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
-import org.scalajs.dom.raw.{Element, HTMLElement}
+import org.scalajs.dom.{Event, File, FileList, FileReader}
+import org.scalajs.dom.ext.EasySeq
+import org.scalajs.dom.raw.{Element, HTMLElement, ProgressEvent}
+
+import scala.concurrent.{Future, Promise}
+import scala.scalajs.js.typedarray.ArrayBuffer
 
 object extensions extends SharedExtensions{
 
@@ -106,5 +111,26 @@ object extensions extends SharedExtensions{
   implicit class ExtElement(el: HTMLElement) {
     def isHidden = el.offsetParent == null
     def isVisible = el.offsetParent !=null
+  }
+
+  implicit class FileListExt(files: FileList) extends EasySeq[File](files.length, files.item)
+
+  implicit class FileOpt(f: org.scalajs.dom.File) {
+
+    def readAsArrayBuffer: Future[ArrayBuffer] = {
+      val result = Promise[ArrayBuffer]
+      val reader = new FileReader()
+      def onLoadEnd(ev: ProgressEvent): Any = {
+        result.success(reader.result.asInstanceOf[ArrayBuffer])
+      }
+      def onErrorEnd(ev: Event): Any = {
+        result.failure(new Exception("READING FAILURE " + ev.toString))
+      }
+      reader.onloadend = onLoadEnd _
+      reader.onerror = onErrorEnd _
+      reader.readAsArrayBuffer(f)
+      result.future
+    }
+
   }
 }

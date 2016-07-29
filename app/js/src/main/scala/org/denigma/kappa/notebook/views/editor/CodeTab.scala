@@ -20,7 +20,7 @@ import scala.scalajs.js
 import scala.util._
 
 class CodeTab(val elem: Element,
-              name: String,
+              val path: String,
               val source: Var[KappaFile],
               val selected: Var[String],
               val editorUpdates: Var[EditorUpdates],
@@ -35,7 +35,13 @@ class CodeTab(val elem: Element,
 {
   val wrapLines: Var[Boolean] = Var(false)
 
-  override lazy val id: String = name
+  lazy val name = path.lastIndexOf("/") match {
+    case -1 => path
+    case ind if ind == path.length -1 => path
+    case ind => path.substring(ind+1)
+  }
+
+  override lazy val id: String = path
 
   override def mode = "Kappa"
 

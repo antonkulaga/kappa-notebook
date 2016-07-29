@@ -3,54 +3,73 @@ package org.denigma.kappa.notebook
 import java.io.{File => JFile}
 import java.nio.file.Path
 
+import akka.event.LoggingAdapter
 import better.files.File.OpenOptions
 import better.files._
 import org.denigma.kappa.messages.FileRequests.ZipUpload
-import org.denigma.kappa.messages.FileResponses.{UploadStatus, Downloaded}
+import org.denigma.kappa.messages.FileResponses.{Downloaded, UploadStatus}
 import org.denigma.kappa.messages._
 
 import scala.Seq
 import scala.collection.immutable._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
+import org.denigma.kappa.notebook.extensions._
 
-class FileManager(val root: File) {
+object FileNotInside {
+  val FILE_NOT_INSIDE = "NOT_INSIDE"
+  def apply(file: File, parent: File): FileNotInside = FileNotInside(file.pathAsString, parent.pathAsString)
+}
 
-  def create(project: KappaProject, rewriteIfExists: Boolean = false): File = {
+case class FileNotInside(file: String, parent: String) extends Exception
+{
+ def message = s"file $file is not inside $parent folder"
+}
+
+object FileManager {
+  val FILE_NOT_FOUND = "NOT_FOUND"
+  val FILE_NOT_INSIDE = "NOT_INSIDE"
+}
+
+class FileManager(val root: File, log: LoggingAdapter) {
+
+  def create(project: KappaProject, rewriteIfExists: Boolean = false): Try[File] = {
     val p = if (project.folder == KappaFolder.empty) project.copy(folder = KappaFolder.empty.copy(path = project.name)) else project
-    write(p.folder)
+    //log.info(s"write project folder ${p.folder.path}")
+    writeFolder(p.folder, root)
   }
 
   def rename(projectName: String, renames: Map[String, String], overwriteIfExists: Boolean = false): FileResponses.RenamingResult = {
     renames.foldLeft(FileResponses.RenamingResult(projectName, Map.empty, Map.empty, Map.empty)) {
       case (acc, (currentName, newName)) =>
-        (root / projectName / currentName, root / projectName / newName) match {
-          case (fromPath, toPath) if fromPath.notExists=>
-            //println("FROM THAT DOES NOT EXIST PATH "+fromPath)
+        (root resolveChild (projectName, currentName, false), root.resolveChild(projectName, newName, false)) match {
+          case (None, _) =>  acc.copy(notFound = acc.notFound.updated(currentName, newName))
+          case (_ , None) => acc.copy(notFound = acc.notFound.updated(currentName, newName))
+
+          case (Some(fromPath), Some(toPath)) if fromPath.notExists=>
             acc.copy(notFound = acc.notFound.updated(currentName, newName))
 
-          case (fromPath, toPath) if toPath.exists && overwriteIfExists=>
+          case (Some(fromPath), Some(toPath)) if toPath.exists && overwriteIfExists=>
             fromPath.renameTo(newName)
             acc.copy(renamed = acc.renamed.updated(currentName, (newName, toPath.pathAsString)))
 
-          case (fromPath, toPath) if toPath.exists && !overwriteIfExists=>
-            //println("NAME CONFLICTS "+fromPath)
+          case (Some(fromPath), Some(toPath)) if toPath.exists && !overwriteIfExists=>
             acc.copy(nameConflicts = acc.nameConflicts.updated(currentName, newName))
 
-          case (fromPath, toPath) =>
+          case (Some(fromPath), Some(toPath)) =>
             fromPath.renameTo(newName)
             acc.copy(renamed = acc.renamed.updated(currentName, (newName, toPath.pathAsString)))
         }
     }
   }
 
-  def remove(project: String, name: String): File = {
-    val path: File = root / project / name
-    path.delete()
+  def remove(project: String, name: String): Try[File] = root.resolveChild(project, name, true) match {
+    case Some(path) => Try(path.delete())
+    case None =>  Failure(FileNotInside(root / project / name, root))
   }
 
-  def remove(name: String): File = {
-    val path: File = root / name
-    path.delete()
+  def remove(name: String): Try[File] = root.resolveChild(name) match {
+    case Some(path) => Try(path.delete())
+    case None => Failure(FileNotInside((root / name).pathAsString, root.pathAsString))
   }
 
 
@@ -60,19 +79,13 @@ class FileManager(val root: File) {
     }.toSeq:_*)
   }
 
-  protected def projectExists(path: String): Boolean = (root / path).exists
+  def loadZiped(folderName: String): Option[Downloaded] =  root.resolveChild(folderName, true) map {
+    case folder => FileResponses.Downloaded(folderName, folder.zip().byteArray)
+  }
 
-  def loadZiped(projectName: String): Option[Downloaded] =  if(projectExists(projectName)){
-    val zp = (root / projectName).zip()
-    Some(FileResponses.Downloaded(projectName, zp.byteArray))
-  } else None
-
-  def uploadZiped(upload: ZipUpload): Option[UploadStatus] =  {
-    val r: File = root / upload.projectName
-    if(r.exists && !upload.rewriteIfExist)
-    {
-      None
-    } else {
+  def uploadZiped(upload: ZipUpload): Option[UploadStatus] =  root.resolveChild(upload.projectName) flatMap {
+    case r  if r.exists && !upload.rewriteIfExist => None
+    case r =>
       if( r.exists && upload.rewriteIfExist) r.delete()
       val dir = r.createDirectory()
       val tmp = File.newTemporaryFile().write(upload.zip.data)(better.files.File.OpenOptions.default)
@@ -82,21 +95,14 @@ class FileManager(val root: File) {
           upload.projectName,
           upload.zip.data.hashCode(),
           upload.rewriteIfExist))
-    }
   }
 
-  def getJavaPath(relativePath: String): Option[(Path, Int)] = {
-    val file = root / relativePath
-    if(file.exists && file.isRegularFile) {
-      Some(file.path, file.toJava.length.toInt)
-    } else None
+  def getJavaPath(relativePath: String): Option[(Path, Int)] = root.resolveChild(relativePath, true) collect {
+    case file if file.isRegularFile => (file.path, file.toJava.length.toInt)
   }
 
-  def getJavaPath(relativePath: String, filename: String): Option[(Path, Int)] = {
-    val file = root / relativePath / filename
-    if(file.exists && file.isRegularFile) {
-      Some(file.path, file.toJava.length.toInt)
-    } else None
+  def getJavaPath(relativePath: String, filename: String): Option[(Path, Int)] =root.resolveChild(relativePath, filename, true) collect {
+    case file if file.isRegularFile => (file.path, file.toJava.length.toInt)
   }
 
   def writeBytes(relativePath: String, name: String, bytes: Array[Byte]): Try[Unit] = Try {
@@ -104,63 +110,73 @@ class FileManager(val root: File) {
     f.write(bytes)(OpenOptions.default)
   }
 
-  def readBytes(currentProject: String, relativePath: String): Option[Array[Byte]] = {
-    val file = root / currentProject / relativePath
-    if(file.exists && file.isRegularFile) {
-      Some(file.loadBytes)
-    } else None
+  def readBytes(currentProject: String, relativePath: String): Option[Array[Byte]] = root.resolveChild(currentProject, relativePath, true) collect {
+    case file if file.isRegularFile =>  file.loadBytes
   }
 
-  def readBytes(relativePath: String): Option[Array[Byte]] = {
-    val file = root / relativePath
-    if(file.exists && file.isRegularFile) {
-      Some(file.loadBytes)
-    } else None
+  def readBytes(relativePath: String): Option[Array[Byte]] = root.resolveChild(relativePath, true) collect {
+    case file if file.isRegularFile =>  file.loadBytes
   }
 
 
-  def loadProject(project: KappaProject, createIfNotExists: Boolean = false): KappaProject = {
-    val path: File = root / project.name
-    val p = if (createIfNotExists) path.createDirectory() else path
-    val dir = listFolder(p)
-    project.copy(folder = dir, saved = p.exists())
+  def loadProject(project: KappaProject, createIfNotExists: Boolean = false) = root.resolveChild(project.name, !createIfNotExists).map{
+    case path =>
+      val p = if (createIfNotExists) path.createDirectory() else path
+      val dir = listFolder(p, root)
+      project.copy(folder = dir, saved = p.exists())
   }
 
 
-  def writeFile(projectName: String, p: KappaFile): File = p match {
-    case KappaFile(_, name, content, _, _) => //let us ignore the path for the moment!!!
-      val f: File = root / projectName / name
-      //val pp: Path = resolve(p)
-      f < content
-      f
+  def writeFile(projectName: String, p: KappaFile): Try[File] =
+    root.resolveChild(projectName).map(parent=>writeFile(p, parent)) match {
+      case Some(value) => value
+      case None => Failure(FileNotInside(root / projectName / p.path, root))
+    }
+
+  def write(p: KappaPath): Try[File] = write(p, root)
+
+  def writeFile(file: KappaFile, parent: File): Try[File] = {
+    parent.resolveChild(file.path) match {
+      case Some(child) =>
+        Try {
+          child < file.content
+          child
+        }
+      case None => Failure(FileNotInside(file.path, root.pathAsString))
+    }
+  }
+  def writeFolder(folder: KappaFolder, parent: File): Try[File] = folder match {
+    case KappaFolder(path, folders, files, _) =>
+      parent.resolveChild(path) match {
+        case Some(child) =>
+          Try{
+            //println("files are :"+files.map(f=>f.name->f.path).toList)
+            val dir = child.createDirectories()
+            for{
+              f <- files
+            } {
+              writeFile(f, child) match {
+                case Failure(e) =>
+                  log.error(e.getMessage)
+                case _ =>  //do nothing on success
+              }
+            }
+            for(f <- folders) writeFolder(f, child)
+            dir
+          }
+        case None => Failure(FileNotInside(path, root.pathAsString))
+      }
   }
 
-/*
-  def writeFile(p: KappaFile): File = p match {
-    case KappaFile(path, name, content, _, _) =>
-      val pp: Path = resolve(p)
-      val f = File(pp)
-      f < content
-      f
-  }
-*/
   /**
     * Writes KappaFile to the disk
     *
     * @param p
     * @return
     */
-  def write(p: KappaPath): File = p match {
-    case KappaFolder(path, folders, files, _) =>
-      val dir = File(root.path.resolve(path)).createDirectories()
-      for(f <- files) write(f)
-      for(f <- folders) write(f)
-      dir
-
-    case KappaFile(path, name, content, _, _) =>
-      val f = File(root.path.resolve(path))
-      f < content
-      f
+  def write(p: KappaPath, parent: File): Try[File] = p match {
+    case folder: KappaFolder => writeFolder(folder, parent)
+    case k: KappaFile => writeFile(k, parent)
   }
 
 
@@ -172,38 +188,56 @@ class FileManager(val root: File) {
     }
   }
 
-  protected def loadKappaFile(projectName: String, fileName: String, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): Option[KappaFile] = {
-    val file: File = root / projectName / fileName
-    if(file.notExists || !kappaTextFileSelector(file, knownExtensions)) None else {
-      file match {
-        case ch if kappaTextFileSelector(ch, knownExtensions)  =>
-          Some(KappaFile(ch.pathAsString, ch.name, ch.contentAsString, saved = true))
+  protected def loadKappaFile(parent: File, filePath: String,
+                              knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): Option[KappaFile] =
+    parent.resolveChild(filePath, mustExist = true).flatMap{
+      case file if !kappaTextFileSelector(file, knownExtensions)=> None
 
-        case ch if ch.isRegularFile =>
-          Some(KappaFile(ch.pathAsString, ch.name, "",  saved = true))
+      case ch if kappaTextFileSelector(ch, knownExtensions)  =>
+        Some(KappaFile(ch.pathAsString, ch.name, ch.contentAsString, saved = true))
 
-        case _ => None
+      case ch if ch.isRegularFile =>
+        Some(KappaFile(ch.pathAsString, ch.name, "",  saved = true))
+
+      case _ => None
+        }
+
+  def listFolder(file: File, relativeToParent: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder = {
+    if(file.isChildOf(relativeToParent)) {
+      if (file.exists) {
+        val (folders: Iterator[File], files: Iterator[File]) = file.children.partition(f => f.isDirectory)
+        val fiter: Seq[KappaFile] = files.map {
+          case ch if kappaTextFileSelector(ch, knownExtensions) =>
+
+            KappaFile(relativeToParent.relativize(ch).toString, ch.name, ch.contentAsString, saved = true)
+
+          case ch if ch.isRegularFile =>
+
+            KappaFile(relativeToParent.relativize(ch).toString, ch.name, "", saved = true)
+
+        }.toSeq
+
+        val diter = folders.map { case ch => listFolder(ch, relativeToParent, knownExtensions) }.toSeq
+
+        val dirs = SortedSet(diter: _*)
+
+        KappaFolder(relativeToParent.relativize(file).toString, dirs, SortedSet(fiter: _*))
+
       }
+      else {
+        log.error(s"file ${file.pathAsString} does not exist")
+        KappaFolder(file.pathAsString, SortedSet.empty, SortedSet.empty, saved = false)
+      }
+    } else {
+      val fni = new FileNotInside(file.pathAsString, relativeToParent.pathAsString)
+      log.error(fni, fni.message)
+      KappaFolder(file.pathAsString, SortedSet.empty, SortedSet.empty, saved = false)
     }
-
   }
 
-  def listFolder(file: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder =
-    if(file.exists)
-    {
-      val (folders: Iterator[File], files: Iterator[File]) = file.children.partition(f => f.isDirectory)
-      val fiter: Seq[KappaFile] =  files.map{
-        case ch if kappaTextFileSelector(ch, knownExtensions)  =>
-          KappaFile(ch.pathAsString, ch.name, ch.contentAsString, saved = true)
-        case ch if ch.isRegularFile => KappaFile(ch.pathAsString, ch.name, "",  saved = true)
-      }.toSeq
-      val diter = folders.map{ case ch => listFolder(ch, knownExtensions) }.toSeq
-      val dirs = SortedSet(diter:_*)
-      KappaFolder(file.pathAsString, dirs, SortedSet(fiter:_*))
-    } else KappaFolder(file.pathAsString, SortedSet.empty, SortedSet.empty, saved = false)
+  def readText(relativePath: String): Option[String] = root.resolveChild(relativePath, mustExist = true).map(_.contentAsString)
 
-  def readText(relativePath: String): String = (root / relativePath).contentAsString
-
-  def cd(relativePath: String): FileManager = new FileManager(root / relativePath)
-
+  def cd(relativePath: String): Option[FileManager] = root.resolveChild(relativePath, mustExist = true).map(
+    child => new FileManager(child, log)
+  )
 }

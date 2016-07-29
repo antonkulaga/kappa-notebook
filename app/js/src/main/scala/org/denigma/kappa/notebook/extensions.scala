@@ -2,14 +2,14 @@ package org.denigma.kappa.notebook
 
 import rx._
 
-import scala.Vector
 import scala.collection.immutable._
 import fastparse.all.Parsed
 import fastparse.core.{Mutable, ParseCtx, Parser}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
+import org.scalajs.dom.raw.{Element, HTMLElement}
 
-object extensions {
+object extensions extends SharedExtensions{
 
   implicit class SetWatcher[T](col: Rx[Set[T]])
   {
@@ -101,7 +101,10 @@ object extensions {
         recover(f.extra.input)
         f
     }
+  }
 
-
+  implicit class ExtElement(el: HTMLElement) {
+    def isHidden = el.offsetParent == null
+    def isVisible = el.offsetParent !=null
   }
 }

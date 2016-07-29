@@ -221,7 +221,6 @@ class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double,
                                                      (compareRepulstion: (Node, Node) => (Double, Double))
   extends Force[Node, Edge] {
 
-  var num = 0
 
   override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
     val repulsion = repulsionMult * forceConstant
@@ -247,14 +246,8 @@ class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double,
 
         val distance = Math.max(EPSILON, l1.pos.distanceTo(l2.pos))
         val distSquared  = Math.pow(distance, 2)
-        num = num + 1
         val force1 =  (repulsion * repulsion) * m2 / distSquared
-        if(distance.isNaN) {
-          dom.console.error("NANANANANANANNA")
-          num = -10000
-        }
-        if(num>=0)
-        println(s"NUM $num at distance ${distance}: (repulsion(${repulsion}) * repulsion(${repulsion})) * m1(${m2}) / distSquared(${distSquared})) = $force1")
+        //println(s"t distance ${distance}: (repulsion(${repulsion}) * repulsion(${repulsion})) * m1(${m2}) / distSquared(${distSquared})) = $force1")
         l1.force += force1
         l1.offset.x = l1.offset.x + (deltaX / distance) * force1
         l1.offset.y = l1.offset.y + (deltaY / distance) * force1

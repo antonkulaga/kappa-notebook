@@ -16,7 +16,7 @@ import scala.collection.immutable._
 
 object RulesVisualSettings
 {
-  val DEFAULT_AGENT_FONT = 34
+  val DEFAULT_AGENT_FONT = 32
   val DEFAULT_SITE_FONT = 20
   val DEFAULT_STATE_FONT = 14
 }
@@ -82,7 +82,7 @@ class RulesGraphView(val elem: Element,
 
   protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (massByNode(node1), massByNode(node2))
 
-  val minSpring = 95
+  val minSpring = 100
 
   def massByNode(node: KappaNode): Double = node match {
     case n: AgentNode => 1.5
@@ -91,7 +91,8 @@ class RulesGraphView(val elem: Element,
   }
 
   protected def computeSpring(edge: Edge): SpringParams = (edge.from, edge.to) match {
-    case (from: SiteNode, to: AgentNode) => SpringParams(minSpring, 2, massByNode(from), massByNode(to))
+    case (from: SiteNode, to: AgentNode) => SpringParams(minSpring, 1.5, massByNode(from), massByNode(to))
+    case (from: AgentNode, to: SiteNode) => SpringParams(minSpring, 1.5, massByNode(from), massByNode(to))
     case (from: AgentNode, to: AgentNode) => SpringParams(minSpring, 2, massByNode(from), massByNode(to))
     case (from: KappaNode, to: KappaNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
   }

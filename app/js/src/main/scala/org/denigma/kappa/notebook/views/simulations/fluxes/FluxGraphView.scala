@@ -63,7 +63,8 @@ class FluxEdge(val from: FluxNode, val to: FluxNode, val value: Double, val line
   }
 
   def posSprite() = {
-
+    val m = middle
+    view.container.position.set(m.x, m.y, m.z)
   }
 
 }
@@ -94,9 +95,13 @@ class FluxGraphView(val elem: Element,
     //new KappaAgentView(agent.agent.name, visualSettings.agent.font, visualSettings.agent.padding, visualSettings.canvas)
   }
 
+  protected def lineByValue(value: Double): LineParams = {
+    val line = if(value > 0) edgeVisual.line.copy(lineColor = Colors.green) else edgeVisual.line.copy(lineColor = Colors.red)
+    line
+  }
+
   implicit protected def createLinkView(edge: Edge): RuleFluxEdgeView = {
-    val line = if(edge.value>0) edgeVisual.line.copy(lineColor = Colors.green) else edgeVisual.line.copy(lineColor = Colors.red)
-    new RuleFluxEdgeView(edge.value.toString, edgeVisual.font, edgeVisual.padding, line, canvas)
+    new RuleFluxEdgeView(edge.value.toString, edgeVisual.font, edgeVisual.padding, lineByValue(edge.value), canvas)
   }
 
   protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (node1, node2) match {
@@ -111,7 +116,9 @@ class FluxGraphView(val elem: Element,
 
   val edges: Rx[Vector[Edge]] = nodesByName.map{ case nds => nds.flatMap{
       case (name, node) => node.flux.flux.collect {
-        case (key, value) if value != 0.0 => new FluxEdge(node, nds(key), value, edgeVisual.line)
+        case (key, value) if value != 0.0 =>
+
+          new FluxEdge(node, nds(key), value, edgeVisual.line)
       }
     }.toVector
   }

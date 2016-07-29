@@ -1,6 +1,6 @@
 package org.denigma.kappa.notebook.communication
 
-import java.io.{File => JFile, InputStream}
+import java.io.{InputStream, File => JFile}
 import java.nio.ByteBuffer
 
 import akka.actor.ActorRef
@@ -13,6 +13,7 @@ import org.denigma.kappa.notebook.FileManager
 
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 trait ProjectMessenger extends Messenger {
 
@@ -28,24 +29,31 @@ trait ProjectMessenger extends Messenger {
 
     case ProjectRequests.Load(pro) => fileManager.loadProject(pro) match
     {
-      case project: KappaProject if project.saved =>
+      case Some(project) =>
         val list: SortedSet[KappaProject] = fileManager.loadProjectSet().map(p=> if(p.name==project.name) project else p)
         val response = Container(ProjectResponses.ProjectList(list.toList)::ProjectResponses.LoadedProject(project)::Nil)
         val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
         send(d)
 
-      case project =>
+      case None =>
         //val error = ServerErrors(List(s"folder of ${pro.name} does not exist!"))
-        val error = Failed(project, List(s"folder of ${pro.name} does not exist!"), username)
+        val error = Failed(KappaProject(pro.name, saved = false), List(s"folder of ${pro.name} does not exist!"), username)
         val d = Pickle.intoBytes[KappaMessage](error)
         send(d)
     }
 
     case c @ ProjectRequests.Create(project, rewriteIfExists) =>
-      fileManager.create(project)
-      val response = org.denigma.kappa.messages.Done(c, username)
-      val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
-      send(d)
+      fileManager.create(project) match {
+        case Success(value) =>
+          val response = org.denigma.kappa.messages.Done(c, username)
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+          send(d)
+        case Failure(th) =>
+          log.error(s"creation of $project project FAILED with message ${th.getMessage}")
+          val response = org.denigma.kappa.messages.Failed(c, List(th.getMessage), username)
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+          send(d)
+      }
 
     case dn @ ProjectRequests.Download(projectName)=>
       //log.info("DOWNLOADED STARTED "+projectName)
@@ -57,18 +65,25 @@ trait ProjectMessenger extends Messenger {
           send(d)
 
         case None =>
+
           val response = Failed(dn, List(s"project $projectName does not exist"), username)
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
           send(d)
       }
 
     case r @ ProjectRequests.Remove(name) =>
-      fileManager.remove(name)
-      val response = org.denigma.kappa.messages.Done(r, username)
-      val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
-      send(d)
+      fileManager.remove(name) match {
+        case Success(value) =>
+          val response = org.denigma.kappa.messages.Done(r, username)
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+          send(d)
+        case Failure(th) =>
+          val response = org.denigma.kappa.messages.Failed(r, List(th.getMessage), username)
+          val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
+          send(d)
+      }
 
     case sv @ ProjectRequests.Save(project)=>
-      println("PROJECT SAVING IS NOT YET IMPLEMENTED!")
+      log.error("PROJECT SAVING IS NOT YET IMPLEMENTED!")
   }
 }

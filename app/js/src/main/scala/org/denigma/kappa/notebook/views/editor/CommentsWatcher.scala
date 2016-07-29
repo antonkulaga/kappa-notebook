@@ -15,6 +15,8 @@ import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 
 import scalatags.JsDom.all._
+import org.denigma.binding.extensions._
+import scala.concurrent.duration._
 /**
   * Created by antonkulaga on 11/03/16.
   */
@@ -26,7 +28,7 @@ class CommentsWatcher(
                        val input: Var[KappaMessage]
                      )  {
 
-  updates.foreach(changeHandler) //subscription
+  updates.afterLastChange(300 millis)(changeHandler) //subscription
 
   val commentsParser = new CommentLinksParser()
   def linkParser = commentsParser.link

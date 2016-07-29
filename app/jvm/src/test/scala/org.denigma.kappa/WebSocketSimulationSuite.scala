@@ -28,7 +28,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
   val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
   val files = File(filePath)
   files.createIfNotExists(asDirectory = true)
-  val fileManager = new FileManager(files)
+  val fileManager = new FileManager(files, log)
 
   val transport = new WebSocketManager(system, fileManager)
 

@@ -12,7 +12,8 @@ import rx._
   */
 class ConsoleView(val elem: Element, val log: Rx[List[String]], val selected: Var[String]) extends BindableView
 {
-  val active: rx.Rx[Boolean] = selected.map(value => value == this.id)
+
+  val active: Rx[Boolean] = selected.map(s=>s=="console")
 
   val console: Rx[String] = log.map(list => list.mkString("\n"))
 }

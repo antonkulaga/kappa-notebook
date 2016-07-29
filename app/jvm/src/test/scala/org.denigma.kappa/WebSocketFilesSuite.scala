@@ -28,7 +28,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
   val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
   val files = File(filePath)
   files.createIfNotExists(asDirectory = true)
-  val fileManager = new FileManager(files)
+  val fileManager = new FileManager(files, log)
 
   val transport = new WebSocketManager(system, fileManager)
 
@@ -42,7 +42,6 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
         check {
           checkConnection(wsClient)
           checkTestProjects(wsClient)
-
         }
       wsClient.sendCompletion()
       //wsClient.expectCompletion()
@@ -60,14 +59,17 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           checkMessage(wsClient, rem){
             case Done(ProjectRequests.Remove(_), _) =>
           }
+          println("removed message went well")
           checkProject(wsClient, big){
             case Failed(/*KappaProject("big", _, _)*/_, _, _) =>
           }
+          println("remove is ok")
           val create: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Create(proj))
           checkMessage(wsClient, create){
             case Done(ProjectRequests.Create(_, false), _) =>
           }
           checkTestProjects(wsClient)
+          println("create is ok")
           wsClient.sendCompletion()
           //wsClient.expectCompletion()
         }
@@ -156,13 +158,6 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
          case FileResponses.Downloaded("big", data) =>
 
            val zp = fl.zip().byteArray
-           //val some = fileManager.loadZiped("big").get
-           //val zp2 = fileManager.loadZiped("big").get.data
-           //println("========================================")
-           //println("SOMETHING RECEIVED "+smt)
-           //println("data size = "+data.length)
-           //println("zp   size = "+zp.length)
-           //data.sameElements(zp) shouldEqual true
            data.sameElements(zp) shouldEqual true
            //data shouldEqual zp
            data
@@ -183,7 +178,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
        val upl = FileRequests.ZipUpload("big", ms, false )
 
        val upload: ByteBuffer = Pickle.intoBytes[KappaMessage](upl)
-       //println("====================start upload of "+upload)
+
        checkMessage(wsClient, upload){
          case Done(upd: UploadStatus, _) =>
        }
@@ -229,7 +224,6 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
          case d @ DataChunk(_, _, data, downloaded, total, false) => data
        }{
          case d @ DataChunk(_, _, _, downloaded, total, true) =>
-           //println("COMPLETED, BYTES TOTAL ARE "+total)
            true
        }
 
@@ -242,7 +236,8 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
        }
        checkTestProjects(wsClient)
      }
- }
+  }
+
 }
 
 

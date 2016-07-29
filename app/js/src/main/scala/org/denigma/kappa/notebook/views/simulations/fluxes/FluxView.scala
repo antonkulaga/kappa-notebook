@@ -53,6 +53,6 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
 
   override lazy val injector = defaultInjector
     .register("FluxGraphView") { case (el, args) =>
-      new FluxGraphView(el, items, new KappaNodeVisualSettings(16, 6), new KappaEdgeVisualSettings(14, 4, LineParams(Colors.blue)), s).withBinder(v => new FixedBinder(v))
+      new FluxGraphView(el, items, new KappaNodeVisualSettings(14, 3), new KappaEdgeVisualSettings(8, 2, LineParams(Colors.green)), s).withBinder(v => new FixedBinder(v))
     }
 }

@@ -17,6 +17,8 @@ class LayoutInfo(val mass: Double = 1.0)
     if(pos.z==0) pos.z = v.z
   }
 
+  def pos_(v: Vector3): Unit = setPoses(v.x, v.y, v.z)
+
   def setPoses(x: Double, y: Double, z: Double = 0) = { pos.x= x; pos.y = y; pos.z = z}
 
   def setOffsets(x: Double, y: Double, z: Double = 0) = { offset.x= x; offset.y = y; offset.z = z}

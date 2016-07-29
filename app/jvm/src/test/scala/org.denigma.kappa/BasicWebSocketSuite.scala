@@ -35,7 +35,7 @@ abstract class BasicWebSocketSuite extends BasicKappaSuite  {
           case l =>
             if(partial.isDefinedAt(l)) true else {
               println("checkProjects failed with message:")
-              pprint.log(l)
+              pprint.tokenize(l, 256).take(10).foreach(str => println(str.substring(0, Math.min(str.length, 1000))))
               false
             }
         }

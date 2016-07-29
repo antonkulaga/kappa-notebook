@@ -10,6 +10,8 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 import scala.collection.immutable._
+import org.denigma.binding.extensions._
+import scala.concurrent.duration._
 
 /**
   * Created by antonkulaga on 11/03/16.
@@ -61,7 +63,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
     getKappaLine(doc.getLine)(line, doc.lineCount().toInt, acc)
   }
 
-  text.onChange(t=>parseText(t))
+  text.afterLastChange(300 millis)(t=>parseText(t))
 
   val isRule = Var(true)
 

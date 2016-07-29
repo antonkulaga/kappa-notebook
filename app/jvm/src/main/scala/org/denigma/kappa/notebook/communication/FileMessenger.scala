@@ -10,7 +10,6 @@ import org.denigma.kappa.messages.FileResponses.RenamingResult
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.FileManager
 
-import scala.collection.immutable.Iterable
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
@@ -44,8 +43,6 @@ trait FileMessenger extends Messenger {
     case mess @ FileRequests.LoadFileSync(currentProject, path) =>
       fileManager.readBytes(currentProject, path) match {
         case Some(bytes)=>
-          //println("bytes received "+bytes.length)
-          //println("path = "+path)
           val m = DataMessage(mess.path, bytes)
           val d = Pickle.intoBytes[KappaMessage](m)
           send(d)
@@ -64,7 +61,6 @@ trait FileMessenger extends Messenger {
               val downloaded = acc + chunk.length
               val mes = DataChunk(mess, path, chunk.toArray, downloaded, size)//DataMessage(path, chunk.toByteBuffer.array())
               val d = Pickle.intoBytes[KappaMessage](mes)
-              //log.info("\nsend chunk for mess"+mess)
               send(d)
               downloaded
           }
@@ -115,7 +111,6 @@ trait FileMessenger extends Messenger {
       }
       val reply = FileResponses.SavedFiles(projectName, Left(rels.map(v=>v.name).toSet))
       println("saved marking")
-      pprint.pprintln(reply)
       send(Pickle.intoBytes[KappaMessage](reply))
 
     case FileRequests.Save(projectName, files, rewrite, true) => //saving file with returning its content to the user
@@ -131,7 +126,6 @@ trait FileMessenger extends Messenger {
         ).toMap
       val reply = FileResponses.SavedFiles(projectName, Right(kappaFiles))
       println("saved FULL")
-      pprint.pprintln(reply)
       send(Pickle.intoBytes[KappaMessage](reply))
   }
 

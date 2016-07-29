@@ -14,7 +14,7 @@ class FilesSuite extends BasicKappaSuite{
   val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
   val files = File(filePath)
   files.createIfNotExists(asDirectory = true)
-  val fileManager = new FileManager(files)
+  val fileManager = new FileManager(files, log)
 
   "File manager" should {
 
@@ -28,19 +28,17 @@ class FilesSuite extends BasicKappaSuite{
 
     "load default project" in {
       val toLoad = KappaProject("big")
-      //println("////////////////////////////////////////")
-      //println(config.as[Option[String]]("app.files"))
-      println("path is " + fileManager.root.pathAsString)
-      println("folders are " + fileManager.root.children.foldLeft("[")((acc, el)=>acc + " " + el.name) + "]")
-
       toLoad.loaded shouldEqual false
-      val proj = fileManager.loadProject(toLoad)
+      val projOpt: Option[KappaProject] = fileManager.loadProject(toLoad)
+      projOpt.isDefined shouldEqual true
+      val proj = projOpt.get
       proj.folder.files.map(f=>f.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
+      println(proj.folder.files.mkString(" || "))
+      proj.folder.files.map(f=>f.path) shouldEqual Set("big/big_0.ka", "big/big_1.ka", "big/big_2.ka")
       proj.loaded shouldEqual true
       val cont = proj.folder.files.collectFirst{
         case f if f.name.contains("big_0.ka")=> f.content
       }.get
-
       cont.contains("NA binding; ape:APE1 binding; xrc: XRCC1 binding") shouldBe true
     }
 

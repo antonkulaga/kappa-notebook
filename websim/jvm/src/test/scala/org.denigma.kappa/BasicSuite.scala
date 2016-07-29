@@ -15,9 +15,9 @@ class BasicSuite extends WordSpec with Matchers with ScalatestRouteTest with Fut
   implicit val duration: FiniteDuration = 1 second
 
   implicit val timeout:Timeout = Timeout(duration)
-}
-class BasicKappaSuite extends BasicSuite with KappaRes {
 
   val config: Config = system.settings.config
 
+  def log = system.log
 }
+class BasicKappaSuite extends BasicSuite with KappaRes

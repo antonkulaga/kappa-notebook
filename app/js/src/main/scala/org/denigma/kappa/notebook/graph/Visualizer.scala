@@ -10,14 +10,16 @@ import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import org.denigma.kappa.notebook.extensions._
 
 class Visualizer (val container: HTMLElement,
                   val widthRx: Rx[Double],
                   val heightRx: Rx[Double],
                   val layouts: Rx[Vector[GraphLayout]],
                   override val distance: Double,
-                  val ticksPerFrame: Var[Int] = Var(5),
-                  var ticksOnFirstFrame: Var[Int] = Var(20)
+                  val ticksPerFrame: Var[Int] = Var(3),
+                  var ticksOnFirstFrame: Var[Int] = Var(10),
+                  val renderOnlyWhenVisible: Boolean = true
                  )
   extends Container3D
 {
@@ -103,11 +105,11 @@ class Visualizer (val container: HTMLElement,
     cssScene.remove(htmlSprite)
   }
 
-  protected def tick() = {
+  protected def tick(positionNodes: Boolean = true) = {
     this.layouts.now.foreach{case l=> l.tick(width, height, camera) }
   }
 
-  override def onEnterFrame() = {
+  override def onEnterFrame() = if(container.isVisible || !renderOnlyWhenVisible){
     for(i <- 0 to ticksOnFirstFrame.now) tick()
     ticksOnFirstFrame() = 0
     for(i <- 0 to ticksPerFrame.now) tick()

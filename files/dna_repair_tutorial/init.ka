@@ -1,0 +1,18 @@
+# Initial Conditions:
+%init: 100  (CBP(tdg,chr))
+%init: 50  (Dnmt3a(tdg,dna))
+%init: 50  (TDG(dnmt3a,N140,nc~act,lig,rd~u))
+%init: 400  (DNA(Base~mC,rd,chr~closed!1,init~mC,status~ok),MECP2(GmC!1))
+%init: 20000  (DNA(Base~C,rd,chr~opened,init~C,status~ok))
+%init: 50  (APE1_PolB(tdg,CAT))
+%init: 50  (MECP2(GmC))
+
+
+# Simulation:
+%obs: 'Correct mC' DNA(init~mC,Base~mC?)
+%obs: 'Correct C' DNA(init~C,Base~C?)
+%obs: 'lost information' DNA(Base~C,init~mC,rd)
+# %obs: 'Lost information2' DNA(Base~U,init~mC,rd)
+# %obs: 'Lost information3' DNA(Base~x,init~mC,rd)
+# %obs: 'Acetylated TDGs' TDG(rd~Ac?)
+%obs: 'Compact chromatin' MECP2(GmC!1),DNA(chr~closed!1,Base~mC?)

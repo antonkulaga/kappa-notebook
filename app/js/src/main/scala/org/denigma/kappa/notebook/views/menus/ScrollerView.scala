@@ -5,16 +5,16 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
 import org.denigma.kappa.messages.{Go, KappaMessage}
 import org.denigma.kappa.notebook.views.common.FixedPopStateEvent
-import org.scalajs.dom
-import org.scalajs.dom.raw.{Element, HTMLElement, PopStateEvent}
-import rx._
-import rx.Ctx.Owner.Unsafe.Unsafe
-import scala.scalajs.js
-import scala.scalajs.js.JSON
-import scala.scalajs.js.annotation.ScalaJSDefined
-import org.querki.jquery.$
 import org.denigma.malihu.scrollbar.JQueryScrollbar._
 import org.denigma.malihu.scrollbar._
+import org.querki.jquery.$
+import org.scalajs.dom
+import org.scalajs.dom.raw.{Element, PopStateEvent}
+import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
+
+import scala.scalajs.js
+import scala.scalajs.js.annotation.ScalaJSDefined
 
 class ScrollerView(val elem: Element,
                    scrollPanel: Element,

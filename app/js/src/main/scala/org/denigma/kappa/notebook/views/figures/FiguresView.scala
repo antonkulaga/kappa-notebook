@@ -1,9 +1,8 @@
 package org.denigma.kappa.notebook.views.figures
 
-import im.conversant.apps.youtube.{Player, PlayerEvents, PlayerOptions, PlayerVars}
 import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, ItemsMapView, UpdatableView}
+import org.denigma.binding.views.{BindableView, CollectionMapView, UpdatableView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.{GoToFigure, KappaMessage}
 import org.denigma.kappa.notebook.views.common.{TabHeaders, TabItem}
@@ -12,7 +11,6 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
 import scala.collection.immutable
-import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 /**
   * Created by antonkulaga on 08/06/16.
@@ -20,14 +18,14 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 class FiguresView(val elem: Element,
                   val items: Var[Map[String, Figure]],
                   val input: Rx[KappaMessage]
-                 ) extends ItemsMapView with TabItem
+                 ) extends CollectionMapView with TabItem
 {
 
   override type Value = Figure
 
   override type ItemView = FigureView
 
-  override type Item = String
+  override type Key = String
 
   val selected = Var("")
 
@@ -38,10 +36,9 @@ class FiguresView(val elem: Element,
     case other => //do nothing
   }
 
-  override def newItemView(item: Item): ItemView=  this.constructItemView(item){
+  override def newItemView(item: Item, value: Value): ItemView=  this.constructItemView(item){
     case (el, params)=>
       el.id = item
-      val value = this.items.now(item) //buggy but hope it will work
       value match {
         case img: Image => new ImgView(el, selected, Var(img)).withBinder(v=>new CodeBinder(v))
         case vid: Video if vid.url.contains("youtube") || vid.url.contains(YouTubeView.WATCH) =>
@@ -55,10 +52,14 @@ class FiguresView(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
+
+  override def updateView(view: FigureView, key: String, old: Figure, current: Figure): Unit = {
+    //do nothing
+  }
 }
 
 
-trait FigureView extends BindableView with TabItem with UpdatableView[Figure]
+trait FigureView extends BindableView with TabItem
 
 
 trait Figure

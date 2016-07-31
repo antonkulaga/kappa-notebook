@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.menus
 
 import org.denigma.binding.binders._
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, ItemsSeqView}
+import org.denigma.binding.views.{BindableView, CollectionSeqView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.notebook.views.actions.Movements
@@ -15,7 +15,7 @@ import scala.scalajs.js
 import scala.scalajs.js.annotation.{ScalaJSDefined, JSExport}
 import scala.util.{Failure, Success, Try}
 /*
-trait FixedItemsSeqView extends ItemsSeqView{
+trait FixedCollectionSeqView extends CollectionSeqView{
 
 
   lazy val zipped = items.zipped
@@ -69,7 +69,7 @@ class MainMenuView(
                    val elem: Element,
                    val input: Var[KappaMessage],
                    val scrollPanel: Element,
-                   val items: Var[List[(String, Element)]] ) extends BindableView with /*Fixed*/ItemsSeqView{
+                   val items: Var[List[(String, Element)]] ) extends BindableView with /*Fixed*/CollectionSeqView{
 
   type Item =  (String, Element)
   type ItemView = MainMenuItemView
@@ -112,6 +112,10 @@ class MainMenuView(
     .register("ScrollerView") {
       case (el, args) =>
         new ScrollerView(el, scrollPanel, input, menuMap).withBinder(n => new CodeBinder(n))
+    }
+    .register("notifications") {
+      case (el, args) =>
+        new NotificationsView(el, input).withBinder(n => new CodeBinder(n))
     }
 }
 

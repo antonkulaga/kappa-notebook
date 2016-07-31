@@ -16,15 +16,6 @@ class ImgView(val elem: Element, val selected: Var[String], val image: Var[Image
 {
   val src = image.map(i=>"/files/"+i.url)
 
-  override def update(value: Figure) =  value match {
-    case v @ Image(name, url)=>
-      image() = v
-      this
-
-    case _ => dom.console.error("not a valid Image Item")
-      this
-  }
-
   lazy val figureId = this.id + "_figure"
 
   protected def addFigure() = {

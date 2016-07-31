@@ -191,7 +191,7 @@ class FluxGraphView(val elem: Element,
   protected def subscribeUpdates() = {
     nodes.foreach{
      case nds =>
-       println("NODES CHANGE")
+       //println("NODES CHANGE")
        nds.foreach(n=>println("node is "+ n))
     }
     nodes.removedInserted.foreach{

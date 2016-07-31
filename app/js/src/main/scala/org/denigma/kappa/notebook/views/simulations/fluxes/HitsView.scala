@@ -1,19 +1,12 @@
 package org.denigma.kappa.notebook.views.simulations.fluxes
 
-import scala.collection.immutable._
-import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView, UpdatableView}
+import org.denigma.binding.views.BindableView
 import org.denigma.kappa.messages.WebSimMessages.FluxMap
+import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx._
-import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.binding.extensions._
-import org.denigma.kappa.notebook.views.common.FixedBinder
-import org.scalajs.dom
-import rx.Rx.Dynamic
 
-
-
-
+import scala.collection.immutable._
 
 class HitsView(val elem: Element, ruleFlux: RuleFlux) extends BindableView {
   val rule = Var(ruleFlux.rule)

@@ -15,12 +15,15 @@ import org.denigma.kappa.notebook.extensions._
 
 
 class RunnerView(val elem: Element,
+                 val tab: Var[String],
                  sender: Var[KappaMessage],
                  serverConnections: Rx[ServerConnections],
                  val sourceMap: Rx[Map[String, KappaFile]]
-                 ) extends BindableView//FixedItemsSeqView
+                 ) extends BindableView//FixedCollectionSeqView
 {
   self=>
+
+  val active = tab.map(v=>v=="runner")
 
   def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
 

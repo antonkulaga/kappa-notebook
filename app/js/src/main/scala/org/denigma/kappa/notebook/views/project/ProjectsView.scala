@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.views.project
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView}
+import org.denigma.binding.views.{BindableView, CollectionSeqView, CollectionSortedSetView}
 import org.denigma.kappa.messages.ProjectRequests.GetList
 import org.denigma.kappa.messages._
 import org.scalajs.dom
@@ -15,7 +15,7 @@ import scala.collection.immutable.{Seq, SortedSet}
 
 class ProjectsView(val elem: Element,
                    val input: Var[KappaMessage],
-                   val sender: Var[KappaMessage]) extends ItemsSetView {
+                   val sender: Var[KappaMessage]) extends CollectionSortedSetView {
 
   val items: Var[SortedSet[KappaProject]] = Var(SortedSet.empty[KappaProject])
 

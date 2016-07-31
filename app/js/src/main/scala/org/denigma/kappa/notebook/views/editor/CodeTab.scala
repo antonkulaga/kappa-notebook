@@ -29,8 +29,7 @@ class CodeTab(val elem: Element,
              )  
   extends BindableView 
     with EditorView 
-    with Uploader 
-    with UpdatableView[KappaFile]
+    with Uploader
     with TabItem
 {
   val wrapLines: Var[Boolean] = Var(false)
@@ -83,11 +82,6 @@ class CodeTab(val elem: Element,
   code.onChange{
     case str =>
       if(source.now.content!=str) source() = source.now.copy(content = str, saved = false)
-  }
-
-  override def update(value: KappaFile): this.type = {
-    source() = value
-    this
   }
 
   override def unbindView() = {

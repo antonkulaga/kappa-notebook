@@ -44,7 +44,7 @@ object MyStyles extends MainStyles
 
   ".ui.segment.paper" -(
     overflowY.auto,
-    maxHeight(58 vh)
+    maxHeight(62 vh)
     )
 }
 

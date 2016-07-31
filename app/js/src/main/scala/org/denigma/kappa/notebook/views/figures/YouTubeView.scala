@@ -22,15 +22,6 @@ class YouTubeView(val elem: Element, val selected: Var[String], val video: Var[V
 
  lazy val videoID =video.map(v=>YouTubeView.idFromURL(v.url)) //"HFwSnqYC5LA"
 
-  override def update(value: Figure) =  value match {
-    case v @ Video(name, url)=>
-      video() = v
-      this
-
-    case other => dom.console.error("not a valid Video Item")
-      this
-  }
-
   def onPlayerReady(event:  im.conversant.apps.youtube.Event): Any = {
     println("on play ready")
   }

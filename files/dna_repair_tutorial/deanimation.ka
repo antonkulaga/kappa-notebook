@@ -1,3 +1,10 @@
 # Chapter 'Deamination'
-'C base deamination' DNA(Base~C,status~ok) -> DNA(Base~U,status~dom) @ 1.e-2
-'mC base deamination' DNA(Base~mC,status~ok) -> DNA(Base~T,status~dom) @ 1.e-2
+
+#mCGs andCGs can endurespontaneous chemical transitions toT GandU Gmismatches 
+#(roughly four timesper second per genome
+
+%var: 'C to U' 1.e-2
+%var: 'mC to T' 1.e-2
+
+'C base deamination' DNA(Base~C,status~ok) -> DNA(Base~U,status~dom) @ 'C to U'
+'mC base deamination' DNA(Base~mC,status~ok) -> DNA(Base~T,status~dom) @ 'mC to T'

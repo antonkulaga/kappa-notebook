@@ -12,6 +12,7 @@ import org.denigma.kappa.notebook.FileManager
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+import org.denigma.kappa.notebook.extensions._
 
 trait FileMessenger extends Messenger {
 
@@ -103,25 +104,33 @@ trait FileMessenger extends Messenger {
       send(d)
 
     case FileRequests.Save(projectName, files, rewrite, false) => //saving file without returning it to the user
-      val path: File = fileManager.root / projectName
-      val rels = files.map(f=>f.copy(path = (path / f.name).pathAsString))
-      for{f <- rels} {
-        println(s"write kappa file ${f.name} of length ${f.content.length} in project $projectName")
-        fileManager.writeFile(projectName, f)
+      //val path: File = fileManager.root / projectName
+      //val rels = files.map(f=>f.copy(path = (path / f.name).pathAsString))
+      for{f <- files} {
+        println(s"write kappa file ${f.path} called ${f.name} of length ${f.content.length} in project $projectName")
+        fileManager.writeFile(projectName, f) match {
+          case Success(value) =>
+          case Failure(th) =>
+            log.debug("we tried to save the file without returning to user, but:")
+            log.error(th, s"cannot write file ${f.path} with name ${f.name} inside $projectName")
+        }
       }
-      val reply = FileResponses.SavedFiles(projectName, Left(rels.map(v=>v.name).toSet))
+      val reply = FileResponses.SavedFiles(projectName, Left(files.map(v=>v.path).toSet))
       println("saved marking")
       send(Pickle.intoBytes[KappaMessage](reply))
 
     case FileRequests.Save(projectName, files, rewrite, true) => //saving file with returning its content to the user
-      val path: File = fileManager.root / projectName
-      val rels = files.map(f=>f.copy(path = (path / f.name).pathAsString))
+      //val path: File = fileManager.root / projectName
+      //val rels = files.map(f=>f.copy(path = (path / f.name).pathAsString))
       val kappaFiles: Map[String, KappaFile] = (
-        for{f <- rels}
+        for{f <- files}
           yield {
             println(s"write kappa file ${f.name} of length ${f.content.length} in project $projectName")
-            fileManager.writeFile(projectName, f)
-            f.name -> f.copy(saved = true)
+            fileManager.writeFile(projectName, f) match {
+              case Success(value) =>
+              case Failure(th) => log.error(th, s"cannot write file ${f.path} with name ${f.name} inside $projectName")
+            }
+            f.path -> f.copy(saved = true)
           }
         ).toMap
       val reply = FileResponses.SavedFiles(projectName, Right(kappaFiles))

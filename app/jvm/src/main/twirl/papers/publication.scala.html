@@ -1,15 +1,19 @@
 @()
-<section class="ui bottom attached tab segment" data-class-active-if="active">
+<!--
   <div class="ui inverted segment">
     <button class="ui inverted button" data-showif="hasPreviousPage" data-event-click="previousPage">Previous</button>
     <input class="ui input" data-bind-value="currentPageNum">
     <button class="ui inverted red button" data-showif="hasNextPage" data-event-click="nextPage">Next</button>
     <button class="ui inverted blue button" data-showif="hasSelection"  data-event-click="addNugget">Insert nugget</button>
-   <!-- <input type="number" min="0.5" max="3" step="0.25" data-bind="scale">Scale-->
   </div>
   <section class="ui segment paper">
     <canvas class="canvas" style="border:1px solid black;"></canvas>
     <div class="textLayer"></div>
   </section>
-
-</section>
+-->
+<div class="ui equal with one wide grid">
+    <a  data-template="true" class="page-container ui column" data-bind-name="name" data-bind-title="title">
+      <canvas class="page-canvas"></canvas>
+      <div class="textLayer"></div>
+    </a>
+</div>

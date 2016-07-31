@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.views.papers
 
 import org.denigma.binding.binders.GeneralBinder
-import org.denigma.binding.views.{BindableView, ItemsMapView}
+import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
@@ -23,7 +23,7 @@ class PapersView(val elem: Element,
                  val currentProjectName: Rx[String],
                  val connector: WebSocketTransport,
                  val kappaCursor: Var[Option[(Editor, PositionLike)]]) extends BindableView
-  with ItemsMapView {
+  with CollectionMapView {
 
   val paperLoader: WebSocketPaperLoader = WebSocketPaperLoader(connector, projectName = currentProjectName)
 
@@ -31,9 +31,9 @@ class PapersView(val elem: Element,
 
   val empty = items.map(its=>its.isEmpty)
 
-  override type Item = String
+  override type Key = String
 
-  override type Value = Paper//Bookmark
+  override type Value = Paper
 
   override type ItemView = PublicationView
 
@@ -41,7 +41,7 @@ class PapersView(val elem: Element,
 
   location.foreach{
     case loc if loc.paper!="" =>
-      println("LOAD :"+loc.paper)
+      //println("LOAD :"+loc.paper)
       paperLoader.getPaper(loc.paper, 10 seconds).onComplete{
         case Success(pp) =>
           paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(pp.name, pp)
@@ -60,11 +60,10 @@ class PapersView(val elem: Element,
     case other => //do nothing
   }
 
-  override def newItemView(name: String): PublicationView = this.constructItemView(name){
+  override def newItemView(name: String, paper: Paper): PublicationView = this.constructItemView(name){
     case (el, params)=>
       el.id = name
-      val paper: Paper = this.items.now(name) //buggy but hope it will work
-      val v = new PublicationView(el, location, paper, kappaCursor).withBinder(v=>new CodeBinder(v))
+      val v = new PublicationView(el, location, Var(paper), kappaCursor).withBinder(v=>new CodeBinder(v))
       v
   }
 
@@ -72,6 +71,9 @@ class PapersView(val elem: Element,
     .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
     .register("Bookmarks")((el, args) => new BookmarksView(el, location, null).withBinder(new GeneralBinder(_)))
 
+  override def updateView(view: PublicationView, key: String, old: Paper, current: Paper): Unit = {
+    view.paper() = current
+  }
 }
 
 

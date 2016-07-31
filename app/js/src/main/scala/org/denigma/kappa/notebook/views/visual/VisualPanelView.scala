@@ -5,7 +5,7 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.notebook.views.editor.KappaWatcher
-import org.denigma.kappa.notebook.views.visual.rules.{RulesGraphView, RulesVisualSettings}
+import org.denigma.kappa.notebook.views.visual.rules.{RulesGraphView, RulesVisualSettings, WholeRuleGraphView}
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -36,7 +36,7 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
   override lazy val injector = defaultInjector
     .register("ContactMapView") {
       (el, args) =>new ContactMapView(el, input, contactActive).withBinder(v=>new CodeBinder(v))
-    }
+    }/*
     .register("LeftGraph") {
       (el, args) =>
     new RulesGraphView(el,
@@ -53,5 +53,13 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
         kappaWatcher.added,
         kappaWatcher.rightModified,
         args.getOrElse("container", "graph-container").toString, RulesVisualSettings(s)).withBinder(n => new CodeBinder(n)) }
-
+    */.
+    register("WholeGraph") {  (el, args) =>
+      //2 in one
+      new WholeRuleGraphView(el,
+        kappaWatcher.rightUnchanged,
+        kappaWatcher.removed,
+        kappaWatcher.added,
+        kappaWatcher.rightModified,
+        args.getOrElse("container", "whole-graph-container").toString, RulesVisualSettings(s)).withBinder(n => new CodeBinder(n)) }
 }

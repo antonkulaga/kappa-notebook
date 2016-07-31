@@ -1,6 +1,5 @@
 package org.denigma.kappa.notebook.styles
 import scalacss.Defaults._
-import scalacss.Defaults._
 trait TabGridsStyles extends MainStyles {
   import dsl._
 
@@ -8,11 +7,6 @@ trait TabGridsStyles extends MainStyles {
     overflowY.auto,
     padding(0 px)  important
     )
-
-  ".ui.number.input" -(
-    maxWidth(40 px)
-    )
-
 
   ".page.tab" - (
     overflowY.hidden important,
@@ -23,7 +17,7 @@ trait TabGridsStyles extends MainStyles {
     width(100 %%)
     )
 
-  ".tab.page" -(
+  ".page" -(
     overflowY.hidden important,
     overflowX.hidden important,
     //overflowX.scroll,
@@ -31,7 +25,7 @@ trait TabGridsStyles extends MainStyles {
     //height(100.0 %%)
     )
 
-  ".tab.subpage" -(
+  ".subpage" -(
     /*
     onTiny -(height(65 vh) important),
     onLittle -(height(66 vh) important),
@@ -44,7 +38,7 @@ trait TabGridsStyles extends MainStyles {
     //overflowY.scroll
     )
 
-  ".tab.smallpage" -(
+  ".smallpage" -(
     overflowY.auto,
     onTiny -(maxHeight(50 vh) important),
     onLittle -(maxHeight(53 vh) important),
@@ -53,13 +47,13 @@ trait TabGridsStyles extends MainStyles {
     onLarge -(maxHeight(60 vh) important)
     )
 
-  ".tab.flexible.page" -(
+  ".flexible.page" -(
     overflowY.auto,
     overflowX.auto,
     height(100.0 %%)
     )
 
-  ".simulation.tab" -(
+  ".simulation" -(
     overflowX.visible,
     overflowY.visible
     )

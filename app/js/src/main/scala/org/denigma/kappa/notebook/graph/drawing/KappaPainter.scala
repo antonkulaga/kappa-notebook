@@ -57,8 +57,8 @@ trait KappaPainter {
     import scalatags.JsDom.implicits._
 
     svg(
-      height := rectangle.height + st,
-      width := rectangle.width + st,
+      height := rectangle.height + st * 2,
+      width := rectangle.width + st * 2,
       x := rectangle.x,
       y := rectangle.y,
       //onclick := { ev: MouseEvent=> println("hello")},

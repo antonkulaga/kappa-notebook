@@ -1,21 +1,19 @@
 package org.denigma.kappa.notebook.views.simulations.fluxes
 
-import org.denigma.binding.views.{BindableView, ItemsSeqView, ItemsSetView, UpdatableView}
-import org.denigma.kappa.messages.WebSimMessages.FluxMap
-import org.scalajs.dom.raw.{Element, SVGElement}
-import rx._
-import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
+import org.denigma.binding.views.{CollectionSortedSetView, UpdatableView}
+import org.denigma.controls.code.CodeBinder
+import org.denigma.kappa.messages.WebSimMessages.FluxMap
 import org.denigma.kappa.notebook.graph.{Colors, KappaEdgeVisualSettings, KappaNodeVisualSettings, LineParams}
-import org.denigma.kappa.notebook.views.common.FixedBinder
 import org.scalajs.dom
+import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
-import rx.Rx.Dynamic
+import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
 
-import scala.collection.immutable.{Iterable, SortedSet}
+import scala.collection.immutable.SortedSet
 
-class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val tab: Rx[String]) extends ItemsSetView
-  with UpdatableView[FluxMap]
+class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val tab: Rx[String]) extends CollectionSortedSetView
 {
 
   type Item = RuleFlux
@@ -34,16 +32,11 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
 
   val active = tab.map(t=>t==name)
 
-  override def update(value: FluxMap)= {
-    item()  = value
-    this
-  }
-
   override val items: Rx[SortedSet[RuleFlux]] = item.map(i => RuleFlux.fromFluxMap(i))
   items.foreach(i=>println("items are = "+items.now))
 
   override def newItemView(item: Item): ItemView = this.constructItemView(item){
-    case (el, _) => new HitsView(el, item).withBinder(v => new FixedBinder(v))
+    case (el, _) => new HitsView(el, item).withBinder(v => new CodeBinder(v))
   }
 
   val s =dom.document.getElementById("canvas") match {
@@ -53,6 +46,6 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
 
   override lazy val injector = defaultInjector
     .register("FluxGraphView") { case (el, args) =>
-      new FluxGraphView(el, items, new KappaNodeVisualSettings(14, 3), new KappaEdgeVisualSettings(8, 2, LineParams(Colors.green)), s).withBinder(v => new FixedBinder(v))
+      new FluxGraphView(el, items, new KappaNodeVisualSettings(14, 3), new KappaEdgeVisualSettings(8, 2, LineParams(Colors.green)), s).withBinder(v => new CodeBinder(v))
     }
 }

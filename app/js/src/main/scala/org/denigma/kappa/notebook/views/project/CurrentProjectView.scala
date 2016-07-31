@@ -2,24 +2,20 @@ package org.denigma.kappa.notebook.views.project
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, ItemsSetView}
-import org.denigma.controls.papers.Bookmark
-import org.denigma.kappa.notebook.extensions._
+import org.denigma.binding.views.CollectionSortedSetView
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.views.MainTabs
 import org.scalajs.dom
 import org.scalajs.dom._
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{BlobPropertyBag, Element}
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
 import rx._
 
 import scala.collection.immutable._
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
-import scala.scalajs.js.typedarray.Uint8Array
-
-import org.scalajs.dom.ext._
+import scala.scalajs.js.typedarray.{TypedArrayBuffer, Uint8Array}
+import scala.util.{Failure, Success}
 
 
 class CurrentProjectView(val elem: Element,
@@ -27,10 +23,10 @@ class CurrentProjectView(val elem: Element,
                          input: Var[KappaMessage],
                          output: Var[KappaMessage],
                          uploadId: String
-                        ) extends ItemsSetView {
+                        ) extends CollectionSortedSetView {
 
 
-  //lazy val uploadInput = sq.byId(uploadId).collect{ case i: Input => i}.get
+  lazy val uploadInput = sq.byId(uploadId).get.asInstanceOf[Input]
 
   override type Item = KappaFile
 
@@ -68,7 +64,7 @@ class CurrentProjectView(val elem: Element,
 
   val uploadFile = Var(Events.createMouseEvent())
   uploadFile.triggerLater{
-       // uploadInput.click()
+       uploadInput.click()
   }
 
   val saveAll = Var(Events.createMouseEvent())
@@ -132,23 +128,24 @@ class CurrentProjectView(val elem: Element,
 
   override def subscribeUpdates() = {
     super.subscribeUpdates()
-    //uploadInput.addEventListener[Event](Events.change, filesHandler _)
+    uploadInput.addEventListener[Event](Events.change, filesHandler _)
   }
   protected def filesHandler(event: org.scalajs.dom.Event) = {
     println("on change files work")
     val name = fileName.now
 
-    /*
+
     val files = uploadInput.files.toList.foreach{
       case f =>
-        /*
-        f.readAsArrayBuffer.onSuccess{
-          case result =>
-            println("byte buffer readinf finished")
+        f.readAsArrayBuffer.onComplete{
+          case Failure(th) => dom.console.error("file upload failed with: "+th)
+          case Success(result) =>
+            val array = TypedArrayBuffer.wrap(result).array()
+            val mess = DataMessage(f.name, array)
+            println(s"uploading ${f.name} to ${projectName.now}")
+            output() = FileRequests.UploadBinary(projectName.now, List(mess))
         }
-        */
     }
-*/
     //val toUplod = FileRequests.UploadBinary()
     //val k = KappaFile("", name, "", saved = false)
     //val uploadRequest = FileRequests.Save(projectName.now, List(k), rewrite = false, getSaved = true)

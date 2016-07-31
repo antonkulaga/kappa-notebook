@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.editor
 
 import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, ItemsMapView}
+import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.codemirror._
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
@@ -26,8 +26,10 @@ class KappaCodeEditor(val elem: Element,
                       val editorUpdates: Var[EditorUpdates],
                       val connections: Rx[ServerConnections]
                      ) extends BindableView
-  with ItemsMapView
+  with CollectionMapView
 {
+
+  override type Key = String
 
   override type Value = KappaFile
 
@@ -45,7 +47,6 @@ class KappaCodeEditor(val elem: Element,
 
   val selected: Var[String] = Var("")
 
-  override type Item = String
 
   val syntaxErrors = Var(SyntaxErrors.empty)
 
@@ -59,7 +60,7 @@ class KappaCodeEditor(val elem: Element,
         dom.console.log("all errors "+ers.errors.mkString("\n"))
         dom.console.log("all filenames " + ers.files.map(kv=>kv._1).mkString(" | "))
       }
-      if(!items.now.contains(filename)) dom.console.error(s"error refers to the $filename that was not found")
+      if(!items.now.exists(kv=>kv._2.name == filename)) dom.console.error(s"error refers to the $filename that was not found, message: ${er.message}")
       items.now.collect{ case (str, file) if file.name == filename => file -> er }
     }
   }
@@ -88,9 +89,7 @@ class KappaCodeEditor(val elem: Element,
     case other => //do nothing
   }
 
-  protected def keyVar(key: Key) = {
-    //require(items.now.contains(key), s"we are adding an Item view for key(${key}) that does not exist")
-    val initialValue = this.items.now(key)
+  protected def keyVar(key: Key, initialValue: Value): Var[KappaFile] = {
     val v = Var(initialValue)
     v.onChange{
       case value=>
@@ -100,10 +99,10 @@ class KappaCodeEditor(val elem: Element,
     //note: killing should be done on unbinding
   }
 
-  override def newItemView(item: Item): ItemView = this.constructItemView(item) {
+  override def newItemView(item: Item, initialValue: Value): ItemView = this.constructItemView(item) {
     case (el, _) =>
       el.id = item //dirty trick
-      val value: Var[KappaFile] = keyVar(item)
+      val value = keyVar(item, initialValue)
       val itemErrors = Rx{
         errorsByFiles().getOrElse(value(), Nil)
       }
@@ -122,4 +121,7 @@ class KappaCodeEditor(val elem: Element,
     .register("headers")((el, args) => new TabHeaders(el, headers, selected)(path2name).withBinder(new GeneralBinder(_)))
     .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles, fullCode).withBinder(new GeneralBinder(_)))
 
+  override def updateView(view: CodeTab, key: String, old: KappaFile, current: KappaFile): Unit = {
+    view.source() = current
+  }
 }

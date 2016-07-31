@@ -51,7 +51,6 @@ trait KappaView extends KappaPainter {
       }
   }
 
-
   lazy val container = new Object3D()
 
   def render(): Object3D = {

@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.views.common
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.binding.views.{BindableView, ItemsSetView}
+import org.denigma.binding.views.{BindableView, CollectionSortedSetView}
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -12,7 +12,7 @@ object TabHeaders {
   implicit val getId: String => String = id => id
 }
 
-class TabHeaders(val elem: Element, val items: Rx[SortedSet[String]], val selected: Var[String])(implicit getCaption: String => String) extends ItemsSetView {
+class TabHeaders(val elem: Element, val items: Rx[SortedSet[String]], val selected: Var[String])(implicit getCaption: String => String) extends CollectionSortedSetView {
 
   override type Item =  String
 

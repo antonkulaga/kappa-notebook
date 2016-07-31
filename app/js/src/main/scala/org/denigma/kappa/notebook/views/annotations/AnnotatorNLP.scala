@@ -1,12 +1,12 @@
 package org.denigma.kappa.notebook.views.annotations
-
+/*
 import org.denigma.nlp.annotator.AnnotatorView
 import org.denigma.nlp.communication.WebSocketNLPTransport
 import org.scalajs.dom.Element
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 
-/*
+
 case class NLPService(host: String, channel: String, username: String) extends WebSocketNLPTransport() {
   override def getWebSocketUri(username: String): String = {
     val wsProtocol = if (dom.document.location.protocol == "https:") "wss" else "ws"
@@ -14,7 +14,7 @@ case class NLPService(host: String, channel: String, username: String) extends W
   }
 }
 */
-
+/*
 class AnnotatorNLP(elem: Element) extends AnnotatorView(elem: Element, WebSocketNLPTransport("webintelligence.eu", "notebook", "guest" + Math.random() * 1000))
 {
 
@@ -35,7 +35,7 @@ class AnnotatorNLP(elem: Element) extends AnnotatorView(elem: Element, WebSocket
 
 }
 
-
+*/
 /*
 class AnnotatorNLP(elem: Element) extends AnnotatorView(elem: Element, WebSocketNLPTransport("localhost:1112", "notebook", "guest" + Math.random() * 1000))
 {

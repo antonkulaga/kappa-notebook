@@ -41,21 +41,6 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport, projectName: Rx[
 
   import js.JSConverters._
 
-  def bytes2Arr(data: Array[Byte]): Future[ArrayBuffer] = {
-    val p = Promise[ArrayBuffer]
-    val options = BlobPropertyBag("octet/stream")
-    val arr: Uint8Array = new Uint8Array(data.toJSArray)
-    val blob = new Blob(js.Array(arr), options)
-    //val url = dom.window.dyn.URL.createObjectURL(blob)
-    val reader = new FileReader()
-    def onLoadEnd(ev: ProgressEvent): Any = {
-      p.success(reader.result.asInstanceOf[ArrayBuffer])
-    }
-    reader.onloadend = onLoadEnd _
-    reader.readAsArrayBuffer(blob)
-    p.future
-  }
-
   subscriber.open()
 
 }

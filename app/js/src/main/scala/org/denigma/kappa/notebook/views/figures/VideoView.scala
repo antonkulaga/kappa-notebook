@@ -13,16 +13,7 @@ case class Video(name: String, url: String) extends Figure
 
 class VideoView(val elem: Element, val selected: Var[String], val video: Var[Video]) extends FigureView
 {
-  //val src = image.map(i => "/files/"+i)
 
-  override def update(value: Figure) =  value match {
-    case v @ Video(_, url)=>
-      video() = v
-      this
-
-    case other => dom.console.error("not a valid Video Item")
-      this
-  }
 
   lazy val figureId = this.id + "_figure"
 

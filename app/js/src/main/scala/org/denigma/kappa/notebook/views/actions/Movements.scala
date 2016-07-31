@@ -1,11 +1,8 @@
 package org.denigma.kappa.notebook.views.actions
 
 import org.denigma.controls.papers.Bookmark
-import org.denigma.kappa.messages.KappaMessage.Container
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.MainTabs
-import rx.Rx.Dynamic
-import rx.{Rx, Var}
 
 
 object Movements {

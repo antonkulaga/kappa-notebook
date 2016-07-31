@@ -1,16 +1,16 @@
 package org.denigma.kappa.notebook.views.editor
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.binding.views.{BindableView, ItemsSeqView}
+import org.denigma.binding.views.{BindableView, CollectionSeqView}
+import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.messages.{KappaFile, KappaMessage}
 import org.denigma.kappa.notebook.views.actions.Movements
-import org.denigma.kappa.notebook.views.common.FixedBinder
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
-class ErrorsView(val elem: Element, input: Var[KappaMessage], val items: Rx[List[(KappaFile, WebSimError)]], val fullCode: Rx[String]) extends ItemsSeqView {
+class ErrorsView(val elem: Element, input: Var[KappaMessage], val items: Rx[List[(KappaFile, WebSimError)]], val fullCode: Rx[String]) extends CollectionSeqView {
 
   val hasErrors = items.map(f=>f.nonEmpty)
 
@@ -21,7 +21,7 @@ class ErrorsView(val elem: Element, input: Var[KappaMessage], val items: Rx[List
       val (chFrom ,chTo) = (error.range.from_position.chr, error.range.to_position.chr)
       val errorCode = code.substring(chFrom, chTo)
       println(s"FROM $chFrom TO $chTo TEXT = $errorCode")
-      new WebSimErrorView(el, input, item._1, item._2, errorCode).withBinder(v=>new FixedBinder(v))
+      new WebSimErrorView(el, input, item._1, item._2, errorCode).withBinder(v=>new CodeBinder(v))
   }
 
   override type Item = (KappaFile, WebSimError)

@@ -1,5 +1,5 @@
 @()
-<div class="ui blue segment" data-view="CurrentProjectView" data-param-uploader="uploadId">
+<div class="ui blue segment" data-view="CurrentProjectView" data-param-uploader="fileUpload">
     <table class="ui celled small compact unstackable table mcustomscrollbar"  data-mcs-theme="rounded-dots-dark">
         <thead>
             <tr>
@@ -16,7 +16,7 @@
                 <td class="collapsing">
                     <span class="ui icon mini buttons">
                         <button class="ui button" data-click="removeClick"><i class="red remove icon"></i></button>
-                        <!--<button class="ui button" data-click="renameClick"><i class="edit icon"></i></button>-->
+                        <button class="ui button" data-click="renameClick"><i class="edit icon"></i></button>
                         <button class="ui button" data-hide-if="saved" data-click="saveClick"><i class="save green icon"></i></button>
                     </span>
                 </td>
@@ -35,7 +35,7 @@
     </table>
     <input multiple type="file" id="fileUpload" style="opacity:0; height:0px;width:0px;" />
     <div class="ui icon tiny buttons">
-        <!--<div class="ui button" data-click="uploadFile"><i class="Cloud Upload icon"></i>Upload file</div>-->
+        <div class="ui button" data-click="uploadFile"><i class="Cloud Upload icon"></i>Upload file</div>
         <div class="ui button" data-click="download">
             <i class="ui download icon"></i>Download project
         </div>

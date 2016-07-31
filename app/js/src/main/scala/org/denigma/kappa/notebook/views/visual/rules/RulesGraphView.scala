@@ -7,48 +7,56 @@ import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.graph._
 import org.denigma.kappa.notebook.graph.layouts._
 import org.scalajs.dom
-import org.scalajs.dom.raw.{ClientRect, Element}
+import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
+
 import scala.collection.immutable._
 
-object RulesVisualSettings
-{
-  val DEFAULT_AGENT_FONT = 32
-  val DEFAULT_SITE_FONT = 20
-  val DEFAULT_STATE_FONT = 14
-}
-
-case class RulesVisualSettings(
-                           canvas: SVG,
-                           agent: KappaNodeVisualSettings = KappaNodeVisualSettings(RulesVisualSettings.DEFAULT_AGENT_FONT, 5),
-                           sites: KappaNodeVisualSettings  = KappaNodeVisualSettings(RulesVisualSettings.DEFAULT_SITE_FONT, 3),
-                           state: KappaNodeVisualSettings = KappaNodeVisualSettings(RulesVisualSettings.DEFAULT_STATE_FONT, 2),
-                           link: KappaEdgeVisualSettings = KappaEdgeVisualSettings(14, 4, LineParams(lineColor = Colors.blue)),
-                           otherArrows: LineParams = LineParams(lineColor = 0x000000)
-                         )
-
-class RulesGraphView(val elem: Element,
+class RulePatternGraphView(val elem: Element,
                      val unchanged: Rx[Set[Agent]],
                      val removed: Rx[Set[Agent]],
                      val added: Rx[Set[Agent]],
                      val updated: Rx[Set[Agent]],
                      val containerName: String,
                      val visualSettings: RulesVisualSettings
-               ) extends BindableView {
+                    ) extends RulesGraphView {
 
   lazy val size: (Double, Double) = elem.getBoundingClientRect() match {
     case rect: ClientRect if rect.width < 100 || rect.height < 100 => (400.0, 400.0)
     case rect: ClientRect => (rect.width, rect.height)
   }
-
   val width: Var[Double] = Var(size._1)
 
   val height: Var[Double] = Var(size._2)
 
-  val container = sq.byId(containerName).get
+  override lazy val container: HTMLElement = sq.byId(containerName).get
+
+  val viz = new Visualizer(container,
+    width,
+    height,
+    layouts,
+    750.0,
+    iterationsPerFrame,
+    firstFrameIterations
+  )
+}
+trait RulesGraphView extends BindableView {
+
+  def unchanged: Rx[Set[Agent]]
+  def removed: Rx[Set[Agent]]
+  def added: Rx[Set[Agent]]
+  def updated: Rx[Set[Agent]]
+  def visualSettings: RulesVisualSettings
+
+
+  def width: Rx[Double]
+
+  def height: Rx[Double]
+
+  def container: HTMLElement
 
   type Node = KappaNode
 
@@ -76,13 +84,13 @@ class RulesGraphView(val elem: Element,
   }
 
   //protected val gravityForce = new Gravity[Node, Edge](ForceLayoutParams.default2D.attractionMult / 4, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
-  protected val repulsionForce = new Repulsion[Node, Edge](ForceLayoutParams.default2D.repulsionMult)(compareRepulsion)
-  protected val springForce = new SpringForce[Node, Edge](ForceLayoutParams.default2D.springMult)(computeSpring)
-  protected val borderForce = new BorderForce[Node, Edge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
+  protected val repulsionForce: Repulsion[Node, Edge] = new Repulsion[Node, Edge](ForceLayoutParams.default2D.repulsionMult)(compareRepulsion)
+  protected val springForce: SpringForce[Node, Edge] = new SpringForce[Node, Edge](ForceLayoutParams.default2D.springMult)(computeSpring)
+  protected val borderForce: BorderForce[Node, Edge] = new BorderForce[Node, Edge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
 
   protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (massByNode(node1), massByNode(node2))
 
-  val minSpring = 100
+  lazy val minSpring = 100
 
   def massByNode(node: KappaNode): Double = node match {
     case n: AgentNode => 1.5
@@ -128,19 +136,13 @@ class RulesGraphView(val elem: Element,
 
   val edges = Var(Vector.empty[Edge])
 
-  val layouts = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
+  lazy val layouts = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
 
   val iterationsPerFrame = Var(5)
   val firstFrameIterations = Var(50)
 
-  val viz = new Visualizer(container,
-    width,
-    height,
-    layouts,
-    900.0,
-    iterationsPerFrame,
-    firstFrameIterations
-  )
+  def viz: Visualizer
+
   protected def onAgentsUpdate(agentsRemoved: Set[Agent], agentsAdded: Set[Agent]) = {
     firstFrameIterations() = 50
     val addedNodes = agentsAdded.map{

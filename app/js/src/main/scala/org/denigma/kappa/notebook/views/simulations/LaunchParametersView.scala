@@ -21,7 +21,7 @@ class LaunchParametersView(val elem: Element,
                            val simulation: Rx[SimulationStatus],
                            params: Option[LaunchModel],
                            val selected: Rx[String]
-                       ) extends BindableView//FixedItemsSeqView
+                       ) extends BindableView//FixedCollectionSeqView
 {
   self=>
 

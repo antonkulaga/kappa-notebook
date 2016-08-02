@@ -28,7 +28,7 @@ class SimulationsView(val elem: Element,
   val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
   //this.items.map{ case its=> SortedSet.empty[String] ++ its.keySet.map(makeId) }
 
-  val selectTab = Var("runner")
+  val tab = Var("runner")
 
   override type Key = (Int, Option[LaunchModel])
 
@@ -53,15 +53,15 @@ class SimulationsView(val elem: Element,
   override def newItemView(key: Key, value: Value): SimulationRunView = this.constructItemView(key)( {
     case (el, mp) =>
       el.id =  makeId(key) //bad practice
-      val view = new SimulationRunView(el, key._1, key._2, selectTab, Var(SimulationStatus.empty)).withBinder(new CodeBinder(_))
-      selectTab() = view.id
+      val view = new SimulationRunView(el, key._1, key._2, tab, Var(SimulationStatus.empty)).withBinder(new CodeBinder(_))
+      tab() = view.id
       view
   })
 
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, selectTab)(str=>str).withBinder(new GeneralBinder(_)))
-    .register("runner")((el, args) => new RunnerView(el, selectTab, output, serverConnections, sourceMap).withBinder(n => new CodeBinder(n)))
+    .register("headers")((el, args) => new TabHeaders(el, headers, tab)(str=>str).withBinder(new GeneralBinder(_)))
+    .register("runner")((el, args) => new RunnerView(el, tab, output, serverConnections, sourceMap).withBinder(n => new CodeBinder(n)))
 
   override def updateView(view: SimulationRunView, key: (Int, Option[LaunchModel]), old: SimulationStatus, current: SimulationStatus): Unit = {
     view.simulation() = current

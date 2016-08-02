@@ -13,9 +13,17 @@ object MyStyles extends MainStyles
 {
   import dsl._
 
-  ".fileitem" -{
+  "#WholeGraph" -(
+    onTiny -minHeight(400 px),
+    onLittle -minHeight(425 px),
+    onSmall -minHeight(450 px),
+    onMedium -minHeight(475 px),
+    onLarge -minHeight(500 px)
+    )
+
+  ".fileitem" -(
     fontSize(0.9 em)
-  }
+    )
 
   ".plot" -(
       maxWidth(600 px),
@@ -40,11 +48,6 @@ object MyStyles extends MainStyles
 
   ".ui.table td.collapsing" -(
     padding(0 px) important
-    )
-
-  ".ui.segment.paper" -(
-    overflowY.auto,
-    maxHeight(62 vh)
     )
 }
 

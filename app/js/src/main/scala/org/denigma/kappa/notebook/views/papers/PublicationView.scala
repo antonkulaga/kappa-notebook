@@ -13,6 +13,8 @@ import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import org.scalajs.dom.ext._
+import org.scalajs.dom.html.Canvas
+import org.scalajs.dom.raw.Element
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
@@ -105,7 +107,8 @@ class PublicationView(val elem: Element,
         }
     }
     addNugget.triggerLater{
-      kappaCursor.now match
+      val curs: Option[(Editor, PositionLike)] = kappaCursor.now
+      curs match
       {
         case Some((ed, position)) =>
         //hub.kappaCode() = hub.kappaCode.now.withInsertion(position.line, comments.now)
@@ -127,6 +130,21 @@ class PublicationView(val elem: Element,
 class ArticlePageView(val elem: Element, val num: Int, val page: Page, val scale: Rx[Double])  extends PageView {
  val name = Var("page_"+num)
  val title = Var("page_"+num)
+
+
+  override lazy val canvas = {
+    elem.getElementsByTagName("canvas").collectFirst{
+      case canv: Canvas => canv
+    }.orElse(elem.children.collectFirst {
+        case canv: Canvas => canv
+      }).get
+  } //unsafe
+
+  override lazy val textDiv = elem.getElementsByClassName("textLayer").collectFirst{
+    case el: HTMLDivElement => el
+  }.orElse(elem.children.collectFirst {
+    case canv: HTMLDivElement => canv
+  }).get //unsafe
 }
 
 /*

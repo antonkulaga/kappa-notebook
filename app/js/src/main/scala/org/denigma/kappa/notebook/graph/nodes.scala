@@ -1,15 +1,36 @@
 package org.denigma.kappa.notebook.graph
 
-
+import scala.collection.immutable._
+import org.denigma.kappa.notebook.graph.Change.Change
 import org.denigma.kappa.notebook.graph.layouts.{ForceNode, LayoutInfo}
 
+import scala.List
 
-trait KappaOrganizedNode extends KappaNode {
-  type ChildNode <: KappaNode
-
-  def children: List[ChildNode]
-
+object OrganizedChangeableNode {
+  def emptyChangeMap[T] = Map(Change.Added -> Set.empty[T], Change.Removed -> Set.empty[T], Change.Unchanged -> Set.empty[T], Change.Updated -> Set.empty[T])
 }
+trait OrganizedChangeableNode extends KappaNode with ChangeableNode {
+  type ChildNode <: KappaNode
+  type ChildEdge <: KappaEdge
+
+  def children: Map[Change.Change, Set[ChildNode]]
+
+  lazy val childrenList: List[ChildNode] = children.values.flatten.toList
+
+  def childEdges: Map[Change.Change, Set[ChildEdge]]
+
+  lazy val childEdgeList: List[ChildEdge] = childEdges.values.flatten.toList
+}
+
+trait ChangeableNode extends KappaNode {
+  def status: Change
+}
+
+object Change extends Enumeration {
+  type Change = Value
+  val Removed, Added, Unchanged, Updated = Value
+}
+
 
 trait KappaNode extends ForceNode {
 

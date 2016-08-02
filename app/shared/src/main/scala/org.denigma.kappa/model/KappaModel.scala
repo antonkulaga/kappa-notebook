@@ -22,9 +22,9 @@ object KappaModel {
   {
     def name = label
 
-    require(fromAgent.siteSet.contains(fromSide), s"from Agent($fromAgent) should contain fromSide($fromSide)")
+    require(fromAgent.sites.contains(fromSide), s"from Agent($fromAgent) should contain fromSide($fromSide)")
 
-    require(toAgent.siteSet.contains(toSide), s"from Agent($toAgent) should contain fromSide($toSide)")
+    require(toAgent.sites.contains(toSide), s"from Agent($toAgent) should contain fromSide($toSide)")
 
   }
 
@@ -78,7 +78,7 @@ object KappaModel {
     lazy val added = if(same.length==right.agents.length) Nil else right.agents.takeRight(right.agents.length - same.length)
 
     lazy val modified = same.filter{
-      case (one, two)=> one.siteSet != two.siteSet
+      case (one, two)=> one.sites != two.sites
     }
 
     lazy val modifiedLeft = modified.map(_._1)
@@ -111,13 +111,12 @@ object KappaModel {
     }
   }
 
-  case class Agent(name: String, sites: List[Site] = List.empty) extends KappaNamedElement
+  case class Agent(name: String, sites: Set[Site] = Set.empty) extends KappaNamedElement
   {
-    lazy val siteSet = sites.toSet
 
-    lazy val siteNames = siteSet.map(s=>s.name)
+    lazy val siteNames: Set[String] = sites.map(s=>s.name)
 
-    lazy val links: List[(String, Site)] = for {
+    lazy val links: Set[(String, Site)] = for {
         s <- sites
         l <- s.links
       } yield l -> s

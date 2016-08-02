@@ -8,13 +8,16 @@ import org.denigma.kappa.notebook.graph._
 import org.denigma.kappa.notebook.graph.layouts._
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
-import org.scalajs.dom.svg.SVG
+import org.scalajs.dom.svg.{LinearGradient, SVG}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 
+import scala.Vector
 import scala.collection.immutable._
+import scalatags.JsDom.TypedTag
 
+/*
 class RulePatternGraphView(val elem: Element,
                      val unchanged: Rx[Set[Agent]],
                      val removed: Rx[Set[Agent]],
@@ -43,36 +46,71 @@ class RulePatternGraphView(val elem: Element,
     firstFrameIterations
   )
 }
-trait RulesGraphView extends BindableView {
-
-  def unchanged: Rx[Set[Agent]]
-  def removed: Rx[Set[Agent]]
-  def added: Rx[Set[Agent]]
-  def updated: Rx[Set[Agent]]
-  def visualSettings: RulesVisualSettings
+*/
 
 
-  def width: Rx[Double]
+object Gradients {
+  import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
+  import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all.attrs._
 
-  def height: Rx[Double]
+  def blueGradient(gradientName: String): TypedTag[LinearGradient] =
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "skyblue"),
+      stop(offset := "50%", stopColor := "deepskyblue"),
+      stop(offset := "100%", stopColor := "SteelBlue")
+    )
+  /*
+      <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="skyblue" />
+      <stop offset="50%" stop-color="deepskyblue" />
+      <stop offset="100%" stop-color="SteelBlue" />
+     </linearGradient>
+   */
 
-  def container: HTMLElement
+  def redGradient(gradientName: String) = {
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "#ff9999"),
+      stop(offset := "50%", stopColor := "deepskyblue"),
+      stop(offset := "100%", stopColor := "#ff6666")
+    )
+  }
+
+  def greenGradient(gradientName: String) = {
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "#adebad"),
+      stop(offset := "50%", stopColor := "#40bf40"),
+      stop(offset := "100%", stopColor := "#609f60")
+    )
+  }
+
+}
+
+trait  RuleGraphWithForces extends BindableView{
 
   type Node = KappaNode
 
   type Edge = KappaEdge
 
-  val agents: Rx[Set[Agent]] = Rx{
-    unchanged() ++ removed() ++ added() ++ updated()
-  }
-
+  def visualSettings: RulesVisualSettings
 
   implicit protected def createAgentNodeView(agent: AgentNode): KappaAgentView = {
-    new KappaAgentView(agent.agent.name, visualSettings.agent.font, visualSettings.agent.padding, visualSettings.canvas)
+    val gradient = agent.status match {
+      case Change.Removed => Gradients.redGradient(KappaAgentView.gradientName)
+      case Change.Added => Gradients.greenGradient(KappaAgentView.gradientName)
+      case Change.Unchanged => Gradients.blueGradient(KappaAgentView.gradientName)
+      case Change.Updated => Gradients.blueGradient(KappaAgentView.gradientName)
+    }
+    new KappaAgentView(agent.agent.name, visualSettings.agent.font, visualSettings.agent.padding, gradient, visualSettings.canvas)
   }
 
   implicit protected def createSiteNodeView(site: SiteNode): KappaSiteView = {
-    new KappaSiteView(site.site.name, visualSettings.sites.font, visualSettings.sites.padding, visualSettings.canvas)
+    val gradient = site.status match {
+      case Change.Removed => Gradients.redGradient(KappaAgentView.gradientName)
+      case Change.Added => Gradients.greenGradient(KappaAgentView.gradientName)
+      case Change.Unchanged => Gradients.blueGradient(KappaAgentView.gradientName)
+      case Change.Updated => Gradients.blueGradient(KappaAgentView.gradientName)
+    }
+    new KappaSiteView(site.site.name, visualSettings.sites.font, visualSettings.sites.padding, gradient, visualSettings.canvas)
   }
 
   implicit protected def createStateNodeView(state: StateNode): KappaStateView = {
@@ -82,13 +120,6 @@ trait RulesGraphView extends BindableView {
   implicit protected def createLinkView(edge: KappaLinkEdge): KappaLinkView = {
     new KappaLinkView(edge.link.label, visualSettings.link.font, visualSettings.link.padding, visualSettings.canvas)
   }
-
-  //protected val gravityForce = new Gravity[Node, Edge](ForceLayoutParams.default2D.attractionMult / 4, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
-  protected val repulsionForce: Repulsion[Node, Edge] = new Repulsion[Node, Edge](ForceLayoutParams.default2D.repulsionMult)(compareRepulsion)
-  protected val springForce: SpringForce[Node, Edge] = new SpringForce[Node, Edge](ForceLayoutParams.default2D.springMult)(computeSpring)
-  protected val borderForce: BorderForce[Node, Edge] = new BorderForce[Node, Edge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
-
-  protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (massByNode(node1), massByNode(node2))
 
   lazy val minSpring = 100
 
@@ -105,12 +136,44 @@ trait RulesGraphView extends BindableView {
     case (from: KappaNode, to: KappaNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
   }
 
-  protected val forces: Vector[Force[ Node, Edge]] = Vector(
+  protected lazy val forces: Vector[Force[ Node, Edge]] = Vector(
     repulsionForce,
     springForce
     //gravityForce
     //,borderForce
   )
+  //protected val gravityForce = new Gravity[Node, Edge](ForceLayoutParams.default2D.attractionMult / 4, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
+  protected lazy val repulsionForce: Repulsion[Node, Edge] = new Repulsion[Node, Edge](ForceLayoutParams.default2D.repulsionMult)(compareRepulsion)
+  protected lazy val springForce: SpringForce[Node, Edge] = new SpringForce[Node, Edge](ForceLayoutParams.default2D.springMult)(computeSpring)
+  protected lazy val borderForce: BorderForce[Node, Edge] = new BorderForce[Node, Edge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
+
+  protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (massByNode(node1), massByNode(node2))
+
+
+  lazy val iterationsPerFrame = Var(5)
+  lazy val firstFrameIterations = Var(50)
+
+  def layouts: Var[Vector[GraphLayout]]
+}
+/*
+
+trait RulesGraphView extends BindableView with RuleGraphWithForces {
+
+  def unchanged: Rx[Set[Agent]]
+  def removed: Rx[Set[Agent]]
+  def added: Rx[Set[Agent]]
+  def updated: Rx[Set[Agent]]
+
+
+  def width: Rx[Double]
+
+  def height: Rx[Double]
+
+  def container: HTMLElement
+
+  val agents: Rx[Set[Agent]] = Rx{
+    unchanged() ++ removed() ++ added() ++ updated()
+  }
 
   val agentNodes: Var[Set[AgentNode]] = Var(Set.empty[AgentNode])
 
@@ -136,10 +199,7 @@ trait RulesGraphView extends BindableView {
 
   val edges = Var(Vector.empty[Edge])
 
-  lazy val layouts = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
-
-  val iterationsPerFrame = Var(5)
-  val firstFrameIterations = Var(50)
+  lazy val layouts: Var[Vector[GraphLayout]] = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
 
   def viz: Visualizer
 
@@ -240,3 +300,4 @@ trait RulesGraphView extends BindableView {
     viz.render()
   }
 }
+*/

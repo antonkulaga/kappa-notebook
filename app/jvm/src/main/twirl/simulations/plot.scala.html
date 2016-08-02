@@ -1,33 +1,22 @@
 @()
-<section class="ui attached segment chart smallpage tab " data-view="Plot" data-class-active-if="active">
-  <table class="ui table">
-    <tr>
-      <td rowspan="2">
-        <svg class="plot" xmlns:svg="http://www.w3.org/2000/svg" width="100%" data-bind-viewBox="viewBox" preserveAspectRatio = "xMinYMin meet">
-          <text class="title" data-bind-y="paddingY" font-size="18pt" data-bind-x="halfWidth" data-bind="title"></text>
-          <svg class="lines" data-bind-x="left" data-bind-y="top">
-            <svg data-template="true">
-              <path
-              data-bind-d="path"
-              data-bind-stroke="strokeColor"
-              data-bind-stroke-opacity="strokeOpacity"
-              data-bind-stroke-width="strokeWidth"
-              data-up-bind-fill="fill"
-              ></path>
-            </svg>
-          </svg>
-          @org.denigma.controls.charts.html.scaleX()
-          @org.denigma.controls.charts.html.scaleY()
-        </svg>
-        </td>
-      <td class="collapsing">
-        @legend()
-      </td>
-    </tr>
-    <tr>
-      <td class="collapsing">
-        <button class="ui small button" data-event-click="savePlot">Save plot</button>
-      </td>
-    </tr>
-  </table>
+<section class="ui attached segment chart subpage tab " data-view="Plot" data-class-active-if="active">
+  <svg class="plot" xmlns:svg="http://www.w3.org/2000/svg" width="100%" data-bind-viewBox="viewBox" preserveAspectRatio = "xMinYMin meet">
+    <text class="title" data-bind-y="paddingY" font-size="18pt" data-bind-x="halfWidth" data-bind="title"></text>
+    <svg class="lines" data-bind-x="left" data-bind-y="top">
+      <svg data-template="true">
+        <path
+        data-bind-d="path"
+        data-bind-stroke="strokeColor"
+        data-bind-stroke-opacity="strokeOpacity"
+        data-bind-stroke-width="strokeWidth"
+        data-up-bind-fill="fill"
+        ></path>
+      </svg>
+    </svg>
+    @org.denigma.controls.charts.html.scaleX()
+    @org.denigma.controls.charts.html.scaleY()
+    </svg>
+  @legend()
+  <button class="ui small button" data-event-click="savePlot">Save plot</button>
+
 </section>

@@ -12,6 +12,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import com.softwaremill.quicklens._
 import org.denigma.kappa.notebook.extensions._
+import rx.Rx.Dynamic
 
 
 class RunnerView(val elem: Element,
@@ -23,7 +24,11 @@ class RunnerView(val elem: Element,
 {
   self=>
 
-  val active = tab.map(v=>v=="runner")
+  val active: Dynamic[Boolean] = tab.map(v=>v=="runner")
+
+  tab.onChange{
+    case value => println("TAB CHANGED TO "+value)
+  }
 
   def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
 
@@ -31,10 +36,9 @@ class RunnerView(val elem: Element,
 
   val events: Var[Int] = Var(100000)
 
-
   var time: Var[Double] = Var(0.0)
 
-  val points: Var[Int] = Var(1000)
+  val points: Var[Int] = Var(250)
 
   val implicitSignature = Var(true)
 

@@ -17,6 +17,11 @@ trait TabGridsStyles extends MainStyles {
     width(100 %%)
     )
 
+  "page-container" -(
+    padding(0 px),
+    overflowX.visible
+    )
+
   ".page" -(
     overflowY.hidden important,
     overflowX.hidden important,
@@ -60,6 +65,17 @@ trait TabGridsStyles extends MainStyles {
 
   "#ProjectsPanel" -(
     minWidth(345 px) important
+    )
+
+
+  ".paper.grid" -(
+    maxHeight(78 vh) important,
+    overflowY.auto important
+    )
+
+  ".ui.segment.paper" -(
+    overflowY.auto,
+    maxHeight(62 vh)
     )
 
 }

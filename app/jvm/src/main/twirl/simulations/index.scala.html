@@ -1,5 +1,5 @@
 @()
-<section class="ui three wide page tab padded column segment grid" data-view="Simulations" id="Simulations">
+<section class="ui two wide page tab padded column segment grid" data-view="Simulations" id="Simulations">
     <div class="equal width row">
         <div class="column">
             @commons.html.header("Simulations")
@@ -13,8 +13,8 @@
                     <a class="item" data-set-tab-on-click="runner" data-class-active-if="runner.active">Create</a>
                 </div>
             </div>
-            @simulation()
             @run()
+            @simulation()
         </div>
     </div>
 </section>

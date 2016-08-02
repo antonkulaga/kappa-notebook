@@ -8,40 +8,40 @@ import org.scalajs.dom.svg.{LinearGradient, SVG}
 
 import scalatags.JsDom.TypedTag
 
-class KappaAgentView(val label: String, val fontSize: Double, val padding: Double, val s: SVG) extends KappaView
-{
-
-  override def gradientName: String = "GradAgent"
-
-  protected lazy val defaultGradient: TypedTag[LinearGradient] =
-    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
-      stop(offset := "0%", stopColor := "skyblue"),
-      stop(offset := "50%", stopColor := "deepskyblue"),
-      stop(offset := "100%", stopColor := "SteelBlue")
-    )
-
-  lazy val gradient = Var(defaultGradient)
+object KappaAgentView {
+  def gradientName: String = "GradAgent"
 }
 
-class KappaSiteView(val label: String, val fontSize: Double, val padding: Double, val s: SVG) extends  KappaView
+class KappaAgentView(val label: String, val fontSize: Double, val padding: Double, val nodeGradient: TypedTag[LinearGradient], val s: SVG) extends KappaView
 {
 
-  override def gradientName: String =  "GradSide"
+  override def gradientName: String = KappaAgentView.gradientName
 
-  protected lazy val defaultGradient =
-    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
-      stop(offset := "0%", stopColor := "white"),
-      stop(offset := "100%", stopColor := "deepskyblue")
-    )
+  lazy val gradient = Var(nodeGradient)
+}
 
-  lazy val gradient = Var(defaultGradient)
+object KappaSiteView {
+  def gradientName = "GradSide"
+}
 
+class KappaSiteView(val label: String, val fontSize: Double, val padding: Double, val siteGradient: TypedTag[LinearGradient], val s: SVG) extends  KappaView
+{
+
+  override def gradientName: String =  KappaSiteView.gradientName
+
+
+  lazy val gradient = Var(siteGradient)
+
+}
+
+object KappaStateView {
+  def gradientName = "GradModif"
 }
 
 class KappaStateView(val label: String, val fontSize: Double, val padding: Double, val s: SVG) extends KappaView
 {
 
-  lazy val gradientName = "GradModif"
+  lazy val gradientName = KappaStateView.gradientName
 
   protected lazy val defaultGradient =
     linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,

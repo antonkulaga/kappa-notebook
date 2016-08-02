@@ -26,7 +26,7 @@ class KappaLinkEdge(label: String, val from: SiteNode, val to: SiteNode, val lin
   extends KappaEdge
 {
 
-  lazy val link = KappaModel.Link(from.parent.agent, to.parent.agent, from.site, to.site, label)
+  lazy val link = KappaModel.Link(from.parent, to.parent, from.site, to.site, label)
 
   val view = fun(this)
 

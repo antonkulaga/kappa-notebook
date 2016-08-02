@@ -115,6 +115,8 @@ object WebSimMessages {
     //println("LEGEND IS: "+ legend.mkString(" | "))
     //println("kappa plot: "+legend.toList)
     lazy val timePoints: List[Double] = observables.foldLeft(List.empty[Double])((acc, o)=> o.time::acc).reverse
+
+    //def toCSV =
   }
 
   object FluxMap {

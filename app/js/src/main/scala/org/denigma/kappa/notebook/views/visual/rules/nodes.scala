@@ -2,40 +2,55 @@ package org.denigma.kappa.notebook.views.visual.rules
 
 
 import org.denigma.kappa.model.KappaModel
+import org.denigma.kappa.model.KappaModel.{Agent, Site}
+import org.denigma.kappa.notebook.graph.Change.Change
 import org.denigma.kappa.notebook.graph.layouts.LayoutInfo
-import org.denigma.kappa.notebook.graph.{KappaNode, KappaOrganizedNode}
+import org.denigma.kappa.notebook.graph._
 
-class SiteNode(val parent: AgentNode, val site: KappaModel.Site)(implicit val fun: SiteNode => KappaSiteView, val stateFun: StateNode => KappaStateView) extends KappaOrganizedNode{
 
-  type ChildNode = StateNode
-
-  val view = fun(this)
-
-  lazy val layoutInfo: LayoutInfo = new LayoutInfo(0.6)
-
-  lazy val children: List[ChildNode] = site.states.map(st=> new StateNode(this, st)(stateFun)).toList
+object StateNode {
+  def apply(parent: Site, state: KappaModel.State, status: Change)(implicit makeStateView: StateNode => KappaStateView) = new StateNode(parent, state, status)
 }
-
-class StateNode(val parent: SiteNode, val state: KappaModel.State)(implicit val fun: StateNode => KappaStateView) extends KappaNode {
+class StateNode(val parent: Site, val state: KappaModel.State, val status: Change)
+               (implicit val fun: StateNode => KappaStateView)
+  extends ChangeableNode with MarkableNode
+{
   val view = fun(this)
 
   lazy val layoutInfo: LayoutInfo = new LayoutInfo(0.3)
 }
 
 
-//val data: Agent, val fontSize: Double, val padding: Double, val s: SVG
-class AgentNode(val agent: KappaModel.Agent)
-               (implicit
-                val fun: AgentNode => KappaAgentView,
-                val siteFun: SiteNode => KappaSiteView,
-                val stateFun: StateNode => KappaStateView)
-  extends KappaOrganizedNode
+object SiteNode {
+  def apply(parent: Agent, site: Site, status: Change)(
+      implicit makeSiteNodeView: SiteNode => KappaSiteView,
+      makeStateNodeView: StateNode => KappaStateView,
+      getLineParams: (KappaNode, KappaNode) => LineParams
+  )  = {
+    val sts = site.states.map(s => new StateNode(site,s, status)(makeStateNodeView))
+    val children = OrganizedChangeableNode.emptyChangeMap[StateNode].updated(status, sts)
+    new SiteNode(parent, site, children, status)(makeSiteNodeView, getLineParams)
+  }
+}
+
+class SiteNode(val parent: KappaModel.Agent, val site: KappaModel.Site, val children: Map[Change.Change,Set[StateNode]], val status: Change)
+              (implicit val fun: SiteNode => KappaSiteView, getLineParams: (KappaNode, KappaNode) => LineParams)
+  extends OrganizedChangeableNode with MarkableNode
 {
-  type ChildNode = SiteNode
 
-  lazy val layoutInfo: LayoutInfo = new LayoutInfo(1)
+  type ChildNode = StateNode
+  type ChildEdge = KappaStateEdge
 
-  val view = fun(this)
+  lazy val view = fun(this)
+
+  lazy val layoutInfo: LayoutInfo = new LayoutInfo(0.6)
+
+  lazy val childEdges: Map[Change, Set[KappaStateEdge]] = children.mapValues{
+    case st =>  st.map{ case ch=>new KappaStateEdge(this, ch, getLineParams(this, ch))} }
+}
+
+trait MarkableNode {
+  def view: KappaView
 
   def markChanged() = {
     view.labelStrokeColor() = "violet"
@@ -53,25 +68,36 @@ class AgentNode(val agent: KappaModel.Agent)
     view.labelStrokeColor() = "blue"
   }
 
-  val children: List[SiteNode] = agent.sites.map(si=>new SiteNode(this, si)(siteFun, stateFun))
-
-  /*
-  def updateSideStroke(side: Side, color: String) = {
-    children.collectFirst{
-      case child if child.data ==side => child.labelStroke() = color
-    }
+}
+object AgentNode{
+  //very ugly code, TODO: fix it
+  def apply(agent: KappaModel.Agent, status: Change)(implicit
+                                                     makeAgentNodeView: AgentNode => KappaAgentView,
+                                                     makeSiteNodeView: SiteNode => KappaSiteView,
+                                                     makeStateNodeView: StateNode => KappaStateView,
+                                                     getLineParams: (KappaNode, KappaNode) => LineParams) ={
+    val sts = agent.sites.map(s => SiteNode(agent, s, status)(makeSiteNodeView, makeStateNodeView, getLineParams))
+    val children = OrganizedChangeableNode.emptyChangeMap[SiteNode].updated(status, sts)
+    new AgentNode(agent,children, status)(makeAgentNodeView, getLineParams)
   }
+}
 
-  def sidePosition(side: Side) = {
-    val me = view.position
-    children.collectFirst{
-      case child if child.data == side => child.view.position
-    }.map{
-      case pos => new Vector3(me.x + pos.x, me.y + pos.y, me.z + pos.z)
-    }.getOrElse{
-      dom.console.error(s"cannot find  side($side)")
-      me
-    }
+//val data: Agent, val fontSize: Double, val padding: Double, val s: SVG
+class AgentNode(val agent: KappaModel.Agent, val children: Map[Change.Change, Set[SiteNode]], val status: Change)
+               (implicit val fun: AgentNode => KappaAgentView, getLineParams: (KappaNode, KappaNode) => LineParams)
+  extends OrganizedChangeableNode with MarkableNode
+{
+  type ChildNode = SiteNode
+  type ChildEdge = KappaSiteEdge
+
+  lazy val layoutInfo: LayoutInfo = new LayoutInfo(1)
+
+  lazy val view: KappaAgentView = fun(this)
+
+  def childEdges: Map[Change.Change, Set[ChildEdge]] = children.mapValues{
+    case set => set.map{ case s =>
+          val lp =  getLineParams(this, s)
+          new KappaSiteEdge(this, s, lp)
+      }
   }
-  */
 }

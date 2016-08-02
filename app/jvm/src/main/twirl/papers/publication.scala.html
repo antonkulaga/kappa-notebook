@@ -1,19 +1,9 @@
 @()
-<!--
-  <div class="ui inverted segment">
-    <button class="ui inverted button" data-showif="hasPreviousPage" data-event-click="previousPage">Previous</button>
-    <input class="ui input" data-bind-value="currentPageNum">
-    <button class="ui inverted red button" data-showif="hasNextPage" data-event-click="nextPage">Next</button>
-    <button class="ui inverted blue button" data-showif="hasSelection"  data-event-click="addNugget">Insert nugget</button>
-  </div>
-  <section class="ui segment paper">
-    <canvas class="canvas" style="border:1px solid black;"></canvas>
-    <div class="textLayer"></div>
-  </section>
--->
-<div class="ui equal with one wide grid">
-    <a  data-template="true" class="page-container ui column" data-bind-name="name" data-bind-title="title">
-      <canvas class="page-canvas"></canvas>
-      <div class="textLayer"></div>
-    </a>
-</div>
+<section data-template="true" class="ui bottom attached segment tab page paper grid" data-class-active-if="active">
+    <div data-template="true" class="page-container ui equal width row" >
+        <a data-bind-name="name" data-bind-title="title" class="column">
+            <canvas class="page-canvas"></canvas>
+            <div class="textLayer"></div>
+        </a>
+    </div>
+</section>

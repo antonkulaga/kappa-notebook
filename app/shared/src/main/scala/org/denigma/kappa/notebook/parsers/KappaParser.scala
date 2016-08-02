@@ -50,7 +50,7 @@ class KappaParser extends CommentLinksParser
     .map{ case (n, states, links) => Site(n, states.toSet, links.toSet) }
 
   val agent: P[Agent] = P(name ~ "(" ~ side.? ~ (optSpaces ~ "," ~ optSpaces ~ side).rep ~ ")").map{
-    case (n, sideOpt, sides2) => Agent(n,  sideOpt.map(List(_)).getOrElse(List.empty[Site]) ::: sides2.toList)
+    case (n, sideOpt, sides2) => Agent(n,  sideOpt.map(Set(_)).getOrElse(sides2.toSet))
   }
 
   val agentDecl: P[Agent] = P(optSpaces ~ "%agent:" ~ optSpaces ~ agent)

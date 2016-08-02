@@ -1,5 +1,5 @@
 @()
-<section class="ui bottom attached tab segment" data-view="runner" id="runner" data-class-active-if="active">
+<section class="ui bottom attached tab subpage grid segment" data-view="runner" id="runner" data-class-active-if="active">
 
   <table class="ui celled padded yellow table" >
     <caption>Run parameters</caption>
@@ -8,13 +8,18 @@
     <td>Model name</td>
     <td><input class="ui small input" data-bind="fileName"></td>
     -->
-      <td> <button class="ui button" data-event-click="run">Run model</button></td>
       <td>Events</td>
       <td><input class="ui small number input" data-bind="events"></td>
+     </tr>
+
+    <tr>
       <td>Max. time</td>
       <td><input class="ui small number input" data-bind="time"></td>
+    </tr>
+    <tr>
       <td>Points</td>
       <td><input class="ui small number input" data-bind="points"></td>
     </tr>
   </table>
+  <button class="ui button" data-event-click="run">Run model</button>
 </section>

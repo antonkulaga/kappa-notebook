@@ -9,8 +9,11 @@ import org.denigma.kappa.notebook.parsers.KappaParser
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
+
 import scala.collection.immutable._
 import org.denigma.binding.extensions._
+
+import scala.List
 import scala.concurrent.duration._
 
 /**
@@ -95,7 +98,7 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       }
     }
   }
-  val sameAgents = Rx{
+  val sameAgents: Rx[List[(Agent, Agent)]] = Rx{
     val lp = leftPattern()
     val rp = rightPattern()
     lp.sameAgents(rp)
@@ -105,13 +108,28 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
     sameAgents().collect{ case (one, two) if one ==two => one}.toSet
   }
 
+  val updatedAgents: Rx[Set[(Agent, Agent)]] = Rx{
+    sameAgents().collect{ case (one, two) if one != two => one -> two}.toSet
+  }
+
+
   val modifiedAgents: Rx[(List[Agent], List[Agent])] = sameAgents.map{
       case ags =>
         val unzip: (List[Agent], List[Agent]) = ags.filterNot{ case (one, two)=> one==two}.unzip{case (a, b)=> (a, b)}
         unzip
   }
 
+  val removedAgents: Rx[Set[Agent]] = Rx{
+    val sm = sameAgents()
+    leftPattern().agents.filterNot(p => sm.contains(p)).toSet
+  }
 
+  val addedAgents: Rx[Set[Agent]] = Rx{
+    val sm = sameAgents()
+    rightPattern().agents.filterNot(p => sm.contains(p)).toSet
+  }
+
+  /*
   val leftUnchanged = Rx{
     println(s"IS RULE = ${isRule.now}")
     if(isRule()) {
@@ -126,7 +144,6 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val leftModified = modifiedAgents.map(_._1.toSet)
   val rightModified = modifiedAgents.map(_._2.toSet)
-
   val removed: Rx[Set[Agent]] = Rx{
     val unchanged = leftUnchanged()
     val mod = leftModified()
@@ -148,56 +165,5 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
     val rp = rightPattern()
     rp.agents.filterNot(same.contains).toSet
   }
-
-}
-/*
-class WatchPattern(s: SVG) {
-
-  val pattern = Var(Pattern.empty)
-
-  val agents = pattern.map(p=>p.agents)
-
-  val links: Rx[SortedSet[Link]] = pattern.map(p => SortedSet(p.links.values.toSeq:_*))
-
-  import org.denigma.kappa.notebook.extensions._
-
-  protected def agent2node(agent: KappaModel.Agent) = { new AgentNode(agent, s)  }
-
-  val layouts: Var[Vector[GraphLayout]] = Var{Vector.empty}
-
-
-  val agentMap: Rx[Map[Agent, AgentNode]] = agents.map{
-    case ags => ags.map(a => a -> agent2node(a)).toMap
-  }
-
-  val nodes: Rx[Vector[AgentNode]] = agentMap.map(mp => mp.values.toVector)//agents.toSyncVector(agent2node)((a, n)=> n.data == a)
-
-  /*
-  val edges: Rx[Vector[KappaEdge]] = Rx{
-    val mp = agentMap()
-    val ls = links()
-    val result = (for{
-      link <- ls
-      from <- mp.get(link.fromAgent)
-      to <- mp.get(link.toAgent)
-    }
-      yield {
-        //val sprite = painter.drawLink(link)
-        //val sp = new HtmlSprite(sprite.render)
-        new KappaEdge(link, from, to, s = this.s)
-      }).toVector
-    //println("EDGES NUMBER = "+result.length)
-    result
-  }
   */
-
-  def refresh(value: Pattern, forces: Vector[Force[AgentNode, KappaEdge]] ): Unit =  if(value != pattern.now) {
-    layouts() = Vector.empty
-    pattern() = value
-    //layouts() = Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces))
-  }
-
-  def clean() = refresh(Pattern.empty, Vector.empty)
-
 }
-*/

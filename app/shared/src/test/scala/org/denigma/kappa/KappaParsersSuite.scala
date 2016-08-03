@@ -26,13 +26,13 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       }
 
       inside(parser.agent.parse("A(x,c~u!1)")) {
-        case res@Parsed.Success(v, index: Int) if v == Agent("A", List(Site("x", Set(), Set()), Site("c", Set(State("u")), Set("1")))) =>
+        case res@Parsed.Success(v, index: Int) if v == Agent("A", Set(Site("x", Set(), Set()), Site("c", Set(State("u")), Set("1")))) =>
       }
 
       val A = "%agent: A(x,c) # Declaration of agent A"
 
       inside(parser.agentDecl.parse(A)) {
-        case res@Parsed.Success(v, index: Int) if v == KappaModel.Agent("A", List(Site("x"), Site("c"))) =>
+        case res@Parsed.Success(v, index: Int) if v == KappaModel.Agent("A", Set(Site("x"), Site("c"))) =>
       }
 
     }
@@ -44,17 +44,28 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       inside(parser.tokenDeclaration.parse(wrong)) {
         case failure: Parsed.Failure =>
       }
-
-
       val right = "%token: atp"
       inside(parser.tokenDeclaration.parse(right)) {
         case Parsed.Success("atp", index) =>
 
       }
-
     }
 
-    "parse rules" in {
+    "parse one sided rule" in {
+      import KappaModel._
+      val parser = new KappaParser
+      val wrong = "'a.b'qwe A(x),B(x) -> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B "
+      inside(parser.rule.parse(wrong)) {
+        case failure: Parsed.Failure =>
+      }
+      val right = "'a.b' A(x),B(x) -> A(x!1),B(x!1) @ 'on_rate'"
+      inside(parser.rule.parse(right)) {
+        case res@Parsed.Success(v, index: Int) =>
+      }
+
+
+    }
+    "parse two sided rules" in {
       import KappaModel._
       val parser = new KappaParser
       val wrong = "'a.b'qwe A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B "
@@ -71,15 +82,45 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
         case res@Parsed.Success(v, index: Int) if v.name == "a binds to b"
           && v.left.agents.length == 3
           && v.right.agents.length == 3
-          && v.right.agents.tail.head == Agent("B", List(Site("x", Set(), Set("1"))))
+          && v.right.agents.tail.head == Agent("B", Set(Site("x", Set(), Set("1"))))
         =>
       }
       val withoutName = "A(x),B(x),C(x!_) <-> A(x!1),B(x!1),C(x!_) @ 'on_rate','off_rate'"
-      inside(parser.rule.parse(withLink)) {
-        case res@Parsed.Success(v, index: Int) if v.name == "a binds to b"
+      inside(parser.rule.parse(withoutName)) {
+        case res@Parsed.Success(v, index: Int) if v.name.contains("<->")
           && v.left.agents.length == 3
           && v.right.agents.length == 3
-          && v.right.agents.tail.head == Agent("B", List(Site("x", Set(), Set("1"))))
+          && v.right.agents.tail.head == Agent("B", Set(Site("x", Set(), Set("1"))))
+        =>
+      }
+
+    }
+
+    "parse creation and degradation" in {
+      import KappaModel._
+      val parser = new KappaParser
+      val degradation = "'tetR.degradation' TetR(dna) ->  @ 'degrad1'"
+      inside(parser.rule.parse(degradation)) {
+        case res@Parsed.Success(v, index: Int) if v.name == "tetR.degradation"
+          && v.left.agents.length == 1
+          && v.right.agents.isEmpty
+        =>
+      }
+      val creation = "'synthesis' -> LacI() @ 'synth'"
+      inside(parser.rule.parse(creation)) {
+        case res@Parsed.Success(v, index: Int) if v.name == "synthesis"
+          && v.left.agents.isEmpty
+          && v.right.agents.length == 1
+        =>
+      }
+    }
+
+    "observable parsing" in {
+      val ob = "%obs: 'TetR' TetR()"
+      val parser = new KappaParser
+      inside(parser.observable.parse(ob)) {
+        case res@Parsed.Success(v, index: Int) if v.name == "TetR"
+          && v.pattern.agents.length == 1
         =>
       }
     }

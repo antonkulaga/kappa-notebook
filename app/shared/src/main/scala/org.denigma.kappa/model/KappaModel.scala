@@ -126,6 +126,8 @@ object KappaModel {
     def hasDuplicates = links.size > linkMap.size
   }
 
+  case class ObservablePattern(name: String, pattern: Pattern) extends KappaNamedElement
+
 }
 
 

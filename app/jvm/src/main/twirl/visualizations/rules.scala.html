@@ -45,5 +45,29 @@
         <b>Current line: </b> <small data-bind="currentLine"></small>
       </div>
     </div>
+        <div class="equal width row" data-show-if="isRule">
+            <div class="ui form">
+                <div class="inline fields">
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="ruleside">
+                            <label>Input (left rule side)</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="ruleside">
+                            <label>Output (right rule side)</label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="ruleside" checked="checked">
+                            <label>Both</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>

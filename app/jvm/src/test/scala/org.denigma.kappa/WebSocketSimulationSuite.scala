@@ -4,12 +4,11 @@ import java.io.{File => JFile}
 import java.nio.ByteBuffer
 
 import akka.http.scaladsl.model.ws.BinaryMessage
-import akka.http.scaladsl.model.ws.BinaryMessage.Strict
 import akka.http.scaladsl.testkit.WSProbe
-import akka.util.ByteString
 import better.files.File
 import boopickle.DefaultBasic._
 import net.ceedubs.ficus.Ficus._
+import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages._
 import org.denigma.kappa.messages.WebSimMessages.RunModel
@@ -19,9 +18,6 @@ import org.denigma.kappa.notebook.communication.WebSocketManager
 import org.denigma.kappa.notebook.pages.WebSockets
 
 import scala.collection.immutable._
-import net.ceedubs.ficus.Ficus._
-import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-import scala.util.Success
 
 class WebSocketSimulationSuite extends BasicWebSocketSuite {
 

@@ -6,6 +6,7 @@ import org.denigma.kappa.model.KappaModel.{Agent, Site}
 import org.denigma.kappa.notebook.graph.Change.Change
 import org.denigma.kappa.notebook.graph.layouts.LayoutInfo
 import org.denigma.kappa.notebook.graph._
+import org.scalajs.dom
 
 
 object StateNode {

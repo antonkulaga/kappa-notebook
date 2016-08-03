@@ -31,7 +31,6 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val rightPattern: Var[Pattern] = Var(Pattern.empty)
 
-
   val direction: Var[KappaModel.Direction] = Var(KappaModel.Left2Right)
 
   //protected val graivityForce = new Gravity(ForceLayoutParams.default2D.attractionMult, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
@@ -98,35 +97,42 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
       }
     }
   }
+
   val sameAgents: Rx[List[(Agent, Agent)]] = Rx{
     val lp = leftPattern()
-    val rp = rightPattern()
-    lp.sameAgents(rp)
+    if(isRule()) {
+      val rp = rightPattern()
+      lp.sameAgents(rp)
+    }
+    else lp.agents.zip(lp.agents)
   }
 
   val unchangedAgents: Rx[Set[Agent]] = Rx{
-    sameAgents().collect{ case (one, two) if one ==two => one}.toSet
+      sameAgents().collect{ case (one, two) if one ==two => one}.toSet
   }
 
   val updatedAgents: Rx[Set[(Agent, Agent)]] = Rx{
     sameAgents().collect{ case (one, two) if one != two => one -> two}.toSet
   }
 
-
   val modifiedAgents: Rx[(List[Agent], List[Agent])] = sameAgents.map{
       case ags =>
         val unzip: (List[Agent], List[Agent]) = ags.filterNot{ case (one, two)=> one==two}.unzip{case (a, b)=> (a, b)}
         unzip
   }
+  val leftModified = modifiedAgents.map(_._1.toSet)
+  val rightModified = modifiedAgents.map(_._2.toSet)
 
   val removedAgents: Rx[Set[Agent]] = Rx{
-    val sm = sameAgents()
-    leftPattern().agents.filterNot(p => sm.contains(p)).toSet
+    val l = leftModified()
+    val u = unchangedAgents()
+    leftPattern().agents.filterNot(p => l.contains(p) || u.contains(p) ).toSet
   }
 
   val addedAgents: Rx[Set[Agent]] = Rx{
-    val sm = sameAgents()
-    rightPattern().agents.filterNot(p => sm.contains(p)).toSet
+    val r = rightModified()
+    val u = unchangedAgents()
+    rightPattern().agents.filterNot(p => r.contains(p) || u.contains(p) ).toSet
   }
 
   /*
@@ -142,8 +148,6 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
   }
 
 
-  val leftModified = modifiedAgents.map(_._1.toSet)
-  val rightModified = modifiedAgents.map(_._2.toSet)
   val removed: Rx[Set[Agent]] = Rx{
     val unchanged = leftUnchanged()
     val mod = leftModified()

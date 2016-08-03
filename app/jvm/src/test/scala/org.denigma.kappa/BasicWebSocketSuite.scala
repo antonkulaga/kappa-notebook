@@ -34,8 +34,8 @@ abstract class BasicWebSocketSuite extends BasicKappaSuite  {
         Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer) match {
           case l =>
             if(partial.isDefinedAt(l)) true else {
-              println("checkProjects failed with message:")
-              pprint.tokenize(l, 256).take(10).foreach(str => println(str.substring(0, Math.min(str.length, 1000))))
+              log.error("checkProjects failed with message:")
+              pprint.tokenize(l, 256).take(10).foreach(str => println(str.substring(0, Math.min(str.length, 250))))
               false
             }
         }

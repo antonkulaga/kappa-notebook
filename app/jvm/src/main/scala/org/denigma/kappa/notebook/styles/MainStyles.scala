@@ -47,8 +47,8 @@ class MainStyles extends Standalone with MediaQueries
     onTiny   -width(430 vw),
     onLittle -width(400 vw),
     onSmall  -width(380 vw),
-    onMedium -width(350 vw),
-    onLarge  -width(320 vw)
+    onMedium -width(340 vw),
+    onLarge  -width(300 vw)
     )
 
   "#main" -(

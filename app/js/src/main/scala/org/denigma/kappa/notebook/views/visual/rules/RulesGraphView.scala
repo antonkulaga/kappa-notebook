@@ -70,7 +70,7 @@ object Gradients {
   def redGradient(gradientName: String) = {
     linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
       stop(offset := "0%", stopColor := "#ff9999"),
-      stop(offset := "50%", stopColor := "deepskyblue"),
+      stop(offset := "50%", stopColor := "#ff6666"),
       stop(offset := "100%", stopColor := "#ff6666")
     )
   }
@@ -83,6 +83,12 @@ object Gradients {
     )
   }
 
+  def gradientByStatus(status: Change.Change, gradientName: String) = status match {
+    case Change.Removed => Gradients.redGradient(KappaAgentView.gradientName)
+    case Change.Added => Gradients.greenGradient(KappaAgentView.gradientName)
+    case Change.Unchanged => Gradients.blueGradient(KappaAgentView.gradientName)
+    case Change.Updated => Gradients.blueGradient(KappaAgentView.gradientName)
+  }
 }
 
 trait  RuleGraphWithForces extends BindableView{
@@ -94,22 +100,12 @@ trait  RuleGraphWithForces extends BindableView{
   def visualSettings: RulesVisualSettings
 
   implicit protected def createAgentNodeView(agent: AgentNode): KappaAgentView = {
-    val gradient = agent.status match {
-      case Change.Removed => Gradients.redGradient(KappaAgentView.gradientName)
-      case Change.Added => Gradients.greenGradient(KappaAgentView.gradientName)
-      case Change.Unchanged => Gradients.blueGradient(KappaAgentView.gradientName)
-      case Change.Updated => Gradients.blueGradient(KappaAgentView.gradientName)
-    }
+    val gradient = Gradients.gradientByStatus(agent.status, KappaAgentView.gradientName)
     new KappaAgentView(agent.agent.name, visualSettings.agent.font, visualSettings.agent.padding, gradient, visualSettings.canvas)
   }
 
   implicit protected def createSiteNodeView(site: SiteNode): KappaSiteView = {
-    val gradient = site.status match {
-      case Change.Removed => Gradients.redGradient(KappaAgentView.gradientName)
-      case Change.Added => Gradients.greenGradient(KappaAgentView.gradientName)
-      case Change.Unchanged => Gradients.blueGradient(KappaAgentView.gradientName)
-      case Change.Updated => Gradients.blueGradient(KappaAgentView.gradientName)
-    }
+    val gradient = Gradients.gradientByStatus(site.status, KappaSiteView.gradientName)
     new KappaSiteView(site.site.name, visualSettings.sites.font, visualSettings.sites.padding, gradient, visualSettings.canvas)
   }
 
@@ -121,7 +117,7 @@ trait  RuleGraphWithForces extends BindableView{
     new KappaLinkView(edge.link.label, visualSettings.link.font, visualSettings.link.padding, visualSettings.canvas)
   }
 
-  lazy val minSpring = 100
+  lazy val minSpring = 90
 
   def massByNode(node: KappaNode): Double = node match {
     case n: AgentNode => 1.5

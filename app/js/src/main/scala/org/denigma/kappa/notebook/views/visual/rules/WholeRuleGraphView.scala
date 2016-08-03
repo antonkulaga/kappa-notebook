@@ -10,6 +10,7 @@ import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 
 import scala.{List, Vector}
 import scala.Predef.{Map, Set}
@@ -71,23 +72,24 @@ class WholeRuleGraphView(val elem: Element,
 
   val allAgentNodes: Var[Set[AgentNode]] = Var(Set.empty[AgentNode])
 
-  lazy val siteNodes = nodes.map(nds => nds.collect{case node: SiteNode => node})
+  lazy val siteNodes: Rx[Vector[SiteNode]] = nodes.map(nds => nds.collect{case node: SiteNode => node})
 
   val links: Rx[Map[String, Vector[SiteNode]]] = siteNodes.map{ case sNodes =>
     sNodes
       .flatMap(node =>  node.site.links.map(l=> (node , l)))
       .groupBy{case (site, link)=> link}
-      .mapValues(lst => lst.map{
-        case (key, value) => key })
+      .mapValues(lst => lst.map{ case (key, value) => key })
   }
 
-
+  lazy val merged = updated.map{
+    case up => up.map{  case (one, two) => mergeNodes(one, two) }
+  }
 
   val viz = new Visualizer(container,
     width,
     height,
     layouts,
-    900,
+    1000,
     iterationsPerFrame,
     firstFrameIterations
   )
@@ -125,8 +127,8 @@ class WholeRuleGraphView(val elem: Element,
         val states =  mergeSiteStates(left, one , two)
         new SiteNode(left, one, states, Change.Updated)
     }
-    val removed: Set[Site] = left.sites.filterNot(s=>sameNames.contains(s.name))
-    val added: Set[Site] = right.sites.filterNot(s=>sameNames.contains(s.name))
+    val removed: Set[Site] = left.sites.filterNot(s => sameNames.contains(s.name))
+    val added: Set[Site] = right.sites.filterNot(s => sameNames.contains(s.name))
     val addedNodes: Set[SiteNode] = added.map{ case a => SiteNode(left, a, Change.Added) }
     val removedNodes: Set[SiteNode] = removed.map{ case r => SiteNode(left, r, Change.Removed) }
     Map(
@@ -139,27 +141,33 @@ class WholeRuleGraphView(val elem: Element,
 
 
   def mergeSiteStates(parent: Agent, left: KappaModel.Site, right: KappaModel.Site): Map[Change.Change, Set[StateNode]] = {
-    val removed: Set[State] = left.states.diff(right.states)
-    val removedNodes: Set[StateNode] = removed.map(r => StateNode(left, r, Change.Removed))
+    val deleted: Set[State] = left.states.diff(right.states)
+    val deletedNodes: Set[StateNode] = deleted.map(r => StateNode(left, r, Change.Removed))
     val added = right.states.diff(left.states)
     val addedNodes: Set[StateNode] = added.map(a => StateNode(left, a, Change.Added))
     val unchanged: Set[State] = left.states.intersect(right.states)
     val unchangedNodes: Set[StateNode] = unchanged.map(u => StateNode(left, u, Change.Unchanged))
     Map(
-      (Change.Removed , removedNodes),
+      (Change.Removed , deletedNodes),
       (Change.Added , addedNodes),
       (Change.Unchanged , unchangedNodes),
       (Change.Updated , Set.empty[StateNode])
     )
   }
-
-
+  
   protected def onAgentUpdates(deleted: Set[Agent], added: Set[Agent], status: Change.Change) = {
+      dom.console.log(s"on added updates DELETED ${deleted} ADDED ${added} STATUS ${status}")
       val addedNodes = added.map(a => AgentNode(a, status))
-      allAgentNodes() = allAgentNodes.now.filterNot(n => deleted.contains(n.agent)) ++ addedNodes
+      allAgentNodes() = allAgentNodes.now.filterNot(n => deleted.contains(n.agent) && n.status == status) ++ addedNodes
+  }
+
+  protected def onMergedUpdates(deleted: Set[AgentNode], added: Set[AgentNode]) = {
+    dom.console.log("MERGE UPDATE, DELETE = "+deleted + "  ADDED = "+added)
+    allAgentNodes() = allAgentNodes.now.diff(deleted) ++ added
   }
 
   protected def getAllAgentNodes(node: AgentNode) = {
+    dom.console.log("children list ="+node.childrenList)
     val nds: List[KappaNode] = node :: node.childrenList ++ node.childrenList.flatMap(ch => ch.childrenList)
     nds.toSet
   }
@@ -169,15 +177,15 @@ class WholeRuleGraphView(val elem: Element,
     edges.toSet
   }
 
-  protected def onAgentNodesUpdate(removed: Set[AgentNode], added: Set[AgentNode]) = {
-    val toRemove = removed.flatMap{ r => getAllAgentNodes(r)}
-    dom.console.log("TO REMOVE COUNT " + toRemove)
+  protected def onAgentNodesUpdate(deleted: Set[AgentNode], added: Set[AgentNode]) = {
+    val toDelete: Set[Node] = deleted.flatMap{ r => getAllAgentNodes(r)}
+    dom.console.log("TO REMOVE COUNT " + toDelete)
     val toAdd = added.flatMap( a => getAllAgentNodes(a))
-    dom.console.log("TO ADD COUNT " + toRemove)
+    dom.console.log("TO ADD COUNT " + toAdd)
 
-    nodes() = nodes.now.filterNot(n => toRemove.contains(n)) ++ toAdd
+    nodes() = nodes.now.filterNot(n => toDelete.contains(n)) ++ toAdd
     val addedEdges = added.flatMap(a => getAllEdgesFrom(a))
-    edges() = edges.now.filterNot{ case e => toRemove.exists(a => a== e.from || a == e.to) } ++ addedEdges
+    edges() = edges.now.filterNot{ case e => toDelete.exists(a => a== e.from || a == e.to) } ++ addedEdges
   }
 
 
@@ -279,34 +287,25 @@ class WholeRuleGraphView(val elem: Element,
       case upd => onLinkChanged(upd.removed, upd.added, upd.updated)
     }
 
-    allAgentNodes.updates.foreach{ case upd =>  onAgentNodesUpdate(upd.removed, upd.added) }
     onAgentNodesUpdate(Set.empty, allAgentNodes.now)
+    allAgentNodes.updates.foreach{ case upd =>  onAgentNodesUpdate(upd.removed, upd.added) }
 
+    //dom.console.log(s"UNCHANGED ON INIT + ${unchanged.now}")
     onAgentUpdates(Set.empty, unchanged.now, Change.Unchanged)
     unchanged.updates.foreach(upd => onAgentUpdates(upd.removed, upd.added, Change.Unchanged))
 
+    //dom.console.log(s"REMOVED ON INIT + ${removed.now}")
     onAgentUpdates(Set.empty, removed.now, Change.Removed)
     removed.updates.foreach(upd => onAgentUpdates(upd.removed, upd.added, Change.Removed))
 
+    //dom.console.log(s"ADDED ON INIT + ${added.now}")
     onAgentUpdates(Set.empty, added.now, Change.Added)
     added.updates.foreach(upd => onAgentUpdates(upd.removed, upd.added, Change.Added))
 
-    //onNodesUpdates(Set.empty, mergedAgents.now, Change.Updated)
-    //mergedAgents.updates.foreach(upd => onNodesUpdates(upd.removed, upd.added, Change.Updated))
-    /*
-    agents.updates.foreach(upd => onAgentsUpdate(upd.removed, upd.added))
-    allNodes.updates.foreach{
-      case upd => onNodesChanges(upd.removed, upd.added)
-    }
-    links.updates.foreach{
-      case upd =>
-        onLinkChanged(upd.removed, upd.added, upd.updated)
-    }
-    edges.removedInserted.foreach{case (rem, inserted)=> onEdgesChanges(rem.toList, inserted.toList)}
-    removed.foreach(r=> agentNodes.now.foreach(n=>if(r.contains(n.agent)) n.markDeleted()))
-    updated.foreach(u=> agentNodes.now.foreach(n=>if(u.contains(n.agent)) n.markChanged()))
-    added.foreach(r=> agentNodes.now.foreach(n=>if(r.contains(n.agent)) n.markAdded()))
-   */
+    //dom.console.log(s"MERGED ON INIT + ${merged.now}")
+    onMergedUpdates(Set.empty, merged.now)
+    merged.updates.foreach(upd=> onMergedUpdates(upd.removed, upd.added))
+
     layouts.now.foreach(_.start(viz.width, viz.height, viz.camera))
   }
 

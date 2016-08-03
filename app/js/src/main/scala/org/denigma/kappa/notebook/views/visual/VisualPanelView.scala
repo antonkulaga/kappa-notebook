@@ -22,6 +22,8 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
   val rulesActive = selected.map(s=>s=="rules")
   val contactActive = selected.map(s=>s=="contact_map")
 
+  lazy val isRule = kappaWatcher.isRule
+
   //val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
 
   //val leftAgents = kappaWatcher.leftPattern.map(p=>SortedSet(p.agents:_*))

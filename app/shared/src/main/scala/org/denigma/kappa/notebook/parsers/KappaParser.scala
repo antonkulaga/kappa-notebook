@@ -1,5 +1,6 @@
 package org.denigma.kappa.notebook.parsers
 import fastparse.all._
+import org.denigma.kappa.messages.WebSimMessages.Observable
 
 /**
   * Created by antonkulaga on 24/03/16.
@@ -50,7 +51,7 @@ class KappaParser extends CommentLinksParser
     .map{ case (n, states, links) => Site(n, states.toSet, links.toSet) }
 
   val agent: P[Agent] = P(name ~ "(" ~ side.? ~ (optSpaces ~ "," ~ optSpaces ~ side).rep ~ ")").map{
-    case (n, sideOpt, sides2) => Agent(n,  sideOpt.map(Set(_)).getOrElse(sides2.toSet))
+    case (n, sideOpt, sides2) => Agent(n,  sideOpt.map(s => sides2.toSet + s ).getOrElse(sides2.toSet))
   }
 
   val agentDecl: P[Agent] = P(optSpaces ~ "%agent:" ~ optSpaces ~ agent)
@@ -73,11 +74,40 @@ class KappaParser extends CommentLinksParser
 
   val direction: P[Direction] = P(bothDirections | left2right | right2left)
 
-  val rule = P(("'" ~ (textWithSymbols | " ").rep(min = 1).! ~ "'").? ~ spaces ~  rulePart ~ optSpaces ~ direction ~ optSpaces ~ rulePart ~ spaces ~ coeffs).map{
-    case (n, left, BothDirections, right, (c1, c2opt)) => Rule(n.getOrElse(left + " "+Left2Right + " "+right), left, right, c1, c2opt)
-    case (n, left, Left2Right, right, (c1, c2opt)) => Rule(n.getOrElse(left + " "+Left2Right + " "+right), left, right, c1, c2opt)
-    case (n, left, Right2Left, right, (c1, c2opt)) => Rule(n.getOrElse(left + " "+Right2Left + " "+right), left, right, c1, c2opt) //TODO: fix coefficents
+  val rule = P(optSpaces ~ label.? ~ optSpaces ~  rulePart.? ~ optSpaces ~ direction ~ optSpaces ~ rulePart.? ~ optSpaces  ~ coeffs).map{
+
+    case (n, leftOpt, BothDirections, rightOpt, (c1, c2opt)) =>
+      val left = leftOpt.getOrElse(Pattern.empty)
+      val right = rightOpt.getOrElse(Pattern.empty)
+
+      val name = n.getOrElse(left + " "+ "<->" + " "+right)
+      Rule(name, left, right, c1, c2opt)
+
+    case (n, leftOpt, Left2Right, rightOpt, (c1, c2opt)) =>
+      val left = leftOpt.getOrElse(Pattern.empty)
+      val right = rightOpt.getOrElse(Pattern.empty)
+
+      val name = n.getOrElse(left + " "+"->" + " "+right)
+      Rule(name, left, right, c1, c2opt)
+
+    case (n, leftOpt, Right2Left, rightOpt, (c1, c2opt)) =>
+      val left = leftOpt.getOrElse(Pattern.empty)
+      val right = rightOpt.getOrElse(Pattern.empty)
+
+      val name = n.getOrElse(left + " "+"<-" + " "+right)
+      Rule(name, left, right, c1, c2opt) //TODO: fix coefficents
   }
+
+  val observable = P(optSpaces ~ "%obs:" ~ optSpaces ~ label ~spaces ~ rulePart).map{
+    case (lb, pat) =>  ObservablePattern(lb, pat)
+  }
+
+  /*
+  val initNumber = P(optSpaces ~ "%init:" ~ optSpaces ~ labelOrNumber ~ optSpaces ~ rulePart).map{
+    case (Left(label),)
+    case (Right(number), )
+  }
+  */
 
 
   /*

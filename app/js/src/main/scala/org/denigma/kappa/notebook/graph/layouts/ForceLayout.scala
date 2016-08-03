@@ -9,9 +9,9 @@ import scala.collection.immutable._
 
 object ForceLayoutParams {
 
-  lazy val default2D = ForceLayoutParams(0.9, 120, 0.01, new Vector3(0.0, 0.0, 0.0))
+  lazy val default2D = ForceLayoutParams(0.9, 90, 0.01, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(0.9, 120, 0.01, new Vector3(0.0, 0.0, 0.0))
+  lazy val default3D = ForceLayoutParams(0.9, 90, 0.01, new Vector3(0.0, 0.0, 0.0))
 
 }
 
@@ -137,7 +137,7 @@ trait ForceLayout extends GraphLayout  with Randomizable
       l.pos.z += l.offset.z / 3 * l.offset.z * temperature.now  / 3
 
       val delta = node.position.x - l.pos.x
-      println("delta = "+delta)
+      //println("delta = "+delta)
 
 
       node.position.x -= (node.position.x - l.pos.x)

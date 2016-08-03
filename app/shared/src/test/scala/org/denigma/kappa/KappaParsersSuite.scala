@@ -125,6 +125,15 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       }
     }
 
+    "parse init conditions (partial)" in {
+      val init = "%init: 100 pLac(binding),pTet(binding),pL(binding)"
+      val parser = new KappaParser
+      inside(parser.init.parse(init)) {
+        case res@Parsed.Success(v, index: Int) if v.pattern.agents.length == 3
+        =>
+      }
+    }
+
     /*
     "differentiate agents in rules" in {
       //'ab.c' A(x!_,c),C(x1~u) ->A(x!_,c!2),C(x1~u!2) @ 'on_rate' #AB binds C

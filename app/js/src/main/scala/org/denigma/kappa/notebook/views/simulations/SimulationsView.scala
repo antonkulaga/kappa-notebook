@@ -9,6 +9,7 @@ import org.denigma.kappa.messages.ServerMessages.{LaunchModel, SimulationResult}
 import org.denigma.kappa.messages.WebSimMessages.SimulationStatus
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.views.common._
+import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -25,7 +26,7 @@ class SimulationsView(val elem: Element,
 {
   self=>
 
-  val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
+  lazy val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
   //this.items.map{ case its=> SortedSet.empty[String] ++ its.keySet.map(makeId) }
 
   val tab = Var("runner")
@@ -60,10 +61,17 @@ class SimulationsView(val elem: Element,
 
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, tab)(str=>str).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new WeirdTabHeaders(el, headers, tab)(str=>str).withBinder(new GeneralBinder(_)))
     .register("runner")((el, args) => new RunnerView(el, tab, output, serverConnections, sourceMap).withBinder(n => new CodeBinder(n)))
 
   override def updateView(view: SimulationRunView, key: (Int, Option[LaunchModel]), old: SimulationStatus, current: SimulationStatus): Unit = {
     view.simulation() = current
   }
+}
+
+//TODO: fix this bug
+class WeirdTabHeaders(elem: Element, items: Rx[SortedSet[String]], selected: Var[String])(implicit getCaption: String => String)  extends TabHeaders(elem, items, selected)(getCaption) {
+  val runnerActive: Rx[Boolean] = selected.map(v => v=="runner")
+
+  dom.console.log("ITEMS + "+items.now)
 }

@@ -27,6 +27,10 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val ruleParser = kappaParser.rule
 
+  val obsParser = kappaParser.observable
+
+  val initParser = kappaParser.init
+
   val leftPattern: Var[Pattern] = Var(Pattern.empty)
 
   val rightPattern: Var[Pattern] = Var(Pattern.empty)
@@ -69,30 +73,39 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
 
   val isRule = Var(true)
 
-  protected def parseText(line: String) = {
+  protected def parseText(line: String) =
     if(line=="") {
 
     } else {
       agentParser.parse(line).onSuccess{
-        case result =>
+        result =>
           val value = Pattern(List(result))
           isRule() = false
           leftPattern() = value
           rightPattern() = Pattern.empty
-          //leftPattern.refresh(value, forces)
-          //rightPattern.refresh(Pattern.empty, forces)
-
       }.onFailure{
         input=>
           ruleParser.parse(input).onSuccess{
-            case rule =>
+            rule =>
               isRule() = true
               direction() = rule.direction
               leftPattern() = rule.left
               rightPattern() = rule.right
-              //leftPattern.refresh(rule.left, forces)
-              //rightPattern.refresh(rule.right, forces)
-
+          }.onFailure{
+            input2=>
+              obsParser.parse(input2).onSuccess{
+                result =>
+                  isRule() = false
+                  leftPattern() = result.pattern
+                  rightPattern() = Pattern.empty
+              }.onFailure{
+                input3=>
+                  initParser.parse(input3).onSuccess{
+                    result =>
+                      isRule() = false
+                      leftPattern() = result.pattern
+                      rightPattern() = Pattern.empty
+                  }
           }
       }
     }

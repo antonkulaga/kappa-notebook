@@ -1,6 +1,6 @@
 object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions with OtherJVM
 {
-	var sourcecode = "0.1.1"
+	var sourcecode = "0.1.2"
 
 	val scala = "2.11.8"
 
@@ -71,7 +71,7 @@ trait SharedVersions
 
 	val scalaCSS = "0.4.1"
 
-	val scalaTest = "3.0.0-RC4"
+	val scalaTest = "3.0.0"
 
 	val fastparse = "0.3.7"
 
@@ -91,7 +91,7 @@ trait WebJarsVersions{
 
 	val jquerySVG = "1.5.0"
 
-	val semanticUI = "2.2"
+	val semanticUI = "2.2.2"
 
 	val codemirror = "5.13.2"
 

@@ -8,6 +8,16 @@ trait TabGridsStyles extends MainStyles {
     padding(0 px)  important
     )
 
+
+  ".ui.page.grid" -(
+    paddingLeft(5 px) important,
+    paddingRight(5 px) important
+    )
+
+  ".paper.grid" -(
+    minHeight(80.0 vh) important
+    )
+
   ".page.tab" - (
     overflowY.hidden important,
     overflowX.hidden important

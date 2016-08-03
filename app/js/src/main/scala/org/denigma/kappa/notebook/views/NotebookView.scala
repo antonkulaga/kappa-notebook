@@ -10,7 +10,7 @@ import org.denigma.kappa.messages.ServerMessages.KappaServerErrors
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
-import org.denigma.kappa.notebook.views.common.ServerConnections
+import org.denigma.kappa.notebook.views.common.{FixedBinder, ServerConnections}
 import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor, KappaWatcher}
 import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView}
 import org.denigma.kappa.notebook.views.menus.MainMenuView
@@ -126,7 +126,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("VisualPanel"){
       case (el, args) =>
-        val v = new VisualPanelView(el, kappaWatcher, input, s).withBinder(n => new CodeBinder(n))
+        val v = new VisualPanelView(el, kappaWatcher, input, s).withBinder(n => new FixedBinder(n))
         addMenuItem(el, MainTabs.Visualizations)
         v
     }

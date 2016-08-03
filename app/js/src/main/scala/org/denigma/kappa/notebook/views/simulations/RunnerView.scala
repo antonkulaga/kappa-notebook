@@ -49,7 +49,6 @@ class RunnerView(val elem: Element,
   protected val nbPlot = points.map(p=> if(p>0) Some(p) else None)
 
   protected def launch() = {
-
     val items = sourceMap.now.map{
       case (key, value) => key -> value.content
     }.toList

@@ -80,10 +80,16 @@ class WholeRuleGraphView(val elem: Element,
   lazy val siteNodes: Rx[Vector[SiteNode]] = nodes.map(nds => nds.collect{case node: SiteNode => node})
 
   val links: Rx[Map[String, Vector[(Change, SiteNode)]]] = siteNodes.map{ case sNodes =>
-    sNodes
+    sNodes.foreach(s=>dom.console.log(s" SITE ${s.site} LINKS = "+ s.links))
+    val lns = sNodes
       .flatMap(snode => snode.linkList.map(ls => (ls , snode)))
       .groupBy{ case ((site, change), nds) => site }
       .mapValues(vector => vector.map { case ((site, change), node) => (change , node) })
+    lns.foreach{
+      case (key, vector) =>
+        println(s"LINK ${key} with vector ${vector.map(v => v._2.site).toList.mkString(" || ")}")
+    }
+    lns
   }
 
   lazy val merged = updated.map{
@@ -104,11 +110,10 @@ class WholeRuleGraphView(val elem: Element,
       LineParams(Colors.red)
     case (f: ChangeableNode, t: ChangeableNode) if f.status == Change.Added || t.status == Change.Added =>
       LineParams(Colors.green)
-
     case _ => LineParams(Colors.blue)
   }
 
-  def mergeNodes(left: KappaModel.Agent, right: KappaModel.Agent): AgentNode = {
+  protected def mergeNodes(left: KappaModel.Agent, right: KappaModel.Agent): AgentNode = {
     if(left==right) {
       AgentNode(left, Change.Unchanged)
     } else {
@@ -117,32 +122,40 @@ class WholeRuleGraphView(val elem: Element,
     }
   }
 
-  def mergeLinks(left: Site, right: Site): Map[Change.Change, Set[String]] = {
+  protected def mergeLinks(left: Site, right: Site): Map[Change.Change, Set[String]] = {
     val same = left.links.intersect(right.links)
     val removed = left.links.diff(same)
     val added = right.links.diff(same)
     Map( (Change.Removed , removed), (Change.Added , added), (Change.Unchanged , same), (Change.Updated , Set.empty[String]) )
   }
 
-  def mergeNodeSites(left: KappaModel.Agent, right: KappaModel.Agent): Map[Change.Change, Set[SiteNode]] = {
+  protected def mergeNodeSites(left: KappaModel.Agent, right: KappaModel.Agent): Map[Change.Change, Set[SiteNode]] = {
     val sameNames = left.siteNames.intersect(right.siteNames)
     val all = left.sites ++ right.sites
     val grouped = all.toList.groupBy(s=>s.name).toList
     val unchangedNodes: List[SiteNode] = grouped.collect{
       case (name, one::two::Nil) if one==two =>
-        SiteNode(left, one, Change.Unchanged)
+        val links = OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Unchanged, one.links)
+        SiteNode(left, one, Change.Unchanged, links)
     }
     val updatedNodes: List[SiteNode] = grouped.collect{
-      case (name, one::two::Nil) if one==two =>
-        SiteNode(left, one, Change.Unchanged)
       case (name, one::two::Nil) =>
         val states =  mergeSiteStates(left, one , two)
-        new SiteNode(left, one, states, mergeLinks(one, two), Change.Updated)
+        val links = mergeLinks(one, two)
+        new SiteNode(left, one, states, links, Change.Updated)
     }
     val removed: Set[Site] = left.sites.filterNot(s => sameNames.contains(s.name))
     val added: Set[Site] = right.sites.filterNot(s => sameNames.contains(s.name))
-    val addedNodes: Set[SiteNode] = added.map{ case a => SiteNode(left, a, Change.Added) }
-    val removedNodes: Set[SiteNode] = removed.map{ case r => SiteNode(left, r, Change.Removed) }
+    val addedNodes: Set[SiteNode] = added.map{
+      case a =>
+        val links = OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Added, a.links)
+        SiteNode(left, a, Change.Added, links)
+    }
+    val removedNodes: Set[SiteNode] = removed.map{
+      case r =>
+        val links =  OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Removed, r.links)
+        SiteNode(left, r, Change.Removed, links)
+    }
     Map(
       (Change.Removed , removedNodes),
       (Change.Added , addedNodes),
@@ -152,7 +165,7 @@ class WholeRuleGraphView(val elem: Element,
   }
 
 
-  def mergeSiteStates(parent: Agent, left: KappaModel.Site, right: KappaModel.Site): Map[Change.Change, Set[StateNode]] = {
+  protected def mergeSiteStates(parent: Agent, left: KappaModel.Site, right: KappaModel.Site): Map[Change.Change, Set[StateNode]] = {
     val deleted: Set[State] = left.states.diff(right.states)
     val deletedNodes: Set[StateNode] = deleted.map(r => StateNode(left, r, Change.Removed))
     val added = right.states.diff(left.states)
@@ -244,10 +257,17 @@ class WholeRuleGraphView(val elem: Element,
       //case (key, site::Nil) => //let us skip this for the sake of simplicity
       case (key, value)  if value.size ==2 =>
         val ((change, site1), (_, site2)) = (value(0), value(1))
-        new KappaLinkEdge(key, site1, site2, change, visualSettings.link.line)(createLinkView): Edge
+        new KappaLinkEdge(key, site1, site2, change, linkLineByStatus(change, visualSettings.link.line))(createLinkView): Edge
       //case (key, other) => throw  new Exception(s"too many sites for the link $key ! Sights are: $other")
     }.toVector
   }
+
+  protected def linkLineByStatus(status: Change.Change, line: LineParams) = status match {
+    case Change.Added => line.copy(lineColor = Colors.green)
+    case Change.Removed => line.copy(lineColor = Colors.red)
+    case _ => line.copy(lineColor = Colors.blue  )
+  }
+
 
   protected def onLinkChanged(removed: Map[String, Vector[(Change.Change, SiteNode)]],
                               added: Map[String, Vector[(Change.Change, SiteNode)]],

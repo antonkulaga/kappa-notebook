@@ -22,7 +22,7 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
 
   val selected: Var[String] = Var("rules")//Var("contact_map")
 
-  val rulesActive = selected.map(s=>s=="rules")
+  val rulesActive: Rx[Boolean] = selected.map(s=>s=="rules")
   val contactActive = selected.map(s=>s=="contact_map")
 
   lazy val isRule = kappaWatcher.isRule
@@ -38,21 +38,25 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
   //val updated: Rx[Set[Agent]],
 
 
-  val showLeft: Var[Boolean] = Var(false)
-  val showRight: Var[Boolean] = Var(false)
-  val showBoth: Var[Boolean] = Var(true)
-  showLeft.onChange(v => dom.console.log("LEFT IS "+v))
-  showRight.onChange(v => dom.console.log("RIGHT is "+v))
-  showBoth.onChange(v => dom.console.log("BOTH IS "+v))
+  val left: Var[Boolean] = Var(false)
+  val right: Var[Boolean] = Var(false)
+  val both: Var[Boolean] = Var(true)
+  left.onChange(v => dom.console.log("LEFT IS "+v))
+  right.onChange{
+    v =>
+      val msg = s"RIGHT IS ${v}"
+      dom.window.alert(msg)
+  }
+  both.onChange(v => dom.console.log("BOTH IS "+v))
 
 
-  val upd = kappaWatcher.modifiedAgents
+      val upd = kappaWatcher.modifiedAgents
 
 
-  override lazy val injector = defaultInjector
-    .register("ContactMapView") {
-      (el, args) =>new ContactMapView(el, input, contactActive).withBinder(v=>new CodeBinder(v))
-    }/*
+      override lazy val injector = defaultInjector
+        .register("ContactMapView") {
+          (el, args) =>new ContactMapView(el, input, contactActive).withBinder(v=>new CodeBinder(v))
+        }/*
     .register("LeftGraph") {
       (el, args) =>
     new RulesGraphView(el,
@@ -70,12 +74,12 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
         kappaWatcher.rightModified,
         args.getOrElse("container", "graph-container").toString, RulesVisualSettings(s)).withBinder(n => new CodeBinder(n)) }
     */.
-    register("WholeGraph") {  (el, args) =>
-      //2 in one
-      new WholeRuleGraphView(el,
-        kappaWatcher.unchangedAgents,
-        kappaWatcher.removedAgents,
-        kappaWatcher.addedAgents,
-        kappaWatcher.updatedAgents,
-        args.getOrElse("container", "whole-graph-container").toString, RulesVisualSettings(s)).withBinder(n => new FixedBinder(n)) }
+        register("WholeGraph") {  (el, args) =>
+        //2 in one
+        new WholeRuleGraphView(el,
+          kappaWatcher.unchangedAgents,
+          kappaWatcher.removedAgents,
+          kappaWatcher.addedAgents,
+          kappaWatcher.updatedAgents,
+          args.getOrElse("container", "whole-graph-container").toString, RulesVisualSettings(s)).withBinder(n => new FixedBinder(n)) }
 }

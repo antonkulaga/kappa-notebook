@@ -102,6 +102,10 @@ class KappaParser extends CommentLinksParser
     case (lb, pat) =>  ObservablePattern(lb, pat)
   }
 
+  val init = P(optSpaces ~ "%init:" ~ optSpaces ~ labelOrNumber ~spaces ~ rulePart).map{
+    case (lb, pat) =>  InitCondition(lb, pat)
+  }
+
   /*
   val initNumber = P(optSpaces ~ "%init:" ~ optSpaces ~ labelOrNumber ~ optSpaces ~ rulePart).map{
     case (Left(label),)

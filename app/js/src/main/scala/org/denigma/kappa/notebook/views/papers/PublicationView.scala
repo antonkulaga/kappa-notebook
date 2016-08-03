@@ -32,6 +32,16 @@ class PublicationView(val elem: Element,
 
 
   lazy val scale = Var(1.4)
+  lazy val lineNumber = kappaCursor.map{c => c.map(p => p._2.line).getOrElse(0)}
+  lazy val charNumber = kappaCursor.map{c => c.map(p => p._2.ch).getOrElse(0)}
+
+  val canInsert: Rx[Boolean] = kappaCursor.map(c => c.isDefined)
+
+  def insertComment() = kappaCursor.now match {
+    case Some((ed, pos)) =>
+      //ed.getDoc().setLine()
+    case _ => dom.console.error("cannot insert pdf comment as no editor and line is selected")
+  }
 
   scale.onChange{
     case value =>

@@ -39,7 +39,10 @@ trait KappaView extends KappaPainter {
   }
 
   protected val sprite: Rx[HtmlSprite] = svg.map {
-    case s => new HtmlSprite(s.render)
+    case s =>
+      val sp = new HtmlSprite(s.render)
+      sp.frustumCulled = false
+      sp
   }
 
   protected val spriteChange = sprite.zip

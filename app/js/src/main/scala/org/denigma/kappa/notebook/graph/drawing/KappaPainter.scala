@@ -15,7 +15,7 @@ trait KappaPainter {
   type Locatable = SVGElement with SVGLocatable
 
   lazy val labelStrokeColor:  Var[String] = Var("blue")
-  lazy val labelStrokeWidth: Var[Double] = Var(3)
+  lazy val labelStrokeWidth: Var[Double] = Var(2)
 
   def getTextBox(str: String, fSize: Double): Rectangle = {
     val svg = text(str, fontSize := fSize)
@@ -48,8 +48,8 @@ trait KappaPainter {
       fill := s"url(#${grad})",
       strokeWidth := st,
       height := rectangle.height,
-      width := rectangle.width,
-      rx := rX, ry := rY + st
+      width := rectangle.width + st,
+      rx := rX, ry := rY
     )
     val startX = (rectangle.width - textBox.width) / 2
     val startY = (rectangle.height - textBox.height) - st + textBox.height

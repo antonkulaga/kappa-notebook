@@ -128,6 +128,9 @@ object KappaModel {
 
   case class ObservablePattern(name: String, pattern: Pattern) extends KappaNamedElement
 
+
+  case class InitCondition(number: Either[String, Double], pattern: Pattern)
+
 }
 
 

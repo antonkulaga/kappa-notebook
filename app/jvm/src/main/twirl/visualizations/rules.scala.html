@@ -1,73 +1,46 @@
 @()
 <section class="ui attached page segment tab" data-class-active-if="rulesActive">
     <div class="ui grid">
-
-    <!--
-    <div class="equal width row">
-      <section class="column segment">
-      <div id = "LeftGraph" data-view="LeftGraph" data-param-container="left-container">
-        <div id="left-container" class="graph container"></div>
-      </div>
-    </section>
-    </div>
-    <div class="equal width row">
-      <div class="column">
-        <div class="ui small blue message">
-          <i class="ui label">Legend:</i>
-          <span class="ui red label">removed</span>,
-          <span class="ui green label">added</span>,
-          <span class="ui violet label">changed</span>
+        <div class="equal width row">
+            <div class="column">
+                <div class="ui small blue message">
+                    <i class="ui label">Legend:</i>
+                    <span class="ui red label">removed</span>,
+                    <span class="ui green label">added</span>
+                    <span class="ui blue label">unchanged</span>
+                        <!--<span class="ui violet label">changed</span>-->
+                </div>
+                <b>Current line: </b> <small data-bind="currentLine"></small>
+            </div>
         </div>
-        <b>Current line: </b> <small data-bind="currentLine"></small>
-      </div>
-    </div>
-    <div class="equal width row">
-      <section class="column segment">
-        <div id = "RightGraph" data-view="RightGraph"  data-param-container="right-container">
-          <div id="right-container" class="graph container"></div>
-        </div>
-      </section>
-    </div>
-    -->
-    <div class="equal width row">
-      <div  class="column segment" id = "WholeGraph" data-view="WholeGraph"  data-param-container="whole-graph-container">
-        <div id="whole-graph-container" class="graph-container"></div>
-      </div>
-    </div>
-    <div class="equal width row">
-      <div class="column">
-        <div class="ui small blue message">
-          <i class="ui label">Legend:</i>
-          <span class="ui red label">removed</span>,
-          <span class="ui green label">added</span>,
-          <!--<span class="ui violet label">changed</span>-->
-        </div>
-        <b>Current line: </b> <small data-bind="currentLine"></small>
-      </div>
-    </div>
         <div class="equal width row" data-show-if="isRule">
             <div class="ui form">
                 <div class="inline fields">
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="ruleside" data-bind="showLeft">
+                            <input id="left" type="radio" name="ruleside" data-bind="left">
                             <label>Input (left rule side)</label>
                         </div>
                     </div>
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="ruleside" data-bind="showRight">
+                            <input id="right" type="radio" name="ruleside" data-bind="right">
                             <label>Output (right rule side)</label>
                         </div>
                     </div>
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="ruleside" data-bind="showBoth">
+                            <input id ="both" type="radio" name="ruleside" data-bind="both">
                             <label>Both</label>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="equal width row">
+          <div  class="column segment" id = "WholeGraph" data-view="WholeGraph"  data-param-container="whole-graph-container">
+            <div id="whole-graph-container" class="graph-container"></div>
+          </div>
         </div>
     </div>
 </section>

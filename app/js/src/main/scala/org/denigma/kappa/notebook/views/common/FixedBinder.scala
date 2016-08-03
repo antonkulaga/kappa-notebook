@@ -12,6 +12,10 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import rx._
 import org.scalajs.dom.ext._
+import org.scalajs.dom.{Element => _, Event => _, KeyboardEvent => _, _}
+
+import scala.scalajs.js
+import scala.util.{Failure, Success, Try}
 //import rx.Ctx.Owner.voodoo
 import rx.Ctx.Owner.Unsafe.Unsafe
 
@@ -45,13 +49,58 @@ class FixedBinder[View <: BindableView](view: View, recover: Option[ReactiveBind
     .orElse(codePartial(el, ats))
 
 
+
+  override protected def varOnEvent[T, TEvent <: dom.Event](el: Element, prop: String, value: Rx[T], event: String)
+                                                  (implicit js2var: js.Any => T): Unit =
+  {
+    s"subsribe on event for ${prop}"
+    value.onVar { v =>
+      el.addEventListener[TEvent](event,(ev: TEvent) => {
+        if(ev.target==ev.currentTarget) el.onExists(prop){ newValue=>
+            Try(js2var(newValue)) match {
+              case Success(newVal)=>
+                println(s"old value = ${v.now} new value =" + newVal)
+                v() = newVal
+              case Failure(th)=> dom.console.warn(s"cannot convert ${newValue} to Var , failure: ${th}")
+            }
+          }
+        }
+      )
+      val curV = js2var(el.dyn.selectDynamic(prop))
+      println(s"set for Var(${v.now})  initial value = "+el.dyn.selectDynamic(prop))
+      v() = curV
+    }
+  }
+
+  protected def subscribeOnEvent[T, Event <: dom.Event](el: Element, rxName: String, prop: String, event: String, mp: Map[String, Rx[T]])
+                                      (implicit js2var: js.Any => T): Option[Rx[T]] =
+    mp.get(rxName) map {
+      value =>
+        //this.bindProperty(el, rxName, prop)
+        varOnEvent[T, Event](el, prop, value, event)(js2var)
+        //propertyOnRx(el,prop,value)
+        value
+    }
+
   protected def bindInput(inp: HTMLInputElement, rxName: String): Unit =
   {
     inp.attributes.get("type").map(_.value.toString) match {
-      case Some("checkbox") => this.bindProperty(inp, rxName, "checked")
+      case Some("checkbox") =>
+        println("INPUT RADIO BINDING WORKS!")
+        subscribeOnEvent(inp, rxName, "checked", Events.change, bools){
+          case  any =>
+            println("SUBSCRIBE EVENT IS" +any.toString)
+            any.asInstanceOf[Boolean]
+        }
+
       case Some("radio") =>
-        println("INPUT BINDING WORKS!")
-        this.bindProperty(inp, rxName, "checked")
+        println("INPUT RADIO BINDING WORKS!")
+        subscribeOnEvent(inp, rxName, "checked", Events.change, bools){
+          case  any =>
+            println("SUBSCRIBE EVENT IS" +any.toString)
+            any.asInstanceOf[Boolean]
+        }
+        
       case _ =>
         subscribeInputValue(inp, rxName, Events.keyup, strings)
           .orElse(subscribeInputValue(inp, rxName, Events.keyup, doubles))

@@ -1,21 +1,14 @@
 package org.denigma.kappa.notebook.views.simulations
 
+import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
-import org.denigma.kappa.messages.{KappaFile, KappaMessage}
-import org.denigma.kappa.messages.KappaMessage.ServerCommand
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
-import org.denigma.kappa.messages.WebSimMessages.{RunModel, SimulationStatus}
+import org.denigma.kappa.messages.WebSimMessages.SimulationStatus
+import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, MouseEvent}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import com.softwaremill.quicklens._
-import org.denigma.binding.binders.Events
-import org.denigma.kappa.notebook.extensions._
-import org.denigma.kappa.notebook.views.common.TabItem
-import org.scalajs.dom
-import org.scalajs.dom.Event
-import rx.Rx.Dynamic
 
 class LaunchParametersView(val elem: Element,
                            val simulation: Rx[SimulationStatus],

@@ -21,7 +21,7 @@ class KappaAgentView(val label: String, val fontSize: Double, val padding: Doubl
 }
 
 object KappaSiteView {
-  def gradientName = "GradSide"
+  def gradientName = "GradSite"
 }
 
 class KappaSiteView(val label: String, val fontSize: Double, val padding: Double, val siteGradient: TypedTag[LinearGradient], val s: SVG) extends  KappaView
@@ -29,42 +29,33 @@ class KappaSiteView(val label: String, val fontSize: Double, val padding: Double
 
   override def gradientName: String =  KappaSiteView.gradientName
 
-
   lazy val gradient = Var(siteGradient)
 
 }
 
 object KappaStateView {
-  def gradientName = "GradModif"
+  def gradientName = "GradState"
 }
 
-class KappaStateView(val label: String, val fontSize: Double, val padding: Double, val s: SVG) extends KappaView
+class KappaStateView(val label: String, val fontSize: Double, val padding: Double, val stateGradient: TypedTag[LinearGradient], val s: SVG) extends KappaView
 {
 
   lazy val gradientName = KappaStateView.gradientName
 
-  protected lazy val defaultGradient =
-    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
-      stop(offset := "0%", stopColor := "white"),
-      stop(offset := "100%", stopColor := "ivory")
-    )
-
-  lazy val gradient = Var(defaultGradient)
+  lazy val gradient = Var(stateGradient)
 
 
 }
 
-class KappaLinkView(val label: String, val fontSize: Double, val padding: Double, val s: SVG) extends  KappaView
+object KappaLinkView {
+  def gradientName = "GradLink"
+}
+
+class KappaLinkView(val label: String, val fontSize: Double, val padding: Double, val linkGradient: TypedTag[LinearGradient], val s: SVG) extends  KappaView
 {
 
-  override def gradientName: String =  "GradSide"
+  override def gradientName: String =  KappaLinkView.gradientName
 
-  protected lazy val defaultGradient =
-    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
-      stop(offset := "0%", stopColor := "white"),
-      stop(offset := "100%", stopColor := "ivory")
-    )
-
-  lazy val gradient = Var(defaultGradient)
+  lazy val gradient = Var(linkGradient)
 
 }

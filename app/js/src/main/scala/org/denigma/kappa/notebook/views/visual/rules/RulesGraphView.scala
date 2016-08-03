@@ -59,6 +59,12 @@ object Gradients {
       stop(offset := "50%", stopColor := "deepskyblue"),
       stop(offset := "100%", stopColor := "SteelBlue")
     )
+
+  def lightBlueGradient(gradientName: String): TypedTag[LinearGradient]  =
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "white"),
+      stop(offset := "100%", stopColor := "deepskyblue")
+    )
   /*
       <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="skyblue" />
@@ -83,11 +89,19 @@ object Gradients {
     )
   }
 
+  def purpleGradient(gradientName: String) = {
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "#e6b3ff"),
+      stop(offset := "50%", stopColor := "#d580ff"),
+      stop(offset := "100%", stopColor := "#b31aff")
+    )
+  }
+
   def gradientByStatus(status: Change.Change, gradientName: String) = status match {
-    case Change.Removed => Gradients.redGradient(KappaAgentView.gradientName)
-    case Change.Added => Gradients.greenGradient(KappaAgentView.gradientName)
-    case Change.Unchanged => Gradients.blueGradient(KappaAgentView.gradientName)
-    case Change.Updated => Gradients.blueGradient(KappaAgentView.gradientName)
+    case Change.Removed => Gradients.redGradient(gradientName)
+    case Change.Added => Gradients.greenGradient(gradientName)
+    case Change.Unchanged | Change.Updated =>
+      if(gradientName == KappaSiteView.gradientName)  Gradients.lightBlueGradient(gradientName) else Gradients.blueGradient(gradientName)
   }
 }
 
@@ -110,11 +124,13 @@ trait  RuleGraphWithForces extends BindableView{
   }
 
   implicit protected def createStateNodeView(state: StateNode): KappaStateView = {
-    new KappaStateView(state.state.name, visualSettings.state.font, visualSettings.state.padding, visualSettings.canvas)
+    val gradient = Gradients.gradientByStatus(state.status, KappaStateView.gradientName)
+    new KappaStateView(state.state.name, visualSettings.state.font, visualSettings.state.padding, gradient, visualSettings.canvas)
   }
 
   implicit protected def createLinkView(edge: KappaLinkEdge): KappaLinkView = {
-    new KappaLinkView(edge.link.label, visualSettings.link.font, visualSettings.link.padding, visualSettings.canvas)
+    val gradient = Gradients.gradientByStatus(edge.status, KappaLinkView.gradientName)
+    new KappaLinkView(edge.link.label, visualSettings.link.font, visualSettings.link.padding, gradient, visualSettings.canvas)
   }
 
   lazy val minSpring = 90

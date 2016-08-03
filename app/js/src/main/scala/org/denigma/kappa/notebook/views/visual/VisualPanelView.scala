@@ -4,11 +4,14 @@ import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.model.KappaModel
+import org.denigma.kappa.notebook.views.common.FixedBinder
 import org.denigma.kappa.notebook.views.editor.KappaWatcher
 import org.denigma.kappa.notebook.views.visual.rules._
+import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
+import org.denigma.binding.extensions._
 import rx._
 
 import scala.collection.immutable._
@@ -33,6 +36,15 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
   //val removed: Rx[Set[Agent]],
   //val added: Rx[Set[Agent]],
   //val updated: Rx[Set[Agent]],
+
+
+  val showLeft: Var[Boolean] = Var(false)
+  val showRight: Var[Boolean] = Var(false)
+  val showBoth: Var[Boolean] = Var(true)
+  showLeft.onChange(v => dom.console.log("LEFT IS "+v))
+  showRight.onChange(v => dom.console.log("RIGHT is "+v))
+  showBoth.onChange(v => dom.console.log("BOTH IS "+v))
+
 
   val upd = kappaWatcher.modifiedAgents
 
@@ -65,5 +77,5 @@ class VisualPanelView(val elem: Element, kappaWatcher: KappaWatcher, input: Var[
         kappaWatcher.removedAgents,
         kappaWatcher.addedAgents,
         kappaWatcher.updatedAgents,
-        args.getOrElse("container", "whole-graph-container").toString, RulesVisualSettings(s)).withBinder(n => new CodeBinder(n)) }
+        args.getOrElse("container", "whole-graph-container").toString, RulesVisualSettings(s)).withBinder(n => new FixedBinder(n)) }
 }

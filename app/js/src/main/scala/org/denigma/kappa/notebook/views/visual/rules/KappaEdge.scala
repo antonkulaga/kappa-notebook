@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.notebook.graph.{ArrowEdge, KappaEdge, LineParams}
+import org.denigma.kappa.notebook.graph.{ArrowEdge, Change, KappaEdge, LineParams}
 import org.denigma.threejs.{Side => _, _}
 
 
@@ -21,7 +21,7 @@ class KappaStateEdge(val from: SiteNode, val to: StateNode, val lineParams: Line
 }
 
 
-class KappaLinkEdge(label: String, val from: SiteNode, val to: SiteNode, val lineParams: LineParams)
+class KappaLinkEdge(label: String, val from: SiteNode, val to: SiteNode, val status: Change.Change, val lineParams: LineParams)
       (implicit val fun: KappaLinkEdge => KappaLinkView)
   extends KappaEdge
 {

@@ -40,7 +40,7 @@
           <i class="ui label">Legend:</i>
           <span class="ui red label">removed</span>,
           <span class="ui green label">added</span>,
-          <span class="ui violet label">changed</span>
+          <!--<span class="ui violet label">changed</span>-->
         </div>
         <b>Current line: </b> <small data-bind="currentLine"></small>
       </div>
@@ -50,19 +50,19 @@
                 <div class="inline fields">
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="ruleside">
+                            <input type="radio" name="ruleside" data-bind="showLeft">
                             <label>Input (left rule side)</label>
                         </div>
                     </div>
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="ruleside">
+                            <input type="radio" name="ruleside" data-bind="showRight">
                             <label>Output (right rule side)</label>
                         </div>
                     </div>
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="ruleside" checked="checked">
+                            <input type="radio" name="ruleside" data-bind="showBoth">
                             <label>Both</label>
                         </div>
                     </div>

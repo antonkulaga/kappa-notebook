@@ -1,19 +1,18 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 
+import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.{Agent, Site, State}
+import org.denigma.kappa.notebook.graph.Change.Change
 import org.denigma.kappa.notebook.graph._
 import org.denigma.kappa.notebook.graph.layouts.{ForceLayoutParams, GraphLayout}
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
 
-import scala.{List, Vector}
-import scala.Predef.{Map, Set}
 import scala.collection.immutable._
 
 /*
@@ -47,6 +46,11 @@ class WholeRuleGraphView(val elem: Element,
 }
 */
 
+object RuleViewMode extends Enumeration {
+  type Change = Value
+  val Left, Right, Both = Value
+}
+
 class WholeRuleGraphView(val elem: Element,
                          val unchanged: Rx[Set[Agent]],
                          val removed: Rx[Set[Agent]],
@@ -65,6 +69,7 @@ class WholeRuleGraphView(val elem: Element,
 
   val height: Var[Double] = Var(size._2)
 
+
   lazy val nodes = Var(Vector.empty[KappaNode])
   lazy val edges = Var(Vector.empty[KappaEdge])
 
@@ -74,11 +79,11 @@ class WholeRuleGraphView(val elem: Element,
 
   lazy val siteNodes: Rx[Vector[SiteNode]] = nodes.map(nds => nds.collect{case node: SiteNode => node})
 
-  val links: Rx[Map[String, Vector[SiteNode]]] = siteNodes.map{ case sNodes =>
+  val links: Rx[Map[String, Vector[(Change, SiteNode)]]] = siteNodes.map{ case sNodes =>
     sNodes
-      .flatMap(node =>  node.site.links.map(l=> (node , l)))
-      .groupBy{case (site, link)=> link}
-      .mapValues(lst => lst.map{ case (key, value) => key })
+      .flatMap(snode => snode.linkList.map(ls => (ls , snode)))
+      .groupBy{ case ((site, change), nds) => site }
+      .mapValues(vector => vector.map { case ((site, change), node) => (change , node) })
   }
 
   lazy val merged = updated.map{
@@ -112,6 +117,13 @@ class WholeRuleGraphView(val elem: Element,
     }
   }
 
+  def mergeLinks(left: Site, right: Site): Map[Change.Change, Set[String]] = {
+    val same = left.links.intersect(right.links)
+    val removed = left.links.diff(same)
+    val added = right.links.diff(same)
+    Map( (Change.Removed , removed), (Change.Added , added), (Change.Unchanged , same), (Change.Updated , Set.empty[String]) )
+  }
+
   def mergeNodeSites(left: KappaModel.Agent, right: KappaModel.Agent): Map[Change.Change, Set[SiteNode]] = {
     val sameNames = left.siteNames.intersect(right.siteNames)
     val all = left.sites ++ right.sites
@@ -125,7 +137,7 @@ class WholeRuleGraphView(val elem: Element,
         SiteNode(left, one, Change.Unchanged)
       case (name, one::two::Nil) =>
         val states =  mergeSiteStates(left, one , two)
-        new SiteNode(left, one, states, Change.Updated)
+        new SiteNode(left, one, states, mergeLinks(one, two), Change.Updated)
     }
     val removed: Set[Site] = left.sites.filterNot(s => sameNames.contains(s.name))
     val added: Set[Site] = right.sites.filterNot(s => sameNames.contains(s.name))
@@ -156,18 +168,18 @@ class WholeRuleGraphView(val elem: Element,
   }
   
   protected def onAgentUpdates(deleted: Set[Agent], added: Set[Agent], status: Change.Change) = {
-      dom.console.log(s"on added updates DELETED ${deleted} ADDED ${added} STATUS ${status}")
+      //dom.console.log(s"on added updates DELETED ${deleted} ADDED ${added} STATUS ${status}")
       val addedNodes = added.map(a => AgentNode(a, status))
       allAgentNodes() = allAgentNodes.now.filterNot(n => deleted.contains(n.agent) && n.status == status) ++ addedNodes
   }
 
   protected def onMergedUpdates(deleted: Set[AgentNode], added: Set[AgentNode]) = {
-    dom.console.log("MERGE UPDATE, DELETE = "+deleted + "  ADDED = "+added)
+    //dom.console.log("MERGE UPDATE, DELETE = "+deleted + "  ADDED = "+added)
     allAgentNodes() = allAgentNodes.now.diff(deleted) ++ added
   }
 
   protected def getAllAgentNodes(node: AgentNode) = {
-    dom.console.log("children list ="+node.childrenList)
+    //dom.console.log("children list ="+node.childrenList)
     val nds: List[KappaNode] = node :: node.childrenList ++ node.childrenList.flatMap(ch => ch.childrenList)
     nds.toSet
   }
@@ -179,9 +191,9 @@ class WholeRuleGraphView(val elem: Element,
 
   protected def onAgentNodesUpdate(deleted: Set[AgentNode], added: Set[AgentNode]) = {
     val toDelete: Set[Node] = deleted.flatMap{ r => getAllAgentNodes(r)}
-    dom.console.log("TO REMOVE COUNT " + toDelete)
+    //dom.console.log("TO REMOVE COUNT " + toDelete)
     val toAdd = added.flatMap( a => getAllAgentNodes(a))
-    dom.console.log("TO ADD COUNT " + toAdd)
+    //dom.console.log("TO ADD COUNT " + toAdd)
 
     nodes() = nodes.now.filterNot(n => toDelete.contains(n)) ++ toAdd
     val addedEdges = added.flatMap(a => getAllEdgesFrom(a))
@@ -194,29 +206,19 @@ class WholeRuleGraphView(val elem: Element,
     //added.foreach(a=> dom.console.log("ADDED NODE "+a.view.label))
 
     removed.foreach{ case n =>
-      dom.console.log("REMOVED IS "+n.view.label)
+      ///dom.console.log("REMOVED IS "+n.view.label)
       n.view.clearChildren()
       viz.removeSprite(n.view.container)
       viz.removeObject(n.view.container)
     }
     added.foreach{
       case n =>
-        dom.console.log("ADDED IS "+n.view.label)
+        //dom.console.log("ADDED IS "+n.view.label)
         viz.addSprite(n.view.container)
     }
     //if(added.nonEmpty || removed.nonEmpty) edges() = edges.now.filterNot(e => removed.contains(e.from) || removed.contains(e.to))
   }
 
-
-  /*
-  protected def foldEdges(acc: List[Edge], node: Node): List[Edge] = {
-    node match {
-      case n: SiteNode => new KappaSiteEdge(n.parent, n, visualSettings.link.line) :: acc
-      case n: StateNode => new KappaStateEdge(n.parent, n, visualSettings.link.line) :: acc
-      case _ => acc //note: we process link edges separately
-    }
-  }
-  */
 
   def onEdgesChanges(removed: Set[Edge], added: Set[Edge]): Unit = {
     for(r <- removed) r match {
@@ -236,36 +238,20 @@ class WholeRuleGraphView(val elem: Element,
       case _ => dom.console.log("weird edge")
     }
   }
-/*
-  protected def createLinkEdges(mp: Map[String, List[SiteNode]]): List[Edge] = {
-    mp.collect{
-      //case (key, site::Nil) => //let us skip this for the sake of simplicity
-      case (key, site1::site2::Nil) =>   new KappaLinkEdge(key, site1, site2, visualSettings.link.line)(createLinkView): Edge
-      //case (key, other) => throw  new Exception(s"too many sites for the link $key ! Sights are: $other")
-    }.toList
-  }
 
-  protected def onLinkChanged(removed: Map[String, List[SiteNode]], added: Map[String, List[SiteNode]], updated: Map[String, (List[SiteNode], List[SiteNode])]) = {
-
-    edges() = edges.now.filterNot{
-      case edge: KappaLinkEdge => removed.contains(edge.link.label) || updated.contains(edge.link.label)
-      case other => false
-    } ++ createLinkEdges(added) ++ createLinkEdges(updated.mapValues(_._2))
-
-  }
-  */
-
-  protected def createLinkEdges(mp: Map[String, Vector[SiteNode]]): Vector[Edge] = {
+  protected def createLinkEdges(mp: Map[String, Vector[(Change.Value, SiteNode)]]): Vector[Edge] = {
     mp.collect{
       //case (key, site::Nil) => //let us skip this for the sake of simplicity
       case (key, value)  if value.size ==2 =>
-        val (site1, site2) = (value(0), value(1))
-        new KappaLinkEdge(key, site1, site2, visualSettings.link.line)(createLinkView): Edge
+        val ((change, site1), (_, site2)) = (value(0), value(1))
+        new KappaLinkEdge(key, site1, site2, change, visualSettings.link.line)(createLinkView): Edge
       //case (key, other) => throw  new Exception(s"too many sites for the link $key ! Sights are: $other")
     }.toVector
   }
 
-  protected def onLinkChanged(removed: Map[String, Vector[SiteNode]], added: Map[String, Vector[SiteNode]], updated: Map[String, (Vector[SiteNode], Vector[SiteNode])]) = {
+  protected def onLinkChanged(removed: Map[String, Vector[(Change.Change, SiteNode)]],
+                              added: Map[String, Vector[(Change.Change, SiteNode)]],
+                              updated: Map[String, (Vector[(Change.Change, SiteNode)], Vector[(Change.Change, SiteNode)])]) = {
 
     edges() = edges.now.filterNot{
       case edge: KappaLinkEdge => removed.contains(edge.link.label) || updated.contains(edge.link.label)

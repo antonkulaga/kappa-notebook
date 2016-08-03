@@ -23,18 +23,34 @@ class StateNode(val parent: Site, val state: KappaModel.State, val status: Chang
 
 
 object SiteNode {
+
+
+  def apply(parent: Agent, site: Site, status: Change, links: Map[Change.Change, Set[String]])
+           (implicit makeSiteNodeView: SiteNode => KappaSiteView,
+                    makeStateNodeView: StateNode => KappaStateView,
+                    getLineParams: (KappaNode, KappaNode) => LineParams
+           ): SiteNode =
+  {
+    val sts = site.states.map(s => new StateNode(site,s, status)(makeStateNodeView))
+    val children = OrganizedChangeableNode.emptyChangeMap[StateNode].updated(status, sts)
+    new SiteNode(parent, site, children, links,  status)(makeSiteNodeView, getLineParams)
+  }
+
   def apply(parent: Agent, site: Site, status: Change)(
       implicit makeSiteNodeView: SiteNode => KappaSiteView,
       makeStateNodeView: StateNode => KappaStateView,
       getLineParams: (KappaNode, KappaNode) => LineParams
-  )  = {
-    val sts = site.states.map(s => new StateNode(site,s, status)(makeStateNodeView))
-    val children = OrganizedChangeableNode.emptyChangeMap[StateNode].updated(status, sts)
-    new SiteNode(parent, site, children, status)(makeSiteNodeView, getLineParams)
+  ): SiteNode  = {
+    val mp: Map[Change.Value, Set[String]] = OrganizedChangeableNode.emptyChangeMap[String]
+    apply(parent, site, status, mp)(makeSiteNodeView, makeStateNodeView, getLineParams)
   }
 }
 
-class SiteNode(val parent: KappaModel.Agent, val site: KappaModel.Site, val children: Map[Change.Change,Set[StateNode]], val status: Change)
+class SiteNode(val parent: KappaModel.Agent,
+               val site: KappaModel.Site,
+               val children: Map[Change.Change,Set[StateNode]],
+               val links: Map[Change.Change, Set[String]],
+               val status: Change)
               (implicit val fun: SiteNode => KappaSiteView, getLineParams: (KappaNode, KappaNode) => LineParams)
   extends OrganizedChangeableNode with MarkableNode
 {
@@ -48,6 +64,10 @@ class SiteNode(val parent: KappaModel.Agent, val site: KappaModel.Site, val chil
 
   lazy val childEdges: Map[Change, Set[KappaStateEdge]] = children.mapValues{
     case st =>  st.map{ case ch=>new KappaStateEdge(this, ch, getLineParams(this, ch))} }
+
+  lazy val linkList: List[(String, Change)] = links.toList.flatMap{
+    case (key, lks) => lks.map(l=> l->key)
+  }
 }
 
 trait MarkableNode {

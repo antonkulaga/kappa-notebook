@@ -5,7 +5,7 @@ import org.denigma.threejs.{PerspectiveCamera, Vector3}
 import org.scalajs.dom
 
 
-class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Double, EPSILON: Double = 0.00001)
+class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Double, EPSILON: Double = 0.001)
                                                       (val compare: (Edge#FromNode, Edge#ToNode) => (Double, Double) )
   extends Force[Node, Edge] {
 
@@ -49,7 +49,7 @@ class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Doubl
 
 case class SpringParams(length: Double, strength: Double = 1, mass1: Double = 1, mass2: Double = 1)
 
-class SpringForce[Node <: ForceNode, Edge <: ForceEdge](val springMult: Double, EPSILON: Double = 0.00001)
+class SpringForce[Node <: ForceNode, Edge <: ForceEdge](val springMult: Double, EPSILON: Double = 0.001)
                                                   (val compute: (Edge) => SpringParams )
   extends Force[Node, Edge] {
 
@@ -186,10 +186,10 @@ class BorderForce[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Doubl
 
 }
 
-class Gravity[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Double, val gravityMult: Double, center: Vector3,  EPSILON: Double = 0.00001) extends Force[Node, Edge] {
+class Gravity[Node <: ForceNode, Edge <: ForceEdge](val gravityMult: Double, center: Vector3,  EPSILON: Double = 0.00001) extends Force[Node, Edge] {
 
   override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
-    val attraction = attractionMult * forceConstant
+    val attraction = gravityMult * forceConstant
     for {i <- nodes.indices}
     {
       val no1 = nodes(i)
@@ -224,7 +224,7 @@ class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double,
 
   override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
     val repulsion = repulsionMult * forceConstant
-    for {i <- nodes.indices}println
+    for {i <- nodes.indices}
     {
       val no1 = nodes(i)
       //val n1 = no1.view
@@ -244,7 +244,7 @@ class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double,
         val deltaZ = l1.pos.z - l2.pos.z
         val (m1, m2) = compareRepulstion(no1, no2)
 
-        val distance = Math.max(EPSILON, l1.pos.distanceTo(l2.pos))
+        val distance = Math.max(EPSILON * 5, l1.pos.distanceTo(l2.pos))
         val distSquared  = Math.pow(distance, 2)
         val force1 =  (repulsion * repulsion) * m2 / distSquared
         //println(s"t distance ${distance}: (repulsion(${repulsion}) * repulsion(${repulsion})) * m1(${m2}) / distSquared(${distSquared})) = $force1")

@@ -20,7 +20,8 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
 
 class PublicationView(val elem: Element,
-                      val location: Var[Bookmark],
+                      val selected: Var[String],
+                      val comment: Var[String],
                       val paper: Var[Paper],
                       kappaCursor: Var[Option[(Editor, PositionLike)]]
                      )
@@ -32,25 +33,10 @@ class PublicationView(val elem: Element,
 
 
   lazy val scale = Var(1.4)
-  lazy val lineNumber = kappaCursor.map{c => c.map(p => p._2.line).getOrElse(0)}
-  lazy val charNumber = kappaCursor.map{c => c.map(p => p._2.ch).getOrElse(0)}
 
-  val canInsert: Rx[Boolean] = kappaCursor.map(c => c.isDefined)
-
-  def insertComment() = kappaCursor.now match {
-    case Some((ed, pos)) =>
-      //ed.getDoc().setLine()
-    case _ => dom.console.error("cannot insert pdf comment as no editor and line is selected")
-  }
-
-  scale.onChange{
-    case value =>
-      println(s"scale changed to $value")
-  }
+  scale.onChange{ value => dom.console.log(s"scale changed to $value")}
 
   val addNugget= Var(Events.createMouseEvent())
-
-  val selected: Rx[String] = location.map(l=>l.paper)
 
   val selections  = Var(List.empty[TextLayerSelection])
 

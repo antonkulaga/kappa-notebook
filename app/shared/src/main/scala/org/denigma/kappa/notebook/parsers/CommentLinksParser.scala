@@ -3,8 +3,8 @@ package org.denigma.kappa.notebook.parsers
 import fastparse.all._
 
 trait BasicParser {
-  protected val optSpaces = P(" ".rep)
-  protected val spaces = P(" ".rep(min = 1))
+  protected val optSpaces = P(CharIn(" \t").rep(min = 0))
+  protected val spaces = P(CharIn(" \t").rep(min = 1))
   protected val digit = P(CharIn('0'to'9'))
   protected val letter = P(CharIn('A' to 'Z') | CharIn('a' to 'z'))
 

@@ -1,4 +1,5 @@
 package org.denigma.kappa.model
+import scala.collection.immutable._
 
 object KappaModel {
 
@@ -90,7 +91,10 @@ object KappaModel {
     //def atomic: Boolean = added.size==1 || removed.size == 1
   }
 
-  trait KappaNamedElement {
+  case object EmptyKappaElement extends KappaElement
+
+
+  trait KappaNamedElement extends KappaElement{
     def name: String
   }
 
@@ -129,7 +133,7 @@ object KappaModel {
   case class ObservablePattern(name: String, pattern: Pattern) extends KappaNamedElement
 
 
-  case class InitCondition(number: Either[String, Double], pattern: Pattern)
+  case class InitCondition(number: Either[String, Double], pattern: Pattern) extends KappaElement
 
 }
 

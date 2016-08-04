@@ -19,4 +19,4 @@ object GoToPaper {
     */
 }
 
-case class GoToPaper (bookmark: Bookmark) extends UIMessage
+case class GoToPaper (paperURI: String) extends UIMessage

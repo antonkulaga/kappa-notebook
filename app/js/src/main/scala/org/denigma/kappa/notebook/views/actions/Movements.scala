@@ -11,7 +11,7 @@ object Movements {
 
   def toPaper(paper: String, page: Int) = KappaMessage.Container()
     .andThen(Go.ToTab(MainTabs.Papers))
-    .andThen(GoToPaper(Bookmark(paper, page)))
+    .andThen(GoToPaper(paper))
 
   def toFigure(figure: String) = KappaMessage.Container()
     .andThen(Go.ToTab(MainTabs.Figures))
@@ -22,7 +22,7 @@ object Movements {
     case FileType.pdf =>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Papers))
-        .andThen(GoToPaper(Bookmark(file.name, 1)))
+        .andThen(GoToPaper(file.name))
 
     case FileType.source =>
       KappaMessage.Container()

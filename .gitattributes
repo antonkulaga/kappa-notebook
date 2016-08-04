@@ -1,0 +1,4 @@
+app/jvm/src/main/resources/* linguist-vendored
+files/* linguist-vendored
+test/files/* linguist-vendored
+test/upload/* linguist-vendored

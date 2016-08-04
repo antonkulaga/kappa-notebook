@@ -42,7 +42,7 @@ object SiteNode {
       makeStateNodeView: StateNode => KappaStateView,
       getLineParams: (KappaNode, KappaNode) => LineParams
   ): SiteNode  = {
-    val mp: Map[Change.Value, Set[String]] = OrganizedChangeableNode.emptyChangeMap[String]
+    val mp: Map[Change.Change, Set[String]] = OrganizedChangeableNode.emptyChangeMap[String]
     apply(parent, site, status, mp)(makeSiteNodeView, makeStateNodeView, getLineParams)
   }
   */

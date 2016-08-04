@@ -5,7 +5,7 @@ import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.notebook.parsers.{CommentLinksParser, KappaParser}
 import org.scalatest.{Inside, Matchers, WordSpec}
 
-import scala.collection.immutable.SortedSet
+import scala.collection.immutable._
 
 /**
   * Created by antonkulaga on 06/03/16.
@@ -63,8 +63,19 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
         case res@Parsed.Success(v, index: Int) =>
       }
 
+      val pTetLeft = Agent("pTet", Set(Site("binding", Set.empty, Set("1"))))
+      val tetRLeft = Agent("TetR", Set(Site("dna", Set.empty, Set("1"))))
+      val pTetRight = Agent("pTet", Set(Site("binding", Set.empty, Set.empty)))
 
+      val rule = parser.mergeLine(
+        """
+          |'tetR.degradation2' pTet(binding!1),TetR(dna!1) ->  pTet(binding) @ 'degrad2'
+        """.stripMargin)
+      inside(parser.rule.parse(rule)) {
+        case Parsed.Success(v: Rule, _) if v.left == Pattern(List(pTetLeft, tetRLeft)) && v.right == Pattern(List(pTetRight)) =>
+      }
     }
+
     "parse two sided rules" in {
       import KappaModel._
       val parser = new KappaParser
@@ -97,7 +108,6 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
     }
 
     "parse creation and degradation" in {
-      import KappaModel._
       val parser = new KappaParser
       val degradation = "'tetR.degradation' TetR(dna) ->  @ 'degrad1'"
       inside(parser.rule.parse(degradation)) {
@@ -133,6 +143,56 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
         =>
       }
     }
+
+    "parsing agents with the same name" in {
+      val degradation = "'tetR.degradation' TetR(dna),TetR(dna~hello),TetR(dna) ->  @ 'degrad1'"
+      val parser = new KappaParser
+      inside(parser.rule.parse(degradation)) {
+        case res@Parsed.Success(v, index: Int) if v.name == "tetR.degradation"
+          && v.left.agents.length == 3
+          && v.right.agents.isEmpty
+        =>
+      }
+    }
+
+    "parsing complex agents" in {
+      val parser = new KappaParser
+      import KappaModel._
+      val agent = parser.mergeLine("%agent: RNA(downstream,upstream,type~BBaB0034~BBaC0012~BBaC0040~BBaC0051~BBaR0010~BBaR0040~BBaR0051,binding)")
+      lazy val states = Set(
+        Site("downstream"), Site("upstream"), Site("binding"),
+        Site("type", Set(State("BBaB0034"), State("BBaC0012"), State("BBaC0040"),
+          State("BBaC0051"), State("BBaR0010"), State("BBaR0040"), State("BBaR0051"))) )
+      val rightAgent = KappaModel.Agent("RNA", states )
+      inside(parser.agentDecl.parse(agent)) {
+        case Parsed.Success(v: KappaModel.Agent , _) if v ==rightAgent  =>
+      }
+    }
+
+    "parsing complex rules" in {
+      import KappaModel._
+      val dnaLeft1 = Agent("DNA", Set(Site("binding"), Site("type", Set(State("BBaR0010p3"))), Site("upstream", Set.empty, Set("2"))))
+      val lacILeft = Agent("LacI", Set(Site("dna"), Site("lactose")))
+      val dnaLeft2 = Agent("DNA", Set(
+        Site("downstream", Set.empty, Set("2")), Site("binding"), Site("type", Set(State("BBaR0010p2")))
+      ))
+      val dnaRight1 = Agent("DNA", Set(Site("binding"), Site("type", Set(State("BBaR0010p3"))), Site("upstream", Set.empty, Set("3"))))
+      val lacIRight = Agent("LacI", Set(Site("dna", Set.empty, Set("1")), Site("lactose")))
+      val dnaRight2 = Agent("DNA", Set(
+        Site("downstream", Set.empty, Set("3")), Site("binding", Set.empty, Set("1")), Site("type", Set(State("BBaR0010p2")))
+      ))
+      import KappaModel._
+      val parser = new KappaParser
+      val rule = parser.mergeLine("""
+                   |'LacI binding to R0010p2 (no LacI)' \
+                   |	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) -> \
+                   |	DNA(binding,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding!1,type~BBaR0010p2) @ 'transcription factor binding rate'
+                 """.stripMargin)
+      inside(parser.rule.parse(rule)) {
+        case Parsed.Success(r, _) if r.left == Pattern(List(dnaLeft1, lacILeft, dnaLeft2)) && r.right == Pattern(List(dnaRight1, lacIRight, dnaRight2))=>
+      }
+    }
+
 
     /*
     "differentiate agents in rules" in {

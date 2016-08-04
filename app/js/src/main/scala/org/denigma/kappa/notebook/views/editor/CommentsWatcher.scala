@@ -22,7 +22,6 @@ import scala.concurrent.duration._
   */
 class CommentsWatcher(
                        val updates: Var[EditorUpdates],
-                       val location: Var[Bookmark],
                        val figures: Var[Map[String, Figure]],
                        val currentProjectName: Rx[String],
                        val input: Var[KappaMessage]

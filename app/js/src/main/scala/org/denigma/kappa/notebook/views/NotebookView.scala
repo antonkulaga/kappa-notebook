@@ -39,8 +39,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val sourceMap: Var[Map[String, KappaFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(sourceMap = s))
 
-  val location: Var[Bookmark] = Var(Bookmark("", 1, Nil))
-
   val figures: Var[Map[String, Figure]] = Var(Map.empty)
 
   val currentProjectName = currentProject.map(_.name)
@@ -83,7 +81,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     case other => //do nothing
   }
 
-  val commentManager = new CommentsWatcher(editorsUpdates, location, figures, currentProjectName, input)
+  val commentManager = new CommentsWatcher(editorsUpdates, figures, currentProjectName, input)
 
 
   //import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all
@@ -126,7 +124,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("VisualPanel"){
       case (el, args) =>
-        val v = new VisualPanelView(el, kappaWatcher, input, s).withBinder(n => new FixedBinder(n))
+        val v = new VisualPanelView(el, kappaWatcher.text, kappaWatcher.parsed, input, s).withBinder(n => new FixedBinder(n))
         addMenuItem(el, MainTabs.Visualizations)
         v
     }
@@ -159,7 +157,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("Papers") {
       case (el, params) =>
-        val v = new PapersView(el, location, currentProjectName, connector, kappaCursor).withBinder(new CodeBinder(_))
+        val v = new PapersView(el, currentProjectName, connector, kappaCursor).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Papers)
         v
     }

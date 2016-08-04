@@ -32,7 +32,7 @@ trait ArrowEdge extends KappaEdge {
   protected def posArrow() = {
     arrow.position.set(sourcePos.x, sourcePos.y, sourcePos.z) // = sourcePos
     arrow.setDirection(direction.normalize())
-    arrow.setLength(direction.length()-3, lineParams.headLength, lineParams.headWidth)
+    arrow.setLength(direction.length() - lineParams.headLength, lineParams.headLength, lineParams.headWidth)
   }
 
 

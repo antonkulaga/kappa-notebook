@@ -4,6 +4,18 @@
   <div class="ui header"  data-show-if="empty">
     Currently no papers are loaded.
   </div>
+  <div class="ui inverted segment equal width grid">
+    <div class="column">
+      <a class="ui basic label">Comment: <span data-bind="comment"></span></a>
+    </div>
+    <div class="column">
+      <button class="ui small inverted button" data-event-click="insertComment"> Insert comment</button>
+      <span>zoom</span>
+    </div>
+    <div class="column">
+      <span>zoom</span>
+    </div>
+  </div>
   <div class="ui top attached pointing menu" data-view="headers">
     <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
   </div>

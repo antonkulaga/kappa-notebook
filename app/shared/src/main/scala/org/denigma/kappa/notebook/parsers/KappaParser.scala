@@ -9,6 +9,50 @@ class KappaParser extends CommentLinksParser
 {
   import org.denigma.kappa.model.KappaModel._
 
+
+  /*
+  protected def parseText(line: String) = mergeLine(line) match {
+    case "" => ParsedLine.empty
+    case line =>
+      agentDecl.parse(line).onSuccess{ result => parsed() = ParsedLine(line, result)
+      }.onFailure{
+        input=>
+          rule.parse(input).onSuccess{
+            result => parsed() = ParsedLine(line, result)
+          }.onFailure{
+            input2=>
+              observable.parse(input2).onSuccess{
+                result => parsed() = ParsedLine(line, result)
+
+              }.onFailure{
+                input3=>
+                  init.parse(input3).onSuccess{
+                    result => parsed() = ParsedLine(line, result)
+                  }.onFailure{
+                    _ => parsed() = ParsedLine.empty
+                  }
+              }
+          }
+      }
+    }
+    */
+
+
+  def mergeLine(str: String) = str.replace("\\\n"," ").trim
+
+  def getKappaLine(getLine: Double => String)(line: Int, count: Int, acc: String = ""): String = {
+    val t: String = getLine(line).trim
+    if(t.endsWith("\\") && (line+ 1)< count) {
+      val newLine =" " + (t.indexOf("#") match {
+        case -1 => t.dropRight(1)
+        case index =>
+          val withoutComment: String = t.dropRight(t.length - index)
+          withoutComment
+      })
+      getKappaLine(getLine)(line + 1, count, acc+ newLine)
+    } else (acc+ " " + t).trim
+  }
+
   protected val text = P(digit | letter)
 
   protected val integer: P[Int] = P(
@@ -102,7 +146,7 @@ class KappaParser extends CommentLinksParser
     case (lb, pat) =>  ObservablePattern(lb, pat)
   }
 
-  val init = P(optSpaces ~ "%init:" ~ optSpaces ~ labelOrNumber ~spaces ~ rulePart).map{
+  val init = P(optSpaces ~ "%init:" ~ optSpaces ~ labelOrNumber ~spaces ~ "(".? ~ rulePart ~ ")".?).map{
     case (lb, pat) =>  InitCondition(lb, pat)
   }
 

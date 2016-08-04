@@ -47,8 +47,10 @@ trait KappaPainter {
       stroke :=  labelStrokeColor.now,
       fill := s"url(#${grad})",
       strokeWidth := st,
-      height := rectangle.height,
-      width := rectangle.width + st,
+      x := st,
+      y := st,
+      height := rectangle.height - st *2,
+      width := rectangle.width - st * 2,
       rx := rX, ry := rY
     )
     val startX = (rectangle.width - textBox.width) / 2
@@ -57,8 +59,8 @@ trait KappaPainter {
     import scalatags.JsDom.implicits._
 
     svg(
-      height := rectangle.height + st,
-      width := rectangle.width + st,
+      height := rectangle.height,
+      width := rectangle.width,
       x := rectangle.x,
       y := rectangle.y,
       //onclick := { ev: MouseEvent=> println("hello")},

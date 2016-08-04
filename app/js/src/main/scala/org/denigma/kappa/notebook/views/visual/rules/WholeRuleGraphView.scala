@@ -13,41 +13,12 @@ import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 
+import scala.Predef.{Map, Set}
+import scala.Vector
 import scala.collection.immutable._
 
-/*
-class WholeRuleGraphView(val elem: Element,
-                         val unchanged: Rx[Set[Agent]],
-                         val removed: Rx[Set[Agent]],
-                         val added: Rx[Set[Agent]],
-                         val updated: Rx[Set[Agent]],
-                         val containerName: String,
-                         val visualSettings: RulesVisualSettings
-                        ) extends RulesGraphView {
-
-  lazy val size: (Double, Double) = elem.getBoundingClientRect() match {
-    case rect: ClientRect if rect.width < 100 || rect.height < 100 => (400.0, 400.0)
-    case rect: ClientRect => (rect.width, rect.height)
-  }
-  val width: Var[Double] = Var(size._1)
-
-  val height: Var[Double] = Var(size._2)
-
-  override lazy val container: HTMLElement = sq.byId(containerName).get
-  
-  val viz = new Visualizer(container,
-    width,
-    height,
-    layouts,
-    750.0,
-    iterationsPerFrame,
-    firstFrameIterations
-  )
-}
-*/
-
 object RuleViewMode extends Enumeration {
-  type Change = Value
+  type RuleViewMode = Value
   val Left, Right, Both = Value
 }
 
@@ -79,22 +50,16 @@ class WholeRuleGraphView(val elem: Element,
 
   lazy val siteNodes: Rx[Vector[SiteNode]] = nodes.map(nds => nds.collect{case node: SiteNode => node})
 
-  val links: Rx[Map[String, Vector[(Change, SiteNode)]]] = siteNodes.map{ case sNodes =>
-    sNodes.foreach(s=>dom.console.log(s" SITE ${s.site} LINKS = "+ s.links))
-    val lns = sNodes
+  val links: Rx[Map[(String, Change), Vector[SiteNode]]] = siteNodes.map{ sNodes =>
+    //sNodes.foreach(s=>dom.console.log(s" SITE ${s.site} LINKS = "+ s.links))
+    val lns: Map[(String, Change), Vector[SiteNode]] = sNodes
       .flatMap(snode => snode.linkList.map(ls => (ls , snode)))
-      .groupBy{ case ((site, change), nds) => site }
-      .mapValues(vector => vector.map { case ((site, change), node) => (change , node) })
-    lns.foreach{
-      case (key, vector) =>
-        println(s"LINK ${key} with vector ${vector.map(v => v._2.site).toList.mkString(" || ")}")
-    }
+      .groupBy{ case ((link, change), nds) => (link, change) }
+      .mapValues(vector => vector.map { case ((site, change), node) => node })
     lns
   }
 
-  lazy val merged = updated.map{
-    case up => up.map{  case (one, two) => mergeNodes(one, two) }
-  }
+  lazy val merged = updated.map{ up => up.map{  case (one, two) => mergeNodes(one, two) }}
 
   val viz = new Visualizer(container,
     width,
@@ -140,19 +105,17 @@ class WholeRuleGraphView(val elem: Element,
     }
     val updatedNodes: List[SiteNode] = grouped.collect{
       case (name, one::two::Nil) =>
-        val states =  mergeSiteStates(left, one , two)
+        val states =  mergeSiteStates(left, one, two)
         val links = mergeLinks(one, two)
         new SiteNode(left, one, states, links, Change.Updated)
     }
     val removed: Set[Site] = left.sites.filterNot(s => sameNames.contains(s.name))
     val added: Set[Site] = right.sites.filterNot(s => sameNames.contains(s.name))
-    val addedNodes: Set[SiteNode] = added.map{
-      case a =>
+    val addedNodes: Set[SiteNode] = added.map{ a =>
         val links = OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Added, a.links)
         SiteNode(left, a, Change.Added, links)
     }
-    val removedNodes: Set[SiteNode] = removed.map{
-      case r =>
+    val removedNodes: Set[SiteNode] = removed.map{ r =>
         val links =  OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Removed, r.links)
         SiteNode(left, r, Change.Removed, links)
     }
@@ -166,14 +129,14 @@ class WholeRuleGraphView(val elem: Element,
 
 
   protected def mergeSiteStates(parent: Agent, left: KappaModel.Site, right: KappaModel.Site): Map[Change.Change, Set[StateNode]] = {
-    val deleted: Set[State] = left.states.diff(right.states)
-    val deletedNodes: Set[StateNode] = deleted.map(r => StateNode(left, r, Change.Removed))
+    val removed: Set[State] = left.states.diff(right.states)
+    val removedNOdes: Set[StateNode] = removed.map(r => StateNode(left, r, Change.Removed))
     val added = right.states.diff(left.states)
     val addedNodes: Set[StateNode] = added.map(a => StateNode(left, a, Change.Added))
     val unchanged: Set[State] = left.states.intersect(right.states)
     val unchangedNodes: Set[StateNode] = unchanged.map(u => StateNode(left, u, Change.Unchanged))
     Map(
-      (Change.Removed , deletedNodes),
+      (Change.Removed , removedNOdes),
       (Change.Added , addedNodes),
       (Change.Unchanged , unchangedNodes),
       (Change.Updated , Set.empty[StateNode])
@@ -225,7 +188,7 @@ class WholeRuleGraphView(val elem: Element,
       viz.removeObject(n.view.container)
     }
     added.foreach{
-      case n =>
+      n =>
         //dom.console.log("ADDED IS "+n.view.label)
         viz.addSprite(n.view.container)
     }
@@ -252,12 +215,17 @@ class WholeRuleGraphView(val elem: Element,
     }
   }
 
-  protected def createLinkEdges(mp: Map[String, Vector[(Change.Value, SiteNode)]]): Vector[Edge] = {
+  protected def createLinkEdges(mp: Map[(String, Change.Change), Vector[SiteNode]]): Vector[Edge] = {
     mp.collect{
       //case (key, site::Nil) => //let us skip this for the sake of simplicity
-      case (key, value)  if value.size ==2 =>
-        val ((change, site1), (_, site2)) = (value(0), value(1))
-        new KappaLinkEdge(key, site1, site2, change, linkLineByStatus(change, visualSettings.link.line))(createLinkView): Edge
+      case ((name, change), value)  if value.size > 1 =>
+        if(value.size > 2) {
+          dom.console.error("THE NUMBER OF THE SAME LINK FOR THE SAME CHANGE TYPE SHOULD NOT BE MORE THAN 2")
+          dom.console.error(s"sit is $name change is $change links are :" + value.toList.map(v=>v.site))
+        }
+        val (site1, site2) = (value(0), value(1))
+        val lineParams = linkLineByStatus(change, visualSettings.link.line)
+        new KappaLinkEdge(name, site1, site2, change, lineParams)(createLinkView): Edge
       //case (key, other) => throw  new Exception(s"too many sites for the link $key ! Sights are: $other")
     }.toVector
   }
@@ -268,16 +236,20 @@ class WholeRuleGraphView(val elem: Element,
     case _ => line.copy(lineColor = Colors.blue  )
   }
 
-
-  protected def onLinkChanged(removed: Map[String, Vector[(Change.Change, SiteNode)]],
-                              added: Map[String, Vector[(Change.Change, SiteNode)]],
-                              updated: Map[String, (Vector[(Change.Change, SiteNode)], Vector[(Change.Change, SiteNode)])]) = {
-
+  protected def onLinkChanged(deleted: Map[(String, Change.Change), Vector[SiteNode]],
+                              added: Map[(String, Change.Change), Vector[SiteNode]],
+                              updated: Map[(String, Change.Change), (Vector[SiteNode], Vector[SiteNode])]) = {
+    val delValues: Set[SiteNode] = deleted.values.flatMap(v=>v).toSet
+    val (prev: Iterable[((String, Change.Change), Vector[SiteNode])],
+    curr: Iterable[((String, Change.Change), Vector[SiteNode])]) = updated.unzip[((String, Change.Change), Vector[SiteNode]), ((String, Change.Change), Vector[SiteNode])]{
+      case (key, (v1, v2)) => ((key, v1), (key, v2))
+    }
+    val old: Set[SiteNode] =  prev.toMap.values.flatMap(v=>v).toSet
+    val cr: Map[(String, Change.Change), Vector[SiteNode]] = curr.toMap
     edges() = edges.now.filterNot{
-      case edge: KappaLinkEdge => removed.contains(edge.link.label) || updated.contains(edge.link.label)
+      case edge: KappaLinkEdge => delValues.contains(edge.from) || delValues.contains(edge.to) || old.contains(edge.from) || old.contains(edge.to) //|| updated.contains(edge.link.label)
       case other => false
-    } ++ createLinkEdges(added) ++ createLinkEdges(updated.mapValues(_._2))
-
+    } ++ createLinkEdges(added) ++ createLinkEdges(cr)
   }
 
 
@@ -290,11 +262,11 @@ class WholeRuleGraphView(val elem: Element,
     }
 
     links.updates.foreach{
-      case upd => onLinkChanged(upd.removed, upd.added, upd.updated)
+      upd => onLinkChanged(upd.removed, upd.added, upd.updated)
     }
 
     onAgentNodesUpdate(Set.empty, allAgentNodes.now)
-    allAgentNodes.updates.foreach{ case upd =>  onAgentNodesUpdate(upd.removed, upd.added) }
+    allAgentNodes.updates.foreach{ upd =>  onAgentNodesUpdate(upd.removed, upd.added) }
 
     //dom.console.log(s"UNCHANGED ON INIT + ${unchanged.now}")
     onAgentUpdates(Set.empty, unchanged.now, Change.Unchanged)

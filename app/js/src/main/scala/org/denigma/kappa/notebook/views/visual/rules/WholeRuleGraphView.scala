@@ -1,13 +1,13 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
-
-import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.{Agent, Site, State}
 import org.denigma.kappa.notebook.graph.Change.Change
 import org.denigma.kappa.notebook.graph._
 import org.denigma.kappa.notebook.graph.layouts.{ForceLayoutParams, GraphLayout}
+import org.denigma.kappa.notebook.parsers.GraphUpdate
+import org.denigma.kappa.notebook.views.visual.ShowParameters
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
 import rx._
@@ -17,20 +17,21 @@ import scala.Predef.{Map, Set}
 import scala.Vector
 import scala.collection.immutable._
 
-object RuleViewMode extends Enumeration {
-  type RuleViewMode = Value
-  val Left, Right, Both = Value
-}
-
 class WholeRuleGraphView(val elem: Element,
-                         val unchanged: Rx[Set[Agent]],
-                         val removed: Rx[Set[Agent]],
-                         val added: Rx[Set[Agent]],
-                         val updated: Rx[Set[(Agent, Agent)]],
+                         val update: Rx[GraphUpdate],
+                         val showState: Rx[ShowParameters.ShowParameters],
                          val containerName: String,
                          val visualSettings: RulesVisualSettings
                         ) extends RuleGraphWithForces
 {
+
+  lazy val unchanged: Rx[Set[Agent]] = update.map(u=>u.unchangedAgents)
+
+  lazy val updated: Rx[Set[(Agent, Agent)]] = update.map(u => u.updatedAgents)
+
+  lazy val removed: Rx[Set[Agent]] = update.map(u => u.removedAgents)
+
+  lazy val added: Rx[Set[Agent]] =  update.map(u => u.addedAgents)
 
   lazy val size: (Double, Double) = elem.getBoundingClientRect() match {
     case rect: ClientRect if rect.width < 100 || rect.height < 100 => (400.0, 400.0)
@@ -40,8 +41,8 @@ class WholeRuleGraphView(val elem: Element,
 
   val height: Var[Double] = Var(size._2)
 
-
   lazy val nodes = Var(Vector.empty[KappaNode])
+
   lazy val edges = Var(Vector.empty[KappaEdge])
 
   lazy val container: HTMLElement = sq.byId(containerName).get
@@ -50,7 +51,9 @@ class WholeRuleGraphView(val elem: Element,
 
   lazy val siteNodes: Rx[Vector[SiteNode]] = nodes.map(nds => nds.collect{case node: SiteNode => node})
 
-  val links: Rx[Map[(String, Change), Vector[SiteNode]]] = siteNodes.map{ sNodes =>
+  lazy val merged = updated.map{ up => up.map{  case (one, two) => mergeNodes(one, two) }}
+
+  lazy val links: Rx[Map[(String, Change), Vector[SiteNode]]] = siteNodes.map{ sNodes =>
     //sNodes.foreach(s=>dom.console.log(s" SITE ${s.site} LINKS = "+ s.links))
     val lns: Map[(String, Change), Vector[SiteNode]] = sNodes
       .flatMap(snode => snode.linkList.map(ls => (ls , snode)))
@@ -59,7 +62,6 @@ class WholeRuleGraphView(val elem: Element,
     lns
   }
 
-  lazy val merged = updated.map{ up => up.map{  case (one, two) => mergeNodes(one, two) }}
 
   val viz = new Visualizer(container,
     width,
@@ -96,16 +98,17 @@ class WholeRuleGraphView(val elem: Element,
 
   protected def mergeNodeSites(left: KappaModel.Agent, right: KappaModel.Agent): Map[Change.Change, Set[SiteNode]] = {
     val sameNames = left.siteNames.intersect(right.siteNames)
-    val all = left.sites ++ right.sites
-    val grouped = all.toList.groupBy(s=>s.name).toList
+    val all = left.sites.toList ++ right.sites.toList
+    val grouped = all.groupBy(s=>s.name).toList
     val unchangedNodes: List[SiteNode] = grouped.collect{
-      case (name, one::two::Nil) if one==two =>
+      case (name, one::two::tail) if one==two =>
+        if(tail.nonEmpty) dom.console.error("tail is not empty, sites are: " + one::two::tail)
         val links = OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Unchanged, one.links)
         SiteNode(left, one, Change.Unchanged, links)
     }
     val updatedNodes: List[SiteNode] = grouped.collect{
       case (name, one::two::Nil) =>
-        val states =  mergeSiteStates(left, one, two)
+        val states =  mergeSiteStates(one, two)
         val links = mergeLinks(one, two)
         new SiteNode(left, one, states, links, Change.Updated)
     }
@@ -128,15 +131,15 @@ class WholeRuleGraphView(val elem: Element,
   }
 
 
-  protected def mergeSiteStates(parent: Agent, left: KappaModel.Site, right: KappaModel.Site): Map[Change.Change, Set[StateNode]] = {
+  protected def mergeSiteStates(left: KappaModel.Site, right: KappaModel.Site): Map[Change.Change, Set[StateNode]] = {
     val removed: Set[State] = left.states.diff(right.states)
-    val removedNOdes: Set[StateNode] = removed.map(r => StateNode(left, r, Change.Removed))
+    val removedNodes: Set[StateNode] = removed.map(r => StateNode(left, r, Change.Removed))
     val added = right.states.diff(left.states)
     val addedNodes: Set[StateNode] = added.map(a => StateNode(left, a, Change.Added))
     val unchanged: Set[State] = left.states.intersect(right.states)
     val unchangedNodes: Set[StateNode] = unchanged.map(u => StateNode(left, u, Change.Unchanged))
     Map(
-      (Change.Removed , removedNOdes),
+      (Change.Removed , removedNodes),
       (Change.Added , addedNodes),
       (Change.Unchanged , unchangedNodes),
       (Change.Updated , Set.empty[StateNode])
@@ -173,15 +176,16 @@ class WholeRuleGraphView(val elem: Element,
 
     nodes() = nodes.now.filterNot(n => toDelete.contains(n)) ++ toAdd
     val addedEdges = added.flatMap(a => getAllEdgesFrom(a))
-    edges() = edges.now.filterNot{ case e => toDelete.exists(a => a== e.from || a == e.to) } ++ addedEdges
+    edges() = edges.now.filterNot{ e => toDelete.exists(a => a== e.from || a == e.to) } ++ addedEdges
   }
 
+import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
 
   def onNodesChanges(removed: Set[Node], added: Set[Node]): Unit = {
     //removed.foreach(r=> dom.console.log("REMOVED NODE "+r.view.label))
     //added.foreach(a=> dom.console.log("ADDED NODE "+a.view.label))
 
-    removed.foreach{ case n =>
+    removed.foreach{ n =>
       ///dom.console.log("REMOVED IS "+n.view.label)
       n.view.clearChildren()
       viz.removeSprite(n.view.container)
@@ -190,6 +194,7 @@ class WholeRuleGraphView(val elem: Element,
     added.foreach{
       n =>
         //dom.console.log("ADDED IS "+n.view.label)
+        updateNodeVisibility(n, showState.now)
         viz.addSprite(n.view.container)
     }
     //if(added.nonEmpty || removed.nonEmpty) edges() = edges.now.filterNot(e => removed.contains(e.from) || removed.contains(e.to))
@@ -254,6 +259,8 @@ class WholeRuleGraphView(val elem: Element,
 
 
   protected def subscribeUpdates() = {
+    showState.foreach(sh => nodes.now.foreach(n => updateNodeVisibility(n, sh))  )
+
     nodes.removedInserted.foreach{
       case (r, a) => onNodesChanges(r.toSet, a.toSet)
     }
@@ -285,6 +292,41 @@ class WholeRuleGraphView(val elem: Element,
     merged.updates.foreach(upd=> onMergedUpdates(upd.removed, upd.added))
 
     layouts.now.foreach(_.start(viz.width, viz.height, viz.camera))
+  }
+
+  protected def updateEdgeVisibility(edge: KappaEdge, show: ShowParameters) = (edge, show) match {
+    case (e : ArrowEdge, ShowParameters.Right) =>
+    case (e : ArrowEdge, ShowParameters.Left) =>
+    case (e : ArrowEdge, ShowParameters.Both) =>
+
+  }
+
+  protected def updateNodeVisibility(node: Node, show: ShowParameters) = (node, show) match {
+    case (n: OrganizedChangeableNode, ShowParameters.Right) =>
+      n.status match {
+        case Change.Added =>  n.view.setOpacity(1.0)
+        case Change.Removed =>   n.view.setOpacity(0.3)
+        case Change.Updated =>   n.view.setOpacity(1.0)
+        case Change.Unchanged =>   n.view.setOpacity(1.0)
+      }
+      dom.console.log("right")
+    case (n: OrganizedChangeableNode, ShowParameters.Left) =>
+      n.status match {
+        case Change.Added =>  n.view.setOpacity(0.3)
+        case Change.Removed =>   n.view.setOpacity(1.0)
+        case Change.Updated =>   n.view.setOpacity(1.0)
+        case Change.Unchanged =>   n.view.setOpacity(1.0)
+      }
+      dom.console.log("left")
+    case (n: OrganizedChangeableNode, ShowParameters.Both) =>
+      n.status match {
+        case Change.Added =>  n.view.setOpacity(1.0)
+        case Change.Removed =>   n.view.setOpacity(1.0)
+        case Change.Updated =>   n.view.setOpacity(1.0)
+        case Change.Unchanged =>   n.view.setOpacity(1.0)
+      }
+      dom.console.log("both")
+    case _ => dom.console.info(s"unknow node $node")
   }
 
 

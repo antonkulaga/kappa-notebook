@@ -31,6 +31,14 @@ object Gradients {
       stop(offset := "0%", stopColor := "white"),
       stop(offset := "100%", stopColor := "deepskyblue")
     )
+
+
+  def superLightBlueGradient(gradientName: String): TypedTag[LinearGradient]  =
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "#e6f2ff"),
+      stop(offset := "100%", stopColor := "#cce5ff")
+    )
+
   /*
     <svg height="52.171875" width="88.796875">
     <defs>
@@ -64,6 +72,13 @@ object Gradients {
     )
   }
 
+  def superLightRedGradient(gradientName: String) = {
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "#ffe6e6"),
+      stop(offset := "100%", stopColor := "#ffcccc")
+    )
+  }
+
   def greenGradient(gradientName: String) = {
     linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
       stop(offset := "0%", stopColor := "#adebad"),
@@ -72,12 +87,19 @@ object Gradients {
     )
   }
 
-
   def lightGreenGradient(gradientName: String) = {
     linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
       stop(offset := "0%", stopColor := "#b3ffb3"),
       stop(offset := "50%", stopColor := "#00e600"),
       stop(offset := "100%", stopColor := "#009900")
+    )
+  }
+
+
+  def superLightGreenGradient(gradientName: String) = {
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "#e6ffe6"),
+      stop(offset := "100%", stopColor := "#ccffcc")
     )
   }
 
@@ -121,22 +143,22 @@ trait VisualGraph extends BindableView {
   def fillGradients() = {
     addGradient(KappaAgentView.gradientName, Change.Removed, Gradients.redGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Removed, Gradients.lightRedGradient(KappaSiteView.gradientName))
-    addGradient(KappaStateView.gradientName, Change.Removed, Gradients.redGradient(KappaStateView.gradientName))
+    addGradient(KappaStateView.gradientName, Change.Removed, Gradients.superLightRedGradient(KappaStateView.gradientName))
     addGradient(KappaLinkView.gradientName, Change.Removed, Gradients.lightRedGradient(KappaLinkView.gradientName))
 
     addGradient(KappaAgentView.gradientName, Change.Added, Gradients.greenGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Added, Gradients.lightGreenGradient(KappaSiteView.gradientName))
-    addGradient(KappaStateView.gradientName, Change.Added, Gradients.greenGradient(KappaStateView.gradientName))
+    addGradient(KappaStateView.gradientName, Change.Added, Gradients.superLightGreenGradient(KappaStateView.gradientName))
     addGradient(KappaLinkView.gradientName, Change.Added, Gradients.lightGreenGradient(KappaLinkView.gradientName))
 
     addGradient(KappaAgentView.gradientName, Change.Unchanged, Gradients.blueGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Unchanged, Gradients.lightBlueGradient(KappaSiteView.gradientName))
-    addGradient(KappaStateView.gradientName, Change.Unchanged, Gradients.blueGradient(KappaStateView.gradientName))
+    addGradient(KappaStateView.gradientName, Change.Unchanged, Gradients.superLightBlueGradient(KappaStateView.gradientName))
     addGradient(KappaLinkView.gradientName, Change.Unchanged, Gradients.lightBlueGradient(KappaLinkView.gradientName))
 
     addGradient(KappaAgentView.gradientName, Change.Updated, Gradients.blueGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Updated, Gradients.lightBlueGradient(KappaSiteView.gradientName))
-    addGradient(KappaStateView.gradientName, Change.Updated, Gradients.blueGradient(KappaStateView.gradientName))
+    addGradient(KappaStateView.gradientName, Change.Updated, Gradients.superLightBlueGradient(KappaStateView.gradientName))
     addGradient(KappaLinkView.gradientName, Change.Updated, Gradients.lightBlueGradient(KappaLinkView.gradientName))
   }
   fillGradients()

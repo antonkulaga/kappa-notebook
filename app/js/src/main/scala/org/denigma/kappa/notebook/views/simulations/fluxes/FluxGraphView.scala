@@ -108,13 +108,11 @@ class FluxGraphView(val elem: Element,
     case other => (1, 1)
   }
 
-  val nodesByName = items.map{
-    case its => its.map(fl=>(fl.rule, new FluxNode(fl))).toMap
-  }
+  val nodesByName = items.map{ its => its.map(fl=>(fl.rule, new FluxNode(fl))).toMap }
 
   val nodes: Rx[Vector[Node]] = nodesByName.map(nds =>nds.values.toVector)
 
-  val edges: Rx[Vector[Edge]] = nodesByName.map{ case nds => nds.flatMap{
+  val edges: Rx[Vector[Edge]] = nodesByName.map{ nds => nds.flatMap{
       case (name, node) => node.flux.flux.collect {
         case (key, value) if value != 0.0 =>
 
@@ -177,7 +175,7 @@ class FluxGraphView(val elem: Element,
     //removed.foreach(r=> dom.console.log("REMOVED NODE "+r.view.label))
     //added.foreach(a=> dom.console.log("ADDED NODE "+a.view.label))
 
-    removed.foreach{ case n =>
+    removed.foreach{ n =>
       n.view.clearChildren()
       viz.removeSprite(n.view.container)
       viz.removeObject(n.view.container)
@@ -190,7 +188,7 @@ class FluxGraphView(val elem: Element,
 
   protected def subscribeUpdates() = {
     nodes.foreach{
-     case nds =>
+     nds =>
        //println("NODES CHANGE")
        nds.foreach(n=>println("node is "+ n))
     }

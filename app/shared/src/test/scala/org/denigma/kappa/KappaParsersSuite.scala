@@ -181,7 +181,6 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       val dnaRight2 = Agent("DNA", Set(
         Site("downstream", Set.empty, Set("3")), Site("binding", Set.empty, Set("1")), Site("type", Set(State("BBaR0010p2")))
       ))
-      import KappaModel._
       val parser = new KappaParser
       val rule = parser.mergeLine("""
                    |'LacI binding to R0010p2 (no LacI)' \

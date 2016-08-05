@@ -1,16 +1,16 @@
 @()
 <section class="ui three wide column page segment noscroll" data-view="Papers" id="Papers">
   @commons.html.header("Papers")
-  <div class="ui header"  data-show-if="empty">
-    Currently no papers are loaded.
-  </div>
+
   <div class="ui inverted segment equal width grid">
-    <div class="column">
-      <a class="ui basic label">Comment: <span data-bind="comment"></span></a>
+    <div class="column"  data-show-if="empty">
+      <span class="ui red header">Currently no papers are loaded.</span>
     </div>
     <div class="column">
-      <button class="ui small inverted button" data-event-click="insertComment"> Insert comment</button>
-      <span>zoom</span>
+      <a class="ui basic teal label">Comment: <span class="ui orange header" data-bind="comment"></span></a>
+    </div>
+    <div class="column">
+      <button class="ui small inverted green button" data-event-click="insertComment"> Insert comment</button>
     </div>
     <div class="column">
       <span>zoom</span>

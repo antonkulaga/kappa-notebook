@@ -123,7 +123,7 @@ THREE.CSS3DRenderer = function () {
 			epsilon( - elements[ 13 ] ) + ',' +
 			epsilon( elements[ 14 ] ) + ',' +
 			epsilon( elements[ 15 ] ) +
-		')';
+			')';
 
 	};
 
@@ -148,7 +148,7 @@ THREE.CSS3DRenderer = function () {
 			epsilon( elements[ 13 ] ) + ',' +
 			epsilon( elements[ 14 ] ) + ',' +
 			epsilon( elements[ 15 ] ) +
-		')';
+			')';
 
 	};
 
@@ -212,7 +212,7 @@ THREE.CSS3DRenderer = function () {
 
 	this.render = function ( scene, camera ) {
 
-		var fov = 0.5 / Math.tan( THREE.Math.degToRad( camera.fov * 0.5 ) ) * _height;
+		var fov = 0.5 / Math.tan( THREE.Math.degToRad( camera.getEffectiveFOV() * 0.5 ) ) * _height;
 
 		if ( cache.camera.fov !== fov ) {
 

@@ -1,5 +1,8 @@
 package org.denigma.kappa
 
+// test-only org.denigma.kappa.GraphUpdaterSuite
+
+
 import fastparse.core.Parsed
 import fastparse.core.Parsed.Success
 import org.denigma.kappa.model.KappaModel
@@ -38,7 +41,7 @@ class GraphUpdaterSuite extends WordSpec with Matchers with Inside  {
       update.leftModified.isEmpty shouldEqual true
       update.rightModified.isEmpty shouldEqual true
     }
-    /*
+
 
     "understand simple rules" in {
       import KappaModel._
@@ -47,42 +50,54 @@ class GraphUpdaterSuite extends WordSpec with Matchers with Inside  {
       val tetRLeft = Agent("TetR", Set(Site("dna", Set.empty, Set("1"))))
       val pTetRight = Agent("pTet", Set(Site("binding", Set.empty, Set.empty)))
 
-      val rule = parser.mergeLine(
+      val text = parser.mergeLine(
         """
           |'tetR.degradation2' pTet(binding!1),TetR(dna!1) ->  pTet(binding) @ 'degrad2'
         """.stripMargin)
-      val res: Rule = parser.rule.parse(pattern).get.value
-      val update = GraphUpdate.fromParsedLine(ParsedLine(pattern, res))
+      val res: Rule = parser.rule.parse(text).get.value
+      val update = GraphUpdate.fromParsedLine(ParsedLine(text, res))
       update.sameAgents.size shouldEqual 1
-      update.isRule shouldEqual false
-      update.unchangedAgents shouldEqual Set(rnaAgent)
+      update.isRule shouldEqual true
+      update.unchangedAgents shouldEqual Set.empty
       update.addedAgents.isEmpty shouldEqual true
-      update.removedAgents.isEmpty shouldEqual true
-      update.updatedAgents.isEmpty shouldEqual true
-      update.leftModified.isEmpty shouldEqual true
-      update.rightModified.isEmpty shouldEqual true
+      update.removedAgents shouldEqual Set(tetRLeft)
+      update.updatedAgents shouldEqual Set((pTetLeft, pTetRight))
+      update.leftModified shouldEqual Set(pTetLeft)
+      update.rightModified shouldEqual Set(pTetRight)
     }
 
-    "understand init complex conditions" in {
-      import KappaModel._
-      val parser = new KappaParser
-      val init = parser.mergeLine("""
-        |%init: 'operon count' DNA(upstream,downstream!4,binding,type~BBaR0051p1), DNA(upstream!4,downstream!5,binding,type~BBaR0051p2), DNA(upstream!5,downstream!6,binding,type~BBaR0051p3), \
-        |                       DNA(upstream!6,downstream!7,binding,type~BBaR0051p4), DNA(upstream!7,downstream!8,binding,type~BBaB0034), DNA(upstream!8,downstream!9,binding,type~BBaC0012), \
-        |                       DNA(upstream!9,downstream,binding,type~BBaB0011)
-      """.stripMargin)
-    }
 
     "understand complex rules" in {
       import KappaModel._
+      val dnaLeft1 = Agent("DNA", Set(Site("binding"), Site("type", Set(State("BBaR0010p3"))), Site("upstream", Set.empty, Set("2"))))
+      val lacILeft = Agent("LacI", Set(Site("dna"), Site("lactose")))
+      val dnaLeft2 = Agent("DNA", Set(
+        Site("downstream", Set.empty, Set("2")), Site("binding"), Site("type", Set(State("BBaR0010p2")))
+      ))
+      val dnaRight1 = Agent("DNA", Set(Site("binding"), Site("type", Set(State("BBaR0010p3"))), Site("upstream", Set.empty, Set("3"))))
+      val lacIRight = Agent("LacI", Set(Site("dna", Set.empty, Set("1")), Site("lactose")))
+      val dnaRight2 = Agent("DNA", Set(
+        Site("downstream", Set.empty, Set("3")), Site("binding", Set.empty, Set("1")), Site("type", Set(State("BBaR0010p2")))
+      ))
       val parser = new KappaParser
-      val rule = parser.mergeLine("""
+      val text = parser.mergeLine("""
         |'LacI binding to R0010p2 (no LacI)' \
         |	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) -> \
         |	DNA(binding,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding!1,type~BBaR0010p2) @ 'transcription factor binding rate'
       """.stripMargin)
+      val res: Rule = parser.rule.parse(text).get.value
+      val update = GraphUpdate.fromParsedLine(ParsedLine(text, res))
+      update.sameAgents.size shouldEqual 3
+      update.isRule shouldEqual true
+      update.unchangedAgents shouldEqual Set.empty
+      update.addedAgents.isEmpty shouldEqual true
+      update.removedAgents.isEmpty shouldEqual true
+      update.updatedAgents shouldEqual Set(
+        (dnaLeft1, dnaRight1), (lacILeft, lacIRight), (dnaLeft2, dnaRight2)
+      )
+      update.leftModified.isEmpty shouldEqual false
+      update.rightModified.isEmpty shouldEqual false
     }
-    */
   }
 
 }

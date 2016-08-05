@@ -29,6 +29,11 @@ trait KappaView extends KappaPainter {
 
   lazy val labelBox = textBox.withPadding(padding, padding)
 
+  def setOpacity(value: Double) = {
+    this.sprite.now.element.style.opacity = value.toString
+    render()
+  }
+
   protected val svg = Rx {
     labelStrokeColor()
     val st = labelStrokeWidth()
@@ -39,7 +44,7 @@ trait KappaView extends KappaPainter {
   }
 
   protected val sprite: Rx[HtmlSprite] = svg.map {
-    case s =>
+    s =>
       val sp = new HtmlSprite(s.render)
       sp.frustumCulled = false
       sp

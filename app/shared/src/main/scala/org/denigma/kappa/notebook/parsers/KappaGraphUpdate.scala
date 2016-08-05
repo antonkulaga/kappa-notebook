@@ -24,8 +24,8 @@ case class GraphUpdate(line: String, left: Pattern, right: Pattern, isRule: Bool
   lazy val unchangedAgents = sameAgents.collect{ case (one, two) if one ==two => one}.toSet
   lazy val updatedAgents =  sameAgents.collect{ case (one, two) if one != two => one -> two}.toSet
   lazy val modifiedAgents = sameAgents.filterNot{ case (one, two)=> one==two}.unzip{case (a, b)=> (a, b)}
-  lazy val leftModified = modifiedAgents._1
-  lazy val rightModified = modifiedAgents._2
+  lazy val leftModified = modifiedAgents._1.toSet
+  lazy val rightModified = modifiedAgents._2.toSet
 
   lazy val removedAgents = left.agents.filterNot(p => leftModified.contains(p) || unchangedAgents.contains(p) ).toSet
 

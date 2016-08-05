@@ -106,7 +106,7 @@ class Visualizer (val container: HTMLElement,
   }
 
   protected def tick(positionNodes: Boolean = true) = {
-    this.layouts.now.foreach{case l=> l.tick(width, height, camera) }
+    this.layouts.now.foreach{ l=> l.tick(width, height, camera) }
   }
 
   override def onEnterFrame() = if(container.isVisible || !renderOnlyWhenVisible){

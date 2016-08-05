@@ -65,7 +65,18 @@ class SiteNode(val parent: KappaModel.Agent,
   lazy val layoutInfo: LayoutInfo = new LayoutInfo(0.6)
 
   lazy val childEdges: Map[Change, Set[KappaStateEdge]] = children.mapValues{
-    case st =>  st.map{ case ch=>new KappaStateEdge(this, ch, getLineParams(this, ch))} }
+    st =>  st.map{ ch=>
+      val stat = (this.status, ch.status) match {
+        case (Change.Added, _) => Change.Added
+        case (Change.Removed, _) => Change.Removed
+        case (_ , Change.Added) => Change.Added
+        case (_ , Change.Removed) => Change.Removed
+        case (_ , Change.Updated) => Change.Updated
+        case _ => Change.Unchanged
+      }
+      new KappaStateEdge(this, ch, stat, getLineParams(this, ch))
+    }
+  }
 
   lazy val linkList: List[(String, Change)] = links.toList.flatMap{
     case (key, lks) => lks.map(l=> l->key)
@@ -104,7 +115,15 @@ class AgentNode(val agent: KappaModel.Agent, val children: Map[Change.Change, Se
   def childEdges: Map[Change.Change, Set[ChildEdge]] = children.mapValues {
     set => set.map { s =>
       val lp = getLineParams(this, s)
-      new KappaSiteEdge(this, s, lp)
+      val stat = (this.status, s.status) match {
+        case (Change.Added, _) => Change.Added
+        case (Change.Removed, _) => Change.Removed
+        case (_ , Change.Added) => Change.Added
+        case (_ , Change.Removed) => Change.Removed
+        case (_ , Change.Updated) => Change.Updated
+        case _ => Change.Unchanged
+      }
+      new KappaSiteEdge(this, s, stat, lp)
     }
   }
 }

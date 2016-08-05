@@ -186,7 +186,7 @@ class BorderForce[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Doubl
 
 }
 
-class Gravity[Node <: ForceNode, Edge <: ForceEdge](val gravityMult: Double, center: Vector3,  EPSILON: Double = 0.00001) extends Force[Node, Edge] {
+class Gravity[Node <: ForceNode, Edge <: ForceEdge](val gravityMult: Double, center: Vector3,  EPSILON: Double = 0.01) extends Force[Node, Edge] {
 
   override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
     val attraction = gravityMult * forceConstant

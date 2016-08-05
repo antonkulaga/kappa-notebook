@@ -9,9 +9,9 @@ import scala.collection.immutable._
 
 object ForceLayoutParams {
 
-  lazy val default2D = ForceLayoutParams(0.9, 90, 1, new Vector3(0.0, 0.0, 0.0))
+  lazy val default2D = ForceLayoutParams(0.9, 105, 3, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(0.9, 90, 1, new Vector3(0.0, 0.0, 0.0))
+  lazy val default3D = ForceLayoutParams(0.9, 105, 3, new Vector3(0.0, 0.0, 0.0))
 
 }
 
@@ -70,7 +70,7 @@ trait ForceLayout extends GraphLayout  with Randomizable
 
   var EPSILON = 0.01
 
-  val maxIterations = 800
+  val maxIterations = 1000
   val layoutIterations: Var[Double] = Var(0)
   val temperature = Rx{
     1 - layoutIterations() / maxIterations
@@ -78,7 +78,7 @@ trait ForceLayout extends GraphLayout  with Randomizable
 
   def info(node: Node): LayoutInfo = node.layoutInfo
 
-  def defRandomDistance = 400
+  def defRandomDistance = 250
 
   def randomPos()=  mode match {
     case LayoutMode.TwoD =>

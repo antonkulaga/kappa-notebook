@@ -8,6 +8,16 @@ trait TabGridsStyles extends MainStyles {
     padding(0 px)  important
     )
 
+  ".graph.row" -(
+      padding(0 px) important
+    )
+
+  ".graph.column" -(
+    padding(0 px) important,
+    margin(0 px) important,
+    borderWidth(2 px) important,
+    borderColor := "deepskyblue"
+    )
 
   ".ui.page.grid" -(
     paddingLeft(5 px) important,
@@ -25,6 +35,10 @@ trait TabGridsStyles extends MainStyles {
 
   "wide tab segment" - (
     width(100 %%)
+    )
+
+  "rect.caption" - (
+    svgStrokeWidth := "0px"
     )
 
   "page-container" -(

@@ -41,9 +41,9 @@ class WholeRuleGraphView(val elem: Element,
 
   val height: Var[Double] = Var(size._2)
 
-  lazy val nodes = Var(Vector.empty[KappaNode])
+  lazy val nodes = Var(Vector.empty[Node])
 
-  lazy val edges = Var(Vector.empty[KappaEdge])
+  lazy val edges = Var(Vector.empty[Edge])
 
   lazy val container: HTMLElement = sq.byId(containerName).get
 
@@ -67,7 +67,7 @@ class WholeRuleGraphView(val elem: Element,
     width,
     height,
     layouts,
-    1000,
+    800,
     iterationsPerFrame,
     firstFrameIterations
   )
@@ -107,7 +107,8 @@ class WholeRuleGraphView(val elem: Element,
         SiteNode(left, one, Change.Unchanged, links)
     }
     val updatedNodes: List[SiteNode] = grouped.collect{
-      case (name, one::two::Nil) =>
+      case (name, one::two::tail) if one!=two  =>
+        if(tail.nonEmpty) dom.console.error("tail is not empty, sites are: " + one::two::tail)     
         val states =  mergeSiteStates(one, two)
         val links = mergeLinks(one, two)
         new SiteNode(left, one, states, links, Change.Updated)
@@ -163,7 +164,7 @@ class WholeRuleGraphView(val elem: Element,
     nds.toSet
   }
 
-  protected def getAllEdgesFrom(node: AgentNode): Set[KappaEdge] = {
+  protected def getAllEdgesFrom(node: AgentNode): Set[Edge] = {
     val edges = node.childEdgeList ++ node.childrenList.flatMap(ch => ch.childEdgeList)
     edges.toSet
   }
@@ -171,7 +172,7 @@ class WholeRuleGraphView(val elem: Element,
   protected def onAgentNodesUpdate(deleted: Set[AgentNode], added: Set[AgentNode]) = {
     val toDelete: Set[Node] = deleted.flatMap{ r => getAllAgentNodes(r)}
     //dom.console.log("TO REMOVE COUNT " + toDelete)
-    val toAdd = added.flatMap( a => getAllAgentNodes(a))
+    val toAdd: Set[Node] = added.flatMap(a => getAllAgentNodes(a))
     //dom.console.log("TO ADD COUNT " + toAdd)
 
     nodes() = nodes.now.filterNot(n => toDelete.contains(n)) ++ toAdd
@@ -208,14 +209,14 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
         viz.removeSprite(link.view.container)
         viz.removeObject(link.view.container)
         viz.removeObject(link.arrow)
-      case arr: ArrowEdge => viz.removeObject(arr.arrow)
+      case arr: Edge => viz.removeObject(arr.arrow)
       case _ => dom.console.log("weird edge")
     }
     for(a <- added) a match {
       case link: KappaLinkEdge =>
         viz.addSprite(link.view.container)
         viz.addObject(link.arrow)
-      case arr: ArrowEdge => viz.addObject(arr.arrow)
+      case arr: Edge => viz.addObject(arr.arrow)
       case _ => dom.console.log("weird edge")
     }
   }
@@ -230,7 +231,7 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
         }
         val (site1, site2) = (value(0), value(1))
         val lineParams = linkLineByStatus(change, visualSettings.link.line)
-        new KappaLinkEdge(name, site1, site2, change, lineParams)(createLinkView): Edge
+        new KappaLinkEdge(name, site1, site2, change, lineParams, 2.0)(createLinkView): Edge
       //case (key, other) => throw  new Exception(s"too many sites for the link $key ! Sights are: $other")
     }.toVector
   }
@@ -259,7 +260,11 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
 
 
   protected def subscribeUpdates() = {
-    showState.foreach(sh => nodes.now.foreach(n => updateNodeVisibility(n, sh))  )
+    showState.foreach{
+      sh =>
+        nodes.now.foreach(n => updateNodeVisibility(n, sh))
+        edges.now.foreach(e => updateEdgeVisibility(e, sh))
+    }
 
     nodes.removedInserted.foreach{
       case (r, a) => onNodesChanges(r.toSet, a.toSet)
@@ -294,38 +299,60 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
     layouts.now.foreach(_.start(viz.width, viz.height, viz.camera))
   }
 
+  //bad code, TODO: fix it
   protected def updateEdgeVisibility(edge: KappaEdge, show: ShowParameters) = (edge, show) match {
-    case (e : ArrowEdge, ShowParameters.Right) =>
-    case (e : ArrowEdge, ShowParameters.Left) =>
-    case (e : ArrowEdge, ShowParameters.Both) =>
+    case (e : Edge, ShowParameters.Left) =>
+      e.status match {
+        case Change.Added =>  e.opacity = 0.15
+        case Change.Removed =>   e.opacity = 1.0
+        case Change.Updated =>   e.opacity = 1.0
+        case Change.Unchanged =>   e.opacity = 1.0
+      }
+
+    case (e : Edge, ShowParameters.Right) =>
+      e.status match {
+        case Change.Added =>  e.opacity = 1.0
+        case Change.Removed =>   e.opacity = 0.15
+        case Change.Updated =>   e.opacity = 1.0
+        case Change.Unchanged =>   e.opacity = 1.0
+      }
+
+    case (e : Edge, ShowParameters.Both) =>
+      e.status match {
+        case Change.Added =>  e.opacity = 1.0
+        case Change.Removed =>   e.opacity = 1.0
+        case Change.Updated =>   e.opacity = 1.0
+        case Change.Unchanged =>   e.opacity = 1.0
+      }
 
   }
 
+  // bad code, TODO: fix it
   protected def updateNodeVisibility(node: Node, show: ShowParameters) = (node, show) match {
-    case (n: OrganizedChangeableNode, ShowParameters.Right) =>
+    case (n: ChangeableNode, ShowParameters.Left) =>
       n.status match {
-        case Change.Added =>  n.view.setOpacity(1.0)
-        case Change.Removed =>   n.view.setOpacity(0.3)
-        case Change.Updated =>   n.view.setOpacity(1.0)
-        case Change.Unchanged =>   n.view.setOpacity(1.0)
+        case Change.Added =>  n.view.opacity = 0.15
+        case Change.Removed =>   n.view.opacity = 1.0
+        case Change.Updated =>   n.view.opacity = 1.0
+        case Change.Unchanged =>   n.view.opacity = 1.0
       }
-      dom.console.log("right")
-    case (n: OrganizedChangeableNode, ShowParameters.Left) =>
+
+    case (n: ChangeableNode, ShowParameters.Right) =>
       n.status match {
-        case Change.Added =>  n.view.setOpacity(0.3)
-        case Change.Removed =>   n.view.setOpacity(1.0)
-        case Change.Updated =>   n.view.setOpacity(1.0)
-        case Change.Unchanged =>   n.view.setOpacity(1.0)
+        case Change.Added =>  n.view.opacity = 1.0
+        case Change.Removed =>   n.view.opacity = 0.15
+        case Change.Updated =>   n.view.opacity = 1.0
+        case Change.Unchanged =>   n.view.opacity = 1.0
       }
-      dom.console.log("left")
-    case (n: OrganizedChangeableNode, ShowParameters.Both) =>
+
+    case (n: ChangeableNode, ShowParameters.Both) =>
       n.status match {
-        case Change.Added =>  n.view.setOpacity(1.0)
-        case Change.Removed =>   n.view.setOpacity(1.0)
-        case Change.Updated =>   n.view.setOpacity(1.0)
-        case Change.Unchanged =>   n.view.setOpacity(1.0)
+        case Change.Added =>  n.view.opacity = 1.0
+        case Change.Removed =>   n.view.opacity = 1.0
+        case Change.Updated =>   n.view.opacity = 1.0
+        case Change.Unchanged =>   n.view.opacity = 1.0
       }
-      dom.console.log("both")
+
     case _ => dom.console.info(s"unknow node $node")
   }
 
@@ -336,6 +363,6 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
     viz.render()
   }
 
-  lazy val layouts: Var[Vector[GraphLayout]] = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
+  lazy val layouts: Var[Vector[GraphLayout]] = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default3D.mode, forces)))
 
 }

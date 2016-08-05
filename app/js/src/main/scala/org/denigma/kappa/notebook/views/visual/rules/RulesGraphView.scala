@@ -26,6 +26,13 @@ object Gradients {
       stop(offset := "100%", stopColor := "SteelBlue")
     )
 
+  def opaqueBlueGradient(gradientName: String): TypedTag[LinearGradient] =
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "skyblue", stopOpacity := "0.3"),
+      stop(offset := "50%", stopColor := "deepskyblue", stopOpacity := "0.3"),
+      stop(offset := "100%", stopColor := "SteelBlue", stopOpacity := "0.3")
+    )
+
   def lightBlueGradient(gradientName: String): TypedTag[LinearGradient]  =
     linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
       stop(offset := "0%", stopColor := "white"),
@@ -63,6 +70,14 @@ object Gradients {
     )
   }
 
+  def opaqueRedGradient(gradientName: String) = {
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "#ff9999", stopOpacity := "0.3"),
+      stop(offset := "50%", stopColor := "#ff6666", stopOpacity := "0.3"),
+      stop(offset := "100%", stopColor := "#ff6666", stopOpacity := "0.3")
+    )
+  }
+
 
   def lightRedGradient(gradientName: String) = {
     linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
@@ -76,6 +91,14 @@ object Gradients {
     linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
       stop(offset := "0%", stopColor := "#ffe6e6"),
       stop(offset := "100%", stopColor := "#ffcccc")
+    )
+  }
+
+  def opaqueGreenGradient(gradientName: String) = {
+    linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,
+      stop(offset := "0%", stopColor := "#adebad", stopOpacity := "0.3"),
+      stop(offset := "50%", stopColor := "#40bf40", stopOpacity := "0.3"),
+      stop(offset := "100%", stopColor := "#609f60", stopOpacity := "0.3")
     )
   }
 
@@ -126,7 +149,7 @@ trait VisualGraph extends BindableView {
 
   type Node = KappaNode
 
-  type Edge = KappaEdge
+  type Edge = ChangeableEdge
 
   def visualSettings: RulesVisualSettings
 
@@ -144,22 +167,22 @@ trait VisualGraph extends BindableView {
     addGradient(KappaAgentView.gradientName, Change.Removed, Gradients.redGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Removed, Gradients.lightRedGradient(KappaSiteView.gradientName))
     addGradient(KappaStateView.gradientName, Change.Removed, Gradients.superLightRedGradient(KappaStateView.gradientName))
-    addGradient(KappaLinkView.gradientName, Change.Removed, Gradients.lightRedGradient(KappaLinkView.gradientName))
+    addGradient(KappaLinkView.gradientName, Change.Removed, Gradients.opaqueRedGradient(KappaLinkView.gradientName))
 
     addGradient(KappaAgentView.gradientName, Change.Added, Gradients.greenGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Added, Gradients.lightGreenGradient(KappaSiteView.gradientName))
     addGradient(KappaStateView.gradientName, Change.Added, Gradients.superLightGreenGradient(KappaStateView.gradientName))
-    addGradient(KappaLinkView.gradientName, Change.Added, Gradients.lightGreenGradient(KappaLinkView.gradientName))
+    addGradient(KappaLinkView.gradientName, Change.Added, Gradients.opaqueGreenGradient(KappaLinkView.gradientName))
 
     addGradient(KappaAgentView.gradientName, Change.Unchanged, Gradients.blueGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Unchanged, Gradients.lightBlueGradient(KappaSiteView.gradientName))
     addGradient(KappaStateView.gradientName, Change.Unchanged, Gradients.superLightBlueGradient(KappaStateView.gradientName))
-    addGradient(KappaLinkView.gradientName, Change.Unchanged, Gradients.lightBlueGradient(KappaLinkView.gradientName))
+    addGradient(KappaLinkView.gradientName, Change.Unchanged, Gradients.opaqueBlueGradient(KappaLinkView.gradientName))
 
     addGradient(KappaAgentView.gradientName, Change.Updated, Gradients.blueGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Updated, Gradients.lightBlueGradient(KappaSiteView.gradientName))
     addGradient(KappaStateView.gradientName, Change.Updated, Gradients.superLightBlueGradient(KappaStateView.gradientName))
-    addGradient(KappaLinkView.gradientName, Change.Updated, Gradients.lightBlueGradient(KappaLinkView.gradientName))
+    addGradient(KappaLinkView.gradientName, Change.Updated, Gradients.opaqueBlueGradient(KappaLinkView.gradientName))
   }
   fillGradients()
 
@@ -188,16 +211,16 @@ trait VisualGraph extends BindableView {
 
 trait  RuleGraphWithForces extends VisualGraph{
 
-  lazy val minSpring = 100
+  lazy val minSpring = 75
 
   def massByNode(node: KappaNode): Double = node match {
-    case n: AgentNode => 1.5
+    case n: AgentNode => 1.4
     case s: SiteNode => 1.0
     case st: StateNode => 0.8
   }
 
   protected def computeSpring(edge: Edge): SpringParams = (edge.from, edge.to) match {
-    case (from: SiteNode, to: SiteNode) => SpringParams(minSpring * 1.3, 1.3, massByNode(from), massByNode(to))
+    case (from: SiteNode, to: SiteNode) => SpringParams(minSpring * 1.4, 1.4, massByNode(from), massByNode(to))
     case (from: SiteNode, to: AgentNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
     case (from: AgentNode, to: SiteNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
     case (from: AgentNode, to: AgentNode) => SpringParams(minSpring, 2, massByNode(from), massByNode(to))
@@ -218,8 +241,8 @@ trait  RuleGraphWithForces extends VisualGraph{
   protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (massByNode(node1), massByNode(node2))
 
 
-  lazy val iterationsPerFrame = Var(5)
-  lazy val firstFrameIterations = Var(50)
+  lazy val iterationsPerFrame = Var(10)
+  lazy val firstFrameIterations = Var(300)
 
   def layouts: Var[Vector[GraphLayout]]
 }

@@ -14,25 +14,34 @@ trait KappaEdge extends ForceEdge {
 
 }
 
-trait ArrowEdge extends KappaEdge {
+trait ChangeableEdge extends ArrowEdge {
 
+  def status: Change.Value
+
+  def opacity: Double = arrow.line.material.opacity
+  def opacity_=(value: Double) = {
+    arrow.cone.material.opacity = value
+    arrow.line.material.opacity = value
+  }
+}
+
+trait ArrowEdge extends KappaEdge {
 
   def lineParams: LineParams
 
   def direction: Vector3 = new Vector3().subVectors(targetPos, sourcePos)
 
-  def middle: Vector3 = new Vector3((sourcePos.x + targetPos.x) / 2,(sourcePos.y + targetPos.y) / 2, (sourcePos.z + targetPos.z) / 2)
+  def middleDivider: Double = 2
+
+  def middle: Vector3 = new Vector3((sourcePos.x + targetPos.x) / middleDivider, (sourcePos.y + targetPos.y) / middleDivider, (sourcePos.z + targetPos.z) / middleDivider)
 
   val arrow = new ArrowHelper(direction.normalize(), sourcePos, direction.length(), lineParams.lineColor, lineParams.headLength, lineParams.headWidth)
   arrow.line.material.dyn.linewidth = lineParams.thickness
-  arrow.frustumCulled = false
-  arrow.line.frustumCulled = false
-  arrow.cone.frustumCulled = false
 
   protected def posArrow() = {
     arrow.position.set(sourcePos.x, sourcePos.y, sourcePos.z) // = sourcePos
     arrow.setDirection(direction.normalize())
-    arrow.setLength(direction.length() - lineParams.headLength, lineParams.headLength, lineParams.headWidth)
+    arrow.setLength(direction.length(), lineParams.headLength, lineParams.headWidth)
   }
 
 

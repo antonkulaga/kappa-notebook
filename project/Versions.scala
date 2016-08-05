@@ -32,7 +32,7 @@ trait OtherJVM {
 
 	val akka = "2.4.8"
 
-	val circeHttp = "1.7.0"
+	val circeHttp = "1.8.0"
 
 	val libSBOLj = "2.1.0"
 

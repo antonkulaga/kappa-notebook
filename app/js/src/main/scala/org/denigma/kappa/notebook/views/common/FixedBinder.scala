@@ -53,13 +53,11 @@ class FixedBinder[View <: BindableView](view: View, recover: Option[ReactiveBind
   override protected def varOnEvent[T, TEvent <: dom.Event](el: Element, prop: String, value: Rx[T], event: String)
                                                   (implicit js2var: js.Any => T): Unit =
   {
-    s"subsribe on event for ${prop}"
     value.onVar { v =>
       el.addEventListener[TEvent](event,(ev: TEvent) => {
         if(ev.target==ev.currentTarget) el.onExists(prop){ newValue=>
             Try(js2var(newValue)) match {
               case Success(newVal)=>
-                println(s"old value = ${v.now} new value =" + newVal)
                 v() = newVal
               case Failure(th)=> dom.console.warn(s"cannot convert ${newValue} to Var , failure: ${th}")
             }
@@ -67,7 +65,6 @@ class FixedBinder[View <: BindableView](view: View, recover: Option[ReactiveBind
         }
       )
       val curV = js2var(el.dyn.selectDynamic(prop))
-      println(s"set for Var(${v.now})  initial value = "+el.dyn.selectDynamic(prop))
       v() = curV
     }
   }
@@ -86,18 +83,14 @@ class FixedBinder[View <: BindableView](view: View, recover: Option[ReactiveBind
   {
     inp.attributes.get("type").map(_.value.toString) match {
       case Some("checkbox") =>
-        println("INPUT RADIO BINDING WORKS!")
         subscribeOnEvent(inp, rxName, "checked", Events.change, bools){
           case  any =>
-            println("SUBSCRIBE EVENT IS" +any.toString)
             any.asInstanceOf[Boolean]
         }
 
       case Some("radio") =>
-        println("INPUT RADIO BINDING WORKS!")
         subscribeOnEvent(inp, rxName, "checked", Events.change, bools){
           case  any =>
-            println("SUBSCRIBE EVENT IS" +any.toString)
             any.asInstanceOf[Boolean]
         }
         
@@ -118,7 +111,6 @@ class FixedBinder[View <: BindableView](view: View, recover: Option[ReactiveBind
   override def bind(el: Element, rxName: String): Unit =  el match
   {
     case inp: HTMLInputElement=>
-      println("BIND INPUT")
       bindInput(inp, rxName)
     case area: HTMLTextAreaElement =>
       subscribeInputValue(el, rxName, Events.keyup, strings)

@@ -11,7 +11,7 @@ import rx._
 
 import scala.collection.immutable._
 
-class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[String], input: Var[KappaMessage], output: Var[KappaMessage]) extends BindableView {
+class ProjectFileView(val elem: Element, val file: KappaFile, input: Var[KappaMessage], output: Var[KappaMessage]) extends BindableView {
 
   val editable = Var(false)
 
@@ -45,39 +45,18 @@ class ProjectFileView(val elem: Element, val file: KappaFile, parentName: Rx[Str
 
   protected def goToFile() = {
     input() = Movements.toFile(file)
-    /*
-    fileType.now match {
-      case FileType.pdf => input() =
-        KappaMessage.Container()
-          .andThen(Go.ToTab(MainTabs.Papers))
-          .andThen(GoToPaper(Bookmark(file.name, 1)))
-
-      case FileType.source => input() =
-        KappaMessage.Container()
-          .andThen(Go.ToTab(MainTabs.Editor))
-          .andThen(Go.ToSource(filename = file.name))
-
-      case FileType.image=> input() =
-        KappaMessage.Container()
-          .andThen(Go.ToTab(MainTabs.Figures))
-          .andThen(GoToFigure(file.name))
-
-
-      case other => //do nothing
-    }
-    */
   }
 
   val removeClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   removeClick.triggerLater{
     val message = s"Do you really want to remove '${file.name}' file?"
     val confirmation = window.confirm(message)
-    if(confirmation) output() = FileRequests.Remove(parentName.now, file.name)
+    if(confirmation) output() = FileRequests.Remove(Set(file.path))
   }
 
   val saveClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   saveClick.triggerLater{
-    val saveRequest = FileRequests.Save(projectName = parentName.now, List(file), rewrite = true)
+    val saveRequest = FileRequests.Save( List(file), rewrite = true)
     //println("save request")
     //pprint.pprintln(saveRequest)
     output() = saveRequest

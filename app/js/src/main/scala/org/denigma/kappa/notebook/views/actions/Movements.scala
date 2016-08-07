@@ -29,6 +29,11 @@ object Movements {
         .andThen(Go.ToTab(MainTabs.Editor))
         .andThen(Go.ToSource(filename = file.name))
 
+    case FileType.video=>
+      KappaMessage.Container()
+        .andThen(Go.ToTab(MainTabs.Figures))
+        .andThen(GoToFigure(file.name))
+
     case FileType.image=>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Figures))

@@ -35,13 +35,15 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val kappaServerErrors = Var(KappaServerErrors.empty)
 
-  val currentProject: Var[CurrentProject] = Var(CurrentProject.fromKappaProject(KappaProject.default))
+  val currentProject: Var[KappaProject] = Var(KappaProject.default)
 
-  val sourceMap: Var[Map[String, KappaFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(sourceMap = s))
+  //val currentProject: Var[CurrentProject] = Var(CurrentProject.fromKappaProject(KappaProject.default))
+
+  val sourceMap: Var[Map[String, KappaSourceFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(folder = p.folder.addFiles(sourceMap.now.values.toList)))
 
   val figures: Var[Map[String, Figure]] = Var(Map.empty)
 
-  val currentProjectName = currentProject.map(_.name)
+  val currentProjectName: Rx[String] = currentProject.map(_.name)
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
@@ -69,7 +71,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     case ProjectResponses.LoadedProject(proj) =>
       //println("LOADED PROJECT IS")
       //pprint.log(proj)
-      currentProject() = CurrentProject.fromKappaProject(proj)
+      currentProject() = proj
 
 
     case KappaMessage.ServerResponse(server, ers: ServerErrors) =>  serverErrors() = ers

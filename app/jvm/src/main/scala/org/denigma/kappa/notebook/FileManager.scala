@@ -1,6 +1,7 @@
 package org.denigma.kappa.notebook
 
 import java.io.{File => JFile}
+import java.nio.ByteBuffer
 import java.nio.file.Path
 
 import akka.event.LoggingAdapter
@@ -37,27 +38,29 @@ class FileManager(val root: File, log: LoggingAdapter) {
     //log.info(s"write project folder ${p.folder.path}")
     writeFolder(p.folder, root)
   }
+  
+  def rename(renames: Map[String, String], overwriteIfExists: Boolean = false): FileResponses.RenamingResult = {
+    
+    renames.foldLeft(FileResponses.RenamingResult( Map.empty, Map.empty, Map.empty)) {
+      case (acc, (currentPath, newPath)) =>
+        (root resolveChild (currentPath, false), root.resolveChild(currentPath, mustExist = false)) match {
+          case (None, _) =>  acc.copy(notFound = acc.notFound.updated(currentPath, newPath))
 
-  def rename(projectName: String, renames: Map[String, String], overwriteIfExists: Boolean = false): FileResponses.RenamingResult = {
-    renames.foldLeft(FileResponses.RenamingResult(projectName, Map.empty, Map.empty, Map.empty)) {
-      case (acc, (currentName, newName)) =>
-        (root resolveChild (projectName, currentName, false), root.resolveChild(projectName, newName, false)) match {
-          case (None, _) =>  acc.copy(notFound = acc.notFound.updated(currentName, newName))
-          case (_ , None) => acc.copy(notFound = acc.notFound.updated(currentName, newName))
+          case (_ , None) => acc.copy(notFound = acc.notFound.updated(currentPath, newPath))
 
           case (Some(fromPath), Some(toPath)) if fromPath.notExists=>
-            acc.copy(notFound = acc.notFound.updated(currentName, newName))
+            acc.copy(notFound = acc.notFound.updated(currentPath, newPath))
 
           case (Some(fromPath), Some(toPath)) if toPath.exists && overwriteIfExists=>
-            fromPath.renameTo(newName)
-            acc.copy(renamed = acc.renamed.updated(currentName, (newName, toPath.pathAsString)))
+            fromPath.renameTo(newPath)
+            acc.copy(renamed = acc.renamed.updated(currentPath, (newPath, toPath.pathAsString)))
 
           case (Some(fromPath), Some(toPath)) if toPath.exists && !overwriteIfExists=>
-            acc.copy(nameConflicts = acc.nameConflicts.updated(currentName, newName))
+            acc.copy(nameConflicts = acc.nameConflicts.updated(currentPath, newPath))
 
           case (Some(fromPath), Some(toPath)) =>
-            fromPath.renameTo(newName)
-            acc.copy(renamed = acc.renamed.updated(currentName, (newName, toPath.pathAsString)))
+            fromPath.renameTo(newPath)
+            acc.copy(renamed = acc.renamed.updated(currentPath, (newPath, toPath.pathAsString)))
         }
     }
   }
@@ -80,20 +83,22 @@ class FileManager(val root: File, log: LoggingAdapter) {
   }
 
   def loadZiped(folderName: String): Option[Downloaded] =  root.resolveChild(folderName, true) map {
-    case folder => FileResponses.Downloaded(folderName, folder.zip().byteArray)
+    folder => FileResponses.Downloaded(folderName, folder.zip().byteArray)
   }
 
-  def uploadZiped(upload: ZipUpload): Option[UploadStatus] =  root.resolveChild(upload.projectName) flatMap {
+  def uploadZiped(upload: ZipUpload): Option[UploadStatus] =  root.resolveChild(upload.zip.path) flatMap {
     case r  if r.exists && !upload.rewriteIfExist => None
     case r =>
       if( r.exists && upload.rewriteIfExist) r.delete()
       val dir = r.createDirectory()
-      val tmp = File.newTemporaryFile().write(upload.zip.data)(better.files.File.OpenOptions.default)
+      val buff: ByteBuffer = upload.zip.content
+      val arr = buff.array()
+      val tmp = File.newTemporaryFile().write(arr)(better.files.File.OpenOptions.default)
       tmp.unzipTo(dir)
       Some(
         FileResponses.UploadStatus(
-          upload.projectName,
-          upload.zip.data.hashCode(),
+          upload.zip.path,
+          upload.zip.content.hashCode(),
           upload.rewriteIfExist))
   }
 
@@ -105,13 +110,8 @@ class FileManager(val root: File, log: LoggingAdapter) {
     case file if file.isRegularFile => (file.path, file.toJava.length.toInt)
   }
 
-  def writeBytes(relativePath: String, name: String, bytes: Array[Byte]): Try[Unit] = Try {
-    val f = root / relativePath / name
-    f.write(bytes)(OpenOptions.default)
-  }
-
   def readBytes(currentProject: String, relativePath: String): Option[Array[Byte]] = root.resolveChild(currentProject, relativePath, true) collect {
-    case file if file.isRegularFile =>  file.loadBytes
+    case file if file.isRegularFile => file.loadBytes
   }
 
   def readBytes(relativePath: String): Option[Array[Byte]] = root.resolveChild(relativePath, true) collect {
@@ -120,29 +120,32 @@ class FileManager(val root: File, log: LoggingAdapter) {
 
 
   def loadProject(project: KappaProject, createIfNotExists: Boolean = false) = root.resolveChild(project.name, !createIfNotExists).map{
-    case path =>
+    path =>
       val p = if (createIfNotExists) path.createDirectory() else path
       val dir = listFolder(p, root)
       project.copy(folder = dir, saved = p.exists())
   }
 
-
-  def writeFile(projectName: String, p: KappaFile): Try[File] =
-    root.resolveChild(projectName).map(parent=>writeFile(p, parent)) match {
-      case Some(value) => value
-      case None => Failure(FileNotInside(root / projectName / p.path, root))
-    }
-
   def write(p: KappaPath): Try[File] = write(p, root)
 
   def writeFile(file: KappaFile, parent: File): Try[File] = {
-    parent.resolveChild(file.path) match {
-      case Some(child) =>
-        Try {
-          child < file.content
-          child
+    file match {
+      case s: KappaSourceFile =>
+        parent.resolveChild(s.path) match {
+          case Some(child) =>
+            Try {
+              child < s.content
+              child
+            }
+          case None => Failure(FileNotInside(file.path, root.pathAsString))
         }
-      case None => Failure(FileNotInside(file.path, root.pathAsString))
+      case b: KappaBinaryFile =>
+        parent.resolveChild(b.path) match {
+          case Some(child) =>
+            Try(child.write(b.content.array())(OpenOptions.default))
+
+          case None => Failure(FileNotInside(file.path, root.pathAsString))
+        }
     }
   }
   def writeFolder(folder: KappaFolder, parent: File): Try[File] = folder match {
@@ -194,13 +197,13 @@ class FileManager(val root: File, log: LoggingAdapter) {
       case file if !kappaTextFileSelector(file, knownExtensions)=> None
 
       case ch if kappaTextFileSelector(ch, knownExtensions)  =>
-        Some(KappaFile(ch.pathAsString, ch.name, ch.contentAsString, saved = true))
+        Some(KappaSourceFile(ch.pathAsString, ch.contentAsString, saved = true))
 
       case ch if ch.isRegularFile =>
-        Some(KappaFile(ch.pathAsString, ch.name, "",  saved = true))
+        Some(KappaBinaryFile(ch.pathAsString, ByteBuffer.allocate(0),  saved = true))
 
       case _ => None
-        }
+    }
 
   def listFolder(file: File, relativeToParent: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")): KappaFolder = {
     if(file.isChildOf(relativeToParent)) {
@@ -209,15 +212,16 @@ class FileManager(val root: File, log: LoggingAdapter) {
         val fiter: Seq[KappaFile] = files.map {
           case ch if kappaTextFileSelector(ch, knownExtensions) =>
 
-            KappaFile(relativeToParent.relativize(ch).toString, ch.name, ch.contentAsString, saved = true)
+            KappaSourceFile(relativeToParent.relativize(ch).toString, ch.contentAsString, saved = true)
 
           case ch if ch.isRegularFile =>
+            val bytes = ByteBuffer.allocate(0)
 
-            KappaFile(relativeToParent.relativize(ch).toString, ch.name, "", saved = true)
+            KappaBinaryFile(relativeToParent.relativize(ch).toString, bytes, saved = true)
 
         }.toSeq
 
-        val diter = folders.map { case ch => listFolder(ch, relativeToParent, knownExtensions) }.toSeq
+        val diter = folders.map { ch => listFolder(ch, relativeToParent, knownExtensions) }.toSeq
 
         val dirs = SortedSet(diter: _*)
 
@@ -226,12 +230,12 @@ class FileManager(val root: File, log: LoggingAdapter) {
       }
       else {
         log.error(s"file ${file.pathAsString} does not exist")
-        KappaFolder(file.pathAsString, SortedSet.empty, SortedSet.empty, saved = false)
+        KappaFolder(file.pathAsString, SortedSet.empty, SortedSet.empty[KappaFile], saved = false)
       }
     } else {
       val fni = new FileNotInside(file.pathAsString, relativeToParent.pathAsString)
       log.error(fni, fni.message)
-      KappaFolder(file.pathAsString, SortedSet.empty, SortedSet.empty, saved = false)
+      KappaFolder(file.pathAsString, SortedSet.empty, SortedSet.empty[KappaFile], saved = false)
     }
   }
 

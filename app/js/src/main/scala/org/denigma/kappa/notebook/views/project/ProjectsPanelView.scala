@@ -13,12 +13,15 @@ import scala.collection.immutable.SortedSet
 
 
 class ProjectsPanelView(val elem: Element,
-                        val currentProject: Var[CurrentProject],
+                        val currentProject: Var[KappaProject],
                         val input: Var[KappaMessage],
                         val output: Var[KappaMessage]
                        ) extends BindableView {
 
   override lazy val injector = defaultInjector
     .register("ProjectsView")((el, args) => new ProjectsView(el, input, output).withBinder(n => new CodeBinder(n)))
-    .register("CurrentProjectView")((el, args) => new CurrentProjectView(el, currentProject, input, output, args.getOrElse("uploader", "fileUpload").toString).withBinder(n => new CodeBinder(n)))
+    .register("CurrentProjectView")((el, args) =>
+      new CurrentProjectView(el, currentProject, input, output, args.getOrElse("uploader", "fileUpload").toString)
+        .withBinder(n => new CodeBinder(n))
+    )
 }

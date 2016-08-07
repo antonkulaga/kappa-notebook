@@ -8,7 +8,7 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages.{ParseModel, ServerConnection, SyntaxErrors}
 import org.denigma.kappa.messages.WebSimMessages.{Location, WebSimError, WebSimRange}
-import org.denigma.kappa.messages.{Go, KappaFile, KappaMessage, ServerMessages}
+import org.denigma.kappa.messages.{Go, KappaSourceFile, KappaMessage, ServerMessages}
 import org.denigma.kappa.notebook.views.common.{ServerConnections, TabHeaders}
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
@@ -19,7 +19,7 @@ import scala.concurrent.duration._
 
 
 class KappaCodeEditor(val elem: Element,
-                      val items: Var[Map[String, KappaFile]],
+                      val items: Var[Map[String, KappaSourceFile]],
                       val input: Var[KappaMessage],
                       val output: Var[KappaMessage],
                       val kappaCursor: Var[Option[(Editor, PositionLike)]],
@@ -31,7 +31,7 @@ class KappaCodeEditor(val elem: Element,
 
   override type Key = String
 
-  override type Value = KappaFile
+  override type Value = KappaSourceFile
 
   override type ItemView = CodeTab
 
@@ -40,7 +40,7 @@ class KappaCodeEditor(val elem: Element,
   items.afterLastChange(800 millis){
     its=>
       //println("sending files for checking")
-      val files: List[(String, String)] = its.values.map{  case fl => (fl.name , fl.content) }.toList
+      val files: List[(String, String)] = its.values.map{ fl => (fl.name , fl.content) }.toList
       dom.console.log("files to send: "+files.map(nc=>nc._1).mkString(" | "))
       output() = ServerCommand(connections.now.currentServer, ParseModel(files))
   }
@@ -52,7 +52,7 @@ class KappaCodeEditor(val elem: Element,
 
   val fullCode = syntaxErrors.map(ers=>ers.fullCode)
 
-  val errorsInFiles: Rx[List[(KappaFile, WebSimError)]] = syntaxErrors.map{ case ers => ers.errorsByFiles().flatMap{
+  val errorsInFiles: Rx[List[(KappaSourceFile, WebSimError)]] = syntaxErrors.map{ ers => ers.errorsByFiles().flatMap{
     case (filename, er) =>
       if(filename==""){
         val message = "error is out of bounds!"
@@ -65,13 +65,9 @@ class KappaCodeEditor(val elem: Element,
     }
   }
 
-  val errorsByFiles: Rx[Map[KappaFile, List[WebSimError]]] = errorsInFiles.map
-  {
-    case byfiles => byfiles.groupBy{
+  val errorsByFiles: Rx[Map[KappaSourceFile, List[WebSimError]]] = errorsInFiles.map{ byfiles => byfiles.groupBy{
         case (key, value) => key
-      }.mapValues{
-        case v => v.map(_._2)
-      }
+      }.mapValues{ v => v.map(_._2) }
   }
 
   val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(v => v.path))
@@ -89,10 +85,9 @@ class KappaCodeEditor(val elem: Element,
     case other => //do nothing
   }
 
-  protected def keyVar(key: Key, initialValue: Value): Var[KappaFile] = {
+  protected def keyVar(key: Key, initialValue: Value): Var[KappaSourceFile] = {
     val v = Var(initialValue)
-    v.onChange{
-      case value=>
+    v.onChange{ value=>
         items() = items.now.updated(key, value)
     }
     v
@@ -121,7 +116,7 @@ class KappaCodeEditor(val elem: Element,
     .register("headers")((el, args) => new TabHeaders(el, headers, selected)(path2name).withBinder(new GeneralBinder(_)))
     .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles, fullCode).withBinder(new GeneralBinder(_)))
 
-  override def updateView(view: CodeTab, key: String, old: KappaFile, current: KappaFile): Unit = {
+  override def updateView(view: CodeTab, key: String, old: KappaSourceFile, current: KappaSourceFile): Unit = {
     view.source() = current
   }
 }

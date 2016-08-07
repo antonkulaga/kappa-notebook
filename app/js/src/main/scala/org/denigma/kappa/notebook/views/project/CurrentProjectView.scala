@@ -10,6 +10,7 @@ import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{BlobPropertyBag, Element}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import org.denigma.kappa.notebook.extensions._
 
 import scala.collection.immutable._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
@@ -19,11 +20,14 @@ import scala.util.{Failure, Success}
 
 
 class CurrentProjectView(val elem: Element,
-                         currentProject: Var[CurrentProject],
+                         val currentProject: Var[KappaProject],
+                         //val sourceMap: Var[Map[String, KappaSourceFile]],
                          input: Var[KappaMessage],
                          output: Var[KappaMessage],
                          uploadId: String
                         ) extends CollectionSortedSetView {
+
+  val projectName = currentProject.map(_.name)
 
 
   lazy val uploadInput = sq.byId(uploadId).get.asInstanceOf[Input]
@@ -31,10 +35,6 @@ class CurrentProjectView(val elem: Element,
   override type Item = KappaFile
 
   override type ItemView = ProjectFileView
-
-  val sourceMap = currentProject.map(p=>p.sourceMap)
-
-  val projectName: Rx[String] = currentProject.map(p=>p.name)
 
   val newFileName: Var[String] = Var("")
 
@@ -46,18 +46,18 @@ class CurrentProjectView(val elem: Element,
   }
 
   val canCreate: Rx[Boolean] = Rx{
-    val sources = sourceMap()
-    val name = fileName()
-    !sources.contains(name)
+    val proj = currentProject()
+    val path = proj + "/" + fileName()
+    !currentProject().folder.files.exists(f => path ==f.path)
   }
-  val unsaved: Rx[Map[String, KappaFile]] = sourceMap.map{ sm=> sm.collect{ case (key, value) if !value.saved => key -> value } }
+  val unsaved: Rx[Map[String, KappaFile]] = currentProject.map(p=>p.folder.allFiles.filterNot(f=>f.saved).map(f=> f.path -> f).toMap)
 
   val hasUnsaved: Rx[Boolean] = unsaved.map(u=>u.nonEmpty)
 
   val addFile = Var(Events.createMouseEvent())
-  addFile.triggerIf(canCreate){ case ev=>
-    val file = KappaFile("", newFileName.now, "", saved = false)
-    val saveRequest = FileRequests.Save(projectName.now, List(file), rewrite = false, getSaved = true)
+  addFile.triggerIf(canCreate){ ev=>
+    val file = KappaSourceFile(projectName.now + "/" + newFileName.now, "", saved = false)
+    val saveRequest = FileRequests.Save(List(file), rewrite = false, getSaved = true)
     output() = saveRequest
     //output() = //org.denigma.kappa.messages.FileRequests.Save(projectName.now, List())
   }
@@ -70,12 +70,14 @@ class CurrentProjectView(val elem: Element,
   val saveAll = Var(Events.createMouseEvent())
   saveAll.triggerLater{
     val toSave = unsaved.now.values.toList
-    val saveRequest = FileRequests.Save(projectName = projectName.now, toSave, rewrite = true)
+    val saveRequest = FileRequests.Save(toSave, rewrite = true)
     println("save ALL!")
     output() = saveRequest
   }
 
-  val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.allFiles)
+  val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.folder.files)
+
+  protected def inProject(str: String) = str.startsWith(projectName.now)|| str.startsWith("/"+projectName.now)
 
   input.onChange{
     case d @ FileResponses.Downloaded(label, data)=>
@@ -83,38 +85,37 @@ class CurrentProjectView(val elem: Element,
       //println("DOWNLOADED IS = "+d)
       if(d != FileResponses.Downloaded.empty) saveBinaryAs(name, data)
 
-    case Done(FileRequests.Remove(pname, filename), _) if pname == currentProject.now.name =>
-      currentProject() = currentProject.now.removeByName(filename)
+  case Done(FileRequests.Remove(pathes), _)  =>
+    val (in, not) = pathes.partition(inProject)
+    if(in.nonEmpty){
+      currentProject() = currentProject.now.copy(folder = currentProject.now.folder.removeFiles(pathes))
+    }
 
-    case resp @ FileResponses.RenamingResult(pname, renamed: Map[String, (String, String)], nameConflicts, notFound) if pname == currentProject.now.name =>
-      currentProject() = currentProject.now.withRenames(renamed)
+  case resp @ FileResponses.RenamingResult(renamed: Map[String, (String, String)], nameConflicts, notFound)=>
+    dom.console.error("RENAMING IS NOT YET IMPLEMENTED IN UI")
 
-    case resp @ FileResponses.SavedFiles(pname, Left(names)) if pname == currentProject.now.name =>
-      val proj = currentProject.now
-      currentProject() = { proj.markSaved(names) }
-      //println("save resp")
-      //pprint.pprintln(resp)
+  case resp @ FileResponses.SavedFiles(Left(pathes)) =>
+    val proj = currentProject.now
 
-    case resp @ FileResponses.SavedFiles(pname, Right(files)) if pname == currentProject.now.name =>
-      val proj = currentProject.now
-      currentProject() = {
-        //println("mark saved with addition!")
-        //pprint.pprintln(resp)
-        proj.updateWithSaved(files)
-      }
+    currentProject() = { proj.copy(folder = proj.folder.markSaved(pathes)) }
+    //println("save resp")
+    //pprint.pprintln(resp)
+
+  case resp @ FileResponses.SavedFiles(Right(files)) =>
+    val proj = currentProject.now
+    currentProject() = proj.copy(folder = proj.folder.addFiles(files))
 
     case _=> //do nothing
   }
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
-    case (el, _) => new ProjectFileView(el, item, name, input, output).withBinder(v => new GeneralBinder(v))
+    case (el, _) => new ProjectFileView(el, item, input, output).withBinder(v => new GeneralBinder(v))
   }
 
   val name = currentProject.map(proj => proj.name)
   val save = Var(Events.createMouseEvent())
-  save.onChange{
-    case ev =>
-      output() = ProjectRequests.Save(currentProject.now.toKappaProject)
+  save.onChange{ ev =>
+      output() = ProjectRequests.Save(currentProject.now)
       //connector.send(Save(currentProject.now))
   }
 
@@ -131,19 +132,20 @@ class CurrentProjectView(val elem: Element,
     uploadInput.addEventListener[Event](Events.change, filesHandler _)
   }
   protected def filesHandler(event: org.scalajs.dom.Event) = {
-    println("on change files work")
     val name = fileName.now
+    dom.console.info("FILE UPLOAD WORKS!")
+    val files = uploadInput.files.toList
+    dom.console.info("FIELS ARE :"+files)
 
 
-    val files = uploadInput.files.toList.foreach{
-      case f =>
-        f.readAsArrayBuffer.onComplete{
+    files.foreach{ f =>
+      f.readAsByteBuffer.onComplete{
           case Failure(th) => dom.console.error("file upload failed with: "+th)
           case Success(result) =>
-            val array = TypedArrayBuffer.wrap(result).array()
-            val mess = DataMessage(f.name, array)
-            println(s"uploading ${f.name} to ${projectName.now}")
-            output() = FileRequests.UploadBinary(projectName.now, List(mess))
+            //val mess = DataMessage(f.name, result)
+            //println(s"uploading ${f.name} to ${projectName.now}")
+            val fl = KappaBinaryFile(projectName.now+"/"+f.name, result)
+            output() = FileRequests.Save(List(fl), rewrite = true, getSaved = true)
         }
     }
     //val toUplod = FileRequests.UploadBinary()

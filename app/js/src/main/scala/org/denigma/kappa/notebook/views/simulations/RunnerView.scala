@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
-import org.denigma.kappa.messages.{KappaFile, KappaMessage}
+import org.denigma.kappa.messages.{KappaSourceFile, KappaMessage}
 import org.denigma.kappa.messages.KappaMessage.ServerCommand
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages.RunModel
@@ -19,7 +19,7 @@ class RunnerView(val elem: Element,
                  val tab: Var[String],
                  sender: Var[KappaMessage],
                  serverConnections: Rx[ServerConnections],
-                 val sourceMap: Rx[Map[String, KappaFile]]
+                 val sourceMap: Rx[Map[String, KappaSourceFile]]
                  ) extends BindableView//FixedCollectionSeqView
 {
   self=>

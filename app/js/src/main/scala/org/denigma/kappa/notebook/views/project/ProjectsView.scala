@@ -30,9 +30,7 @@ class ProjectsView(val elem: Element,
   }
 
   val selectedProject = Var(KappaProject.empty)
-  selectedProject.onChange{
-    case proj => sender() = ProjectRequests.Load(proj)
-  }
+  selectedProject.onChange{ proj => sender() = ProjectRequests.Load(proj) }
 
   input.onChange{
 
@@ -60,9 +58,8 @@ class ProjectsView(val elem: Element,
 
   val createProjectClick: Var[MouseEvent] = Var(Events.createMouseEvent())
 
-  createProjectClick.onChange{
-    case ev=>
-      sender() = ProjectRequests.Create(KappaProject(newProjectName.now), false)
+  createProjectClick.onChange{ ev=>
+      sender() = ProjectRequests.Create(KappaProject(newProjectName.now), rewriteIfExists = false)
       newProjectName() = ""
   }
 

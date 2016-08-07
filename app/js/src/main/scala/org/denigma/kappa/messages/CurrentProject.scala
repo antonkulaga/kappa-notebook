@@ -1,11 +1,11 @@
 package org.denigma.kappa.messages
 
 import scala.collection.immutable.SortedSet
-
+/*
 
 object CurrentProject extends FileFilters {
 
-  protected implicit def toMap(st: SortedSet[KappaFile]): Map[String, KappaFile] = st.map(f=> (f.name, f)).toMap
+  protected implicit def toMap(st: SortedSet[KappaSourceFile]): Map[String, KappaSourceFile] = st.map(f=> (f.name, f)).toMap
 
   def apply(name: String, place: String, allFiles: List[Map[String, KappaFile]] ): CurrentProject = {
     CurrentProject(name, place, allFiles.head,  allFiles(1),  allFiles(2),  allFiles(3),  allFiles(4))
@@ -32,8 +32,8 @@ object CurrentProject extends FileFilters {
       otherFiles)
   }
 
-  def filesByType(files: List[KappaFile]): (List[KappaFile], List[KappaFile], List[KappaFile], List[KappaFile], List[KappaFile]) = {
-    files.foldLeft(List.empty[KappaFile], List.empty[KappaFile], List.empty[KappaFile], List.empty[KappaFile], List.empty[KappaFile]){
+  def filesByType(files: List[KappaFile]) = {
+    files.foldLeft(List.empty[KappaSourceFile], List.empty[KappaSourceFile], List.empty[KappaSourceFile], List.empty[KappaSourceFile], List.empty[KappaSourceFile]){
       case ((sources, papers, images, videos, otherFiles), file) if sourceFilter(file)=> (file::sources, papers, images, videos, otherFiles)
       case ((sources, papers, images, videos, otherFiles), file) if paperFilter(file)=> (sources, file::papers, images, videos, otherFiles)
       case ((sources, papers, images, videos, otherFiles), file) if imageFilter(file)=> (sources, papers, file::images, videos, otherFiles)
@@ -42,8 +42,8 @@ object CurrentProject extends FileFilters {
     }
   }
 
-  def fileMapsByType(files: Map[String, KappaFile]) = {
-    files.foldLeft(Map.empty[String, KappaFile], Map.empty[String, KappaFile], Map.empty[String, KappaFile], Map.empty[String, KappaFile], Map.empty[String, KappaFile]){
+  def fileMapsByType(files: Map[String, KappaSourceFile]) = {
+    files.foldLeft(Map.empty[String, KappaSourceFile], Map.empty[String, KappaSourceFile], Map.empty[String, KappaSourceFile], Map.empty[String, KappaSourceFile], Map.empty[String, KappaSourceFile]){
       case ((sources, papers, images, videos, otherFiles), (name , file)) if sourceFilter(file)=> (sources updated  (name , file), papers, images, videos, otherFiles)
       case ((sources, papers, images, videos, otherFiles), (name , file)) if paperFilter(file)=> (sources, papers updated  (name , file), images, videos, otherFiles)
       case ((sources, papers, images, videos, otherFiles), (name , file)) if imageFilter(file)=> (sources, papers, images updated  (name , file), videos, otherFiles)
@@ -55,11 +55,11 @@ object CurrentProject extends FileFilters {
 
 case class CurrentProject(name: String,
                           path: String,
-                          sourceMap: Map[String, KappaFile],
-                          papers: Map[String, KappaFile],
-                          images: Map[String, KappaFile],
-                          videos: Map[String, KappaFile],
-                          otherFiles: Map[String, KappaFile]
+                          sourceMap: Map[String, KappaSourceFile],
+                          papers: Map[String, KappaSourceFile],
+                          images: Map[String, KappaSourceFile],
+                          videos: Map[String, KappaSourceFile],
+                          otherFiles: Map[String, KappaSourceFile]
                          ) extends FileFilters
 {
   self=>
@@ -88,7 +88,7 @@ case class CurrentProject(name: String,
 
   lazy val allFilesMap: Map[String, KappaFile] = sourceMap ++ papers ++ images ++ videos ++  otherFiles
 
-  lazy val allFiles = SortedSet(allFilesMap.values.toSeq:_*)
+  lazy val allFiles: SortedSet[KappaFile] = SortedSet(allFilesMap.values.toSeq:_*)
 
   def toKappaProject: KappaProject = KappaProject(name, KappaFolder(path, SortedSet.empty, allFiles))
 
@@ -100,16 +100,16 @@ case class CurrentProject(name: String,
       this.copy(otherFiles = otherFiles - name)
   }
 
-  protected def update(fun: Map[String, KappaFile] =>  Map[String, KappaFile] ) = {
+  protected def update(fun: Map[String, KappaSourceFile] =>  Map[String, KappaSourceFile] ) = {
     val updated = for(mp <- allFilesList) yield fun(mp)
     CurrentProject.apply(name, path, updated)
   }
 
-  def markSaved(fileNames: Set[String]): CurrentProject = this.update{
-    case mp =>  mp.map{ case (key, value)=> if(fileNames.contains(key)) key->value.copy(saved = true) else key-> value}
+  def markSaved(fileNames: Set[String]): CurrentProject = this.update{ mp =>
+    mp.map{ case (key, value)=> if(fileNames.contains(key)) key->value.copy(saved = true) else key-> value}
   }
 
-  def updateWithSaved(saved: Map[String, KappaFile]): CurrentProject =
+  def updateWithSaved(saved: Map[String, KappaSourceFile]): CurrentProject =
   {
     val keys = saved.keySet
     val (sources, papers, images, videos, otherFiles)  = CurrentProject.fileMapsByType(saved)
@@ -127,7 +127,7 @@ case class CurrentProject(name: String,
   */
 
   def withRenames(renames: Map[String, (String, String)]) =  this.update{
-    case mp =>  mp.map{
+    mp =>  mp.map{
       case (key, value) if renames.contains(key)=>
         val (newName, newPath) = renames(key)
         newName -> value.copy(path = newPath)
@@ -135,3 +135,4 @@ case class CurrentProject(name: String,
     }
   }
 }
+*/

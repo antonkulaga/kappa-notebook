@@ -7,7 +7,7 @@ import org.denigma.binding.views.{BindableView, UpdatableView}
 import org.denigma.codemirror._
 import org.denigma.codemirror.addons.lint._
 import org.denigma.codemirror.extensions._
-import org.denigma.kappa.messages.{FileRequests, KappaFile}
+import org.denigma.kappa.messages.{FileRequests, KappaSourceFile}
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
@@ -21,7 +21,7 @@ import scala.util._
 
 class CodeTab(val elem: Element,
               val path: String,
-              val source: Var[KappaFile],
+              val source: Var[KappaSourceFile],
               val selected: Var[String],
               val editorUpdates: Var[EditorUpdates],
               val kappaCursor: Var[Option[(Editor, PositionLike)]],

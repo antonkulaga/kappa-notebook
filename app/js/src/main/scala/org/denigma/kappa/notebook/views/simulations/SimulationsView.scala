@@ -17,7 +17,7 @@ import rx._
 import scala.collection.immutable._
 
 class SimulationsView(val elem: Element,
-                      val sourceMap: Rx[Map[String, KappaFile]],
+                      val sourceMap: Rx[Map[String, KappaSourceFile]],
                       val input: Rx[KappaMessage],
                       val output: Var[KappaMessage],
                       val serverConnections: Var[ServerConnections]

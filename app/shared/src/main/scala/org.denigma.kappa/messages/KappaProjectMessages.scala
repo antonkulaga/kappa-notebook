@@ -5,8 +5,6 @@ import boopickle.CompositePickler
 import scala.collection.immutable._
 import boopickle.DefaultBasic._
 
-import scala.List
-
 object KappaProject extends FileFilters{
 
   implicit val classPickler: Pickler[KappaProject] = boopickle.Default.generatePickler[KappaProject]
@@ -33,17 +31,19 @@ object KappaProject extends FileFilters{
 
 case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, saved: Boolean = false) extends KappaFileMessage with FileFilters
 {
+  self =>
+
   def loaded = folder != KappaFolder.empty
 
-  lazy val sources: SortedSet[KappaFile] = folder.files.filter(sourceFilter)
+  lazy val sources: SortedSet[KappaSourceFile] = folder.files.collect{ case f: KappaSourceFile => f}
 
-  lazy val sourceMap: Map[String, KappaFile] = sources.map(f=> (f.path, f)).toMap
+  lazy val sourceMap: Map[String, KappaSourceFile] = sources.map(f=> (f.path, f)).toMap
 
-  lazy val papers: SortedSet[KappaFile] = folder.files.filter(paperFilter)
+  lazy val papers: SortedSet[KappaBinaryFile] = folder.files.collect{ case f: KappaBinaryFile if paperFilter(f) => f}
 
-  lazy val images: SortedSet[KappaFile] = folder.files.filter(imageFilter)
+  lazy val images: SortedSet[KappaBinaryFile] = folder.files.collect{ case f: KappaBinaryFile if imageFilter(f) => f}
 
-  lazy val videos: SortedSet[KappaFile] = folder.files.filter(videoFilter)
+  lazy val videos: SortedSet[KappaBinaryFile] = folder.files.collect{ case f: KappaBinaryFile if videoFilter(f) => f}
 
   lazy val nonsourceFiles: SortedSet[KappaFile] = folder.files.filterNot(sourceFilter)
 
@@ -52,7 +52,6 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
     .filterNot(imageFilter)
     .filterNot(videoFilter)
     .filterNot(paperFilter)
-
 }
 
 trait FileFilters {

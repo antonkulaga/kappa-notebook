@@ -44,10 +44,7 @@ class ScrollerView(val elem: Element,
   }
 
   val forwardClick = Var(Events.createMouseEvent())
-  forwardClick.onChange{
-    case ev=>
-      //dom.window.history.back()
-  }
+  forwardClick.onChange{ ev=> dom.window.history.back()}
   val scrollHistory: Var[List[ScrollPosition]] = Var(List.empty[ScrollPosition])
 
   val hasHistory = scrollHistory.map(v=>v.nonEmpty)
@@ -61,7 +58,10 @@ class ScrollerView(val elem: Element,
   protected def moveToTab(tab: String) = menuMap.now.get(tab) match {
     case Some(target) =>
       val tid = target.id
-      //val index = historyState.map(v=>v.index).getOrElse(0) + 1
+      val hash =  "#"+tid
+      if(dom.window.location.hash==hash) {
+        dom.window.location.hash = ""
+      }
       val stateObject = new ScrollPosition(tid, scrollPanel.scrollLeft)
       dom.window.history.pushState(stateObject, tab, "#"+tid)
       val state = js.Dynamic.literal(

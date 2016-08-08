@@ -3,6 +3,7 @@ package org.denigma.kappa.notebook.graph
 import org.denigma.kappa.notebook.graph.layouts.ForceEdge
 import org.denigma.threejs._
 import org.denigma.binding.extensions._
+import org.denigma.kappa.model.Change
 
 trait KappaEdge extends ForceEdge {
 

@@ -10,12 +10,22 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
 import org.scalajs.dom.{Event, File, FileList, FileReader}
 import org.scalajs.dom.ext.EasySeq
-import org.scalajs.dom.raw.{Blob, Element, HTMLElement, ProgressEvent}
+import org.scalajs.dom.raw._
 
+import scala.annotation.tailrec
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 
 object extensions extends SharedExtensions{
+
+  implicit class SelectionOps(selection: Selection) extends EasySeq[org.scalajs.dom.raw.Range](selection.rangeCount, i => selection.getRangeAt(i))
+
+  implicit class NodeExt(node: Node) {
+
+    @tailrec final def isInside(other: Node): Boolean = if(node == null) false
+    else if (/*node.isEqualNode(textLayer) || */other == node || other.isSameNode(node)) true
+    else if(node.parentNode == null) false else new NodeExt(node.parentNode).isInside(other)
+  }
 
   implicit class BlobOps(blob: Blob) {
 

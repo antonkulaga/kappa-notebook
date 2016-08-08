@@ -46,6 +46,7 @@ class KappaStateView(val label: String, val fontSize: Double, val padding: Doubl
 
 
 }
+/*
 
 object KappaLinkView {
   def gradientName = "GradLink"
@@ -59,3 +60,4 @@ class KappaLinkView(val label: String, val fontSize: Double, val padding: Double
   lazy val gradient = Var(linkGradient)
 
 }
+*/

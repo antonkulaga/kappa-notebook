@@ -26,10 +26,21 @@ case class GraphUpdate(line: String, left: Pattern, right: Pattern, isRule: Bool
   lazy val modifiedAgents = sameAgents.filterNot{ case (one, two)=> one==two}.unzip{case (a, b)=> (a, b)}
   lazy val leftModified = modifiedAgents._1.toSet
   lazy val rightModified = modifiedAgents._2.toSet
-
   lazy val removedAgents = left.agents.filterNot(p => leftModified.contains(p) || unchangedAgents.contains(p) ).toSet
-
-
   lazy val addedAgents = right.agents.filterNot(p => rightModified.contains(p) || unchangedAgents.contains(p) ).toSet
+  /*
+  lazy val (removedLinks, addedLinks, changedLinks) = {
+    val sameCount = sameAgents.length
+    leftLinks = prepareForMerge(left.)
+    ???
+  }
+
+  protected def prepareForMerge(links: List[(Link, (Int, Int))], maxIndex: Int ): Map[(Int, Int), Link] = {
+    links.collect{
+      case (link, (from, to)) if from < maxIndex && to < maxIndex => ((from, to), link)
+    }.toMap
+  }
+*/
+
 
 }

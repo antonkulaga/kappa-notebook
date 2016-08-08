@@ -14,10 +14,18 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import org.denigma.binding.extensions._
 
+import scala.annotation.tailrec
+import org.denigma.kappa.notebook.extensions._
+import rx.Rx.Dynamic
+
 import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
+
+trait NodesChecker {
+
+}
 
 class PapersView(val elem: Element,
                  val currentProjectName: Rx[String],
@@ -56,6 +64,7 @@ class PapersView(val elem: Element,
   }
 
   val selected = Var("")
+  val selectionOpt: Var[Option[Selection]] = Var(None)
 
   connector.input.onChange {
     case GoToPaper(loc)=> paperURI() = loc
@@ -66,16 +75,71 @@ class PapersView(val elem: Element,
   lazy val charNumber = kappaCursor.map{c => c.map(p => p._2.ch).getOrElse(0)}
 
   val canInsert: Rx[Boolean] = kappaCursor.map(c => c.isDefined)
-  val comment = Var("")
   val insertComment = Var(Events.createMouseEvent())
   insertComment.triggerLater{
-    dom.console.info("INSERTION WORKS!")
+    kappaCursor.now match {
+      case Some((ed, pos)) =>
+        val line = ed.getDoc().getLine(pos.line)
+        ed.getDoc().setLine(pos.line, line + comment.now)
+        println(s"POSITION = ${pos.line} ch is ${pos.ch} LEN IS ${line.length}")
+      case None => dom.console.error("EDITOR IS NOT AVALIABLE TO INSERT")
+    }
   }
+
+  override protected def subscribeUpdates(): Unit =
+  {
+    super.subscribeUpdates()
+    selectionOpt.afterLastChange(900 millis){
+      case Some(sel) =>
+         selections() = itemViews.now.map{ case (item, child) => (item, child.select(sel)) }
+
+      case None =>
+        selections() = Map.empty[Item, (Map[Int, List[TextLayerSelection]])]
+
+    }
+    dom.document.addEventListener("selectionchange", onSelectionChange _)
+
+
+  }
+
+  protected def onSelectionChange(event: Event) = {
+    val selection: Selection = dom.window.getSelection()
+    selection.anchorNode.isInside(elem) || selection.focusNode.isInside(elem)  match {
+      case true =>
+       selectionOpt() = Some(selection)
+      case false =>
+        selectionOpt() = None
+      //println(s"something else ${selection.anchorNode.textContent}") //do nothing
+    }
+  }
+
+  val selections: Var[Map[Item, (Map[Int, List[TextLayerSelection]])]] = Var(Map.empty[Item, (Map[Int, List[TextLayerSelection]])])
+
+  protected def toURI(str: String) = if(str.contains(":")) str else ":"
+
+  val comment: Rx[String] = selections.map{ chosen =>
+    val result = chosen.foldLeft(""){
+      case (acc, (item, mp))=>
+        val sstr = mp.foldLeft(""){
+          case (a, (num, list)) =>
+            val str = list.foldLeft(""){
+              case (aa, s) =>
+                aa + s"#^ :in_paper ${toURI(item)}; :on_page ${num} ; :from_chunk ${s.fromChunk} ; :to_chunk ${s.toChunk} ; :from_token ${s.fromToken} ; :to_token ${s.toToken}\n"
+            }
+            a + str
+        }
+        acc + sstr
+    }
+    println("COMMENT CHANGED TO "+result)
+    result
+  }
+
+  val hasComment = comment.map(c => c == "")
 
   override def newItemView(name: String, paper: Paper): PublicationView = this.constructItemView(name){
     case (el, params)=>
       el.id = name
-      val v = new PublicationView(el, paperURI, comment, Var(paper), kappaCursor).withBinder(v=>new CodeBinder(v))
+      val v = new PublicationView(el, paperURI,  Var(paper), kappaCursor).withBinder(v=>new CodeBinder(v))
       v
   }
 

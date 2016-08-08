@@ -98,6 +98,21 @@ class GraphUpdaterSuite extends WordSpec with Matchers with Inside  {
       update.leftModified.isEmpty shouldEqual false
       update.rightModified.isEmpty shouldEqual false
     }
+
+    /*
+    "understand complex links" in {
+      import KappaModel._
+      val parser = new KappaParser
+      val text = parser.mergeLine("""
+                                    |'LacI binding to R0010p2 (no LacI)' \
+                                    |	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) -> \
+                                    |	DNA(binding,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding!1,type~BBaR0010p2) @ 'transcription factor binding rate'
+                                  """.stripMargin)
+      val res: Rule = parser.rule.parse(text).get.value
+      val update = GraphUpdate.fromParsedLine(ParsedLine(text, res))
+      update.link
+    }
+    */
   }
 
 }

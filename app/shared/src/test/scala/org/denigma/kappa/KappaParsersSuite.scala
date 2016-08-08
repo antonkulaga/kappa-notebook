@@ -192,6 +192,28 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       }
     }
 
+    "parse links" in {
+      import KappaModel._
+      val parser = new KappaParser
+      val text = parser.mergeLine("""
+                                    |'LacI binding to R0010p2 (no LacI)' \
+                                    |	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) -> \
+                                    |	DNA(binding,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding!1,type~BBaR0010p2) @ 'transcription factor binding rate'
+                                  """.stripMargin)
+      val res: Rule = parser.rule.parse(text).get.value
+      val links1 = res.left.pairLinksIndexed
+      links1.length.shouldEqual(1)
+      inside(links1.head) {
+        case (_, (0, 2)) => //println("LINKS1 HEAD + "+links1.head)
+      }
+      val links2 = res.right.pairLinksIndexed
+      links2.length.shouldEqual(2)
+      inside(links2){
+        case (_,(0, 2))::(_, (1, 2))::Nil =>
+          //println("LINKS 2 = " + links2)
+      }
+    }
+
 
     /*
     "differentiate agents in rules" in {

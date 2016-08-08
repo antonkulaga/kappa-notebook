@@ -7,13 +7,15 @@
       <span class="ui red header">Currently no papers are loaded.</span>
     </div>
     <div class="column">
-      <a class="ui basic teal label">Comment: <span class="ui orange header" data-bind="comment"></span></a>
-    </div>
-    <div class="column">
-      <button class="ui small inverted green button" data-event-click="insertComment"> Insert comment</button>
-    </div>
-    <div class="column">
-      <span>zoom</span>
+      <table data-show-if="hasComment" class="ui very compact basic inverted table">
+        <tbody>
+          <tr>
+            <td><span placeholder="comment to insert" data-bind="comment" style="width: 100%"></span></td>
+            <td><button class="ui small inverted green button" data-event-click="insertComment">Insert comment</button></td>
+          </tr>
+        </tbody>
+      </table>
+
     </div>
   </div>
   <div class="ui top attached pointing menu" data-view="headers">

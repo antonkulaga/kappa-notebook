@@ -14,23 +14,35 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import org.scalajs.dom.ext._
 import org.scalajs.dom.html.Canvas
+import org.denigma.kappa.notebook.extensions._
 import org.scalajs.dom.raw.Element
+import rx.Rx.Dynamic
 
+import scala.annotation.tailrec
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
 
 class PublicationView(val elem: Element,
                       val selected: Var[String],
-                      val comment: Var[String],
                       val paper: Var[Paper],
                       kappaCursor: Var[Option[(Editor, PositionLike)]]
                      )
   extends PaperView with TabItem{
 
+  override type ItemView = ArticlePageView
+
   override  val paperContainer = elem.children.collectFirst{
     case e: HTMLElement if e.classList.contains("paper-container")=> e
   }.getOrElse(elem)
 
+  @tailrec final def nodeInside(node: Node, e: Element): Boolean = if(node == null) false
+  else if (/*node.isEqualNode(textLayer) || */e == node || e.isSameNode(node)) true
+  else if(node.parentNode == null) false else nodeInside(node.parentNode, e)
+
+  def select(sel: Selection): Map[Int, List[TextLayerSelection]] = {
+    val children = itemViews.now
+    children.map { case (num, child) => (num, child.select(sel)) }
+  }
 
   lazy val scale = Var(1.4)
 
@@ -38,19 +50,7 @@ class PublicationView(val elem: Element,
 
   val addNugget= Var(Events.createMouseEvent())
 
-  val selections  = Var(List.empty[TextLayerSelection])
-
   val paperURI = paper.map(p=>p.name)
-
-  val selectionRanges: Var[List[raw.Range]] = Var(List.empty[org.scalajs.dom.raw.Range])
-
-  val lastSelections: Var[List[TextLayerSelection]] = Var(List.empty[TextLayerSelection])
-
-  val hasSelection = Rx{
-    lastSelections().nonEmpty || selectionRanges().nonEmpty
-  }
-
-  override type ItemView = ArticlePageView
 
   override def newItemView(item: Int, value: Page): ItemView = this.constructItemView(item){
     case (el, args) =>
@@ -111,21 +111,26 @@ class PublicationView(val elem: Element,
         case None =>
       }
     }
-    /*
-   dom.document.addEventListener("selectionchange", onSelectionChange _)
-   //textLayerDiv.parentNode.addEventListener(Events.mouseleave, fixSelection _)
-   ges.onChange{
-     case value =>
-       println("RANGES CHANGE DETECTED!")
-       println(value.mkString("\n"))
-   }*/
  }
 
 }
 
-class ArticlePageView(val elem: Element, val num: Int, val page: Page, val scale: Rx[Double])  extends PageView {
+//case class NuggetSelection(paperURI: String, page: Int, selection: TextLayerSelection)
+
+class ArticlePageView(val elem: Element,
+                      val num: Int,
+                      val page: Page,
+                      val scale: Rx[Double]
+                     )  extends PageView {
  val name = Var("page_"+num)
  val title = Var("page_"+num)
+
+  def select(sel: Selection): List[TextLayerSelection] = {
+    if(sel.anchorNode.isInside(textDiv) || sel.focusNode.isInside(textDiv)) sel.map{ range =>
+      TextLayerSelection.fromRange("", range)}.toList
+    else List.empty[TextLayerSelection]
+  }
+
 
 
   override lazy val canvas = {
@@ -141,6 +146,11 @@ class ArticlePageView(val elem: Element, val num: Int, val page: Page, val scale
   }.orElse(elem.children.collectFirst {
     case canv: HTMLDivElement => canv
   }).get //unsafe
+
+  override def bindView() = {
+    super.bindView()
+
+  }
 }
 
 /*

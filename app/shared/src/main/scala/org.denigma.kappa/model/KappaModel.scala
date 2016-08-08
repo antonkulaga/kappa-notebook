@@ -11,7 +11,7 @@ object KappaModel {
   case object BothDirections extends Direction
 
   object Link {
-    implicit val ordering = new Ordering[Link] {
+    implicit val ordering: Ordering[Link] = new Ordering[Link] {
       override def compare(x: Link, y: Link): Int = x.label.compare(y.label) match {
         case 0 => x.hashCode().compare(y.hashCode())
         case other => other
@@ -25,7 +25,7 @@ object KappaModel {
 
     require(fromAgent.sites.contains(fromSide), s"from Agent($fromAgent) should contain fromSide($fromSide)")
 
-    require(toAgent.sites.contains(toSide), s"from Agent($toAgent) should contain fromSide($toSide)")
+    require(toAgent.sites.contains(toSide), s"to Agent($toAgent) should contain toSide($toSide)")
 
   }
 
@@ -35,32 +35,27 @@ object KappaModel {
 
   case class Pattern(agents: List[Agent]) extends KappaElement
   {
+
     protected def isNamed(key: String) = key != "_" && key !="?"
 
-    protected lazy val linkTuples: List[(String, (Site, Agent))] = for{
-      a <- agents
-      (name, side) <-a.links
-    } yield(name, (side, a))
-
-    //TODO: think about a potential bug with two ? and _
-    lazy val allLinks: Map[String, List[(Site, Agent)]] = linkTuples.groupBy(_._1).map{ case (key, value) => key -> value.map(v=>v._2)}
-
-    lazy val danglingLinks: Map[String, List[(Site, Agent)]] = allLinks.collect{
-      case (key, value) if value.length < 2 && isNamed(key) => key -> value
+    protected lazy val linkTuples: List[((Agent, Site, String), Int)] = agents.zipWithIndex.flatMap{
+      case (a, i) => a.outgoingLinks.map(v=>(v, i))
     }
 
-    lazy val duplicatedLinks: Map[String, List[(Site, Agent)]] = allLinks.collect{
-      case (key, value) if value.length > 2 && isNamed(key) => key -> value
+    protected lazy val pairLinkTuples: List[((Agent, Site, String), Int)] = linkTuples.filter{
+      case ((_, _, "_") , _) | ((_, _, "?"), _) => false
+      case _ => true
     }
 
-    lazy val linksSomewhere = allLinks.getOrElse("_", List.empty)
+    //lazy val allLinks: List[Link] = pairLinks ++ wildcardLinks ++ questionLinks
 
-    lazy val unclearLinks = allLinks.getOrElse("?", List.empty)
+    lazy val pairLinksIndexed: List[(Link, (Int, Int))] = pairLinkTuples.groupBy{ case ((_, _, l), _) => l}.collect{
+      case (label, ((a1, s1, _), i1)::((a2, s2, _), i2)::Nil) => (KappaModel.Link(a1, a2, s1, s2, label), (i1, i2))
+    }.toList
 
-    lazy val links: Map[String, Link] = allLinks.collect {
-      case (key, (side1, agent1)::(side2, agent2)::Nil)  =>
-        key -> KappaModel.Link(agent1, agent2, side1, side2, key)
-    }
+    lazy val wildcardLinks = linkTuples.collect{ case ((a, s, "_"), _) => KappaModel.Link(a, Agent.wildcard, s, Site.wildcard, "_")}
+    lazy val questionLinks = linkTuples.collect{ case ((a, s, "?"), _) => KappaModel.Link(a, Agent.questionable, s, Site.question, "?")}
+
 
     private def sameAgent(one: Agent, two: Agent): Boolean = {
       one.name==two.name && one.siteNames == two.siteNames
@@ -100,6 +95,11 @@ object KappaModel {
 
   case class State(name: String) extends KappaNamedElement
 
+  object Site {
+    lazy val wildcard = Site("_")
+    lazy val question = Site("?")
+  }
+
   case class Site(name: String, states: Set[State] = Set.empty, links: Set[String] = Set.empty) extends KappaNamedElement {
     def ~(state: State): Site = {
       copy(states = states + state)
@@ -107,12 +107,15 @@ object KappaModel {
 
   }
   object Agent {
-    implicit val ordering = new Ordering[Agent] {
+    implicit val ordering: Ordering[Agent] = new Ordering[Agent] {
       override def compare(x: Agent, y: Agent): Int = x.name.compare(y.name) match {
         case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
         case other => other
       }
     }
+
+    lazy val wildcard = Agent("_", Set(Site("_")))
+    lazy val questionable = Agent("?", Set(Site("?")))
   }
 
   case class Agent(name: String, sites: Set[Site] = Set.empty) extends KappaNamedElement
@@ -120,14 +123,12 @@ object KappaModel {
 
     lazy val siteNames: Set[String] = sites.map(s=>s.name)
 
-    lazy val links: Set[(String, Site)] = for {
+    lazy val outgoingLinks: Set[(Agent, Site, String)] = {
+      for{
         s <- sites
         l <- s.links
-      } yield l -> s
-
-    lazy val linkMap = links.toMap
-
-    def hasDuplicates = links.size > linkMap.size
+      } yield  (this, s, l)
+    }
   }
 
   case class ObservablePattern(name: String, pattern: Pattern) extends KappaNamedElement

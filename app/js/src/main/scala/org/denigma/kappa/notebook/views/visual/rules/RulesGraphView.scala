@@ -1,7 +1,8 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.views.BindableView
-import org.denigma.kappa.notebook.graph.Change.Change
+import org.denigma.kappa.model.Change
+import org.denigma.kappa.model.Change.Change
 import org.denigma.kappa.notebook.graph._
 import org.denigma.kappa.notebook.graph.layouts._
 import org.scalajs.dom.svg.LinearGradient
@@ -167,22 +168,22 @@ trait VisualGraph extends BindableView {
     addGradient(KappaAgentView.gradientName, Change.Removed, Gradients.redGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Removed, Gradients.lightRedGradient(KappaSiteView.gradientName))
     addGradient(KappaStateView.gradientName, Change.Removed, Gradients.superLightRedGradient(KappaStateView.gradientName))
-    addGradient(KappaLinkView.gradientName, Change.Removed, Gradients.opaqueRedGradient(KappaLinkView.gradientName))
+    //addGradient(KappaLinkView.gradientName, Change.Removed, Gradients.opaqueRedGradient(KappaLinkView.gradientName))
 
     addGradient(KappaAgentView.gradientName, Change.Added, Gradients.greenGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Added, Gradients.lightGreenGradient(KappaSiteView.gradientName))
     addGradient(KappaStateView.gradientName, Change.Added, Gradients.superLightGreenGradient(KappaStateView.gradientName))
-    addGradient(KappaLinkView.gradientName, Change.Added, Gradients.opaqueGreenGradient(KappaLinkView.gradientName))
+    //addGradient(KappaLinkView.gradientName, Change.Added, Gradients.opaqueGreenGradient(KappaLinkView.gradientName))
 
     addGradient(KappaAgentView.gradientName, Change.Unchanged, Gradients.blueGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Unchanged, Gradients.lightBlueGradient(KappaSiteView.gradientName))
     addGradient(KappaStateView.gradientName, Change.Unchanged, Gradients.superLightBlueGradient(KappaStateView.gradientName))
-    addGradient(KappaLinkView.gradientName, Change.Unchanged, Gradients.opaqueBlueGradient(KappaLinkView.gradientName))
+    //addGradient(KappaLinkView.gradientName, Change.Unchanged, Gradients.opaqueBlueGradient(KappaLinkView.gradientName))
 
     addGradient(KappaAgentView.gradientName, Change.Updated, Gradients.blueGradient(KappaAgentView.gradientName))
     addGradient(KappaSiteView.gradientName, Change.Updated, Gradients.lightBlueGradient(KappaSiteView.gradientName))
     addGradient(KappaStateView.gradientName, Change.Updated, Gradients.superLightBlueGradient(KappaStateView.gradientName))
-    addGradient(KappaLinkView.gradientName, Change.Updated, Gradients.opaqueBlueGradient(KappaLinkView.gradientName))
+    //addGradient(KappaLinkView.gradientName, Change.Updated, Gradients.opaqueBlueGradient(KappaLinkView.gradientName))
   }
   fillGradients()
 
@@ -201,10 +202,12 @@ trait VisualGraph extends BindableView {
     new KappaStateView(state.state.name, visualSettings.state.font, visualSettings.state.padding, gradient, visualSettings.canvas)
   }
 
+  /*
   implicit protected def createLinkView(edge: KappaLinkEdge): KappaLinkView = {
     val gradient = getGradient(KappaLinkView.gradientName, edge.status)
     new KappaLinkView(edge.link.label, visualSettings.link.font, visualSettings.link.padding, gradient, visualSettings.canvas)
   }
+  */
 
 }
 

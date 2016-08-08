@@ -1,7 +1,8 @@
 package org.denigma.kappa.notebook.graph
 
+import org.denigma.kappa.model.Change
+
 import scala.collection.immutable._
-import org.denigma.kappa.notebook.graph.Change.Change
 import org.denigma.kappa.notebook.graph.layouts.{ForceNode, LayoutInfo}
 
 import scala.List
@@ -23,14 +24,8 @@ trait OrganizedChangeableNode extends KappaNode with ChangeableNode {
 }
 
 trait ChangeableNode extends KappaNode {
-  def status: Change
+  def status: Change.Change
 }
-
-object Change extends Enumeration {
-  type Change = Value
-  val Removed, Added, Unchanged, Updated = Value
-}
-
 
 trait KappaNode extends ForceNode {
 

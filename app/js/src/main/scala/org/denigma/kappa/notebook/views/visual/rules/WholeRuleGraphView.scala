@@ -1,9 +1,8 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.extensions._
-import org.denigma.kappa.model.KappaModel
+import org.denigma.kappa.model.{Change, KappaModel}
 import org.denigma.kappa.model.KappaModel.{Agent, Site, State}
-import org.denigma.kappa.notebook.graph.Change.Change
 import org.denigma.kappa.notebook.graph._
 import org.denigma.kappa.notebook.graph.layouts.{ForceLayoutParams, GraphLayout}
 import org.denigma.kappa.notebook.parsers.GraphUpdate
@@ -53,13 +52,28 @@ class WholeRuleGraphView(val elem: Element,
 
   lazy val merged = updated.map{ up => up.map{  case (one, two) => mergeNodes(one, two) }}
 
-  lazy val links: Rx[Map[(String, Change), Vector[SiteNode]]] = siteNodes.map{ sNodes =>
+  /*
+  lazy val links: Rx[Map[(String,Change.Change, Vector[SiteNode]]] = siteNodes.map{ sNodes =>
     //sNodes.foreach(s=>dom.console.log(s" SITE ${s.site} LINKS = "+ s.links))
-    val lns: Map[(String, Change), Vector[SiteNode]] = sNodes
+    val lns: Map[(String,Change.Change, Vector[SiteNode]] = sNodes
       .flatMap(snode => snode.linkList.map(ls => (ls , snode)))
       .groupBy{ case ((link, change), nds) => (link, change) }
       .mapValues(vector => vector.map { case ((site, change), node) => node })
     lns
+  }
+  */
+
+  val links: Rx[Map[(String,Change.Change), Vector[SiteNode]]] = siteNodes.map{ sNodes =>
+    //sNodes.foreach(s=>dom.console.log(s" SITE ${s.site} LINKS = "+ s.links))
+    /*
+    val lns: Map[(String,Change.Change, Vector[SiteNode]] = sNodes
+      .flatMap(snode => snode.linkList.map(ls => (ls , snode)))
+      .groupBy{ case ((link, change), nds) => (link, change) }
+      .mapValues(vector => vector.map { case ((site, change), node) => node })
+    lns
+    */
+    //val pairs: Vector[(String, SiteNode)] = sNodes.flatMap(node => node.site.links.map(l => (l, node)))
+    Map.empty[(String, Change.Change), Vector[SiteNode]]
   }
 
 
@@ -104,24 +118,22 @@ class WholeRuleGraphView(val elem: Element,
       case (name, one::two::tail) if one==two =>
         if(tail.nonEmpty) dom.console.error("tail is not empty, sites are: " + one::two::tail)
         val links = OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Unchanged, one.links)
-        SiteNode(left, one, Change.Unchanged, links)
+        SiteNode(left, one, Change.Unchanged)
     }
     val updatedNodes: List[SiteNode] = grouped.collect{
       case (name, one::two::tail) if one!=two  =>
         if(tail.nonEmpty) dom.console.error("tail is not empty, sites are: " + one::two::tail)     
         val states =  mergeSiteStates(one, two)
-        val links = mergeLinks(one, two)
-        new SiteNode(left, one, states, links, Change.Updated)
+        new SiteNode(left, one, states, Change.Updated)
     }
     val removed: Set[Site] = left.sites.filterNot(s => sameNames.contains(s.name))
     val added: Set[Site] = right.sites.filterNot(s => sameNames.contains(s.name))
     val addedNodes: Set[SiteNode] = added.map{ a =>
-        val links = OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Added, a.links)
-        SiteNode(left, a, Change.Added, links)
+        SiteNode(left, a, Change.Added)
     }
     val removedNodes: Set[SiteNode] = removed.map{ r =>
         val links =  OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Removed, r.links)
-        SiteNode(left, r, Change.Removed, links)
+        SiteNode(left, r, Change.Removed)
     }
     Map(
       (Change.Removed , removedNodes),
@@ -205,16 +217,12 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
   def onEdgesChanges(removed: Set[Edge], added: Set[Edge]): Unit = {
     for(r <- removed) r match {
       case link: KappaLinkEdge =>
-        link.view.clearChildren()
-        viz.removeSprite(link.view.container)
-        viz.removeObject(link.view.container)
         viz.removeObject(link.arrow)
       case arr: Edge => viz.removeObject(arr.arrow)
       case _ => dom.console.log("weird edge")
     }
     for(a <- added) a match {
       case link: KappaLinkEdge =>
-        viz.addSprite(link.view.container)
         viz.addObject(link.arrow)
       case arr: Edge => viz.addObject(arr.arrow)
       case _ => dom.console.log("weird edge")
@@ -231,7 +239,7 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
         }
         val (site1, site2) = (value(0), value(1))
         val lineParams = linkLineByStatus(change, visualSettings.link.line)
-        new KappaLinkEdge(name, site1, site2, change, lineParams, 2.0)(createLinkView): Edge
+        new KappaLinkEdge(site1, site2, change, lineParams): Edge
       //case (key, other) => throw  new Exception(s"too many sites for the link $key ! Sights are: $other")
     }.toVector
   }

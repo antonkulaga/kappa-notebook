@@ -21,7 +21,10 @@ import org.denigma.kappa.notebook.views.visual.VisualPanelView
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 import rx._
+
+import scala.collection.immutable.SortedSet
 
 class NotebookView(val elem: Element, val session: Session) extends BindableView
 {
@@ -41,9 +44,12 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val sourceMap: Var[Map[String, KappaSourceFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(folder = p.folder.addFiles(sourceMap.now.values.toList)))
 
+  val currentProjectName: Rx[String] = currentProject.map(_.name)
+
+  val papers = currentProject.map(p=>p.papers.map(p => (p.path, p)).toMap)
+
   val figures: Var[Map[String, Figure]] = Var(Map.empty)
 
-  val currentProjectName: Rx[String] = currentProject.map(_.name)
 
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
@@ -144,12 +150,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
         v
     }
 
-    .register("Bookmarks"){
-      case (el, args) =>
-        val v = new AnnotatorNLP(el).withBinder(new GeneralBinder(_))
-        addMenuItem(el, MainTabs.Annotations)
-        v
-    }
     */
     .register("Figures") {
       case (el, params) =>
@@ -159,7 +159,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("Papers") {
       case (el, params) =>
-        val v = new PapersView(el, currentProjectName, connector, kappaCursor).withBinder(new CodeBinder(_))
+        val v = new PapersView(el, connector, papers, kappaCursor).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Papers)
         v
     }

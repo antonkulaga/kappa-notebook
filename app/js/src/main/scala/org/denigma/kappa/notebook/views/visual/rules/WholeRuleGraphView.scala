@@ -1,36 +1,32 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.extensions._
+import org.denigma.kappa.model.Change.Change
 import org.denigma.kappa.model.{Change, KappaModel}
 import org.denigma.kappa.model.KappaModel.{Agent, Site, State}
 import org.denigma.kappa.notebook.graph._
 import org.denigma.kappa.notebook.graph.layouts.{ForceLayoutParams, GraphLayout}
-import org.denigma.kappa.notebook.parsers.GraphUpdate
+import org.denigma.kappa.notebook.parsers.{GraphUpdate, GraphUpdateInfo}
 import org.denigma.kappa.notebook.views.visual.ShowParameters
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 
 import scala.Predef.{Map, Set}
-import scala.Vector
+import scala.{List, Vector}
 import scala.collection.immutable._
 
 class WholeRuleGraphView(val elem: Element,
-                         val update: Rx[GraphUpdate],
+                         val update: Rx[GraphUpdateInfo],
                          val showState: Rx[ShowParameters.ShowParameters],
                          val containerName: String,
                          val visualSettings: RulesVisualSettings
                         ) extends RuleGraphWithForces
 {
 
-  lazy val unchanged: Rx[Set[Agent]] = update.map(u=>u.unchangedAgents)
 
-  lazy val updated: Rx[Set[(Agent, Agent)]] = update.map(u => u.updatedAgents)
-
-  lazy val removed: Rx[Set[Agent]] = update.map(u => u.removedAgents)
-
-  lazy val added: Rx[Set[Agent]] =  update.map(u => u.addedAgents)
 
   lazy val size: (Double, Double) = elem.getBoundingClientRect() match {
     case rect: ClientRect if rect.width < 100 || rect.height < 100 => (400.0, 400.0)
@@ -46,34 +42,15 @@ class WholeRuleGraphView(val elem: Element,
 
   lazy val container: HTMLElement = sq.byId(containerName).get
 
-  val allAgentNodes: Var[Set[AgentNode]] = Var(Set.empty[AgentNode])
 
-  lazy val siteNodes: Rx[Vector[SiteNode]] = nodes.map(nds => nds.collect{case node: SiteNode => node})
-
-  lazy val merged = updated.map{ up => up.map{  case (one, two) => mergeNodes(one, two) }}
-
-  /*
-  lazy val links: Rx[Map[(String,Change.Change, Vector[SiteNode]]] = siteNodes.map{ sNodes =>
-    //sNodes.foreach(s=>dom.console.log(s" SITE ${s.site} LINKS = "+ s.links))
-    val lns: Map[(String,Change.Change, Vector[SiteNode]] = sNodes
-      .flatMap(snode => snode.linkList.map(ls => (ls , snode)))
-      .groupBy{ case ((link, change), nds) => (link, change) }
-      .mapValues(vector => vector.map { case ((site, change), node) => node })
-    lns
-  }
-  */
-
-  val links: Rx[Map[(String,Change.Change), Vector[SiteNode]]] = siteNodes.map{ sNodes =>
-    //sNodes.foreach(s=>dom.console.log(s" SITE ${s.site} LINKS = "+ s.links))
-    /*
-    val lns: Map[(String,Change.Change, Vector[SiteNode]] = sNodes
-      .flatMap(snode => snode.linkList.map(ls => (ls , snode)))
-      .groupBy{ case ((link, change), nds) => (link, change) }
-      .mapValues(vector => vector.map { case ((site, change), node) => node })
-    lns
-    */
-    //val pairs: Vector[(String, SiteNode)] = sNodes.flatMap(node => node.site.links.map(l => (l, node)))
-    Map.empty[(String, Change.Change), Vector[SiteNode]]
+  protected def makeLinkEdge(siteFrom: String, fromPos:Int, siteTo: String, toPos:Int, source: Map[(String, Int), SiteNode], status: Change.Change)
+                            (implicit getLineParams: Change.Change => LineParams): Option[KappaLinkEdge] = {
+    (source.get((siteFrom, fromPos)), source.get(siteTo, toPos)) match {
+      case (Some(site1), Some(site2)) => Some(new KappaLinkEdge(site1, site2, status, getLineParams(status)))
+      case other =>
+        dom.console.error(s"cannot find ${other} with ${siteFrom} ${fromPos} ${siteTo} ${toPos} in ${source}")
+        None
+    }
   }
 
 
@@ -81,10 +58,16 @@ class WholeRuleGraphView(val elem: Element,
     width,
     height,
     layouts,
-    800,
+    850,
     iterationsPerFrame,
     firstFrameIterations
   )
+
+  implicit def lineParamsByStatus(status: Change.Change): LineParams = status match {
+    case Change.Removed => LineParams(Colors.red)
+    case Change.Added => LineParams(Colors.green)
+    case _ => LineParams(Colors.blue)
+  }
 
   implicit def getLineParams(from: KappaNode, to: KappaNode) = (from , to) match {
     case (f: ChangeableNode, t: ChangeableNode) if f.status == Change.Removed || t.status == Change.Removed =>
@@ -103,37 +86,31 @@ class WholeRuleGraphView(val elem: Element,
     }
   }
 
-  protected def mergeLinks(left: Site, right: Site): Map[Change.Change, Set[String]] = {
-    val same = left.links.intersect(right.links)
-    val removed = left.links.diff(same)
-    val added = right.links.diff(same)
-    Map( (Change.Removed , removed), (Change.Added , added), (Change.Unchanged , same), (Change.Updated , Set.empty[String]) )
-  }
-
   protected def mergeNodeSites(left: KappaModel.Agent, right: KappaModel.Agent): Map[Change.Change, Set[SiteNode]] = {
     val sameNames = left.siteNames.intersect(right.siteNames)
     val all = left.sites.toList ++ right.sites.toList
     val grouped = all.groupBy(s=>s.name).toList
+    val positions = List(left.position, right.position)
     val unchangedNodes: List[SiteNode] = grouped.collect{
       case (name, one::two::tail) if one==two =>
         if(tail.nonEmpty) dom.console.error("tail is not empty, sites are: " + one::two::tail)
         val links = OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Unchanged, one.links)
-        SiteNode(left, one, Change.Unchanged)
+        SiteNode(left, one, Change.Unchanged, positions)
     }
     val updatedNodes: List[SiteNode] = grouped.collect{
       case (name, one::two::tail) if one!=two  =>
         if(tail.nonEmpty) dom.console.error("tail is not empty, sites are: " + one::two::tail)     
         val states =  mergeSiteStates(one, two)
-        new SiteNode(left, one, states, Change.Updated)
+        new SiteNode(left, one, states, Change.Updated, positions)
     }
     val removed: Set[Site] = left.sites.filterNot(s => sameNames.contains(s.name))
     val added: Set[Site] = right.sites.filterNot(s => sameNames.contains(s.name))
     val addedNodes: Set[SiteNode] = added.map{ a =>
-        SiteNode(left, a, Change.Added)
+        SiteNode(left, a, Change.Added, positions)
     }
     val removedNodes: Set[SiteNode] = removed.map{ r =>
         val links =  OrganizedChangeableNode.emptyChangeMap[String].updated(Change.Removed, r.links)
-        SiteNode(left, r, Change.Removed)
+        SiteNode(left, r, Change.Removed, positions)
     }
     Map(
       (Change.Removed , removedNodes),
@@ -142,7 +119,6 @@ class WholeRuleGraphView(val elem: Element,
       (Change.Updated , updatedNodes.toSet)
     )
   }
-
 
   protected def mergeSiteStates(left: KappaModel.Site, right: KappaModel.Site): Map[Change.Change, Set[StateNode]] = {
     val removed: Set[State] = left.states.diff(right.states)
@@ -158,72 +134,29 @@ class WholeRuleGraphView(val elem: Element,
       (Change.Updated , Set.empty[StateNode])
     )
   }
-  
-  protected def onAgentUpdates(deleted: Set[Agent], added: Set[Agent], status: Change.Change) = {
-      //dom.console.log(s"on added updates DELETED ${deleted} ADDED ${added} STATUS ${status}")
-      val addedNodes = added.map(a => AgentNode(a, status))
-      allAgentNodes() = allAgentNodes.now.filterNot(n => deleted.contains(n.agent) && n.status == status) ++ addedNodes
-  }
-
-  protected def onMergedUpdates(deleted: Set[AgentNode], added: Set[AgentNode]) = {
-    //dom.console.log("MERGE UPDATE, DELETE = "+deleted + "  ADDED = "+added)
-    allAgentNodes() = allAgentNodes.now.diff(deleted) ++ added
-  }
-
-  protected def getAllAgentNodes(node: AgentNode) = {
-    //dom.console.log("children list ="+node.childrenList)
-    val nds: List[KappaNode] = node :: node.childrenList ++ node.childrenList.flatMap(ch => ch.childrenList)
-    nds.toSet
-  }
-
-  protected def getAllEdgesFrom(node: AgentNode): Set[Edge] = {
-    val edges = node.childEdgeList ++ node.childrenList.flatMap(ch => ch.childEdgeList)
-    edges.toSet
-  }
-
-  protected def onAgentNodesUpdate(deleted: Set[AgentNode], added: Set[AgentNode]) = {
-    val toDelete: Set[Node] = deleted.flatMap{ r => getAllAgentNodes(r)}
-    //dom.console.log("TO REMOVE COUNT " + toDelete)
-    val toAdd: Set[Node] = added.flatMap(a => getAllAgentNodes(a))
-    //dom.console.log("TO ADD COUNT " + toAdd)
-
-    nodes() = nodes.now.filterNot(n => toDelete.contains(n)) ++ toAdd
-    val addedEdges = added.flatMap(a => getAllEdgesFrom(a))
-    edges() = edges.now.filterNot{ e => toDelete.exists(a => a== e.from || a == e.to) } ++ addedEdges
-  }
-
-import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
 
   def onNodesChanges(removed: Set[Node], added: Set[Node]): Unit = {
-    //removed.foreach(r=> dom.console.log("REMOVED NODE "+r.view.label))
-    //added.foreach(a=> dom.console.log("ADDED NODE "+a.view.label))
-
-    removed.foreach{ n =>
-      ///dom.console.log("REMOVED IS "+n.view.label)
+   removed.foreach{ n =>
       n.view.clearChildren()
       viz.removeSprite(n.view.container)
-      viz.removeObject(n.view.container)
+      //viz.removeObject(n.view.container)
     }
     added.foreach{
       n =>
-        //dom.console.log("ADDED IS "+n.view.label)
         updateNodeVisibility(n, showState.now)
         viz.addSprite(n.view.container)
     }
-    //if(added.nonEmpty || removed.nonEmpty) edges() = edges.now.filterNot(e => removed.contains(e.from) || removed.contains(e.to))
   }
 
 
   def onEdgesChanges(removed: Set[Edge], added: Set[Edge]): Unit = {
     for(r <- removed) r match {
-      case link: KappaLinkEdge =>
-        viz.removeObject(link.arrow)
+      case link: KappaLinkEdge => viz.removeObject(link.arrow)
       case arr: Edge => viz.removeObject(arr.arrow)
       case _ => dom.console.log("weird edge")
     }
     for(a <- added) a match {
-      case link: KappaLinkEdge =>
-        viz.addObject(link.arrow)
+      case link: KappaLinkEdge => viz.addObject(link.arrow)
       case arr: Edge => viz.addObject(arr.arrow)
       case _ => dom.console.log("weird edge")
     }
@@ -250,20 +183,64 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
     case _ => line.copy(lineColor = Colors.blue  )
   }
 
-  protected def onLinkChanged(deleted: Map[(String, Change.Change), Vector[SiteNode]],
-                              added: Map[(String, Change.Change), Vector[SiteNode]],
-                              updated: Map[(String, Change.Change), (Vector[SiteNode], Vector[SiteNode])]) = {
-    val delValues: Set[SiteNode] = deleted.values.flatMap(v=>v).toSet
-    val (prev: Iterable[((String, Change.Change), Vector[SiteNode])],
-    curr: Iterable[((String, Change.Change), Vector[SiteNode])]) = updated.unzip[((String, Change.Change), Vector[SiteNode]), ((String, Change.Change), Vector[SiteNode])]{
-      case (key, (v1, v2)) => ((key, v1), (key, v2))
+  protected def onUpdate(updateInfo: GraphUpdateInfo) = {
+    val added  = updateInfo.addedAgents.map(a => AgentNode(a, Change.Added))
+    val removed: Set[AgentNode] = updateInfo.removedAgents.map(a => AgentNode(a, Change.Removed))
+    val unchanged: Set[AgentNode] = updateInfo.unchangedAgents.map(a => AgentNode(a, Change.Unchanged))
+    val merged: Set[AgentNode] = updateInfo.updatedAgents.map{ case (one, two) => mergeNodes(one, two)}
+
+    val removedSites =  removed.flatMap(a => a.childrenList)
+    val addedSites =  added.flatMap(a => a.childrenList)
+    val unchangedSites =  unchanged.flatMap(a => a.childrenList)
+    val mergedSites = merged.flatMap(a => a.childrenList)
+
+    val allAgentNodes = added ++ removed ++ unchanged ++ merged
+    val allSiteNodes = addedSites ++ removedSites ++ unchangedSites ++ mergedSites
+    val allStateNodes: Set[StateNode] = allSiteNodes.flatMap(s => s.childrenList)
+    val allNodes: Set[Node] = allAgentNodes ++ allSiteNodes ++ allStateNodes
+
+    nodes() = allNodes.toVector //UPDATE NODES
+
+
+    val sameSites = unchangedSites ++ mergedSites
+    val leftSites: Set[SiteNode] =removedSites ++ sameSites
+    val rightSites: Set[SiteNode] = addedSites ++ sameSites //note here might be a big mistake!!!
+    val sitesOnLeft: Map[(String, Int), SiteNode] = leftSites.map{ s => ((s.site.name, s.agentPositions.head) , s) }.toMap
+
+    val sitesOnRight: Map[(String, Int), SiteNode]  = rightSites.map{
+        case s if s.agentPositions.size > 1=> ( (s.site.name, s.agentPositions.tail.head) , s)
+        case s => ((s.site.name, s.agentPositions.head) , s) //TODO: fix this unsafe code
+    }.toMap
+
+    val removedLinks = updateInfo.removedLinks.map{
+      case (fromName, fromPos, toName, toPos) =>
+        val e = makeLinkEdge(fromName, fromPos, toName, toPos, sitesOnLeft, Change.Removed)(lineParamsByStatus)
+        if(e.isEmpty) dom.console.error("e is empty!")
+        e.get
     }
-    val old: Set[SiteNode] =  prev.toMap.values.flatMap(v=>v).toSet
-    val cr: Map[(String, Change.Change), Vector[SiteNode]] = curr.toMap
-    edges() = edges.now.filterNot{
-      case edge: KappaLinkEdge => delValues.contains(edge.from) || delValues.contains(edge.to) || old.contains(edge.from) || old.contains(edge.to) //|| updated.contains(edge.link.label)
-      case other => false
-    } ++ createLinkEdges(added) ++ createLinkEdges(cr)
+
+    val addedLinks = updateInfo.addedLinks.map{
+      case (fromName, fromPos, toName, toPos) =>
+        val e = makeLinkEdge(fromName, fromPos, toName, toPos, sitesOnRight, Change.Added)(lineParamsByStatus)
+        if(e.isEmpty) dom.console.error("e is empty!")
+        e.get
+    }
+
+    val unchangedLinks = updateInfo.unchangedLinks.map{
+      case (fromName, fromPos, toName, toPos) =>
+        val e = makeLinkEdge(fromName, fromPos, toName, toPos, sitesOnLeft, Change.Unchanged)(lineParamsByStatus)
+        if(e.isEmpty) dom.console.error("e is empty!")
+        e.get
+    }
+
+    val allLinks = removedLinks ++ addedLinks ++ unchangedLinks
+
+    //allLinks.foreach(k => dom.console.log(s"LINK FORM ${k.from.site} TO ${k.to.site} WITH CHANGE ${k.status}"))
+
+    val allChildEdges = allAgentNodes.flatMap(a => a.allChildEdges)
+
+    edges() = (allLinks ++ allChildEdges).toVector //UPDATE EDGES
+
   }
 
 
@@ -273,42 +250,15 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
         nodes.now.foreach(n => updateNodeVisibility(n, sh))
         edges.now.foreach(e => updateEdgeVisibility(e, sh))
     }
-
-    nodes.removedInserted.foreach{
-      case (r, a) => onNodesChanges(r.toSet, a.toSet)
-    }
-    edges.removedInserted.foreach{
-      case (r, a) => onEdgesChanges(r.toSet, a.toSet)
-    }
-
-    links.updates.foreach{
-      upd => onLinkChanged(upd.removed, upd.added, upd.updated)
-    }
-
-    onAgentNodesUpdate(Set.empty, allAgentNodes.now)
-    allAgentNodes.updates.foreach{ upd =>  onAgentNodesUpdate(upd.removed, upd.added) }
-
-    //dom.console.log(s"UNCHANGED ON INIT + ${unchanged.now}")
-    onAgentUpdates(Set.empty, unchanged.now, Change.Unchanged)
-    unchanged.updates.foreach(upd => onAgentUpdates(upd.removed, upd.added, Change.Unchanged))
-
-    //dom.console.log(s"REMOVED ON INIT + ${removed.now}")
-    onAgentUpdates(Set.empty, removed.now, Change.Removed)
-    removed.updates.foreach(upd => onAgentUpdates(upd.removed, upd.added, Change.Removed))
-
-    //dom.console.log(s"ADDED ON INIT + ${added.now}")
-    onAgentUpdates(Set.empty, added.now, Change.Added)
-    added.updates.foreach(upd => onAgentUpdates(upd.removed, upd.added, Change.Added))
-
-    //dom.console.log(s"MERGED ON INIT + ${merged.now}")
-    onMergedUpdates(Set.empty, merged.now)
-    merged.updates.foreach(upd=> onMergedUpdates(upd.removed, upd.added))
+    nodes.removedInserted.foreach{ case (r, a) => onNodesChanges(r.toSet, a.toSet) }
+    edges.removedInserted.foreach{ case (r, a) => onEdgesChanges(r.toSet, a.toSet) }
+    update.foreach(onUpdate)
 
     layouts.now.foreach(_.start(viz.width, viz.height, viz.camera))
   }
 
   //bad code, TODO: fix it
-  protected def updateEdgeVisibility(edge: KappaEdge, show: ShowParameters) = (edge, show) match {
+  protected def updateEdgeVisibility(edge: KappaEdge, show: ShowParameters.ShowParameters) = (edge, show) match {
     case (e : Edge, ShowParameters.Left) =>
       e.status match {
         case Change.Added =>  e.opacity = 0.15
@@ -336,7 +286,7 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
   }
 
   // bad code, TODO: fix it
-  protected def updateNodeVisibility(node: Node, show: ShowParameters) = (node, show) match {
+  protected def updateNodeVisibility(node: Node, show: ShowParameters.ShowParameters) = (node, show) match {
     case (n: ChangeableNode, ShowParameters.Left) =>
       n.status match {
         case Change.Added =>  n.view.opacity = 0.15
@@ -371,6 +321,6 @@ import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
     viz.render()
   }
 
-  lazy val layouts: Var[Vector[GraphLayout]] = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default3D.mode, forces)))
+  lazy val layouts: Var[Vector[GraphLayout]] = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
 
 }

@@ -57,6 +57,7 @@ class VisualPanelView(val elem: Element, val currentLine: Rx[String], val parsed
   val update: Rx[GraphUpdate] = parsed.map{ p => GraphUpdate.fromParsedLine(p)}
 
   lazy val isRule = update.map(_.isRule)
+  lazy val updateInfo = update.map(_.updateInfo)
 
   override lazy val injector = defaultInjector
         .register("ContactMapView") {
@@ -65,6 +66,6 @@ class VisualPanelView(val elem: Element, val currentLine: Rx[String], val parsed
         .register("WholeGraph") {  (el, args) =>
         //2 in one
         new WholeRuleGraphView(el,
-          update, showState,
+          updateInfo, showState,
           args.getOrElse("container", "whole-graph-container").toString, RulesVisualSettings(s)).withBinder(n => new FixedBinder(n)) }
 }

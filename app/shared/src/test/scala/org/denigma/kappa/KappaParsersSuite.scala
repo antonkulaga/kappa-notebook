@@ -66,13 +66,17 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       val pTetLeft = Agent("pTet", Set(Site("binding", Set.empty, Set("1"))))
       val tetRLeft = Agent("TetR", Set(Site("dna", Set.empty, Set("1"))))
       val pTetRight = Agent("pTet", Set(Site("binding", Set.empty, Set.empty)))
+      val leftPattern =  Pattern(List(pTetLeft, tetRLeft))
+      val rightPattern = Pattern(List(pTetRight))
 
       val rule = parser.mergeLine(
         """
           |'tetR.degradation2' pTet(binding!1),TetR(dna!1) ->  pTet(binding) @ 'degrad2'
         """.stripMargin)
       inside(parser.rule.parse(rule)) {
-        case Parsed.Success(v: Rule, _) if v.left == Pattern(List(pTetLeft, tetRLeft)) && v.right == Pattern(List(pTetRight)) =>
+        case Parsed.Success(v: Rule, _) if
+        v.left == leftPattern &&
+          v.right == rightPattern =>
       }
     }
 
@@ -93,7 +97,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
         case res@Parsed.Success(v, index: Int) if v.name == "a binds to b"
           && v.left.agents.length == 3
           && v.right.agents.length == 3
-          && v.right.agents.tail.head == Agent("B", Set(Site("x", Set(), Set("1"))))
+          && v.right.agents.tail.head == Agent("B", Set(Site("x", Set(), Set("1"))), position = 1)
         =>
       }
       val withoutName = "A(x),B(x),C(x!_) <-> A(x!1),B(x!1),C(x!_) @ 'on_rate','off_rate'"
@@ -101,7 +105,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
         case res@Parsed.Success(v, index: Int) if v.name.contains("<->")
           && v.left.agents.length == 3
           && v.right.agents.length == 3
-          && v.right.agents.tail.head == Agent("B", Set(Site("x", Set(), Set("1"))))
+          && v.right.agents.tail.head == Agent("B", Set(Site("x", Set(), Set("1"))), position = 1)
         =>
       }
 
@@ -171,27 +175,40 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
 
     "parsing complex rules" in {
       import KappaModel._
-      val dnaLeft1 = Agent("DNA", Set(Site("binding"), Site("type", Set(State("BBaR0010p3"))), Site("upstream", Set.empty, Set("2"))))
-      val lacILeft = Agent("LacI", Set(Site("dna"), Site("lactose")))
+      val dnaLeft1 = Agent("DNA", Set(Site("binding"), Site("type", Set(State("BBaR0010p3"))), Site("upstream", Set.empty, Set("2"))), position = 0)
+      val lacILeft = Agent("LacI", Set(Site("dna"), Site("lactose")), position = 1)
       val dnaLeft2 = Agent("DNA", Set(
         Site("downstream", Set.empty, Set("2")), Site("binding"), Site("type", Set(State("BBaR0010p2")))
-      ))
-      val dnaRight1 = Agent("DNA", Set(Site("binding"), Site("type", Set(State("BBaR0010p3"))), Site("upstream", Set.empty, Set("3"))))
-      val lacIRight = Agent("LacI", Set(Site("dna", Set.empty, Set("1")), Site("lactose")))
+      ), position = 2)
+      val dnaRight1 = Agent("DNA", Set(Site("binding"), Site("type", Set(State("BBaR0010p3"))), Site("upstream", Set.empty, Set("3"))), position = 0)
+      val lacIRight = Agent("LacI", Set(Site("dna", Set.empty, Set("1")), Site("lactose")), position = 1)
       val dnaRight2 = Agent("DNA", Set(
         Site("downstream", Set.empty, Set("3")), Site("binding", Set.empty, Set("1")), Site("type", Set(State("BBaR0010p2")))
-      ))
+      ), position = 2)
       val parser = new KappaParser
-      val rule = parser.mergeLine("""
+      val line = parser.mergeLine("""
                    |'LacI binding to R0010p2 (no LacI)' \
                    |	DNA(binding,type~BBaR0010p3,upstream!2), LacI(dna,lactose), DNA(downstream!2,binding,type~BBaR0010p2) -> \
                    |	DNA(binding,type~BBaR0010p3,upstream!3), LacI(dna!1,lactose), DNA(downstream!3,binding!1,type~BBaR0010p2) @ 'transcription factor binding rate'
                  """.stripMargin)
-      inside(parser.rule.parse(rule)) {
+      val ruleResult = parser.rule.parse(line)
+      inside(ruleResult) {
         case Parsed.Success(r, _) if r.left == Pattern(List(dnaLeft1, lacILeft, dnaLeft2)) && r.right == Pattern(List(dnaRight1, lacIRight, dnaRight2))=>
       }
+      val rule = ruleResult.get.value
+      rule.same.length shouldEqual 3
+      rule.same.head._1 shouldEqual dnaLeft1
+      rule.same.head._2 shouldEqual dnaRight1
+      rule.same.tail.head._1 shouldEqual lacILeft
+      rule.same.tail.head._2 shouldEqual lacIRight
+      rule.left.links shouldEqual Set( ("upstream", 0, "downstream", 2) )
+      rule.right.links shouldEqual Set( ("upstream", 0, "downstream", 2), ("dna", 1, "binding", 2 ))
+      rule.unchangedLinks shouldEqual Set( ("upstream", 0, "downstream", 2) )
+      rule.removedLinks.size shouldEqual 0
+      rule.addedLinks.size shouldEqual 1
     }
 
+    /*
     "parse links" in {
       import KappaModel._
       val parser = new KappaParser
@@ -213,7 +230,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
           //println("LINKS 2 = " + links2)
       }
     }
-
+*/
 
     /*
     "differentiate agents in rules" in {

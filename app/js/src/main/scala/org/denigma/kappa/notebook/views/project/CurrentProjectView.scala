@@ -29,7 +29,6 @@ class CurrentProjectView(val elem: Element,
 
   val projectName = currentProject.map(_.name)
 
-
   lazy val uploadInput = sq.byId(uploadId).get.asInstanceOf[Input]
 
   override type Item = KappaFile
@@ -84,6 +83,10 @@ class CurrentProjectView(val elem: Element,
       val name = if(!label.contains(".")) label+".zip" else label
       //println("DOWNLOADED IS = "+d)
       if(d != FileResponses.Downloaded.empty) saveBinaryAs(name, data)
+
+    case b @ KappaBinaryFile(path, buff, _, _) if currentProject.now.folder.allFilesMap.contains(path) =>
+      //currentProject.now = currentProject.now.copy(folder = )
+      dom.console.log("updating binary parts is not yet implemented")
 
   case Done(FileRequests.Remove(pathes), _)  =>
     val (in, not) = pathes.partition(inProject)

@@ -1,41 +1,34 @@
 package org.denigma.kappa.notebook.views.papers
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
+import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.GoToPaper
+import org.denigma.kappa.messages.{GoToPaper, KappaBinaryFile}
 import org.denigma.kappa.notebook._
+import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.views.common.TabHeaders
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import org.denigma.binding.extensions._
 
-import scala.annotation.tailrec
-import org.denigma.kappa.notebook.extensions._
-import rx.Rx.Dynamic
-
-import scala.collection.immutable
+import scala.collection.immutable._
 import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
 
-trait NodesChecker {
-
-}
-
 class PapersView(val elem: Element,
-                 val currentProjectName: Rx[String],
                  val connector: WebSocketTransport,
+                 val projectPapers: Rx[Map[String, KappaBinaryFile]],
                  val kappaCursor: Var[Option[(Editor, PositionLike)]]) extends BindableView
   with CollectionMapView {
 
   val paperURI: Var[String] = Var("")
 
-  val paperLoader: WebSocketPaperLoader = WebSocketPaperLoader(connector, projectName = currentProjectName)
+  val paperLoader: WebSocketPaperLoader = WebSocketPaperLoader(connector, projectPapers)
 
   val items: Var[Map[String, Paper]] = paperLoader.loadedPapers
 
@@ -47,7 +40,7 @@ class PapersView(val elem: Element,
 
   override type ItemView = PublicationView
 
-  val headers = itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
+  val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
 
   paperURI.foreach{
     case paper if paper!="" =>
@@ -55,15 +48,12 @@ class PapersView(val elem: Element,
       paperLoader.getPaper(paper, 10 seconds).onComplete{
         case Success(pp) =>
           paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(pp.name, pp)
-          println("test")
 
           //selected() = pp.name
         case Failure(th)=> dom.console.error(s"Cannot load paper ${paper}: "+th)
       }
     case _ => //do nothing
   }
-
-  val selected = Var("")
   val selectionOpt: Var[Option[Selection]] = Var(None)
 
   connector.input.onChange {
@@ -89,11 +79,13 @@ class PapersView(val elem: Element,
   override protected def subscribeUpdates(): Unit =
   {
     super.subscribeUpdates()
-    selectionOpt.afterLastChange(900 millis){
+    selectionOpt.afterLastChange(1 second){
       case Some(sel) =>
+        println("selection option changed!")
          selections() = itemViews.now.map{ case (item, child) => (item, child.select(sel)) }
 
       case None =>
+        println("selection option is NONE")
         selections() = Map.empty[Item, (Map[Int, List[TextLayerSelection]])]
 
     }
@@ -136,18 +128,18 @@ class PapersView(val elem: Element,
 
   val hasComment = comment.map(c => c == "")
 
-  override def newItemView(name: String, paper: Paper): PublicationView = this.constructItemView(name){
+  override def newItemView(item: Key, paper: Paper): PublicationView = this.constructItemView(item){
     case (el, params)=>
-      el.id = name
+      el.id = paper.name
       val v = new PublicationView(el, paperURI,  Var(paper), kappaCursor).withBinder(v=>new CodeBinder(v))
       v
   }
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new TabHeaders(el, headers, paperURI)(TabHeaders.path2name).withBinder(new GeneralBinder(_)))
     //.register("Bookmarks")((el, args) => new BookmarksView(el, location, null).withBinder(new GeneralBinder(_)))
 
-  override def updateView(view: PublicationView, key: String, old: Paper, current: Paper): Unit = {
+  override def updateView(view: PublicationView, key: Key, old: Paper, current: Paper): Unit = {
     view.paper() = current
   }
 }

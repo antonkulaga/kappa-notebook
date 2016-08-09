@@ -40,8 +40,8 @@ trait FileMessenger extends Messenger {
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](response)
       send(d)
 
-    case mess @ FileRequests.LoadFileSync(currentProject, path) =>
-      fileManager.readBytes(currentProject, path) match {
+    case mess @ FileRequests.LoadFileSync(path) =>
+      fileManager.readBytes(path) match {
         case Some(bytes)=>
           val buff = ByteBuffer.wrap(bytes)
           val m = KappaBinaryFile(mess.path, buff)

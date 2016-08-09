@@ -30,7 +30,5 @@ class KappaLinkEdge(val from: SiteNode, val to: SiteNode, val status: Change.Cha
   type FromNode = SiteNode
   type ToNode = SiteNode
 
-  type Data = KappaModel.Link
-
   this.update()
 }

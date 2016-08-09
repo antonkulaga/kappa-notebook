@@ -24,7 +24,7 @@ class StateNode(val parent: Site, val state: KappaModel.State, val status: Chang
 object SiteNode {
 
 
-  def apply(parent: Agent, site: Site, status: Change.Change)
+  def apply(parent: Agent, site: Site, status: Change.Change, agentPositions: List[Int])
            (implicit makeSiteNodeView: SiteNode => KappaSiteView,
                     makeStateNodeView: StateNode => KappaStateView,
                     getLineParams: (KappaNode, KappaNode) => LineParams
@@ -32,7 +32,7 @@ object SiteNode {
   {
     val sts = site.states.map(s => new StateNode(site,s, status)(makeStateNodeView))
     val children = OrganizedChangeableNode.emptyChangeMap[StateNode].updated(status, sts)
-    new SiteNode(parent, site, children, status)(makeSiteNodeView, getLineParams)
+    new SiteNode(parent, site, children, status, agentPositions)(makeSiteNodeView, getLineParams)
   }
 
   /*
@@ -50,7 +50,9 @@ object SiteNode {
 class SiteNode(val parent: KappaModel.Agent,
                val site: KappaModel.Site,
                val children: Map[Change.Change,Set[StateNode]],
-               val status: Change.Change)
+               val status: Change.Change,
+               val agentPositions: List[Int]
+              )
               (implicit val fun: SiteNode => KappaSiteView, getLineParams: (KappaNode, KappaNode) => LineParams)
   extends OrganizedChangeableNode
 {
@@ -86,7 +88,7 @@ object AgentNode{
                                                      getLineParams: (KappaNode, KappaNode) => LineParams) ={
     val sts = agent.sites.map {
       s =>
-        SiteNode(agent, s, status)(makeSiteNodeView, makeStateNodeView, getLineParams)
+        SiteNode(agent, s, status, List(agent.position))(makeSiteNodeView, makeStateNodeView, getLineParams)
     }
     val children = OrganizedChangeableNode.emptyChangeMap[SiteNode].updated(status, sts)
     new AgentNode(agent,children, status)(makeAgentNodeView, getLineParams)
@@ -105,7 +107,8 @@ class AgentNode(val agent: KappaModel.Agent, val children: Map[Change.Change, Se
 
   lazy val view: KappaAgentView = fun(this)
 
-  def childEdges: Map[Change.Change, Set[ChildEdge]] = children.mapValues {
+
+  lazy val childEdges: Map[Change.Change, Set[ChildEdge]] = children.mapValues {
     set => set.map { s =>
       val lp = getLineParams(this, s)
       val stat = (this.status, s.status) match {
@@ -118,5 +121,13 @@ class AgentNode(val agent: KappaModel.Agent, val children: Map[Change.Change, Se
       }
       new KappaSiteEdge(this, s, stat, lp)
     }
+  }
+
+  lazy val allChildEdges = childEdgeList ++ childrenList.flatMap(ch => ch.childEdgeList)
+
+  lazy val allNodes = {
+    //dom.console.log("children list ="+node.childrenList)
+    val nds: List[KappaNode] = this:: this.childrenList ++ this.childrenList.flatMap(ch => ch.childrenList)
+    nds.toSet
   }
 }

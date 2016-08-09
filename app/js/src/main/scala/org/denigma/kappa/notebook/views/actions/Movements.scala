@@ -22,22 +22,22 @@ object Movements {
     case FileType.pdf =>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Papers))
-        .andThen(GoToPaper(file.name))
+        .andThen(GoToPaper(file.path))
 
     case FileType.source =>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Editor))
-        .andThen(Go.ToSource(filename = file.name))
+        .andThen(Go.ToSource(file.path))
 
     case FileType.video=>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Figures))
-        .andThen(GoToFigure(file.name))
+        .andThen(GoToFigure(file.path))
 
     case FileType.image=>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Figures))
-        .andThen(GoToFigure(file.name))
+        .andThen(GoToFigure(file.path))
 
     case other => KappaMessage.Container() //do nothing
   }

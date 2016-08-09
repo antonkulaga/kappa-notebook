@@ -10,6 +10,12 @@ import scala.collection.immutable._
 
 object TabHeaders {
   implicit val getId: String => String = id => id
+
+  def path2name(path: String) = path.lastIndexOf("/") match {
+    case -1 => path
+    case ind if ind == path.length -1 => path
+    case ind => path.substring(ind+1)
+  }
 }
 
 class TabHeaders(val elem: Element, val items: Rx[SortedSet[String]], val selected: Var[String])(implicit getCaption: String => String) extends CollectionSortedSetView {

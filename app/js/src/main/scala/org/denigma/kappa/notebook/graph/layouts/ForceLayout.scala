@@ -9,9 +9,9 @@ import scala.collection.immutable._
 
 object ForceLayoutParams {
 
-  lazy val default2D = ForceLayoutParams(0.9, 105, 3, new Vector3(0.0, 0.0, 0.0))
+  lazy val default2D = ForceLayoutParams(0.9, 100, 1, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(0.9, 105, 3, new Vector3(0.0, 0.0, 0.0))
+  lazy val default3D = ForceLayoutParams(0.9, 100, 1, new Vector3(0.0, 0.0, 0.0), LayoutMode.ThreeD)
 
 }
 

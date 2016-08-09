@@ -10,34 +10,38 @@ object KappaModel {
   case object Right2Left extends Direction
   case object BothDirections extends Direction
 
-  object Link {
-    implicit val ordering: Ordering[Link] = new Ordering[Link] {
-      override def compare(x: Link, y: Link): Int = x.label.compare(y.label) match {
-        case 0 => x.hashCode().compare(y.hashCode())
-        case other => other
-      }
+  object Pattern {
+    lazy val empty = Pattern(Nil)
+
+    def apply(agents: List[Agent]): Pattern = {
+      val positionedAgents = agents.zipWithIndex.map{ case (agent, index) => agent.copy(position = index) }
+      val extra = agents.collect{
+        case a if a.sites.exists(s => s.links.contains("?")) => Agent.questionable
+        case a if a.sites.exists(s => s.links.contains("_")) => Agent.wildcard
+      }.toSet
+      new Pattern(positionedAgents, extra)
     }
   }
 
-  case class Link(fromAgent: Agent, toAgent: Agent, fromSide: Site, toSide: Site, label: String) extends KappaNamedElement
-  {
-    def name = label
-
-    require(fromAgent.sites.contains(fromSide), s"from Agent($fromAgent) should contain fromSide($fromSide)")
-
-    require(toAgent.sites.contains(toSide), s"to Agent($toAgent) should contain toSide($toSide)")
-
-  }
-
-  object Pattern {
-    lazy val empty = Pattern(Nil)
-  }
-
-  case class Pattern(agents: List[Agent]) extends KappaElement
+  case class Pattern private(_agents: List[Agent], virtualAgents: Set[Agent]) extends KappaElement
   {
 
-    protected def isNamed(key: String) = key != "_" && key !="?"
+    lazy val agents = _agents ++ virtualAgents
 
+    protected lazy val outgoingTuples: List[(String, String, Int)] = agents.flatMap{ ag => ag.outgoingLinks }
+
+    protected lazy val grouped = outgoingTuples.groupBy{
+      case (link, site, agNum) => link
+    }
+
+    lazy val links: Set[(String, Int, String, Int)] = grouped.collect{
+      case (Agent.wildcard.name, ls) => ls.map{ case (_, siteFrom, fromNum) =>(siteFrom, fromNum, Agent.wildcard.name, Agent.wildcard.position)}.toSet
+      case (Agent.questionable.name, ls) => ls.map{ case (_, siteFrom, fromNum) =>(siteFrom, fromNum, Agent.questionable.name, Agent.questionable.position)}.toSet
+      case (link, (_, siteFrom, fromNum)::(_, siteTo, toNum)::Nil) =>Set((siteFrom, fromNum, siteTo, toNum))
+    }.flatMap(v=>v).toSet
+
+
+    /*
     protected lazy val linkTuples: List[((Agent, Site, String), Int)] = agents.zipWithIndex.flatMap{
       case (a, i) => a.outgoingLinks.map(v=>(v, i))
     }
@@ -46,6 +50,7 @@ object KappaModel {
       case ((_, _, "_") , _) | ((_, _, "?"), _) => false
       case _ => true
     }
+
 
     //lazy val allLinks: List[Link] = pairLinks ++ wildcardLinks ++ questionLinks
 
@@ -62,28 +67,47 @@ object KappaModel {
     }
 
     def sameAgents(pat: Pattern): List[(Agent, Agent)] = agents.zip(pat.agents).takeWhile(ab=>sameAgent(ab._1, ab._2))
+    */
+
+    def sameAgents(pat: Pattern) = agents.zip(pat.agents).takeWhile{ case (a, b) => a.sameAs(b)}
 
   }
 
   case class Rule(name: String, left: Pattern, right: Pattern, forward: Either[String, Double], backward: Option[Either[String, Double]] = None) extends KappaNamedElement
   {
-    lazy val same = left.sameAgents(right)
+
+    lazy val same: List[(Agent, Agent)] = left.sameAgents(right)
 
     lazy val removed = if(same.length==left.agents.length) Nil else left.agents.takeRight(left.agents.length - same.length)
 
     lazy val added = if(same.length==right.agents.length) Nil else right.agents.takeRight(right.agents.length - same.length)
 
-    lazy val modified = same.filter{
+    lazy val modified: List[(Agent, Agent)] = same.filter{
       case (one, two)=> one.sites != two.sites
     }
+    lazy val unchanged = same.filter{  case (one, two) => one.sites == two.sites }.map(_._1)
 
     lazy val modifiedLeft = modified.map(_._1)
 
     lazy val modifiedRight = modified.map(_._1)
 
-    def direction: Direction = if(backward.isEmpty) KappaModel.Left2Right else KappaModel.BothDirections
-    //lazy val kept = right
-    //def atomic: Boolean = added.size==1 || removed.size == 1
+    lazy val direction: Direction = if(backward.isEmpty) KappaModel.Left2Right else KappaModel.BothDirections
+
+    protected def newNum(num: Int) = if(num < same.length) num else {
+
+    }
+
+    lazy val unchangedLinks: Set[(String, Int, String, Int)] = {
+      val l = left.links.take(same.length)
+      val r = right.links.take(same.length)
+      l.intersect(r)
+    }
+
+    lazy val removedLinks: Set[(String, Int, String, Int)] = left.links.diff(unchangedLinks)
+    lazy val addedLinks: Set[(String, Int, String, Int)] = right.links.diff(unchangedLinks)
+
+
+
   }
 
   case object EmptyKappaElement extends KappaElement
@@ -107,28 +131,33 @@ object KappaModel {
 
   }
   object Agent {
+    /*
     implicit val ordering: Ordering[Agent] = new Ordering[Agent] {
       override def compare(x: Agent, y: Agent): Int = x.name.compare(y.name) match {
-        case 0 => x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
+        case 0 =>
+          x.position.compare(y.position) match {
+            case 0 =>
+          }
+          x.hashCode().compare(y.hashCode()) //just to avoid annoying equality bugs
         case other => other
       }
     }
+    */
 
-    lazy val wildcard = Agent("_", Set(Site("_")))
-    lazy val questionable = Agent("?", Set(Site("?")))
+    lazy val wildcard = Agent("_", Set(Site("_")), position = Int.MaxValue)
+    lazy val questionable = Agent("?", Set(Site("?")), position = Int.MinValue)
   }
 
-  case class Agent(name: String, sites: Set[Site] = Set.empty) extends KappaNamedElement
+  case class Agent(name: String, sites: Set[Site] = Set.empty, position: Int = -1) extends KappaNamedElement
   {
 
     lazy val siteNames: Set[String] = sites.map(s=>s.name)
 
-    lazy val outgoingLinks: Set[(Agent, Site, String)] = {
-      for{
-        s <- sites
-        l <- s.links
-      } yield  (this, s, l)
-    }
+    lazy val outgoingLinks: Set[(String, String, Int)] = sites.flatMap(s => s.links.map(l => (l, s.name, position)))
+
+    def hasPosition = position >= 0
+    
+    def sameAs(other: Agent) = name ==other.name && position == other.position && siteNames == other.siteNames
   }
 
   case class ObservablePattern(name: String, pattern: Pattern) extends KappaNamedElement

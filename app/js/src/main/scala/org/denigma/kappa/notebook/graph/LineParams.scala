@@ -27,7 +27,7 @@ object Defs extends Randomizable
 
   def headLength = 10// 30
 
-  def headWidth= 5//15
+  def headWidth= 4//15
 
 
 }

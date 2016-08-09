@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import boopickle.DefaultBasic._
 import boopickle.CompositePickler
+
 import scala.collection.immutable._
 
 object KappaFileMessage {
@@ -130,6 +131,8 @@ case class KappaFolder(path: String,
   }
 
   lazy val allFiles: SortedSet[KappaFile] = files ++ folders.flatMap(f=>f.allFiles)
+
+  lazy val allFilesMap: Map[String, KappaFile] = allFiles.map(f => (f.path, f)).toMap
 }
 
 
@@ -257,7 +260,7 @@ object FileRequests {
     implicit val classPickler: Pickler[LoadFileSync] = boopickle.Default.generatePickler[LoadFileSync]
   }
 
-  case class LoadFileSync(projectName: String, path: String) extends FileRequest
+  case class LoadFileSync(path: String) extends FileRequest
 
   object LoadBinaryFile{
     implicit val classPickler: Pickler[LoadBinaryFile] = boopickle.Default.generatePickler[LoadBinaryFile]

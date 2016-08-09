@@ -27,7 +27,7 @@ object Go {
     implicit val sourcePickler: Pickler[ToSource] = boopickle.Default.generatePickler[ToSource]
   }
 
-  case class ToSource(filename: String, begin: Int = 0, end: Int = 0) extends UIMessage
+  case class ToSource(path: String, begin: Int = 0, end: Int = 0) extends UIMessage
 
 }
 

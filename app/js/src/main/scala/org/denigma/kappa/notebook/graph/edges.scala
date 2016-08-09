@@ -40,9 +40,11 @@ trait ArrowEdge extends KappaEdge {
   arrow.line.material.dyn.linewidth = lineParams.thickness
 
   protected def posArrow() = {
+    val dir = direction
     arrow.position.set(sourcePos.x, sourcePos.y, sourcePos.z) // = sourcePos
-    arrow.setDirection(direction.normalize())
-    arrow.setLength(direction.length(), lineParams.headLength, lineParams.headWidth)
+    arrow.setDirection(dir.normalize())
+    val dist = targetPos.distanceTo(sourcePos)
+    arrow.setLength(dist, lineParams.headLength, lineParams.headWidth)
   }
 
 

@@ -105,15 +105,8 @@ class KappaCodeEditor(val elem: Element,
       selected() = item
       view
   }
-
-  def path2name(path: String) = path.lastIndexOf("/") match {
-    case -1 => path
-    case ind if ind == path.length -1 => path
-    case ind => path.substring(ind+1)
-  }
-
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, selected)(path2name).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new TabHeaders(el, headers, selected)(TabHeaders.path2name).withBinder(new GeneralBinder(_)))
     .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles, fullCode).withBinder(new GeneralBinder(_)))
 
   override def updateView(view: CodeTab, key: String, old: KappaSourceFile, current: KappaSourceFile): Unit = {

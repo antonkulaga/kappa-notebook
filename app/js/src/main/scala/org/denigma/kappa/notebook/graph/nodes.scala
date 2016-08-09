@@ -21,6 +21,7 @@ trait OrganizedChangeableNode extends KappaNode with ChangeableNode {
   def childEdges: Map[Change.Change, Set[ChildEdge]]
 
   lazy val childEdgeList: List[ChildEdge] = childEdges.values.flatten.toList
+
 }
 
 trait ChangeableNode extends KappaNode {

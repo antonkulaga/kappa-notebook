@@ -75,11 +75,11 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
             case r: FileResponses.RenamingResult if r.notFound == Map(notFound) /*&& r.renamed.keySet ==Set("CRUD_Test.ka")*/ =>
           }
 
-          val rv = FileRequests.Remove("crud/CRUD.ka")
+          val rv = FileRequests.Remove(Set("crud/CRUD.ka"))
           val remove: ByteBuffer = Pickle.intoBytes[KappaMessage](rv)
           checkMessage(wsClient, remove) { case Done(_, _) => }
 
-          val removed = FileRequests.Remove(s.pathAsString)
+          val removed = FileRequests.Remove(Set(s.pathAsString))
           val remProj: Remove = ProjectRequests.Remove(projectName)
           val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](remProj)
           checkMessage(wsClient, rem) { case org.denigma.kappa.messages.Done(_, _) => }

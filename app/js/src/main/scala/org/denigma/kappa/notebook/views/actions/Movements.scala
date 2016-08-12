@@ -2,6 +2,7 @@ package org.denigma.kappa.notebook.views.actions
 
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook.parsers.PaperSelection
 import org.denigma.kappa.notebook.views.MainTabs
 
 
@@ -12,6 +13,12 @@ object Movements {
   def toPaper(paper: String, page: Int) = KappaMessage.Container()
     .andThen(Go.ToTab(MainTabs.Papers))
     .andThen(GoToPaper(paper))
+
+
+  def toPaper(paperSelection: PaperSelection) = KappaMessage.Container()
+    .andThen(Go.ToTab(MainTabs.Papers))
+    .andThen(GoToPaperSelection(paperSelection))
+
 
   def toFigure(figure: String) = KappaMessage.Container()
     .andThen(Go.ToTab(MainTabs.Figures))

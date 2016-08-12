@@ -1,7 +1,6 @@
 package org.denigma.kappa.messages
 
-import org.denigma.controls.papers.Bookmark
-
+import org.denigma.kappa.notebook.parsers.PaperSelection
 
 object GoToFigure {
 
@@ -20,3 +19,5 @@ object GoToPaper {
 }
 
 case class GoToPaper (paperURI: String) extends UIMessage
+
+case class GoToPaperSelection(selection: PaperSelection) extends UIMessage

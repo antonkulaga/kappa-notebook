@@ -5,7 +5,7 @@ import org.denigma.codemirror.Editor
 import org.denigma.codemirror.extensions._
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages.{Go, GoToFigure, GoToPaper, KappaMessage}
-import org.denigma.kappa.notebook.parsers.{CommentLinksParser, ImageParser, PaperParser, VideoParser}
+import org.denigma.kappa.notebook.parsers._
 import org.denigma.kappa.notebook.views.MainTabs
 import org.denigma.kappa.notebook.views.actions.Movements
 import org.denigma.kappa.notebook.views.figures.{Figure, Image, Video}
@@ -16,6 +16,7 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 
 import scalatags.JsDom.all._
 import org.denigma.binding.extensions._
+
 import scala.concurrent.duration._
 /**
   * Created by antonkulaga on 11/03/16.
@@ -54,12 +55,16 @@ class CommentsWatcher(
   protected def semanticSearch(editor: Editor, lines: List[(Int, String)], currentNum: Int) = {
     //for( (i, str) <- lines)  editor.setGutterMarker(i,  "breakpoints", null)
 
+    /*
     val pages: List[((Int, String), Int)] = lines.map{ case (num, line)=> (num, line) -> paperParser.page.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
-    val papers: List[((Int, String), String)] = lines.map{ case (num, line)=> (num, line) -> paperParser.paper.parse(line) }.collect{
+    */
+
+    val papers: List[((Int, String), PaperSelection)] = lines.map{ case (num, line)=> (num, line) -> paperParser.annotation.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
+
     val links = lines.map{ case (num, line)=> (num, line) -> linkParser.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
@@ -89,6 +94,7 @@ class CommentsWatcher(
         val marker = makeFigureMarker(result, "Video")
         editor.setGutterMarker(n, "breakpoints", marker)
     }
+
     papers.collectFirst{
       case ((n, line), result) if n == currentNum =>
         val marker = makePageMarker(result)
@@ -146,7 +152,7 @@ class CommentsWatcher(
     html
   }
 
-  protected def makePageMarker(paper: String) = {
+  protected def makePageMarker(paper: PaperSelection) = {
     /*
     val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline icon", onclick := {
       //println(s"mouse down on $num")
@@ -159,7 +165,7 @@ class CommentsWatcher(
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        input() = Movements.toPaper(paper, 1)
+        input() = Movements.toPaper(paper)
     }
     html
   }

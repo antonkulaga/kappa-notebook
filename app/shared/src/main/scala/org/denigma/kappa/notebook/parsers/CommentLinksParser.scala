@@ -22,6 +22,7 @@ class CommentLinksParser extends BasicParser
   val link: P[String] = P(optSpaces ~ "<".? ~ (protocol ~ notBracketsOrSpace.rep).! ~ ">".? ) //map(_.toString)
   val linkAfterComment: Parser[String] = P( notComment.rep  ~ commentSign ~ optSpaces ~ link )
 
+
 }
 
 class ImageParser extends BasicParser {
@@ -31,10 +32,4 @@ class ImageParser extends BasicParser {
 
 class VideoParser extends BasicParser {
   val video = P( optSpaces ~  ":video" ~ spaces ~AnyChar.rep.! )
-
-}
-
-class PaperParser extends BasicParser {
-  val page = P( optSpaces ~  (":on_page" | ":page") ~ spaces ~ CharIn('0' to '9').rep.!.map(v=>v.toInt) )
-  val paper = P( optSpaces ~  (":in_paper" | ":paper") ~ spaces ~AnyChar.rep.! )
 }

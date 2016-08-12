@@ -6,7 +6,7 @@ import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.{GoToPaper, KappaBinaryFile}
+import org.denigma.kappa.messages.{GoToPaper, GoToPaperSelection, KappaBinaryFile}
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.views.common.TabHeaders
@@ -14,10 +14,13 @@ import org.scalajs.dom
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import org.denigma.binding.extensions._
+import org.denigma.kappa.notebook.parsers.PaperSelection
 
 import scala.collection.immutable._
 import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.scalajs.js
 import scala.util.{Failure, Success}
 
 class PapersView(val elem: Element,
@@ -25,6 +28,9 @@ class PapersView(val elem: Element,
                  val projectPapers: Rx[Map[String, KappaBinaryFile]],
                  val kappaCursor: Var[Option[(Editor, PositionLike)]]) extends BindableView
   with CollectionMapView {
+
+  val paperSelections: Var[List[PaperSelection]] = Var(Nil)
+  val currentSelection = paperSelections.map(s => s.headOption)
 
   val paperURI: Var[String] = Var("")
 
@@ -39,6 +45,16 @@ class PapersView(val elem: Element,
   override type Value = Paper
 
   override type ItemView = PublicationView
+
+  lazy val line: Rx[String] = kappaCursor.map{
+    case Some( (ed, pos)) => pos.line +":"+pos.ch
+    case None => ""
+  }
+
+  lazy val codeFile = kappaCursor.map{
+    case Some( (ed, pos) ) => ""
+    case None => ""
+  }
 
   val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
 
@@ -58,6 +74,8 @@ class PapersView(val elem: Element,
 
   connector.input.onChange {
     case GoToPaper(loc)=> paperURI() = loc
+    case GoToPaperSelection(selection) =>
+      paperURI() = selection.paper.value
     case other => //do nothing
   }
 
@@ -69,9 +87,11 @@ class PapersView(val elem: Element,
   insertComment.triggerLater{
     kappaCursor.now match {
       case Some((ed, pos)) =>
-        val line = ed.getDoc().getLine(pos.line)
-        ed.getDoc().setLine(pos.line, line + comment.now)
-        println(s"POSITION = ${pos.line} ch is ${pos.ch} LEN IS ${line.length}")
+        val doc = ed.getDoc()
+        val line = doc.getLine(pos.line)
+        doc.replaceRange(comment.now, pos.asInstanceOf[org.denigma.codemirror.Position], pos.asInstanceOf[org.denigma.codemirror.Position])
+        //ed.getDoc().setLine(pos.line, line + comment.now)
+        dom.console.log(s"POSITION = ${pos.line} ch is ${pos.ch} LEN IS ${line.length}")
       case None => dom.console.error("EDITOR IS NOT AVALIABLE TO INSERT")
     }
   }
@@ -79,13 +99,13 @@ class PapersView(val elem: Element,
   override protected def subscribeUpdates(): Unit =
   {
     super.subscribeUpdates()
-    selectionOpt.afterLastChange(1 second){
+    selectionOpt.afterLastChange(900 millis){
       case Some(sel) =>
-        println("selection option changed!")
-         selections() = itemViews.now.map{ case (item, child) => (item, child.select(sel)) }
+        val sels: Map[Item, Map[Int, List[TextLayerSelection]]] =  itemViews.now.map{ case (item, child) => (item, child.select(sel)) }
+        selections() = sels
 
       case None =>
-        println("selection option is NONE")
+        //println("selection option is NONE")
         selections() = Map.empty[Item, (Map[Int, List[TextLayerSelection]])]
 
     }
@@ -98,16 +118,15 @@ class PapersView(val elem: Element,
     val selection: Selection = dom.window.getSelection()
     selection.anchorNode.isInside(elem) || selection.focusNode.isInside(elem)  match {
       case true =>
-       selectionOpt() = Some(selection)
+        selectionOpt.Internal.value = Some(selection)
+        selectionOpt.recalc()
       case false =>
-        selectionOpt() = None
-      //println(s"something else ${selection.anchorNode.textContent}") //do nothing
     }
   }
 
   val selections: Var[Map[Item, (Map[Int, List[TextLayerSelection]])]] = Var(Map.empty[Item, (Map[Int, List[TextLayerSelection]])])
 
-  protected def toURI(str: String) = if(str.contains(":")) str else ":"
+  protected def toURI(str: String) = if(str.contains(":")) str else ":" + str
 
   val comment: Rx[String] = selections.map{ chosen =>
     val result = chosen.foldLeft(""){
@@ -116,17 +135,16 @@ class PapersView(val elem: Element,
           case (a, (num, list)) =>
             val str = list.foldLeft(""){
               case (aa, s) =>
-                aa + s"#^ :in_paper ${toURI(item)}; :on_page ${num} ; :from_chunk ${s.fromChunk} ; :to_chunk ${s.toChunk} ; :from_token ${s.fromToken} ; :to_token ${s.toToken}\n"
+                aa + s"#^ :in_paper ${toURI(item)} ; :on_page ${num} ; :from_chunk ${s.fromChunk} ; :to_chunk ${s.toChunk} ; :from_token ${s.fromToken} ; :to_token ${s.toToken}\n"
             }
             a + str
         }
         acc + sstr
     }
-    println("COMMENT CHANGED TO "+result)
     result
   }
 
-  val hasComment = comment.map(c => c == "")
+  val hasComment = comment.map(c => c != "")
 
   override def newItemView(item: Key, paper: Paper): PublicationView = this.constructItemView(item){
     case (el, params)=>

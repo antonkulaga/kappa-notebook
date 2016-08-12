@@ -1,9 +1,10 @@
 package org.denigma.kappa
 
 import fastparse.core.Parsed
-import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.notebook.parsers.{CommentLinksParser, KappaParser}
+import org.denigma.kappa.notebook.parsers.{CommentLinksParser, KappaParser, PaperParser}
 import org.scalatest.{Inside, Matchers, WordSpec}
+
+import scala.util.Success
 
 
 class CommentsParserSuite extends WordSpec with Matchers with Inside  {

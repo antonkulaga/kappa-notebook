@@ -1,23 +1,19 @@
 @()
 <section class="ui three wide column page segment noscroll" data-view="Papers" id="Papers">
   @commons.html.header("Papers")
-
-  <div class="ui inverted segment equal width grid">
-    <div class="column"  data-show-if="empty">
-      <span class="ui red header">Currently no papers are loaded.</span>
-    </div>
-    <div class="column">
-      <table data-show-if="hasComment" class="ui very compact basic inverted table">
-        <tbody>
-          <tr>
-            <td><span placeholder="comment to insert" data-bind="comment" style="width: 100%"></span></td>
-            <td><button class="ui small inverted green button" data-event-click="insertComment">Insert comment</button></td>
-          </tr>
-        </tbody>
-      </table>
-
-    </div>
-  </div>
+  <table class="ui small table"  style="width: 100%">
+    <tbody>
+      <tr>
+        <th>to insert:</th>
+        <td><span placeholder="comment to insert" data-bind="comment"></span></td>
+        <th>file</th>
+        <td data-bind="codefile"></td>
+        <th>line</th>
+        <td data-bind="line"></td>
+        <td><button  data-class-green-if="hasComment" class="ui small inverted button" data-event-click="insertComment">Insert comment</button></td>
+      </tr>
+    </tbody>
+  </table>
   <div class="ui top attached pointing menu" data-view="headers">
     <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
   </div>

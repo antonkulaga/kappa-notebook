@@ -22,4 +22,4 @@ addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.1.10")
 
 libraryDependencies += "org.scala-js" %% "scalajs-env-selenium" % "0.1.3"
 
-//addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-M12")
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-M13")

@@ -2,18 +2,49 @@ package org.denigma.kappa.notebook.parsers
 
 import fastparse.all
 import fastparse.all._
+//https://www.w3.org/TR/trig/
 
-/**
-  * Created by antonkulaga on 06/03/16.
-  */
-class RDFParser {
+object RDFParser extends RDFParser
 
-  //https://github.com/sirthias/parboiled/blob/master/examples-java/src/main/java/org/parboiled/examples/sparql/SparqlParser.java
+trait Chars {
+  lazy val ALPHA = P(CharIn('A' to 'Z') |  CharIn('a' to 'z'))
 
-  val DIGIT = P(CharIn('0' to '9'))
+  lazy val DIGIT = P(CharIn('0' to '9')) //not in spec
+
+  lazy val ALPHANUMERIC = P(ALPHA | DIGIT)
+}
+
+trait SimpleTypes extends Chars {
+  //[20]	INTEGER	::=	[+-]? [0-9]+
+  lazy val INTEGER = P(CharIn("+-").? ~ DIGIT.rep(1))
+
+  //[21]	DECIMAL	::=	[+-]? ([0-9]* '.' [0-9]+)
+  lazy val DECIMAL = P(CharIn("+-").? ~ DIGIT.rep(0) ~ "." ~DIGIT.rep(1))
 
 
-  val PN_CHARS_BASE = P(
+  lazy val HEX = P(CharIn('0' to '9') | CharIn('A' to 'F') | CharIn('a' to 'f'))
+
+
+  lazy val PERCENT = P("%" ~HEX ~ HEX)
+}
+
+trait RDFChars extends SimpleTypes{
+
+  lazy val IRIREF_CHAR = P(!CharIn("<>\"{}|^`\\") ~CharIn('\u0021' to '\uFFFE'))
+
+  lazy val unicodeEscape = P( "\\u" ~ HEX ~ HEX ~ HEX ~ HEX )
+
+  lazy val unicodeEscapeLarge = P( "\\U" ~ HEX ~ HEX ~ HEX ~ HEX ~ HEX ~ HEX ~ HEX ~ HEX)
+
+  lazy val UCHAR = P( unicodeEscape | unicodeEscapeLarge) //NOTE - check
+
+  lazy val ECHAR = P("\\" ~ CharIn("tbnrf\"\'\\\\"))
+
+  lazy val LOCAL_ESC = CharIn("_,~.-!$&'()*+,;=/?#@%")
+
+  lazy val PN_LOCAL_ESC = P("\\" ~ LOCAL_ESC)
+
+  lazy val PN_CHARS_BASE = P(
     CharIn('A' to 'Z') |  CharIn('a' to 'z') |
       CharIn('\u00C0' to '\u00D6') |  CharIn('\u00D8' to '\u00F6') |
       CharIn('\u00F8' to '\u02FF') |  CharIn('\u0370' to '\u037D') |
@@ -23,111 +54,112 @@ class RDFParser {
       CharIn('\uFDF0' to '\uFFFD')
   )
 
-  val EOL = CharIn("\n\r")
+  lazy val PN_CHARS_U = P(PN_CHARS_BASE | "_" )
 
-  //def NOT
+  lazy val PN_CHARS = P("-" | DIGIT | PN_CHARS_U | "\u00B7" | CharIn('\u0300'  to '\u036F') | CharIn ('\u203F' to '\u2040'))
 
-  val NOT_EOL = P(!EOL.flatMap(v => AnyChar)) //BAD PRACTISE
 
-  val COMMENT = P("#" ~ (NOT_EOL ~ AnyChar).rep ~ EOL  )
+  lazy val isHighSurrogate = P(CharPred(_.isHighSurrogate))
 
-  val WS_NO_COMMENT = P(" " | "\n" | "\t" | "\f" | EOL)
+  lazy val isLowSurrogate = P(CharPred(_.isLowSurrogate))
 
-  val LESS_NO_COMMENT = P("<" ~ WS_NO_COMMENT.rep)
+  lazy val PN_CHARS_COLON = P(PN_CHARS | ":")
 
-  val WS = P((COMMENT | WS_NO_COMMENT).rep)
+  lazy val PN_CHARS_U_DIGIT = P(PN_CHARS_U | DIGIT)
 
-  val ECHAR = P("\\" ~ CharIn("tbnrf\\\"\'"))
+  lazy val PN_CHARS_U_COLON_DIGIT = P(PN_CHARS_U_DIGIT | ":")
 
-  val NF = P(!CharIn("\"\\\n\r")).flatMap(v => AnyChar) //TestNot(AnyOf("\"\\\n\r")
-
-  val STRING_LITERAL1 = P("'" ~ ((NF ~ AnyChar) | ECHAR).rep ~ "'"~ WS ) //"
-
-  val STRING_LITERAL2 = P("\"" ~ ((NF ~ AnyChar) | ECHAR).rep ~ "\""~ WS ) //'
-
-  val NF_S = P(!CharIn("\'\\")).flatMap(v => AnyChar) //"'", "\\"
-
-  val STRING_LITERAL1_LONG = P("'''" ~  (("''" | "'").? ~ ((NF_Q ~ AnyChar) | ECHAR) ).rep ~ "'''"~ WS ) //"
-
-  val NF_Q = P(!CharIn("\"\\")).flatMap(v => AnyChar) //"'", "\\"
-
-  val STRING_LITERAL2_LONG = P("'''" ~  (("''" | "'").? ~ ((NF_S ~ AnyChar) | ECHAR) ).rep ~ "'''"~ WS ) //"
-
-  val STRING = P(STRING_LITERAL1 | STRING_LITERAL2 | STRING_LITERAL1_LONG | STRING_LITERAL2_LONG)
-
-  val STRING_WS = P(STRING | WS)
-
-  //val IRI_REF = P()
-/*
-  public Rule IRI_REF() {
-    return Sequence(LESS_NO_COMMENT(), //
-      ZeroOrMore(Sequence(TestNot(FirstOf(LESS_NO_COMMENT(), GREATER(), '"', OPEN_CURLY_BRACE(),
-        CLOSE_CURLY_BRACE(), '|', '^', '\\', '`', CharRange('\u0000', '\u0020'))), ANY)), //
-      GREATER());
-  }
-  */
 
 }
-/*
+
+trait RDFParser extends RDFChars {
 
 
-  val DIGIT = P(CharIn('0' to '9'))
+  lazy val PLX = P(PERCENT | PN_LOCAL_ESC)
 
-  val HEX = P(CharIn('0' to '9') | CharIn('A' to 'F') | CharIn('a' to 'f'))
 
-  val PN_CHARS_BASE = P(
-    CharIn('A' to 'Z') |  CharIn('a' to 'z') |
-    CharIn('\u00C0' to '\u00D6') |  CharIn('\u00D8' to '\u00F6') |
-    CharIn('\u00F8' to '\u02FF') |  CharIn('\u0370' to '\u037D') |
-    CharIn('\u037F' to '\u1FFF') |  CharIn('\u200C' to '\u200D') |
-    CharIn('\u2070' to '\u218F') |  CharIn('\u2C00' to '\u2FEF') |
-    CharIn('\u3001' to '\uD7FF') |  CharIn('\uF900' to '\uFDCF') |
-    CharIn('\uFDF0' to '\uFFFD')
-  )
-  val PN_CHARS_U = P(PN_CHARS_BASE | "_" )
+  //[140s]	PNAME_LN	::=	PNAME_NS PN_LOCAL
+  lazy val PNAME_LN = P(PNAME_NS ~ PN_LOCAL)
 
-  val PN_CHARS = P("-" | DIGIT | PN_CHARS_U | "\u00B7" | CharIn('\u0300'  to '\u036F') | CharIn ('\u203F' to '\u2040'))
+  //[139s]	PNAME_NS	::=	PN_PREFIX? ':'
 
-  val ECHAR = P("\\" ~ CharIn("tbnrf\\\"\'"))
+  //[167s]	PN_PREFIX	::=	PN_CHARS_BASE ((PN_CHARS | '.')* PN_CHARS)?
+  //lazy val PN_PREFIX = P(PN_CHARS_BASE ~ ((PN_CHARS | ".").rep ~PN_CHARS).?)
+  //atomic(capture(PN_CHARS_BASE ~ (PN_CHARS | &(ch('.').+ ~ PN_CHARS) ~ ch('.').+ ~ PN_CHARS | isHighSurrogate ~ isLowSurrogate).*)) ~> ASTPNPrefix
 
-  val unicodeEscape = P( "u" ~ HEX ~ HEX ~ HEX ~ HEX )
+  lazy val PN_PREFIX = P(PN_CHARS_BASE ~ (PN_CHARS | (&(".".rep(1) ~ PN_CHARS) ~ ".".rep(1) ~ PN_CHARS) | isHighSurrogate ~ isLowSurrogate).rep)
 
-  val unicodeEscapeLarge = P( "U" ~ HEX ~ HEX ~ HEX ~ HEX ~ HEX ~ HEX )
 
-  val UCHAR = P( unicodeEscape | unicodeEscapeLarge) //NOTE - check
+  lazy val PNAME_NS = P(PN_PREFIX.? ~ ":")
+  //lazy val PNAME_NS  = P( PN_CHARS_BASE ~ (PN_CHARS | ".".rep ~ PN_CHARS) ~ ".".rep ~ PN_CHARS | isHighSurrogate ~ isLowSurrogate).rep)
 
-  /*public Rule PN_LOCAL() {
-    return Sequence(FirstOf(PN_CHARS_U(), DIGIT()),
-      Optional(ZeroOrMore(FirstOf(PN_CHARS(), Sequence(DOT(), PN_CHARS())))), WS());
+  //[168s]	PN_LOCAL	::=	(PN_CHARS_U | ':' | [0-9] | PLX) ((PN_CHARS | '.' | ':' | PLX)* (PN_CHARS | ':' | PLX))?
+  //lazy val PN_LOCAL = P( (PN_CHARS_U | ":" | DIGIT | PLX) ~ ((PN_CHARS | "." | ":" | PLX).rep(1) ~ (PN_CHARS | ":" | PLX)).rep)
+  //(PLX | PN_CHARS_U_COLON_DIGIT ~ appendSB) ~ (PLX | PN_CHARS_COLON ~ appendSB | &(ch('.').+ ~ PN_CHARS_COLON) ~ (ch('.') ~ appendSB).+ ~ PN_CHARS_COLON ~ appendSB | isHighSurrogate ~ appendSB ~ isLowSurrogate ~ appendSB).*) ~ push(sb.toString) ~> ASTPNLocal
+
+  lazy val PN_LOCAL = P((PLX | PN_CHARS_U_COLON_DIGIT) ~ (PLX | PN_CHARS_COLON | (&(".".rep(1) ~ PN_CHARS_COLON) ~ ".")).rep(1) ~ (PN_CHARS_COLON | (isHighSurrogate ~ isLowSurrogate)).rep)
+
+  //lazy val PrefixedName = P( PNAME_NS  | PN_LOCAL )
+
+  lazy val PrefixedName = P((PNAME_LN | PNAME_NS).!)
+
+  //[135s]	iri	::=	IRIREF | PrefixedName
+  lazy val IRI = P(IRIREF | PrefixedName)
+
+  lazy val LANGTAG = P("@" ~ ALPHA.rep ~ ("-"+ ALPHANUMERIC.rep(1)).rep(0))
+
+  lazy val IRIREF = P("<" ~ ((IRIREF_CHAR | UCHAR).rep).! ~ ">")
+
+  lazy val EOL = CharIn("\n\r") //NOTE: test if works //alsof
+
+  lazy val STRING_LITERAL_QUOTE = P("\"" ~ ( "^" | "#x22" | "#x5C" | "#xA" | "#xD" | ECHAR | UCHAR ).rep ~ "\"") //have no clue if [^#x22#x5C#xA#xD] should work
+
+  lazy val BLANK_NODE_LABEL = P("_:" ~ (PN_CHARS_U | DIGIT) ~ (PN_CHARS | ".").rep ~ PN_CHARS)
+
+
+
+  /*
+  //[136s] PrefixedName 	::= 	PNAME_LN | PNAME_NS
+  def prefixedName = rule {
+    (PNAME_LN | PNAME_NS) ~> ASTPrefixedName
+  }
+
+  //[139s] PNAME_NS 	::= 	PN_PREFIX? ':'
+  def PNAME_NS = rule {
+    PN_PREFIX.? ~> ASTPNameNS ~ ':'
+  }
+
+  //[140s] PNAME_LN 	::= 	PNAME_NS PN_LOCAL
+  def PNAME_LN = rule {
+    PNAME_NS ~ PN_LOCAL ~> ((ns: ASTPNameNS, local: ASTPNLocal) ⇒ (test(addPrefix(ns, local)) | fail("name space - PNAME_NS=\"" + ns + "\" might be undefined")) ~ push(ns) ~ push(local)) ~> ASTPNameLN
+  }
+
+  //[167s] N_PREFIX 	::= 	PN_CHARS_BASE ((PN_CHARS | '.')* PN_CHARS)?
+  /* A prefix name may not start or end with a '.' (DOT), but is allowed to have any number of '.' in between.
+	 The predicate "&(DOT.+ ~ PN_CHARS)", looks ahead and checks if the rule in braces will be fullfilled.
+	 It does so without interfering with the parsing process.
+	 Example:
+	 [] <b> c:d.1..2...3.
+	 Due to the predicate the last '.' is not part of the local name. The accepted name is "c:d.1..2...3",
+	 with the last '.' being recognized as triple terminator.
+	 */
+  def PN_PREFIX = rule {
+    atomic(capture(PN_CHARS_BASE ~ (PN_CHARS | &(ch('.').+ ~ PN_CHARS) ~ ch('.').+ ~ PN_CHARS | isHighSurrogate ~ isLowSurrogate).*)) ~> ASTPNPrefix
+  }
+
+  //[168s] PN_LOCAL 	::= 	(PN_CHARS_U | ':' | [0-9] | PLX) ((PN_CHARS | '.' | ':' | PLX)* (PN_CHARS | ':' | PLX))?
+  /* A local name may not start or end with a '.' (DOT), but is allowed to have any number of '.' in between.
+	 The predicate "&(DOT.+ ~ PN_CHARS_COLON)", looks ahead and checks if the rule in braces will be fullfilled.
+	 It does so without interfering with the parsing process.
+	 Example:
+	 [] <b> c:d.1..2...3.
+	 Due to the predicate the last '.' is not part of the local name. The accepted name is "c:d.1..2...3",
+	 with the last '.' being recognized as triple terminator.
+	 */
+  def PN_LOCAL = rule {
+    clearSB ~ atomic((PLX | PN_CHARS_U_COLON_DIGIT ~ appendSB) ~ (PLX | PN_CHARS_COLON ~ appendSB | &(ch('.').+ ~ PN_CHARS_COLON) ~ (ch('.') ~ appendSB).+ ~ PN_CHARS_COLON ~ appendSB | isHighSurrogate ~ appendSB ~ isLowSurrogate ~ appendSB).*) ~ push(sb.toString) ~> ASTPNLocal
   }
   */
 
-  //val PN_LOCAL = P( (PN_CHARS_U | DIGIT) ~ (PN_CHARS | ("." ~ PN_CHARS)))
-
-  val BLANK_NODE_LABEL = P("_:" ~ (PN_CHARS_U | DIGIT) ~ (PN_CHARS | ".").rep ~ PN_CHARS)
-
-  val STRING_LITERAL_QUOTE = P("\"" ~ ( "\^" | "#x22" | "#x5C" | "#xA" | "#xD" | ECHAR | UCHAR ).rep ~ "\"") //have no clue if [^#x22#x5C#xA#xD] should work
-
-  val IRI_REF = ""
- */
-/*
-[1] 	ntriplesDoc 	::= 	triple? (EOL triple)* EOL?
-[2] 	triple 	::= 	subject predicate object '.'
-[3] 	subject 	::= 	IRIREF | BLANK_NODE_LABEL
-[4] 	predicate 	::= 	IRIREF
-[5] 	object 	::= 	IRIREF | BLANK_NODE_LABEL | literal
-[6] 	literal 	::= 	STRING_LITERAL_QUOTE ('^^' IRIREF | LANGTAG)?
-
-
-[144s]	LANGTAG	::=	'@' [a-zA-Z]+ ('-' [a-zA-Z0-9]+)*
-[7]	EOL	::=	[#xD#xA]+
-[8]	IRIREF	::=	'<' ([^#x00-#x20<>"{}|^`\] | UCHAR)* '>'
--+[9]	STRING_LITERAL_QUOTE	::=	'"' ([^#x22#x5C#xA#xD] | ECHAR | UCHAR)* '"'
-+[141s]	BLANK_NODE_LABEL	::=	'_:' (PN_CHARS_U | [0-9]) ((PN_CHARS | '.')* PN_CHARS)?
-+[153s]	ECHAR	::=	'\' [tbnrf"'\]
-+[157s]	PN_CHARS_BASE	::=	[A-Z] | [a-z] | [#x00C0-#x00D6] | [#x00D8-#x00F6] | [#x00F8-#x02FF] | [#x0370-#x037D] | [#x037F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
-+[158s]	PN_CHARS_U	::=	PN_CHARS_BASE | '_' | ':'
-+[160s]	PN_CHARS	::=	PN_CHARS_U | '-' | [0-9] | #x00B7 | [#x0300-#x036F] | [#x203F-#x2040]
-+[162s]	HEX	::=	[0-9] | [A-F] | [a-f]
-* */
-
+  //lazy val PN_LOCAL = P()
+}

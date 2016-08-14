@@ -12,4 +12,6 @@ object MainTabs {
   val Annotations = "Annotations"
   val Bookmarks = "Bookmarks"
   val Figures = "Figures"
+  val Settings = "Settings"
+
 }

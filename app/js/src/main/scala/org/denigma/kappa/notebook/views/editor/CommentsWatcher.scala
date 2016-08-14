@@ -55,12 +55,6 @@ class CommentsWatcher(
   protected def semanticSearch(editor: Editor, lines: List[(Int, String)], currentNum: Int) = {
     //for( (i, str) <- lines)  editor.setGutterMarker(i,  "breakpoints", null)
 
-    /*
-    val pages: List[((Int, String), Int)] = lines.map{ case (num, line)=> (num, line) -> paperParser.page.parse(line) }.collect{
-      case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
-    }
-    */
-
     val papers: List[((Int, String), PaperSelection)] = lines.map{ case (num, line)=> (num, line) -> paperParser.annotation.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }

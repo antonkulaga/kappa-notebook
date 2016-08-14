@@ -12,6 +12,7 @@ trait CodeStyles extends MainStyles{
   val maxCodeHeight = 70 vh
 
   ".CodeMirror" -(
+    overflowX.auto,
     //overflowY.auto,
     //overflow.visible important,
     height.auto important,
@@ -55,6 +56,9 @@ trait CodeStyles extends MainStyles{
   ".breakpoints" - (
     width( 1 em)
     )
+
+
+  ".focused" - backgroundColor.lightskyblue
 
   /*
   ".page.content" - (

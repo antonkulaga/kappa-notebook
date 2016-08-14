@@ -37,18 +37,18 @@ class MainStyles extends Standalone with MediaQueries
 
   "#MainGrid" -(
     maxHeight(gridMaxHeight),
-    /*
     onTiny   -width(380 vw),
     onLittle -width(375 vw),
     onSmall  -width(350 vw),
     onMedium -width(320 vw),
     onLarge  -width(290 vw)
-    */
+    /*
     onTiny   -width(430 vw),
     onLittle -width(400 vw),
     onSmall  -width(380 vw),
     onMedium -width(340 vw),
     onLarge  -width(300 vw)
+    */
     )
 
   "#main" -(
@@ -78,9 +78,6 @@ class MainStyles extends Standalone with MediaQueries
   ".selectable" -{
     cursor.pointer
   }
-
-
-  ".focused" - backgroundColor.ghostwhite
 
 
   ".content.row" - (

@@ -22,7 +22,7 @@ class KappaCodeEditor(val elem: Element,
                       val items: Var[Map[String, KappaSourceFile]],
                       val input: Var[KappaMessage],
                       val output: Var[KappaMessage],
-                      val kappaCursor: Var[Option[(Editor, PositionLike)]],
+                      val kappaCursor: Var[KappaCursor],
                       val editorUpdates: Var[EditorUpdates],
                       val connections: Rx[ServerConnections]
                      ) extends BindableView

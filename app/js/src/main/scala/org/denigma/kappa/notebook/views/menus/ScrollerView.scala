@@ -26,7 +26,7 @@ class ScrollerView(val elem: Element,
 
   val backClick = Var(Events.createMouseEvent())
   backClick.onChange{
-    case ev=>
+    ev=>
       scrollHistory.now match {
         case Nil =>
           dom.console.error("back should be invisible when there is not history")

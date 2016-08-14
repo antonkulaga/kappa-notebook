@@ -7,15 +7,29 @@ import org.scalatest.{Inside, Matchers, WordSpec}
 
 class RDFParserSuite extends WordSpec with Matchers with Inside  {
 
-  "parse " in {
-
-    inside(RDFParser.IRIREF.parse("<http://example/s>")){
-      case Parsed.Success(_, _) =>
+  "RDF Parser" should {
+    "parse IRI REF " in {
+      inside(RDFParser.IRIREF.parse("<http://example/s>")) {
+        case Parsed.Success("http://example/s", _) =>
+      }
+      inside(RDFParser.IRI.parse("<http://example/s>")) {
+        case Parsed.Success("http://example/s", _) =>
+      }
+      inside(RDFParser.IRI.parse("<http://localhost:1234/files/repressilator/Kappa%20in%20Synthetic%20Biology.pdf>")) {
+        case Parsed.Success("http://localhost:1234/files/repressilator/Kappa%20in%20Synthetic%20Biology.pdf", _) =>
+      }
     }
 
-    inside(RDFParser.IRI.parse("<http://example/s>")){
-      case Parsed.Success(_, _) =>
-    }
-
+    "parse prefixed name" in {
+        inside(RDFParser.PrefixedName.parse(":on_page")) {
+          case Parsed.Success(":on_page", _) =>
+        }
+        inside(RDFParser.IRI.parse(":on_page")) {
+          case Parsed.Success(":on_page", _) =>
+        }
+        inside(RDFParser.PrefixedName.parse(":repressilator/Kappa%20in%20Synthetic%20Biology.pdf")) {
+          case Parsed.Success(":repressilator/Kappa%20in%20Synthetic%20Biology.pdf", _) =>
+        }
+      }
   }
 }

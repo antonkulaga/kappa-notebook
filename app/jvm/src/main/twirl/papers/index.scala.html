@@ -3,15 +3,16 @@
   @commons.html.header("Papers")
   <table class="ui small table"  style="width: 100%">
     <tbody>
-      <tr>
-        <th>to insert:</th>
-        <td><span placeholder="comment to insert" data-bind="comment"></span></td>
-        <th>file</th>
-        <td data-bind="codefile"></td>
-        <th>line</th>
-        <td data-bind="line"></td>
+    <tr>
         <td><button  data-class-green-if="hasComment" class="ui small inverted button" data-event-click="insertComment">Insert comment</button></td>
-      </tr>
+        <th>in file</th>
+        <td class="pointed" data-bind="codeFile" data-click="toSource"><i class="ui File Code Outline icon"></i></td>
+        <th>on line</th>
+        <td data-bind="line"></td>
+    </tr>
+    <tr>
+        <td colspan="5"><span placeholder="comment to insert" data-bind="comment"></span></td>
+    </tr>
     </tbody>
   </table>
   <div class="ui top attached pointing menu" data-view="headers">

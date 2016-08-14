@@ -16,6 +16,8 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 import org.denigma.binding.extensions._
 import org.denigma.kappa.notebook.parsers.PaperSelection
+import org.denigma.kappa.notebook.views.actions.Movements
+import org.denigma.kappa.notebook.views.editor.{EmptyCursor, KappaCursor, KappaEditorCursor}
 
 import scala.collection.immutable._
 import scala.concurrent.duration._
@@ -26,7 +28,7 @@ import scala.util.{Failure, Success}
 class PapersView(val elem: Element,
                  val connector: WebSocketTransport,
                  val projectPapers: Rx[Map[String, KappaBinaryFile]],
-                 val kappaCursor: Var[Option[(Editor, PositionLike)]]) extends BindableView
+                 val kappaCursor: Var[KappaCursor]) extends BindableView
   with CollectionMapView {
 
   val paperSelections: Var[List[PaperSelection]] = Var(Nil)
@@ -47,16 +49,18 @@ class PapersView(val elem: Element,
   override type ItemView = PublicationView
 
   lazy val line: Rx[String] = kappaCursor.map{
-    case Some( (ed, pos)) => pos.line +":"+pos.ch
-    case None => ""
+    case KappaEditorCursor(file, ed, l, ch) => l +":" + ch
+    case _ => ""
   }
 
   lazy val codeFile = kappaCursor.map{
-    case Some( (ed, pos) ) => ""
-    case None => ""
+    case KappaEditorCursor(file, ed, l, ch) =>  file.path
+    case _ => ""
   }
 
   val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
+
+  //lazy val selections = itemViews.map(its => its.sele)
 
   paperURI.foreach{
     case paper if paper!="" =>
@@ -70,29 +74,36 @@ class PapersView(val elem: Element,
       }
     case _ => //do nothing
   }
+
+  val toSource = Var(Events.createMouseEvent())
+  toSource.onChange{
+    ev => currentSelection.now match {
+      case Some(s) => dom.console.log(s"click on $s")//input() = Movements.toFile(s.)
+      case None =>
+    }
+  }
+
   val selectionOpt: Var[Option[Selection]] = Var(None)
 
   connector.input.onChange {
     case GoToPaper(loc)=> paperURI() = loc
-    case GoToPaperSelection(selection) =>
-      paperURI() = selection.paper.value
     case other => //do nothing
   }
 
-  lazy val lineNumber = kappaCursor.map{c => c.map(p => p._2.line).getOrElse(0)}
-  lazy val charNumber = kappaCursor.map{c => c.map(p => p._2.ch).getOrElse(0)}
+  lazy val lineNumber = kappaCursor.map{c => c.lineNum}
+  lazy val charNumber = kappaCursor.map{c => c.ch}
 
-  val canInsert: Rx[Boolean] = kappaCursor.map(c => c.isDefined)
+  val canInsert: Rx[Boolean] = kappaCursor.map(c => c != EmptyCursor)
   val insertComment = Var(Events.createMouseEvent())
   insertComment.triggerLater{
     kappaCursor.now match {
-      case Some((ed, pos)) =>
+      case c @ KappaEditorCursor(file, ed, lineNum, ch) =>
         val doc = ed.getDoc()
-        val line = doc.getLine(pos.line)
-        doc.replaceRange(comment.now, pos.asInstanceOf[org.denigma.codemirror.Position], pos.asInstanceOf[org.denigma.codemirror.Position])
+        val line = doc.getLine(lineNum)
+        doc.replaceRange(comment.now, c.position, c.position)
         //ed.getDoc().setLine(pos.line, line + comment.now)
-        dom.console.log(s"POSITION = ${pos.line} ch is ${pos.ch} LEN IS ${line.length}")
-      case None => dom.console.error("EDITOR IS NOT AVALIABLE TO INSERT")
+        //dom.console.log(s"POSITION = ${pos.line} ch is ${pos.ch} LEN IS ${line.length}")
+      case _ => dom.console.error("EDITOR IS NOT AVALIABLE TO INSERT")
     }
   }
 
@@ -110,8 +121,6 @@ class PapersView(val elem: Element,
 
     }
     dom.document.addEventListener("selectionchange", onSelectionChange _)
-
-
   }
 
   protected def onSelectionChange(event: Event) = {
@@ -126,7 +135,10 @@ class PapersView(val elem: Element,
 
   val selections: Var[Map[Item, (Map[Int, List[TextLayerSelection]])]] = Var(Map.empty[Item, (Map[Int, List[TextLayerSelection]])])
 
-  protected def toURI(str: String) = if(str.contains(":")) str else ":" + str
+  protected def toURI(str: String) = str.replace(" ", "%20") match {
+    case s if s.contains(":") => s
+    case other => ":" + other
+  }
 
   val comment: Rx[String] = selections.map{ chosen =>
     val result = chosen.foldLeft(""){
@@ -135,7 +147,7 @@ class PapersView(val elem: Element,
           case (a, (num, list)) =>
             val str = list.foldLeft(""){
               case (aa, s) =>
-                aa + s"#^ :in_paper ${toURI(item)} ; :on_page ${num} ; :from_chunk ${s.fromChunk} ; :to_chunk ${s.toChunk} ; :from_token ${s.fromToken} ; :to_token ${s.toToken}\n"
+                aa + s"#^ :in_paper ${toURI(item)}; :on_page ${num}; :from_chunk ${s.fromChunk}; :to_chunk ${s.toChunk}; :from_token ${s.fromToken}; :to_token ${s.toToken} .\n"
             }
             a + str
         }
@@ -149,7 +161,7 @@ class PapersView(val elem: Element,
   override def newItemView(item: Key, paper: Paper): PublicationView = this.constructItemView(item){
     case (el, params)=>
       el.id = paper.name
-      val v = new PublicationView(el, paperURI,  Var(paper), kappaCursor).withBinder(v=>new CodeBinder(v))
+      val v = new PublicationView(el, paperURI,  Var(paper), connector.input).withBinder(v=>new CodeBinder(v))
       v
   }
 

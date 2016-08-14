@@ -24,12 +24,11 @@ class CodeTab(val elem: Element,
               val source: Var[KappaSourceFile],
               val selected: Var[String],
               val editorUpdates: Var[EditorUpdates],
-              val kappaCursor: Var[Option[(Editor, PositionLike)]],
+              val kappaCursor: Var[KappaCursor],
               val errors: Rx[List[WebSimError]]
              )  
   extends BindableView 
-    with EditorView 
-    with Uploader
+    with EditorView
     with TabItem
 {
   val wrapLines: Var[Boolean] = Var(false)
@@ -91,19 +90,16 @@ class CodeTab(val elem: Element,
   
   protected def onCursorActivity(ed: Editor) = {
     val c = doc.getCursor()
-    val cur = c.line.toInt
     kappaCursor.now match {
-      case None=>
-        editor.addLineClass(cur, "background", "focused")
-        kappaCursor() = Some(editor, new PositionLike {override val line: Int = cur
-          override val ch: Int = c.ch.toInt
-        })
-      case Some((e, prev)) if prev.line !=cur || prev.ch != c.ch.toInt || e != ed =>
-        editor.addLineClass(cur, "background", "focused")
-        editor.removeLineClass(prev, "background", "focused")
-        kappaCursor() = Some(editor, new PositionLike {override val line: Int = cur
-          override val ch: Int = c.ch.toInt
-        })
+      case EmptyCursor =>
+        editor.addLineClass(c.line, "background", "focused")
+        kappaCursor() = KappaEditorCursor(source.now, editor, c.line, c.ch)
+
+      case KappaEditorCursor(fl, editor, prevLine, prevCh) if prevLine != c.line || prevCh != c.ch || editor != ed =>
+        editor.addLineClass(c.line, "background", "focused")
+        editor.removeLineClass(prevLine, "background", "focused")
+        kappaCursor() = KappaEditorCursor(source.now, ed, c.line, c.ch)
+
       case _ => //do nothing
     }
   }
@@ -128,12 +124,13 @@ class CodeTab(val elem: Element,
   override def addEditor(name: String, element: ViewElement, codeMode: String): Unit = element match {
     case area: HTMLTextAreaElement =>
       editor = this.makeEditor(area, code.now, codeMode)
-      code.foreach{ case text =>
+      code.foreach{  text =>
         if(doc.getValue()!=text) doc.setValue(text)
       }
       editor.addOnChanges(onChanges)
       val handler: (Editor) => Unit = onCursorActivity
       editor.on("cursorActivity", handler)
+      if(active.now && kappaCursor.now != EmptyCursor) onCursorActivity(editor)
       editor
 
     case _ =>
@@ -151,17 +148,6 @@ class CodeTab(val elem: Element,
     //saveAs(name, code.now)
   }
 
-  val onUpload: Var[Event] = Var(Events.createEvent())
-  onUpload.onChange(ev =>
-    this.uploadHandler(ev){
-      case Success((file, text))=>
-        //hub.name() = file.name
-        //hub.runParameters.set(hub.runParameters.now.copy(fileName = file.name))
-        //code.set(text)
-        //kappaCode() = kappaCode.now.copy(text = text)
-      case Failure(t) => dom.console.error(s"File upload failure: ${t.toString}")
-    })
-
   override def onChanges(ed: Editor, ch: js.Array[EditorChangeLike]): Unit = {
     editorUpdates() = EditorUpdates(Option(ed), ch.toList)
     val value = doc.getValue()
@@ -169,14 +155,11 @@ class CodeTab(val elem: Element,
 
     //editor.setOption("lint", true) //trigger linting
     //println("lint = true")
-    //updateCursor()
+    updateCursor()
   }
 
   protected def updateCursor() = {
     val cur: Position = doc.getCursor()
-    kappaCursor() = Some(this.editor -> new PositionLike{
-      override val ch: Int = cur.ch.toInt
-      override val line: Int = cur.line.toInt
-    })
+    kappaCursor() = KappaEditorCursor(source.now, editor, cur.line, cur.ch)
   }
 }

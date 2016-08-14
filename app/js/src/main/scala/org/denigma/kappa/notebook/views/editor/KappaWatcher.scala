@@ -14,7 +14,7 @@ import scala.concurrent.duration._
 /**
   * Created by antonkulaga on 11/03/16.
   */
-class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[EditorUpdates])  {
+class KappaWatcher(cursor: Var[KappaCursor], updates: Var[EditorUpdates])  {
 
   val parsed = Var(ParsedLine.empty)
 
@@ -29,10 +29,10 @@ class KappaWatcher(cursor: Var[Option[(Editor, PositionLike)]], updates: Var[Edi
   protected val initParser = kappaParser.init
 
   val text: Rx[String] = cursor.map{
-    case None => ""
-    case Some((ed: Editor, lines)) =>
-      val num = getStartNum(ed, lines.line)
-      getEditorLine(ed, num)
+    case EmptyCursor => ""
+    case KappaEditorCursor(file, editor, lineNum, ch) =>
+      val num = getStartNum(editor, lineNum)
+      getEditorLine(editor, num)
  }
 
 

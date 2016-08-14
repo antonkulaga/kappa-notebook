@@ -56,9 +56,8 @@ trait RDFChars extends SimpleTypes{
 
   lazy val PN_CHARS_U = P(PN_CHARS_BASE | "_" )
 
-  lazy val PN_CHARS = P("-" | DIGIT | PN_CHARS_U | "\u00B7" | CharIn('\u0300'  to '\u036F') | CharIn ('\u203F' to '\u2040'))
-
-
+  lazy val PN_CHARS = P(CharIn("-/\\\\") | DIGIT | PN_CHARS_U | "\u00B7" | CharIn('\u0300'  to '\u036F') | CharIn ('\u203F' to '\u2040'))
+  
   lazy val isHighSurrogate = P(CharPred(_.isHighSurrogate))
 
   lazy val isLowSurrogate = P(CharPred(_.isLowSurrogate))

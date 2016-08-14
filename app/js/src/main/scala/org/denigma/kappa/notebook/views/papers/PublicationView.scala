@@ -1,23 +1,19 @@
 package org.denigma.kappa.notebook.views.papers
 
-import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
-import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.{KappaBinaryFile, KappaFile}
-import org.denigma.kappa.notebook.views.common.TabItem
+import org.denigma.kappa.messages.{GoToPaperSelection, KappaMessage}
+import org.denigma.kappa.notebook.extensions._
+import org.denigma.kappa.notebook.parsers.PaperSelection
 import org.denigma.pdf.extensions.Page
 import org.scalajs.dom
-import org.scalajs.dom.raw
-import org.scalajs.dom.raw._
-import rx.Ctx.Owner.Unsafe.Unsafe
-import rx._
+import org.scalajs.dom.Element
 import org.scalajs.dom.ext._
 import org.scalajs.dom.html.Canvas
-import org.denigma.kappa.notebook.extensions._
-import org.scalajs.dom.raw.Element
-import rx.Rx.Dynamic
+import org.scalajs.dom.raw.{Element, _}
+import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
 
 import scala.annotation.tailrec
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
@@ -26,11 +22,42 @@ import scala.util.{Failure, Success}
 class PublicationView(val elem: Element,
                       val selected: Var[String],
                       val paper: Var[Paper],
-                      kappaCursor: Var[Option[(Editor, PositionLike)]]
+                      val input: Var[KappaMessage]
+                      //kappaCursor: Var[Option[(Editor, PositionLike)]]
                      )
   extends PaperView {
 
   override type ItemView = ArticlePageView
+
+  lazy val selections: Var[List[PaperSelection]] = Var(List.empty[PaperSelection])
+
+
+  input.onChange {
+    case GoToPaperSelection(selection) if selection.label == paper.now.name  =>
+      if(!selections.now.contains(selection)) selections() = selection::selections.now
+      println("SELECTION WORKED!")
+      if(items.now.contains(selection.page))
+        itemViews.now.get(selection.page) match {
+          case Some(v) =>
+            v.getSpans(selection).headOption match {
+              case Some(e: HTMLElement) =>
+                selected() = paper.now.name
+                val offset = e.offsetTop
+                //println(s"offset ${e.offsetTop}")
+                elem.scrollTop = e.offsetTop
+
+              case None => dom.console.log("")
+            }
+
+          case None => dom.console.error("cannot find selection page!")
+        }
+    case GoToPaperSelection(selection) =>
+      //dom.console.error("selection is: "+selection)
+      //dom.console.error(s"paperName = ${paper.now.name} selectionPaperValue = ${selection.label}  comparison ${selection.label == paper.now.name}")
+
+
+    case other => //do nothing
+  }
 
   lazy val active: rx.Rx[Boolean] = selected.map{
     value =>
@@ -48,20 +75,16 @@ class PublicationView(val elem: Element,
 
   def select(sel: Selection): Map[Int, List[TextLayerSelection]] = {
     val children = itemViews.now
-    children.map { case (num, child) => (num, child.select(sel)) }
+    children.map { case (num, child) => (num, child.textLayerSelection(sel)) }
   }
 
   lazy val scale = Var(1.4)
 
   scale.onChange{ value => dom.console.log(s"scale changed to $value")}
 
-  val addNugget= Var(Events.createMouseEvent())
-
-  val paperURI = paper.map(p=>p.name)
-
   override def newItemView(item: Int, value: Page): ItemView = this.constructItemView(item){
     case (el, args) =>
-      val view = new ItemView(el, item, value, scale).withBinder(v=>new CodeBinder(v))
+      val view = new ItemView(el, item, value, scale, input).withBinder(v=>new CodeBinder(v))
       view
   }
 
@@ -69,12 +92,12 @@ class PublicationView(val elem: Element,
     dom.console.error("page view should be not updateble!")
   }
 
-
   protected def seqRender(num: Int, p: Paper, retries: Int = 0): Unit = if(num < p.numPages){
     p.loadPage(num).onComplete{
       case Success(page) =>
         this.items() = items.now.updated(page.num, page)
-        seqRender(num + 1, p, 0)
+        import scala.concurrent.duration._
+        scalajs.js.timers.setTimeout(100 millis)(seqRender(num + 1, p, 0))
 
       case Failure(th) =>
         dom.console.error(s"cannot load page $num in paper ${p.name} with exception ${th}")
@@ -88,35 +111,38 @@ class PublicationView(val elem: Element,
       case EmptyPaper => //do nothing
       case p: PaperPDF => seqRender(1, p)
     }
-    addNugget.triggerLater{
-      val curs: Option[(Editor, PositionLike)] = kappaCursor.now
-      curs match
-      {
-        case Some((ed, position)) =>
-        //hub.kappaCode() = hub.kappaCode.now.withInsertion(position.line, comments.now)
-        case None =>
-      }
+    selections.updates.onChange{
+      upd =>
+        upd.removed.foreach{
+          r => itemViews.now.get(r.page).foreach{ rv =>
+            rv.unhighlight( r)
+          }
+        }
+        upd.added.foreach {
+          a => itemViews.now.get(a.page).foreach { av =>
+            av.highlight( a)
+          }
+
+        }
     }
  }
 
 }
 
-//case class NuggetSelection(paperURI: String, page: Int, selection: TextLayerSelection)
-
 class ArticlePageView(val elem: Element,
                       val num: Int,
                       val page: Page,
-                      val scale: Rx[Double]
+                      val scale: Rx[Double],
+                      val input: Rx[KappaMessage]
                      )  extends PageView {
  val name = Var("page_"+num)
  val title = Var("page_"+num)
 
-  def select(sel: Selection): List[TextLayerSelection] = {
+  def textLayerSelection(sel: Selection): List[TextLayerSelection] = {
     if(sel.anchorNode.isInside(textDiv) || sel.focusNode.isInside(textDiv)) sel.map{ range =>
       TextLayerSelection.fromRange("", range)}.toList
     else List.empty[TextLayerSelection]
   }
-
 
 
   override lazy val canvas = {
@@ -135,6 +161,25 @@ class ArticlePageView(val elem: Element,
 
   override def bindView() = {
     super.bindView()
-
   }
+
+  def getSpans(sel: TextLayerSelection): List[Element] = sel.selectTokenSpans(textDiv)
+
+
+  def unhighlight(sel: TextLayerSelection ) = {
+    val spans = getSpans(sel)
+    spans.foreach { sp =>
+      if (sp.classList.contains("highlight"))
+        sp.classList.remove("highlight")
+    }
+  }
+
+  def highlight(sel: TextLayerSelection) = {
+    //println("chunks are: ")
+    val spans = getSpans(sel)
+    //spans.foreach(s=>println(s.outerHTML))
+    spans.foreach{ sp=> if(!sp.classList.contains("highlight")) sp.classList.add("highlight") }
+  }
+
+
 }

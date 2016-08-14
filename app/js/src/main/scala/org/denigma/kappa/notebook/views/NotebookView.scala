@@ -11,11 +11,12 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook.views.common.{FixedBinder, ServerConnections}
-import org.denigma.kappa.notebook.views.editor.{CommentsWatcher, EditorUpdates, KappaCodeEditor, KappaWatcher}
+import org.denigma.kappa.notebook.views.editor._
 import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView}
 import org.denigma.kappa.notebook.views.menus.MainMenuView
 import org.denigma.kappa.notebook.views.papers.PapersView
 import org.denigma.kappa.notebook.views.project.ProjectsPanelView
+import org.denigma.kappa.notebook.views.settings.SettingsView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.denigma.kappa.notebook.views.visual.VisualPanelView
 import org.scalajs.dom.raw.Element
@@ -102,9 +103,8 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     t
   }
 
-  val kappaCursor: Var[Option[(Editor, PositionLike)]] = Var(None)
-
-  val kappaWatcher: KappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates)
+  val kappaCursor: Var[KappaCursor] = Var(EmptyCursor)
+  //val kappaWatcher: KappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates)
 
   val menu: Var[List[(String, Element)]] = Var(List.empty[(String, Element)])
 
@@ -132,6 +132,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("VisualPanel"){
       case (el, args) =>
+        val kappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates)
         val v = new VisualPanelView(el, kappaWatcher.text, kappaWatcher.parsed, input, s).withBinder(n => new FixedBinder(n))
         addMenuItem(el, MainTabs.Visualizations)
         v
@@ -163,6 +164,11 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
         addMenuItem(el, MainTabs.Papers)
         v
     }
-
+    .register("Settings") {
+      case (el, params) =>
+        val v = new SettingsView(el, connector.input).withBinder(new CodeBinder(_))
+        addMenuItem(el, MainTabs.Settings)
+        v
+    }
 }
 

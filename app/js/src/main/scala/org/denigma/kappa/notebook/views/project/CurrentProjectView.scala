@@ -4,6 +4,7 @@ import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.CollectionSortedSetView
 import org.denigma.kappa.messages._
+import org.denigma.kappa.notebook.actions.Commands
 import org.scalajs.dom
 import org.scalajs.dom._
 import org.scalajs.dom.html.Input
@@ -68,10 +69,16 @@ class CurrentProjectView(val elem: Element,
 
   val saveAll = Var(Events.createMouseEvent())
   saveAll.triggerLater{
+    saveAllHandler()
+   }
+
+  protected def saveAllHandler() = {
     val toSave = unsaved.now.values.toList
-    val saveRequest = FileRequests.Save(toSave, rewrite = true)
-    println("save ALL!")
-    output() = saveRequest
+    if(toSave.nonEmpty) {
+      val saveRequest = FileRequests.Save(toSave, rewrite = true)
+      //println("save ALL!")
+      output() = saveRequest
+    }
   }
 
   val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.folder.files)
@@ -88,25 +95,28 @@ class CurrentProjectView(val elem: Element,
       //currentProject.now = currentProject.now.copy(folder = )
       dom.console.log("updating binary parts is not yet implemented")
 
-  case Done(FileRequests.Remove(pathes), _)  =>
-    val (in, not) = pathes.partition(inProject)
-    if(in.nonEmpty){
-      currentProject() = currentProject.now.copy(folder = currentProject.now.folder.removeFiles(pathes))
-    }
+    case Done(FileRequests.Remove(pathes), _)  =>
+      val (in, not) = pathes.partition(inProject)
+      if(in.nonEmpty){
+        currentProject() = currentProject.now.copy(folder = currentProject.now.folder.removeFiles(pathes))
+      }
 
-  case resp @ FileResponses.RenamingResult(renamed: Map[String, (String, String)], nameConflicts, notFound)=>
-    dom.console.error("RENAMING IS NOT YET IMPLEMENTED IN UI")
+    case resp @ FileResponses.RenamingResult(renamed: Map[String, (String, String)], nameConflicts, notFound)=>
+      dom.console.error("RENAMING IS NOT YET IMPLEMENTED IN UI")
 
-  case resp @ FileResponses.SavedFiles(Left(pathes)) =>
-    val proj = currentProject.now
+    case resp @ FileResponses.SavedFiles(Left(pathes)) =>
+      val proj = currentProject.now
 
-    currentProject() = { proj.copy(folder = proj.folder.markSaved(pathes)) }
-    //println("save resp")
-    //pprint.pprintln(resp)
+      currentProject() = { proj.copy(folder = proj.folder.markSaved(pathes)) }
+      //println("save resp")
+      //pprint.pprintln(resp)
 
-  case resp @ FileResponses.SavedFiles(Right(files)) =>
-    val proj = currentProject.now
-    currentProject() = proj.copy(folder = proj.folder.addFiles(files))
+    case resp @ FileResponses.SavedFiles(Right(files)) =>
+      val proj = currentProject.now
+      currentProject() = proj.copy(folder = proj.folder.addFiles(files))
+
+    case Commands.SaveAll =>
+      saveAllHandler()
 
     case _=> //do nothing
   }

@@ -3,26 +3,22 @@ package org.denigma.kappa.notebook.views.papers
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView}
-import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
 import org.denigma.kappa.messages.{GoToPaper, GoToPaperSelection, KappaBinaryFile}
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.extensions._
+import org.denigma.kappa.notebook.parsers.PaperSelection
 import org.denigma.kappa.notebook.views.common.TabHeaders
+import org.denigma.kappa.notebook.views.editor.{EmptyCursor, KappaCursor, KappaEditorCursor}
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import org.denigma.binding.extensions._
-import org.denigma.kappa.notebook.parsers.PaperSelection
-import org.denigma.kappa.notebook.views.actions.Movements
-import org.denigma.kappa.notebook.views.editor.{EmptyCursor, KappaCursor, KappaEditorCursor}
 
 import scala.collection.immutable._
 import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scala.scalajs.js
 import scala.util.{Failure, Success}
 
 class PapersView(val elem: Element,
@@ -66,14 +62,12 @@ class PapersView(val elem: Element,
     case paper if paper!="" =>
       //println("LOAD :"+loc.paper)
       paperLoader.getPaper(paper, 10 seconds).onComplete{
-        case Success(pp) =>
-          paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(pp.name, pp)
-
-          //selected() = pp.name
+        case Success(pp) => paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(pp.name, pp)
         case Failure(th)=> dom.console.error(s"Cannot load paper ${paper}: "+th)
       }
     case _ => //do nothing
   }
+
 
   val toSource = Var(Events.createMouseEvent())
   toSource.onChange{
@@ -87,7 +81,23 @@ class PapersView(val elem: Element,
 
   connector.input.onChange {
     case GoToPaper(loc)=> paperURI() = loc
-    case other => //do nothing
+    case GoToPaperSelection(selection) =>
+      paperURI.Internal.value = selection.label //TODO: fix this ugly workaround
+      paperLoader.getPaper(selection.label, 10 seconds).onComplete{
+        case Success(pp) =>
+          paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(pp.name, pp)
+          itemViews.now.get(paperURI.now) match {
+            case Some(v) =>
+              v.selections() = v.selections.now + selection
+              //println(s"SCROLLING TO ${selection}")
+              v.scrollTo(selection, 5, 1.5 seconds)
+
+            case None =>  dom.console.error(s"Paper URI for ${selection.label} does not exist")
+
+          }
+        case Failure(th)=> dom.console.error(s"Cannot load paper ${selection.label}: "+th)
+      }
+     case other => //do nothing
   }
 
   lazy val lineNumber = kappaCursor.map{c => c.lineNum}
@@ -107,17 +117,28 @@ class PapersView(val elem: Element,
     }
   }
 
+  //TODO: fix this ugly button
+  val showSelections = Var(true)
+  showSelections.onChange{
+    case false => //itemViews.now.foreach(i => )
+    case true =>
+  }
+
+
+
+  val domSelections: Var[Map[Item, (Map[Int, List[TextLayerSelection]])]] = Var(Map.empty[Item, (Map[Int, List[TextLayerSelection]])])
+
   override protected def subscribeUpdates(): Unit =
   {
     super.subscribeUpdates()
     selectionOpt.afterLastChange(900 millis){
       case Some(sel) =>
         val sels: Map[Item, Map[Int, List[TextLayerSelection]]] =  itemViews.now.map{ case (item, child) => (item, child.select(sel)) }
-        selections() = sels
+        domSelections() = sels
 
       case None =>
         //println("selection option is NONE")
-        selections() = Map.empty[Item, (Map[Int, List[TextLayerSelection]])]
+        domSelections() = Map.empty[Item, (Map[Int, List[TextLayerSelection]])]
 
     }
     dom.document.addEventListener("selectionchange", onSelectionChange _)
@@ -133,14 +154,12 @@ class PapersView(val elem: Element,
     }
   }
 
-  val selections: Var[Map[Item, (Map[Int, List[TextLayerSelection]])]] = Var(Map.empty[Item, (Map[Int, List[TextLayerSelection]])])
-
   protected def toURI(str: String) = str.replace(" ", "%20") match {
     case s if s.contains(":") => s
     case other => ":" + other
   }
 
-  val comment: Rx[String] = selections.map{ chosen =>
+  val comment: Rx[String] = domSelections.map{ chosen =>
     val result = chosen.foldLeft(""){
       case (acc, (item, mp))=>
         val sstr = mp.foldLeft(""){
@@ -161,7 +180,7 @@ class PapersView(val elem: Element,
   override def newItemView(item: Key, paper: Paper): PublicationView = this.constructItemView(item){
     case (el, params)=>
       el.id = paper.name
-      val v = new PublicationView(el, paperURI,  Var(paper), connector.input).withBinder(v=>new CodeBinder(v))
+      val v = new PublicationView(el, paperURI,  Var(paper)).withBinder(v=>new CodeBinder(v))
       v
   }
 

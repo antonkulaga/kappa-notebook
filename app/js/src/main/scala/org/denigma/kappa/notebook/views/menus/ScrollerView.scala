@@ -59,7 +59,7 @@ class ScrollerView(val elem: Element,
     case Some(target) =>
       val tid = target.id
       val hash =  "#"+tid
-      if(dom.window.location.hash==hash) {
+      if(dom.window.location.hash==hash || dom.window.location.hash==tid) {
         dom.window.location.hash = ""
       }
       val stateObject = new ScrollPosition(tid, scrollPanel.scrollLeft)

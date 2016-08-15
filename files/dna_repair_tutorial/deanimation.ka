@@ -1,10 +1,11 @@
 # Chapter 'Deamination'
 
 #mCGs andCGs can endurespontaneous chemical transitions toT GandU Gmismatches 
-#(roughly four timesper second per genome
+#(roughly four times per second per genome
 
 %var: 'C to U' 1.e-2
 %var: 'mC to T' 1.e-2
 
+#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 4; :from_chunk 4; :to_chunk 37; :from_token 1; :to_token 3 .
 'C base deamination' DNA(Base~C,status~ok) -> DNA(Base~U,status~dom) @ 'C to U'
 'mC base deamination' DNA(Base~mC,status~ok) -> DNA(Base~T,status~dom) @ 'mC to T'

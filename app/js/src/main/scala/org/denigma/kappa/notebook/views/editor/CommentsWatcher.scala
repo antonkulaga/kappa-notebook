@@ -7,15 +7,18 @@ import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages.{Go, GoToFigure, GoToPaper, KappaMessage}
 import org.denigma.kappa.notebook.parsers._
 import org.denigma.kappa.notebook.views.MainTabs
-import org.denigma.kappa.notebook.views.actions.Movements
+import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.views.figures.{Figure, Image, Video}
 import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
 import rx._
+
+import scalatags.JsDom.all._
 import rx.Ctx.Owner.Unsafe.Unsafe
 
 import scalatags.JsDom.all._
 import org.denigma.binding.extensions._
+import org.scalajs.dom
 
 import scala.concurrent.duration._
 /**
@@ -55,8 +58,10 @@ class CommentsWatcher(
   protected def semanticSearch(editor: Editor, lines: List[(Int, String)], currentNum: Int) = {
     //for( (i, str) <- lines)  editor.setGutterMarker(i,  "breakpoints", null)
 
-    val papers: List[((Int, String), PaperSelection)] = lines.map{ case (num, line)=> (num, line) -> paperParser.annotation.parse(line) }.collect{
-      case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
+    val paperSelections: List[((Int, String), PaperSelection)] = lines.map{ case (num, line)=> (num, line) -> paperParser.annotation.parse(line) }.collect{
+      case ((num, line), Parsed.Success(result, _))=>
+        dom.console.log("PAPER LINE=="+line)
+        (num, line) -> result
     }
 
     val links = lines.map{ case (num, line)=> (num, line) -> linkParser.parse(line) }.collect{
@@ -76,11 +81,21 @@ class CommentsWatcher(
         val marker = makeURIMarker(result)
         editor.setGutterMarker(n, "breakpoints", marker)
     }
+        /*
+        * doc.addLineWidget(line: integer|LineHandle, node: Element, ?options: object) → LineWidget
+    Adds a line widget, an element shown below a line, spanning the whole of the editor's width,
+    and moving the lines below it downwards. line should be either an integer or a line handle,
+    and node should be a DOM node, which will be displayed below the given line.
+    options, when given, should be an object that configures the behavior of the widget.
+    The following options are supported (all default to false):
+        * */
     images.collectFirst{
       case ((n, line), result) if n == currentNum =>
         addImage(result)
         val marker = makeFigureMarker(result, "Image")
         editor.setGutterMarker(n, "breakpoints", marker)
+        //val image = img(src := result).render
+        //editor.getDoc().dyn.addLineWidget(n, "/files/"+image) //trying to add figure directly to the code
     }
     videos.collectFirst{
       case ((n, line), result) if n == currentNum =>
@@ -89,7 +104,7 @@ class CommentsWatcher(
         editor.setGutterMarker(n, "breakpoints", marker)
     }
 
-    papers.collectFirst{
+    paperSelections.collectFirst{
       case ((n, line), result) if n == currentNum =>
         val marker = makePageMarker(result)
         editor.setGutterMarker(n, "breakpoints", marker)
@@ -123,7 +138,7 @@ class CommentsWatcher(
 
   protected def makeURIMarker(link: String): Anchor = {
     val tag = a(href := link, target := "blank",
-      i(`class` := "label File Pdf Outline icon", id :="class_icon"+Math.random()),
+      i(`class` := "label at icon", id :="class_icon"+Math.random()),
       " "
     )
     tag.render
@@ -152,8 +167,10 @@ class CommentsWatcher(
       //println(s"mouse down on $num")
       }))
     */
+    //pointed label File Code Outline icon
 
-    val tag = i(`class` := s"pointed label File Code Outline icon", onclick := {
+    //label File Pdf Outline icon
+    val tag = i(`class` := s"pointed label File Pdf Outline icon", onclick := {
       //println(s"mouse down on $num")
     })
     val html = tag.render

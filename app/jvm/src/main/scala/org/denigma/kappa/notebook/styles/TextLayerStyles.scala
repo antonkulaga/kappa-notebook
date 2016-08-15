@@ -28,7 +28,10 @@ trait TextLayerStyles extends StyleSheet.Standalone {
   ".textLayer .highlight" - (
     margin(-1.0 px),
     padding(1 px),
-    backgroundColor.rgb(180, 0, 170),
+    backgroundColor.deepskyblue,
+    borderWidth(1 px),
+    borderColor.navy,
+    //backgroundColor.rgb(180, 0, 170),
     borderRadius( 4 px)
     )
 

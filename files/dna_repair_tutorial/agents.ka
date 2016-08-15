@@ -1,18 +1,27 @@
+### Agent declarations of the model ###:
 
-#Fig. 4. 
-#The model’s contact map: agents figure together with their sites and the potential
-#values held by these sites (only TDG and DNA have sites holding values). Potential
-#bindings are represented by edges.
+# about agents in general:
+#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 6; :from_chunk 92; :to_chunk 106; :from_token 1; :to_token 1 .
 
-#Fig. 3. 
-#Domains and interactions of CBP: the fine domain structure of CBP is far
-#richer than what we will represent in our model (§2.3).
+# Figure.2 - Interactions
+#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 4; :from_chunk 62; :to_chunk 84; :from_token 1; :to_token 7 .
 
-#^ :in_paper Kri_etal09.pdf
-#^ :on_page 1
-%agent: CBP(tdg, chr)
-%agent: MECP2(GmC) 
-%agent: DNA(chr~closed~opened, Base~mC~C~T~U~x, rd, init~mC~C,status~ok~dom~hole)
-%agent: TDG(N140,rd~u~Ac,lig, dnmt3a, nc~act)
+
+# CREB-binding protein
+#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 6; :from_chunk 87; :to_chunk 91; :from_token 1; :to_token 1 .
+%agent: CBP(tdg, chr) #^ http://www.uniprot.org/uniprot/Q92793
+
+%agent: MECP2(GmC)  #^ http://www.uniprot.org/uniprot/P51608
+
+#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 7; :from_chunk 51; :to_chunk 64; :from_token 1; :to_token 5 .
+%agent: DNA( #double stranded DNA about kilobase long \
+	chr~closed~opened, #state of chromatin \
+	Base~mC~C~T~U~x, rd, #base of DNA, "x" means NO base\
+    init~mC~C, \
+    status~ok~dom~hole\
+    )
+    
+#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 5; :from_chunk 2; :to_chunk 20; :from_token 1; :to_token 1 .
+%agent: TDG(N140,rd~u~Ac,lig, dnmt3a, nc~act) #^ http://www.uniprot.org/uniprot/Q13569
 %agent: Dnmt3a(tdg,dna)
 %agent: APE1_PolB(tdg,CAT)

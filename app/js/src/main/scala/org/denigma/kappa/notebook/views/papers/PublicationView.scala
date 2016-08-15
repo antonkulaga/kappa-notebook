@@ -3,12 +3,11 @@ package org.denigma.kappa.notebook.views.papers
 import org.denigma.binding.extensions._
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.{GoToPaperSelection, KappaMessage}
 import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.parsers.PaperSelection
 import org.denigma.pdf.extensions.Page
+import org.querki.jquery.$
 import org.scalajs.dom
-import org.scalajs.dom.Element
 import org.scalajs.dom.ext._
 import org.scalajs.dom.html.Canvas
 import org.scalajs.dom.raw.{Element, _}
@@ -16,47 +15,53 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
 import scala.annotation.tailrec
+import scala.collection.immutable._
+import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
 
 class PublicationView(val elem: Element,
                       val selected: Var[String],
-                      val paper: Var[Paper],
-                      val input: Var[KappaMessage]
-                      //kappaCursor: Var[Option[(Editor, PositionLike)]]
+                      val paper: Var[Paper]
                      )
   extends PaperView {
 
   override type ItemView = ArticlePageView
 
-  lazy val selections: Var[List[PaperSelection]] = Var(List.empty[PaperSelection])
+  lazy val selections: Var[Set[PaperSelection]] = Var(Set.empty[PaperSelection])
 
-
-  input.onChange {
-    case GoToPaperSelection(selection) if selection.label == paper.now.name  =>
-      if(!selections.now.contains(selection)) selections() = selection::selections.now
-      println("SELECTION WORKED!")
-      if(items.now.contains(selection.page))
-        itemViews.now.get(selection.page) match {
-          case Some(v) =>
-            v.getSpans(selection).headOption match {
-              case Some(e: HTMLElement) =>
-                selected() = paper.now.name
-                val offset = e.offsetTop
+  def scrollTo(selection: PaperSelection, retry: Int = 5, timeout: FiniteDuration = 800 millis): Unit = {
+      itemViews.now.get(selection.page) match {
+        case Some(v) =>
+          v.getSpans(selection).collectFirst{case e: HTMLElement =>e} match {
+            case Some(e) =>
+              scalajs.js.timers.setTimeout(50 millis) {
+                $(elem).dyn.scrollTo(e)
+                v.highlight(selection)
+                //val top = e.getBoundingClientRect().top - elem.getBoundingClientRect().top
                 //println(s"offset ${e.offsetTop}")
-                elem.scrollTop = e.offsetTop
+                //elem.scrollT=op = top
 
-              case None => dom.console.log("")
-            }
+              }
+            case None =>
+              if(paper.now.numPages >= selection.page && retry > 0){
+                dom.console.log(s"page ${selection.page} is not yet loaded, retrying ...")
+                scalajs.js.timers.setTimeout(timeout){scrollTo(selection, retry -1)}
+              }
+              else{
+                dom.console.error(s"selection selects and mepty element, selection is ${selection.page}")
+              }
+          }
 
-          case None => dom.console.error("cannot find selection page!")
-        }
-    case GoToPaperSelection(selection) =>
-      //dom.console.error("selection is: "+selection)
-      //dom.console.error(s"paperName = ${paper.now.name} selectionPaperValue = ${selection.label}  comparison ${selection.label == paper.now.name}")
-
-
-    case other => //do nothing
+        case None =>
+          if(paper.now.numPages >= selection.page && retry > 0){
+            dom.console.log(s"page ${selection.page} is not yet loaded, retrying ...")
+            scalajs.js.timers.setTimeout(timeout){scrollTo(selection, retry -1)}
+          }
+          else{
+            dom.console.error(s"selection selects and mepty element, selection is ${selection.page}")
+          }
+      }
   }
 
   lazy val active: rx.Rx[Boolean] = selected.map{
@@ -84,7 +89,7 @@ class PublicationView(val elem: Element,
 
   override def newItemView(item: Int, value: Page): ItemView = this.constructItemView(item){
     case (el, args) =>
-      val view = new ItemView(el, item, value, scale, input).withBinder(v=>new CodeBinder(v))
+      val view = new ItemView(el, item, value, scale).withBinder(v=>new CodeBinder(v))
       view
   }
 
@@ -132,8 +137,7 @@ class PublicationView(val elem: Element,
 class ArticlePageView(val elem: Element,
                       val num: Int,
                       val page: Page,
-                      val scale: Rx[Double],
-                      val input: Rx[KappaMessage]
+                      val scale: Rx[Double]
                      )  extends PageView {
  val name = Var("page_"+num)
  val title = Var("page_"+num)
@@ -168,16 +172,19 @@ class ArticlePageView(val elem: Element,
 
   def unhighlight(sel: TextLayerSelection ) = {
     val spans = getSpans(sel)
+    dom.console.log(s"DE_HIGHLIGHT fromChunk ${sel.fromChunk} toChunk ${sel.toChunk} fromToken ${sel.fromToken} toToken ${sel.toToken} spans length = ${spans.length}")
     spans.foreach { sp =>
       if (sp.classList.contains("highlight"))
         sp.classList.remove("highlight")
     }
   }
 
+
   def highlight(sel: TextLayerSelection) = {
     //println("chunks are: ")
     val spans = getSpans(sel)
     //spans.foreach(s=>println(s.outerHTML))
+    dom.console.log(s"HIGHLIGHT fromChunk ${sel.fromChunk} toChunk ${sel.toChunk} fromToken ${sel.fromToken} toToken ${sel.toToken} spans length = ${spans.length}")
     spans.foreach{ sp=> if(!sp.classList.contains("highlight")) sp.classList.add("highlight") }
   }
 

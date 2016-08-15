@@ -61,7 +61,9 @@ object Dependencies {
 
 		"org.webjars" % "d3js" % Versions.d3js,
 
-		"org.webjars.bower" % "malihu-custom-scrollbar-plugin" % Versions.malihuScrollBar
+		"org.webjars.bower" % "malihu-custom-scrollbar-plugin" % Versions.malihuScrollBar,
+
+		"org.webjars" % "jquery.scrollTo" % Versions.scrollTo
 
 	))
 

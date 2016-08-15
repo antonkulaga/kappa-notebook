@@ -10,13 +10,13 @@
         <tbody>
             <tr data-template="true">
                 <td class="selectable fileitem">
-                    <i class="selectable label" data-class="icon" data-click="fileClick"></i>
-                    <span data-bind-contenteditable="editable" data-click="fileClick" data-bind="name"></span>
+                    <i class="selectable label" data-class="icon" data-event-mouseupclick="fileClick"></i>
+                    <span data-bind-contenteditable="editable" data-event-mouseup="fileClick" data-bind="name"></span>
                 </td>
                 <td class="collapsing">
                     <span class="ui icon mini buttons">
                         <button class="ui button" data-click="removeClick"><i class="red remove icon"></i></button>
-                        <button class="ui button" data-click="renameClick"><i class="edit icon"></i></button>
+                        <!--<button class="ui button" data-click="renameClick"><i class="edit icon"></i></button>-->
                         <button class="ui button" data-hide-if="saved" data-click="saveClick"><i class="save green icon"></i></button>
                     </span>
                 </td>

@@ -50,8 +50,13 @@ class FiguresView(val elem: Element,
 
   val headers = itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
 
+
+  protected def getCaption(id: String): String ={
+    id.replaceAll("https://www.youtube.com/watch?v=", "youtube:")
+  }
+
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, selected).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new TabHeaders(el, headers, selected)(getCaption).withBinder(new GeneralBinder(_)))
 
   override def updateView(view: FigureView, key: String, old: Figure, current: Figure): Unit = {
     //do nothing

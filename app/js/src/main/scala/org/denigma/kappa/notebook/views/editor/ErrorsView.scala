@@ -5,7 +5,7 @@ import org.denigma.binding.views.{BindableView, CollectionSeqView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.messages.{KappaSourceFile, KappaMessage}
-import org.denigma.kappa.notebook.views.actions.Movements
+import org.denigma.kappa.notebook.actions.Movements
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._

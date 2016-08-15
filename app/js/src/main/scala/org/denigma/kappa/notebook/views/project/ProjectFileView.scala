@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.project
 import org.denigma.binding.binders.Events
 import org.denigma.binding.views.BindableView
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.views.actions.Movements
+import org.denigma.kappa.notebook.actions.Movements
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe

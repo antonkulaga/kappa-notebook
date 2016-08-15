@@ -7,7 +7,6 @@ trait BasicParser {
   protected val spaces = P(CharIn(" \t").rep(min = 1))
   protected val digit = P(CharIn('0'to'9'))
   protected val letter = P(CharIn('A' to 'Z') | CharIn('a' to 'z'))
-
 }
 
 class CommentLinksParser extends BasicParser

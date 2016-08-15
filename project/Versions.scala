@@ -103,5 +103,7 @@ trait WebJarsVersions{
 
 	val malihuScrollBar: String = "3.1.5"
 
+	val scrollTo = "2.1.1"
+
 }
 

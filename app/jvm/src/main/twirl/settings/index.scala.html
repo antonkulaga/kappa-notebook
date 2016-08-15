@@ -2,6 +2,28 @@
 <section class="ui one wide column page segment" data-view="Settings" id="Settings" data-view="Settings">
   @commons.html.header("Settings")
 <div class="ui blue segment">
-
+  <div class="ui checkbox">
+    <input type="checkbox" name="autosave" data-bind="autosave" checked="checked">
+    <label>Autosave each 10 seconds</label>
+  </div>
+  <!--
+  <div class="ui form">
+    <div class="grouped fields">
+      <label>On code line annotation click:</label>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input id="toAnnotation" type="radio" name="onannotation" data-bind="toAnnotation">
+          <label>Move to annotation figure/paper</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input id="toEditor" type="radio" name="onannotation" data-bind="toEditor">
+          <label>Move figure/paper annotation to the right from editor</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  -->
 </div>
 </section>

@@ -20,7 +20,7 @@ trait FileMessenger extends Messenger {
 
 
   protected def containerMessages: PartialFunction[KappaMessage, Unit] = {
-    case KappaMessage.Container(messages) =>
+    case KappaMessage.Container(messages, _) =>
       messages.foreach(m=> self ! m)
   }
 
@@ -41,6 +41,7 @@ trait FileMessenger extends Messenger {
       send(d)
 
     case mess @ FileRequests.LoadFileSync(path) =>
+      log.info(s"LOAD FILE SYNC ${path}")
       fileManager.readBytes(path) match {
         case Some(bytes)=>
           val buff = ByteBuffer.wrap(bytes)
@@ -51,6 +52,7 @@ trait FileMessenger extends Messenger {
         case None =>
           val notFound = Failed(mess, List(path), username)
           val d = Pickle.intoBytes[KappaMessage](notFound)
+          log.error(s"file $path NOT FOUND")
           send(d)
       }
 

@@ -70,10 +70,21 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     connector.open()
   }
 
+  protected def goMessage(messages: List[KappaMessage], delay: Int): Unit = messages match {
+    case Nil =>
+    case head::tail => input() = head
+      scalajs.js.timers.setTimeout(delay)(goMessage(tail, delay))
+  }
+
   protected def onMessage(message: KappaMessage): Unit = message match {
 
-    case KappaMessage.Container(messages) =>
+    case KappaMessage.Container(messages, 0) =>
+
       messages.foreach(mess=> input() = mess) //flatmapping
+
+    case KappaMessage.Container(messages, delay) =>
+
+      goMessage(messages, delay)
 
     case ProjectResponses.LoadedProject(proj) =>
       //println("LOADED PROJECT IS")
@@ -166,7 +177,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("Settings") {
       case (el, params) =>
-        val v = new SettingsView(el, connector.input).withBinder(new CodeBinder(_))
+        val v = new SettingsView(el, connector.input).withBinder(new FixedBinder(_))
         addMenuItem(el, MainTabs.Settings)
         v
     }

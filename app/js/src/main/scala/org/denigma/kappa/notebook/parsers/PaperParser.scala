@@ -19,7 +19,7 @@ object AST {
 }
 
 //TODO: merge with
-case class PaperSelection(paper: IRI, page: Int, from_chunk: Int, to_chunk: Int, fromTokenOpt: Option[Int] = None, toTokenOpt: Option[Int] = None) extends TextLayerSelection {
+case class PaperSelection(paper: IRI, page: Int, from_chunk: Int, to_chunk: Int, fromTokenOpt: Option[Int] = None, toTokenOpt: Option[Int] = None, comment: String = "") extends TextLayerSelection {
 
   override lazy val label: String = paper.value.replace("%20"," ") match {
     case prefixed if prefixed.startsWith(":") => prefixed.tail
@@ -39,6 +39,8 @@ class PaperParser extends RDFParser with BasicParser {
 
   lazy val UINT_VALUE = P(DIGIT.rep(1).!).map(v => Integer.parseInt(v))
 
+  //lazy val comment = P( PNAME_NS ~ ("comment" | "has_comment") ~ spaces ~ UINT_VALUE)
+
   lazy val page = P( PNAME_NS ~ ("on_page" | "page") ~ spaces ~ UINT_VALUE)
 
   lazy val paper = P(PNAME_NS ~ ("in_paper" | "paper") ~ spaces ~ IRI).map(AST.IRI)
@@ -53,8 +55,8 @@ class PaperParser extends RDFParser with BasicParser {
 
   lazy val d = P(optSpaces ~ CharIn(";\n") ~ optSpaces)
 
-  lazy val annotation: P[PaperSelection] = P(optSpaces ~ paper ~ d ~ page ~ d ~ from_chunk ~ d ~ to_chunk ~ (d ~ from_token).? ~ (d ~ to_token).? ~ optSpaces ~ ".".? ).map{
-    case (pap, pg, fromChunk, toChunk, fromTokenOpt, toTokenOpt) =>
+  lazy val annotation: P[PaperSelection] = P(/*optSpaces ~ comment.? ~*/ optSpaces ~ paper ~ d ~ page ~ d ~ from_chunk ~ d ~ to_chunk ~ (d ~ from_token).? ~ (d ~ to_token).? ~ optSpaces ~ ".".? ).map{
+    case (/*commentOpt,*/ pap, pg, fromChunk, toChunk, fromTokenOpt, toTokenOpt) =>
         PaperSelection(pap, pg, fromChunk, toChunk, fromTokenOpt, toTokenOpt)
   }
 

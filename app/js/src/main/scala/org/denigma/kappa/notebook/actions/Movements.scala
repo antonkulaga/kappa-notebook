@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.views.actions
+package org.denigma.kappa.notebook.actions
 
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
@@ -13,12 +13,13 @@ object Movements {
   def toPaper(paper: String, page: Int) = KappaMessage.Container()
     .andThen(Go.ToTab(MainTabs.Papers))
     .andThen(GoToPaper(paper))
+    .copy(betweenInterval = 300)
 
 
   def toPaper(paperSelection: PaperSelection) = KappaMessage.Container()
     .andThen(Go.ToTab(MainTabs.Papers))
     .andThen(GoToPaperSelection(paperSelection))
-
+    .copy(betweenInterval = 600)
 
   def toFigure(figure: String) = KappaMessage.Container()
     .andThen(Go.ToTab(MainTabs.Figures))

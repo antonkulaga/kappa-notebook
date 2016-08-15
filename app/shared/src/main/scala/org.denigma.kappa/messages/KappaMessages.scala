@@ -24,7 +24,7 @@ object KappaMessage{
 
     def apply(messages: KappaMessage*): Container = Container(messages.toList)
   }
-  case class Container(messages: List[KappaMessage]) extends KappaMessage
+  case class Container(messages: List[KappaMessage] , betweenInterval: Int = 0) extends KappaMessage
   {
     def andThen(message: KappaMessage): Container = copy(messages :+ message)
   }

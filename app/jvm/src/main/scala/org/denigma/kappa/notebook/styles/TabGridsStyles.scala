@@ -25,7 +25,9 @@ trait TabGridsStyles extends MainStyles {
     )
 
   ".paper.grid" -(
-    minHeight(80.0 vh) important
+    minHeight(75.0 vh) important,
+    maxHeight(78 vh) important,
+    overflowY.auto important
     )
 
   ".page.tab" - (
@@ -67,6 +69,10 @@ trait TabGridsStyles extends MainStyles {
     //overflowY.scroll
     )
 
+  ".dense.column" -(
+    padding(0 px) important
+    )
+
   ".smallpage" -(
     overflowY.auto,
     onTiny -(maxHeight(50 vh) important),
@@ -87,19 +93,17 @@ trait TabGridsStyles extends MainStyles {
     overflowY.visible
     )
 
+  ".ui.segment.paper" -(
+    overflowY.auto,
+    maxHeight(62 vh)
+    )
+
   "#ProjectsPanel" -(
     minWidth(345 px) important
     )
 
-
-  ".paper.grid" -(
-    maxHeight(78 vh) important,
-    overflowY.auto important
-    )
-
-  ".ui.segment.paper" -(
-    overflowY.auto,
-    maxHeight(62 vh)
+  "#Simulations" -(
+    minWidth(600 px) important
     )
 
 }

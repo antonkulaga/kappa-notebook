@@ -1,12 +1,11 @@
 package org.denigma.kappa.notebook.views.editor
 
-import org.denigma.binding.extensions._
-import org.denigma.codemirror.{Editor, PositionLike}
-import org.denigma.kappa.model.KappaModel._
+import org.denigma.codemirror.Editor
 import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.parsers.{KappaParser, ParsedLine}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+import org.denigma.binding.extensions._
 
 import scala.concurrent.duration._
 

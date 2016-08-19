@@ -2,17 +2,14 @@ package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
-import org.denigma.kappa.messages.{KappaSourceFile, KappaMessage}
 import org.denigma.kappa.messages.KappaMessage.ServerCommand
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
-import org.denigma.kappa.messages.WebSimMessages.RunModel
+import org.denigma.kappa.messages.{KappaMessage, KappaSourceFile}
 import org.denigma.kappa.notebook.views.common.ServerConnections
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx._
-import com.softwaremill.quicklens._
-import org.denigma.kappa.notebook.extensions._
 import rx.Rx.Dynamic
+import rx._
 
 
 class RunnerView(val elem: Element,
@@ -26,13 +23,11 @@ class RunnerView(val elem: Element,
 
   val active: Dynamic[Boolean] = tab.map(v=>v=="runner")
 
-  tab.onChange{
-    case value => println("TAB CHANGED TO "+value)
-  }
+  tab.onChange{ value => println("TAB CHANGED TO "+value) }
 
-  def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
+  protected def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
 
-  def opt(n: Double): Option[Double] = if(n > 0.0) Some(n) else None
+  protected def opt(n: Double): Option[Double] = if(n > 0.0) Some(n) else None
 
   val events: Var[Int] = Var(100000)
 

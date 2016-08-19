@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.views.menus
 import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
-import org.denigma.kappa.messages.{Go, KappaMessage}
+import org.denigma.kappa.messages.{Go, KappaMessage, Move}
 import org.denigma.kappa.notebook.views.common.FixedPopStateEvent
 import org.denigma.malihu.scrollbar.JQueryScrollbar._
 import org.denigma.malihu.scrollbar._
@@ -104,7 +104,7 @@ class ScrollerView(val elem: Element,
   override def bindView() = {
     super.bindView()
     dom.window.onpopstate = popStateHandler _
-    input.onChange(onMessage)
+    input.onChange(onInputMessage)
     initScroller()
   }
 
@@ -113,7 +113,7 @@ class ScrollerView(val elem: Element,
     $(scrollPanel).mCustomScrollbar(params)
   }
 
-  protected def onMessage(message: KappaMessage): Unit = message match {
+  protected def onInputMessage(message: KappaMessage): Unit = message match {
 
     case Go.ToTab(tabName) => moveToTab(tabName)
 

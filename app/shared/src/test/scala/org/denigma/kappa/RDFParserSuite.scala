@@ -31,5 +31,11 @@ class RDFParserSuite extends WordSpec with Matchers with Inside  {
           case Parsed.Success(":repressilator/Kappa%20in%20Synthetic%20Biology.pdf", _) =>
         }
       }
+
+    "parse string literal" in {
+      inside(RDFParser.STRING_LITERAL_QUOTE.parse("\"hello world\"")) {
+        case Parsed.Success("hello world", _) =>
+      }
+    }
   }
 }

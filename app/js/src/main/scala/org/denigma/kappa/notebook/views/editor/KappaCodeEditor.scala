@@ -8,12 +8,14 @@ import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages.{ParseModel, ServerConnection, SyntaxErrors}
 import org.denigma.kappa.messages.WebSimMessages.{Location, WebSimError, WebSimRange}
-import org.denigma.kappa.messages.{Go, KappaSourceFile, KappaMessage, ServerMessages}
+import org.denigma.kappa.messages.{Go, KappaMessage, KappaSourceFile, ServerMessages}
+import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.views.common.{ServerConnections, TabHeaders}
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+
 import scala.collection.immutable._
 import scala.concurrent.duration._
 
@@ -24,7 +26,8 @@ class KappaCodeEditor(val elem: Element,
                       val output: Var[KappaMessage],
                       val kappaCursor: Var[KappaCursor],
                       val editorUpdates: Var[EditorUpdates],
-                      val connections: Rx[ServerConnections]
+                      val connections: Rx[ServerConnections],
+                      val movements: Movements
                      ) extends BindableView
   with CollectionMapView
 {
@@ -107,7 +110,7 @@ class KappaCodeEditor(val elem: Element,
   }
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selected)(TabHeaders.path2name).withBinder(new GeneralBinder(_)))
-    .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles, fullCode).withBinder(new GeneralBinder(_)))
+    .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles, fullCode, movements).withBinder(new GeneralBinder(_)))
 
   override def updateView(view: CodeTab, key: String, old: KappaSourceFile, current: KappaSourceFile): Unit = {
     view.source() = current

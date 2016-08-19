@@ -12,7 +12,7 @@ import rx._
 
 class LaunchParametersView(val elem: Element,
                            val simulation: Rx[SimulationStatus],
-                           params: Option[LaunchModel],
+                           val params: Option[LaunchModel],
                            val selected: Rx[String]
                        ) extends BindableView//FixedCollectionSeqView
 {
@@ -20,9 +20,9 @@ class LaunchParametersView(val elem: Element,
 
   val active: Rx[Boolean] = selected.map(s=>s=="parameters")
 
-  def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
+  //def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
 
-  def opt(n: Double): Option[Double] = if(n > 0.0) Some(n) else None
+  //def opt(n: Double): Option[Double] = if(n > 0.0) Some(n) else None
 
   val events: Rx[Int] = simulation.map(sim=>sim.event.getOrElse(0))
 

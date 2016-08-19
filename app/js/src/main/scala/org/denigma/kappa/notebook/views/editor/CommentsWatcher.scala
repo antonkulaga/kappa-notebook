@@ -1,26 +1,19 @@
 package org.denigma.kappa.notebook.views.editor
 
 import fastparse.all._
+import org.denigma.binding.extensions._
 import org.denigma.codemirror.Editor
-import org.denigma.codemirror.extensions._
-import org.denigma.controls.papers.Bookmark
-import org.denigma.kappa.messages.{Go, GoToFigure, GoToPaper, KappaMessage}
-import org.denigma.kappa.notebook.parsers._
-import org.denigma.kappa.notebook.views.MainTabs
+import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.notebook.actions.Movements
+import org.denigma.kappa.notebook.parsers._
 import org.denigma.kappa.notebook.views.figures.{Figure, Image, Video}
+import org.denigma.kappa.notebook.views.settings.AnnotationMode
+import org.scalajs.dom
 import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
 import rx._
 
 import scalatags.JsDom.all._
-import rx.Ctx.Owner.Unsafe.Unsafe
-
-import scalatags.JsDom.all._
-import org.denigma.binding.extensions._
-import org.scalajs.dom
-
-import scala.concurrent.duration._
 /**
   * Created by antonkulaga on 11/03/16.
   */
@@ -28,7 +21,8 @@ class CommentsWatcher(
                        val updates: Var[EditorUpdates],
                        val figures: Var[Map[String, Figure]],
                        val currentProjectName: Rx[String],
-                       val input: Var[KappaMessage]
+                       val input: Var[KappaMessage],
+                       val movements: Movements
                      )  {
 
   updates.onChange(changeHandler) //subscription
@@ -156,7 +150,7 @@ class CommentsWatcher(
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        input() = Movements.toFigure(figure)
+        input() = movements.toFigure(figure)
     }
     html
   }
@@ -176,7 +170,7 @@ class CommentsWatcher(
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        input() = Movements.toPaper(paper)
+          input() = movements.toPaper(paper)
     }
     html
   }

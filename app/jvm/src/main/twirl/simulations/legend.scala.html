@@ -1,16 +1,9 @@
 @()
-<table class="ui very basic collapsing table" data-view="legend">
-  <caption>Legend</caption>
-    <tr>
-      <td  data-template="true">
-        <svg width="50" height="10">
-          <rect x="0" y="0" width="25" height="10" data-bind-stroke="color" data-bind-fill="color"></rect>
-        </svg>
-      </td>
-      <td>
-        <span class="ui label" data-bind="title"></span>
-      </td>
-    </tr>
+<table class="ui small celled table" data-view="legend">
+  <tr>
+    <td data-template="true"  data-bind="title" data-style-background-color="color">
+    </td>
+  </tr>
 </table>
 @*
 <div class="ui list" data-view="legend">

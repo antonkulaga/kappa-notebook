@@ -1,5 +1,7 @@
 #######
 # Chapter 'Chromatin control'
+#
+#
 'Chromatin compaction' MECP2(GmC!1),DNA(Base~mC,chr~opened!1) -> MECP2(GmC!1),DNA(Base~mC,chr~closed!1) @ 1.e-2
 'Chromatin opening' DNA(chr~closed!1),CBP(chr!1) -> DNA(chr~opened),CBP(chr) @ 1.e-2
 'DNA.chr--GmC.MECP2' MECP2(GmC),DNA(Base~mC,chr~opened) -> MECP2(GmC!1),DNA(Base~mC,chr~opened!1) @ 1.0

@@ -111,10 +111,33 @@ trait RDFParser extends RDFChars {
 
   lazy val EOL = CharIn("\n\r") //NOTE: test if works //alsof
 
-  lazy val STRING_LITERAL_QUOTE = P("\"" ~ ( "^" | "#x22" | "#x5C" | "#xA" | "#xD" | ECHAR | UCHAR ).rep ~ "\"") //have no clue if [^#x22#x5C#xA#xD] should work
+  //lazy val STRING_LITERAL_QUOTE = P("\"" ~ ( "^" | "#x22" | "#x5C" | "#xA" | "#xD" | ECHAR | UCHAR ).rep ~ "\"") //have no clue if [^#x22#x5C#xA#xD] should work
 
   lazy val BLANK_NODE_LABEL = P("_:" ~ (PN_CHARS_U | DIGIT) ~ (PN_CHARS | ".").rep ~ PN_CHARS)
 
+
+  //lazy val STRING_LITERAL = P(STRING_LITERAL_LONG_SINGLE_QUOTE | STRING_LITERAL_LONG_QUOTE | STRING_LITERAL_QUOTE | STRING_LITERAL_SINGLE_QUOTE)
+
+
+  //[22] STRING_LITERAL_QUOTE   ::=     '"' ([^#x22#x5C#xA#xD] | ECHAR | UCHAR)* '"' /* #x22=" #x5C=\ #xA=new line #xD=carriage return */
+  lazy val STRING_LITERAL_QUOTE = P( "\"" ~ ((!CharIn("\"\\\\\r\n") ~ AnyChar) | (UCHAR | ECHAR)).rep.! ~ "\"")
+
+  /*
+  //[23] '" ([^#x27#x5C#xA#xD] | ECHAR | UCHAR)* "'" /* #x27=' #x5C=\ #xA=new line #xD=carriage return */
+  def STRING_LITERAL_SINGLE_QUOTE = rule {
+    '\'' ~ clearSB ~ (noneOf("'\"\\\r\n") ~ appendSB | '"' ~ appendSB("\\\"") | UCHAR(true) | ECHAR).* ~ '\'' ~ push(sb.toString) ~> ASTStringLiteralSingleQuote
+  }
+
+  //[24] STRING_LITERAL_LONG_SINGLE_QUOTE       ::=     "'''" (("'" | "''")? ([^'\] | ECHAR | UCHAR))* "'''"
+  def STRING_LITERAL_LONG_SINGLE_QUOTE = rule {
+    str("'''") ~ clearSB ~ (capture(('\'' ~ '\'' ~ !'\'' | '\'' ~ !('\'' ~ '\'')).?) ~> ((s: String) ⇒ appendSB(s.replaceAllLiterally("\"", "\\\""))) ~ (capture(noneOf("\'\\\"")) ~> ((s: String) ⇒ run(maskEsc(s))) | '"' ~ appendSB("\\\"") | UCHAR(true) | ECHAR)).* ~ str("'''") ~ push(sb.toString) ~> ASTStringLiteralLongSingleQuote
+  }
+
+  //[25] STRING_LITERAL_LONG_QUOTE      ::=     '"""' (('"' | '""')? ([^"\] | ECHAR | UCHAR))* '"""'
+  def STRING_LITERAL_LONG_QUOTE = rule {
+    str("\"\"\"") ~ clearSB ~ (capture(('"' ~ '"' ~ !'"' | '"' ~ !('"' ~ '"')).?) ~> ((s: String) ⇒ appendSB(s.replaceAllLiterally("\"", "\\\""))) ~ (capture(noneOf("\"\\")) ~> ((s: String) ⇒ run(maskEsc(s))) | UCHAR(true) | ECHAR)).* ~ str("\"\"\"") ~ push(sb.toString) ~> ASTStringLiteralLongQuote
+  }
+  */
 
 
   /*

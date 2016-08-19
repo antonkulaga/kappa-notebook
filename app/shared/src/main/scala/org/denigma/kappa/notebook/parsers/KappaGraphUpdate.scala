@@ -49,7 +49,7 @@ case class GraphUpdate(line: String, ruleOrPattern: Either[Rule, Pattern]) {
   lazy val leftModified = ruleOrPattern.fold( r => r.modifiedLeft, p => Nil).toSet
   lazy val rightModified = ruleOrPattern.fold( r => r.modifiedRight, p => Nil).toSet
 
-  protected lazy val unchangedLinks: Set[(String, Int, String, Int)] = ruleOrPattern.fold( r => r.unchangedLinks, p => Set.empty[(String, Int, String, Int)])
+  protected lazy val unchangedLinks: Set[(String, Int, String, Int)] = ruleOrPattern.fold( r => r.unchangedLinks, p => p.links)
   protected lazy val removedLinks: Set[(String, Int, String, Int)] = ruleOrPattern.fold( r => r.removedLinks, p =>  Set.empty[(String, Int, String, Int)])
   protected lazy val addedLinks: Set[(String, Int, String, Int)] = ruleOrPattern.fold( r => r.addedLinks, p =>  Set.empty[(String, Int, String, Int)])
 

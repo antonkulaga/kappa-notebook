@@ -1,11 +1,8 @@
 # Chapter 'Deamination'
+#^:comment "Figure 2"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 4; :from_chunk 62; :to_chunk 84; :from_token 1; :to_token 7 .
+#
+#^ :comment "1 per second per billion bases"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 4; :from_chunk 7; :to_chunk 19; :from_token 3; :to_token 2 .
+%var: 'deanim_rate' 1.e-2
 
-#mCGs andCGs can endurespontaneous chemical transitions toT GandU Gmismatches 
-#(roughly four times per second per genome
-
-%var: 'C to U' 1.e-2
-%var: 'mC to T' 1.e-2
-
-#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 4; :from_chunk 4; :to_chunk 37; :from_token 1; :to_token 3 .
-'C base deamination' DNA(Base~C,status~ok) -> DNA(Base~U,status~dom) @ 'C to U'
-'mC base deamination' DNA(Base~mC,status~ok) -> DNA(Base~T,status~dom) @ 'mC to T'
+'C base deamination' DNA(Base~C,status~ok) -> DNA(Base~U,status~dom) @ 'deanim_rate'
+'mC base deamination' DNA(Base~mC,status~ok) -> DNA(Base~T,status~dom) @ 'deanim_rate'

@@ -39,7 +39,7 @@ class PaperParser extends RDFParser with BasicParser {
 
   lazy val UINT_VALUE = P(DIGIT.rep(1).!).map(v => Integer.parseInt(v))
 
-  //lazy val comment = P( PNAME_NS ~ ("comment" | "has_comment") ~ spaces ~ UINT_VALUE)
+  lazy val comment = P( PNAME_NS ~ ("comment" | "has_comment") ~ spaces ~ STRING_LITERAL_QUOTE)
 
   lazy val page = P( PNAME_NS ~ ("on_page" | "page") ~ spaces ~ UINT_VALUE)
 
@@ -55,8 +55,8 @@ class PaperParser extends RDFParser with BasicParser {
 
   lazy val d = P(optSpaces ~ CharIn(";\n") ~ optSpaces)
 
-  lazy val annotation: P[PaperSelection] = P(/*optSpaces ~ comment.? ~*/ optSpaces ~ paper ~ d ~ page ~ d ~ from_chunk ~ d ~ to_chunk ~ (d ~ from_token).? ~ (d ~ to_token).? ~ optSpaces ~ ".".? ).map{
-    case (/*commentOpt,*/ pap, pg, fromChunk, toChunk, fromTokenOpt, toTokenOpt) =>
+  lazy val annotation: P[PaperSelection] = P(optSpaces ~ (comment ~ d).? ~ paper ~ d ~ page ~ d ~ from_chunk ~ d ~ to_chunk ~ (d ~ from_token).? ~ (d ~ to_token).? ~ optSpaces ~ ".".? ).map{
+    case (commentOpt, pap, pg, fromChunk, toChunk, fromTokenOpt, toTokenOpt) =>
         PaperSelection(pap, pg, fromChunk, toChunk, fromTokenOpt, toTokenOpt)
   }
 

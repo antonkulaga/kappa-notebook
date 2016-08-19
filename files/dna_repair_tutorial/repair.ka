@@ -1,5 +1,7 @@
 #######
 # Chapter 'DNA repair'
+#^:comment "TDG-DNA recognition"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 8; :from_chunk 52; :to_chunk 60; :from_token 1; :to_token 10 .
+
 # 'DNA.base--N140.TDG' DNA(Base,status~dom,chr~opened),TDG(N140) -> DNA(Base!1,status~dom,chr~opened),TDG(N140!1) @ 1.0 # Inactive rule
 'DNA.base--N140.TDG Ref1' DNA(Base,chr~opened,status~dom,rd),TDG(N140,rd,dnmt3a,lig) -> DNA(Base!1,chr~opened,status~dom,rd),TDG(N140!1,rd,dnmt3a,lig) @ 1.0
 'DNA.base--N140.TDG Ref2' DNA(Base,status~dom,chr~opened),TDG(N140,rd!1,dnmt3a,lig),CBP(tdg!1,chr) -> DNA(Base!1,status~dom,chr~opened),TDG(N140!1,rd!2,dnmt3a,lig),CBP(tdg!2,chr) @ 1.0

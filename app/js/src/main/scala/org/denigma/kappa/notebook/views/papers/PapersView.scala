@@ -56,8 +56,6 @@ class PapersView(val elem: Element,
 
   val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
 
-  //lazy val selections = itemViews.map(its => its.sele)
-
   paperURI.foreach{
     case paper if paper!="" =>
       //println("LOAD :"+loc.paper)
@@ -80,17 +78,22 @@ class PapersView(val elem: Element,
   val selectionOpt: Var[Option[Selection]] = Var(None)
 
   connector.input.onChange {
-    case GoToPaper(loc)=> paperURI() = loc
+    case GoToPaper(loc)=> paperURI() = loc //just switches to another paper
+
     case GoToPaperSelection(selection) =>
+
       paperURI.Internal.value = selection.label //TODO: fix this ugly workaround
-      paperLoader.getPaper(selection.label, 10 seconds).onComplete{
+
+      paperLoader.getPaper(selection.label, 12 seconds).onComplete{
         case Success(pp) =>
           paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(pp.name, pp)
+          itemViews.now.values.foreach(p => p.selections() = Set.empty) //TODO: fix this ugly cleaning workaround
           itemViews.now.get(paperURI.now) match {
             case Some(v) =>
               v.selections() = v.selections.now + selection
+              additionalComment() = ""
               //println(s"SCROLLING TO ${selection}")
-              v.scrollTo(selection, 5, 1.5 seconds)
+              v.scrollTo(selection, 5, 300 millis) //scrolls to loaded paper
 
             case None =>  dom.console.error(s"Paper URI for ${selection.label} does not exist")
 
@@ -124,8 +127,6 @@ class PapersView(val elem: Element,
     case true =>
   }
 
-
-
   val domSelections: Var[Map[Item, (Map[Int, List[TextLayerSelection]])]] = Var(Map.empty[Item, (Map[Int, List[TextLayerSelection]])])
 
   override protected def subscribeUpdates(): Unit =
@@ -138,19 +139,21 @@ class PapersView(val elem: Element,
 
       case None =>
         //println("selection option is NONE")
-        domSelections() = Map.empty[Item, (Map[Int, List[TextLayerSelection]])]
+        //domSelections() = Map.empty[Item, (Map[Int, List[TextLayerSelection]])]
 
     }
     dom.document.addEventListener("selectionchange", onSelectionChange _)
   }
 
+  protected def insideTextLayer(selection: Selection) =
+    selection.anchorNode.insidePartial{ case el: HTMLElement if el.classList.contains("textLayer") || el.classList.contains("textlayer")=>} ||
+    selection.focusNode.insidePartial{ case el: HTMLElement if el.classList.contains("textLayer") || el.classList.contains("textlayer")=>}
+
   protected def onSelectionChange(event: Event) = {
     val selection: Selection = dom.window.getSelection()
-    selection.anchorNode.isInside(elem) || selection.focusNode.isInside(elem)  match {
-      case true =>
-        selectionOpt.Internal.value = Some(selection)
-        selectionOpt.recalc()
-      case false =>
+    if (insideTextLayer(selection)) {
+      selectionOpt.Internal.value = Some(selection)
+      selectionOpt.recalc()
     }
   }
 
@@ -159,20 +162,28 @@ class PapersView(val elem: Element,
     case other => ":" + other
   }
 
-  val comment: Rx[String] = domSelections.map{ chosen =>
-    val result = chosen.foldLeft(""){
+  val additionalComment = Var("")
+
+  protected def makeComment(chosen: Map[Item, (Map[Int, List[TextLayerSelection]])], addComment: String) = {
+    val com = if(addComment=="") " " else ":comment \""+ addComment +"\"; "
+    chosen.foldLeft(""){
       case (acc, (item, mp))=>
         val sstr = mp.foldLeft(""){
           case (a, (num, list)) =>
             val str = list.foldLeft(""){
               case (aa, s) =>
-                aa + s"#^ :in_paper ${toURI(item)}; :on_page ${num}; :from_chunk ${s.fromChunk}; :to_chunk ${s.toChunk}; :from_token ${s.fromToken}; :to_token ${s.toToken} .\n"
+                aa + s"#^${com}:in_paper ${toURI(item)}; :on_page ${num}; :from_chunk ${s.fromChunk}; :to_chunk ${s.toChunk}; :from_token ${s.fromToken}; :to_token ${s.toToken} .\n"
             }
             a + str
         }
         acc + sstr
     }
-    result
+  }
+
+  lazy val comment: Rx[String] = Rx{ //TODO: fix this bad unoptimized code
+    val chosen = domSelections()
+    val com = additionalComment()
+    makeComment(chosen, com)
   }
 
   val hasComment = comment.map(c => c != "")

@@ -9,6 +9,7 @@ import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages.ServerMessages.KappaServerErrors
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
+import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook.views.common.{FixedBinder, ServerConnections}
 import org.denigma.kappa.notebook.views.editor._
@@ -16,7 +17,7 @@ import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView}
 import org.denigma.kappa.notebook.views.menus.MainMenuView
 import org.denigma.kappa.notebook.views.papers.PapersView
 import org.denigma.kappa.notebook.views.project.ProjectsPanelView
-import org.denigma.kappa.notebook.views.settings.SettingsView
+import org.denigma.kappa.notebook.views.settings.{AnnotationMode, SettingsView}
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.denigma.kappa.notebook.views.visual.VisualPanelView
 import org.scalajs.dom.raw.Element
@@ -101,10 +102,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     case other => //do nothing
   }
 
-  val commentManager = new CommentsWatcher(editorsUpdates, figures, currentProjectName, input)
-
-
-  //import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all
+ //import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all
   import scalatags.JsDom.all
   lazy val s: SVG = {
     val t = svg(all.id := "canvas"/*width :=  defaultWidth, height := defaultHeight*/).render
@@ -118,6 +116,10 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   //val kappaWatcher: KappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates)
 
   val menu: Var[List[(String, Element)]] = Var(List.empty[(String, Element)])
+  lazy val annotationMode = Var(AnnotationMode.ToAnnotation)
+  lazy val movements = new Movements(annotationMode)
+
+  val commentManager = new CommentsWatcher(editorsUpdates, figures, currentProjectName, input, movements)
 
   protected def addMenuItem(el: Element, title: String) = {
     menu() = menu.now :+ (title, el)
@@ -127,17 +129,17 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     .register("MainMenuView") {
       case (el, args) =>
         elem.parentElement
-        new MainMenuView(el, input, scrollable, menu).withBinder(n => new CodeBinder(n))
+        new MainMenuView(el, input, scrollable, menu, movements).withBinder(n => new CodeBinder(n))
     }
     .register("ProjectsPanel"){
       case (el, args) =>
-        val v = new ProjectsPanelView(el, currentProject, connector.input, connector.output).withBinder(n => new CodeBinder(n))
+        val v = new ProjectsPanelView(el, currentProject, connector.input, connector.output, movements).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Projects)
         v
      }
     .register("KappaEditor"){
       case (el, args) =>
-        val editor = new KappaCodeEditor(el, sourceMap, input, output, kappaCursor, editorsUpdates, serverConfiguration).withBinder(n => new CodeBinder(n))
+        val editor = new KappaCodeEditor(el, sourceMap, input, output, kappaCursor, editorsUpdates, serverConfiguration, movements).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Editor)
         editor
     }
@@ -177,7 +179,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("Settings") {
       case (el, params) =>
-        val v = new SettingsView(el, connector.input).withBinder(new FixedBinder(_))
+        val v = new SettingsView(el, connector.input, annotationMode).withBinder(new FixedBinder(_))
         addMenuItem(el, MainTabs.Settings)
         v
     }

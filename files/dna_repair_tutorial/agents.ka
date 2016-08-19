@@ -1,14 +1,11 @@
 ### Agent declarations of the model ###:
-
-# about agents in general:
-#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 6; :from_chunk 92; :to_chunk 106; :from_token 1; :to_token 1 .
-
-# Figure.2 - Interactions
-#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 4; :from_chunk 62; :to_chunk 84; :from_token 1; :to_token 7 .
-
+#
+#^ :comment "about agents in general"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 6; :from_chunk 92; :to_chunk 106; :from_token 1; :to_token 1 .
+#
+#^ :comment "Figure 2 - Interactions"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 4; :from_chunk 62; :to_chunk 84; :from_token 1; :to_token 7 .
 
 # CREB-binding protein
-#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 6; :from_chunk 87; :to_chunk 91; :from_token 1; :to_token 1 .
+#^ :comment "has many interactions"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 6; :from_chunk 87; :to_chunk 91; :from_token 1; :to_token 1 .
 %agent: CBP(tdg, chr) #^ http://www.uniprot.org/uniprot/Q92793
 
 %agent: MECP2(GmC)  #^ http://www.uniprot.org/uniprot/P51608
@@ -20,8 +17,12 @@
     init~mC~C, \
     status~ok~dom~hole\
     )
-    
-#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 5; :from_chunk 2; :to_chunk 20; :from_token 1; :to_token 1 .
+
+#^ :comment "does the excision of faulty base"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 5; :from_chunk 2; :to_chunk 20; :from_token 1; :to_token 1 .
 %agent: TDG(N140,rd~u~Ac,lig, dnmt3a, nc~act) #^ http://www.uniprot.org/uniprot/Q13569
-%agent: Dnmt3a(tdg,dna)
+
+#^ :comment "methylates Cs"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 6; :from_chunk 104; :to_chunk 106; :from_token 2; :to_token 1 .
+%agent: Dnmt3a(tdg,dna) #^ http://www.uniprot.org/uniprot/Q6PJ37
+
+#^:comment "fills in C after excision"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 6; :from_chunk 101; :to_chunk 103; :from_token 2; :to_token 2 .
 %agent: APE1_PolB(tdg,CAT)

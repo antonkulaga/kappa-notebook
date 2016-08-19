@@ -11,7 +11,7 @@ import rx._
 
 import scala.collection.immutable._
 
-class ProjectFileView(val elem: Element, val file: KappaFile, input: Var[KappaMessage], output: Var[KappaMessage]) extends BindableView {
+class ProjectFileView(val elem: Element, val file: KappaFile, input: Var[KappaMessage], output: Var[KappaMessage], movements: Movements) extends BindableView {
 
   val editable = Var(false)
 
@@ -44,7 +44,7 @@ class ProjectFileView(val elem: Element, val file: KappaFile, input: Var[KappaMe
   }
 
   protected def goToFile() = {
-    input() = Movements.toFile(file)
+    input() = movements.toFile(file)
   }
 
   val removeClick: Var[MouseEvent] = Var(Events.createMouseEvent())

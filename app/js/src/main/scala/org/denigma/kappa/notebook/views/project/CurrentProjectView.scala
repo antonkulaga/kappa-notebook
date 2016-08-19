@@ -4,7 +4,7 @@ import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.CollectionSortedSetView
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.actions.Commands
+import org.denigma.kappa.notebook.actions.{Commands, Movements}
 import org.scalajs.dom
 import org.scalajs.dom._
 import org.scalajs.dom.html.Input
@@ -25,7 +25,8 @@ class CurrentProjectView(val elem: Element,
                          //val sourceMap: Var[Map[String, KappaSourceFile]],
                          input: Var[KappaMessage],
                          output: Var[KappaMessage],
-                         uploadId: String
+                         uploadId: String,
+                         movements: Movements
                         ) extends CollectionSortedSetView {
 
   val projectName = currentProject.map(_.name)
@@ -122,7 +123,7 @@ class CurrentProjectView(val elem: Element,
   }
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
-    case (el, _) => new ProjectFileView(el, item, input, output).withBinder(v => new GeneralBinder(v))
+    case (el, _) => new ProjectFileView(el, item, input, output, movements).withBinder(v => new GeneralBinder(v))
   }
 
   val name = currentProject.map(proj => proj.name)

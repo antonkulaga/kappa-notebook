@@ -14,8 +14,8 @@ import rx.Rx.Dynamic
 import rx._
 
 class SimulationRunView(val elem: Element,
-                        token: Int,
-                        params: Option[LaunchModel],
+                        val token: Int,
+                        val params: Option[LaunchModel],
                         val selected: Var[String],
                         val simulation: Var[SimulationStatus] = Var(SimulationStatus.empty))
   extends BindableView with TabItem
@@ -23,7 +23,7 @@ class SimulationRunView(val elem: Element,
 
   val tab: Var[String] = Var("plot")//Var("fluxes")
 
-  val plot: Rx[KappaPlot] = simulation.map(s=>s.plot.getOrElse(KappaPlot.empty))
+  lazy val plot: Rx[KappaPlot] = simulation.map(s=>s.plot.getOrElse(KappaPlot.empty))
 
   val fluxMap: Dynamic[Map[String, FluxMap]] = simulation.map(s=>s.flux_maps.map(fl=>fl.flux_name ->fl).toMap)
   override lazy val injector = defaultInjector

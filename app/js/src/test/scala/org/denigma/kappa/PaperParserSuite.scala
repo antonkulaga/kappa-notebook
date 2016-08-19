@@ -82,23 +82,25 @@ class PaperParserSuite extends WordSpec with Matchers with Inside  {
   "parse whole line" in {
     val parser = new PaperParser
     inside(parser.annotation.parse(":in_paper <http://helloworld/paper.pdf>; :on_page 15 ; :from_chunk 11 ; :to_chunk 30 ; :from_token 1 ; :to_token 2")){
-      case Parsed.Success(PaperSelection(AST.IRI("http://helloworld/paper.pdf"), 15, 11, 30, Some(1), Some(2)), _) =>
+      case Parsed.Success(PaperSelection(AST.IRI("http://helloworld/paper.pdf"), 15, 11, 30, Some(1), Some(2), _), _) =>
     }
     inside(parser.annotation.parse(":in_paper :hello; :page 10 ; :from_chunk 0 ; :to_chunk 3 ; :from_token 1 ; :to_token 2")){
-      case Parsed.Success(PaperSelection(AST.IRI(":hello"), 10, 0, 3, Some(1), Some(2)), _) =>
+      case Parsed.Success(PaperSelection(AST.IRI(":hello"), 10, 0, 3, Some(1), Some(2), _), _) =>
     }
 
     inside(parser.annotation.parse(":in_paper :hello; :page 10 ; :from_chunk 0 ; :to_chunk 3 ; :from_token 1 ; :to_token 2")){
-      case Parsed.Success(PaperSelection(AST.IRI(":hello"), 10, 0, 3, Some(1), Some(2)), _) =>
+      case Parsed.Success(PaperSelection(AST.IRI(":hello"), 10, 0, 3, Some(1), Some(2), _), _) =>
     }
   }
 
   "parse complex whole line" in {
     val parser = new PaperParser
     inside(parser.annotation.parse(":in_paper :repressilator/Kappa%20in%20Synthetic%20Biology.pdf; :on_page 1; :from_chunk 65; :to_chunk 74; :from_token 1; :to_token 1 .")){
-      case Parsed.Success(PaperSelection(AST.IRI(":repressilator/Kappa%20in%20Synthetic%20Biology.pdf"), 1, 65, 74, Some(1), Some(1)), _) =>
+      case Parsed.Success(PaperSelection(AST.IRI(":repressilator/Kappa%20in%20Synthetic%20Biology.pdf"), 1, 65, 74, Some(1), Some(1), _), _) =>
     }
-
+    inside(parser.annotation.parse(":comment \"This is an interesting paper!\"; :in_paper :repressilator/Kappa%20in%20Synthetic%20Biology.pdf; :on_page 1; :from_chunk 65; :to_chunk 74; :from_token 1; :to_token 1 .")){
+      case Parsed.Success(PaperSelection(AST.IRI(":repressilator/Kappa%20in%20Synthetic%20Biology.pdf"), 1, 65, 74, Some(1), Some(1), _), _) =>
+    }
   }
 
 }

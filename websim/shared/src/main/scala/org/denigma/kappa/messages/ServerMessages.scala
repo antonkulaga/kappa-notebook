@@ -62,8 +62,7 @@ object ServerMessages {
     def isEmpty = errors.isEmpty
 
     def errorsByFiles(): List[(String, WebSimError)] = {
-      this.errors.map {
-        case er =>
+      this.errors.map { er =>
           (fileLocation(er.range.from_position), fileLocation(er.range.to_position))
           match {
             case (Some((f, from)), Some((_, to))) =>

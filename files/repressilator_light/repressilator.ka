@@ -43,7 +43,4 @@
 %obs: 'cl' cl()
 
 #### Initial conditions 
-%init: 100 pLac(binding),pTet(binding),pL(binding)
-
-%mod: [true] do $FLUX "flux.dot" [true]
-%mod: [T]>20 do $FLUX "flux.dot" [false]
+%init: 25 pLac(binding),pTet(binding),pL(binding)

@@ -1,12 +1,7 @@
 @()
-<section class="ui two wide page tab padded column segment grid" data-view="Simulations" id="Simulations">
-    <div class="equal width row">
-        <div class="column">
-            @commons.html.header("Simulations")
-        </div>
-    </div>
-    <div class="equal width noscroll row">
-        <div class="column">
+<section class="ui two wide page tab padded column segment" data-view="Simulations" id="Simulations">
+     @commons.html.header("Simulations")
+    <div class="equal width noscroll segment">
             <div class="ui top attached pointing menu"  data-view="headers">
                 <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
                 <div class="right attached inverted secondary blue pointing menu">
@@ -15,6 +10,5 @@
             </div>
             @run()
             @simulation()
-        </div>
     </div>
 </section>

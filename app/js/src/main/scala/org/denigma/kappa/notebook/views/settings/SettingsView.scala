@@ -15,14 +15,13 @@ object AnnotationMode extends Enumeration {
   val ToEditor, ToAnnotation = Value
 }
 
-class SettingsView(val elem: Element, val input: Var[KappaMessage]) extends BindableView {
+class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotationMode: Var[AnnotationMode.AnnotationMode]) extends BindableView {
   val toAnnotation = Var(true)
-  toAnnotation.onChange{ v => if(v) annotationMode() = AnnotationMode.ToAnnotation }
+  toAnnotation.foreach{ v => if(v) annotationMode() = AnnotationMode.ToAnnotation }
 
   val toEditor = Var(false)
-  toEditor.onChange{v => if(v) annotationMode() = AnnotationMode.ToEditor}
+  toEditor.foreach{v => if(v) annotationMode() = AnnotationMode.ToEditor}
 
-  val annotationMode: Var[AnnotationMode.AnnotationMode] = Var(AnnotationMode.ToAnnotation)
   annotationMode.onChange //UGFLY PART TODO: fix it
   {
     case AnnotationMode.ToAnnotation =>

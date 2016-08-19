@@ -25,6 +25,11 @@ object extensions extends SharedExtensions{
     @tailrec final def isInside(other: Node): Boolean = if(node == null) false
     else if (/*node.isEqualNode(textLayer) || */other == node || other.isSameNode(node)) true
     else if(node.parentNode == null) false else new NodeExt(node.parentNode).isInside(other)
+
+    @tailrec final def insidePartial(fun: PartialFunction[Node, Unit]): Boolean = if(node==null) false else if(fun.isDefinedAt(node)) true
+    else if(node.parentNode == null) false else new NodeExt(node.parentNode).insidePartial(fun)
+
+
   }
 
   implicit class BlobOps(blob: Blob) {

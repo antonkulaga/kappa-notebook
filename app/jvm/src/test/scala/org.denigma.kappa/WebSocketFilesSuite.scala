@@ -3,14 +3,11 @@ package org.denigma.kappa
 import java.io.{File => JFile}
 import java.nio.ByteBuffer
 
-import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.testkit.WSProbe
-import akka.stream.testkit.TestSubscriber
 import better.files.File
 import boopickle.DefaultBasic._
 import net.ceedubs.ficus.Ficus._
 import org.denigma.kappa.messages.FileRequests.Save
-import org.denigma.kappa.messages.FileResponses.{Downloaded, UploadStatus}
 import org.denigma.kappa.messages.KappaMessage.Container
 import org.denigma.kappa.messages.ProjectRequests.Remove
 import org.denigma.kappa.messages._
@@ -19,9 +16,7 @@ import org.denigma.kappa.notebook.communication.WebSocketManager
 import org.denigma.kappa.notebook.pages.WebSockets
 
 import scala.List
-import scala.concurrent.duration._
 import scala.collection.immutable.{Set, _}
-import scala.concurrent.{Await, Future}
 
 class WebSocketFilesSuite extends BasicWebSocketSuite {
 
@@ -56,7 +51,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
           val create: ByteBuffer = Pickle.intoBytes[KappaMessage](cr)
           checkMessage(wsClient, create) { case org.denigma.kappa.messages.Done(_, _) => }
 
-          val Container(ProjectResponses.ProjectList(lst) :: (ProjectResponses.LoadedProject(proj)) :: Nil) = checkTestProjects(wsClient)
+          val Container(ProjectResponses.ProjectList(lst) :: (ProjectResponses.LoadedProject(proj)) :: Nil, _) = checkTestProjects(wsClient)
           val testName = "CRUD_Test.ka"
 
           val testFile = KappaSourceFile(projectName + "/" + testName, abc, saved = false)
@@ -166,7 +161,7 @@ class WebSocketFilesSuite extends BasicWebSocketSuite {
   }
 
   def checkTestProjects(wsClient: WSProbe): Container = checkProject(wsClient, KappaProject("big")){
-   case l @ Container(ProjectResponses.ProjectList(lst)::(ProjectResponses.LoadedProject(proj))::Nil) =>
+   case l @ Container(ProjectResponses.ProjectList(lst)::(ProjectResponses.LoadedProject(proj))::Nil, _) =>
      proj.name shouldEqual "big"
      proj.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
      l

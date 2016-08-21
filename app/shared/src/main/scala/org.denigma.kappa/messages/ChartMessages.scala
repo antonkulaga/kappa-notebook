@@ -12,7 +12,7 @@ object KappaChart {
   implicit def fromKappaPlot(plot: KappaPlot): KappaChart = {
     val series = plot.legend.zipWithIndex.map{ case (title, i) =>
       //println("title: " + title)
-      KappaSeries(title, plot.observables.map(o=> Point(o.time, o.values(i))).toList) }
+      KappaSeries(title, plot.time_series.map(o=> Point(o.time, o.values(i))).toList) }
     KappaChart(series.toList)
   }
 }

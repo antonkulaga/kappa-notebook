@@ -18,11 +18,11 @@ trait OtherJVM {
 
 	val bcrypt = "2.4"
 
-	val ammonite = "0.7.0"
+	val ammonite = "0.7.4"
 
 	val apacheCodec = "1.10"
 
-	val akkaHttpExtensions = "0.0.13"
+	val akkaHttpExtensions = "0.0.14"
 
 	val retry = "0.2.1"
 
@@ -30,7 +30,7 @@ trait OtherJVM {
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.8"
+	val akka = "2.4.9"
 
 	val circeHttp = "1.8.0"
 

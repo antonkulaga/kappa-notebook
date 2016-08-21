@@ -86,7 +86,7 @@ class MainMenuView(
       case (one, two, Move.Direction.RIGHT) if one < two =>
         val item1 = its(one)
         val item2 = its(two)
-        items() = (its.take(one + 1) :+ item2 ) ++ its.slice(one + 1, two) ++  its.slice(two, its.length )
+        items() = (its.take(one + 1) :+ item2 ) ++ its.slice(one + 1, two) ++  its.slice(two + 1, its.length )
         moveElement(item1._2, item2._2, dir)
 
       case (one, two, Move.Direction.RIGHT) if one > two =>
@@ -96,7 +96,9 @@ class MainMenuView(
         moveElement(item1._2, item2._2, dir)
     }
     println("ITEMS BEFORE = " + its.map(_._1))
+    println("ITEMS ELEMENTS IDs = " + its.map(_._2.id))
     println("ITEMS NOW = " + items.now.map(_._1))
+    println("ITEMS NOW ELEMENTS IDs = " + items.now.map(_._2.id))
   }
 
 

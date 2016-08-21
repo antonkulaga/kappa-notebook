@@ -125,6 +125,7 @@ class WebSimSuite extends BasicKappaSuite {
       case res =>
     }
   }
+
   "run simulation extended" in {
 
     val probeToken = TestProbe()
@@ -166,7 +167,7 @@ class WebSimSuite extends BasicKappaSuite {
     val simSource = Source.single(token).via(flows.syncSimulationStream)
     val probe = TestProbe()
     simSource.runWith(Sink.seq).pipeTo(probe.ref)
-    val results = probe.expectMsgPF(2 seconds){
+    val results = probe.expectMsgPF(5 seconds){
       case res: Seq[(Int, SimulationStatus)]=> res
     }
     results.nonEmpty shouldEqual true
@@ -181,7 +182,7 @@ class WebSimSuite extends BasicKappaSuite {
 
      server.run(params).map(_._1).pipeTo(probe.ref)
 
-     probe.expectMsgPF(1 second) {
+     probe.expectMsgPF(5 seconds) {
        case Left((token: Int, sim: SimulationStatus, mp)) if sim.percentage >= 100.0 =>
        //Token, SimulationStatus, ContactMap
      }

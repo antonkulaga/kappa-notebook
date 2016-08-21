@@ -48,7 +48,7 @@ class WebSocketProjectsSuite extends BasicWebSocketSuite {
           // check response for WS Upgrade headers
           checkConnection(wsClient)
           val big = KappaProject("big")
-          val Container(ProjectResponses.ProjectList(lst) :: (ProjectResponses.LoadedProject(proj)) :: Nil) = checkTestProjects(wsClient)
+          val Container(ProjectResponses.ProjectList(lst) :: (ProjectResponses.LoadedProject(proj)) :: Nil, _) = checkTestProjects(wsClient)
           val rem: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Remove("big"))
           checkMessage(wsClient, rem) {
             case Done(ProjectRequests.Remove(_), _) =>
@@ -80,7 +80,7 @@ class WebSocketProjectsSuite extends BasicWebSocketSuite {
           fl.exists() shouldEqual true
 
           val big = KappaProject("big")
-          val Container(ProjectResponses.ProjectList(lst) :: (ProjectResponses.LoadedProject(proj)) :: Nil) = checkTestProjects(wsClient)
+          val Container(ProjectResponses.ProjectList(lst) :: (ProjectResponses.LoadedProject(proj)) :: Nil, _) = checkTestProjects(wsClient)
 
           val downloadWrong: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big_wrong"))
           checkMessage(wsClient, downloadWrong) {
@@ -123,7 +123,7 @@ class WebSocketProjectsSuite extends BasicWebSocketSuite {
 
 
     def checkTestProjects(wsClient: WSProbe): Container = checkProject(wsClient, KappaProject("big")) {
-      case l@Container(ProjectResponses.ProjectList(lst) :: (ProjectResponses.LoadedProject(proj)) :: Nil) =>
+      case l@Container(ProjectResponses.ProjectList(lst) :: (ProjectResponses.LoadedProject(proj)) :: Nil, _) =>
         proj.name shouldEqual "big"
         proj.folder.files.map(_.name) shouldEqual Set("big_0.ka", "big_1.ka", "big_2.ka")
         l

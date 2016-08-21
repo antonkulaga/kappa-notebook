@@ -57,7 +57,7 @@ class ChartView(val elem: Element,
  val items: Rx[List[Var[KappaSeries]]] = plot.map { case p =>
    //println("items changed")
    legendList.now.map { case (tlt, i, style) =>
-     Var(KappaSeries(tlt, p.observables.map(o => Point(o.time, o.values(i))), style))
+     Var(KappaSeries(tlt, p.time_series.map(o => Point(o.time, o.values(i))), style))
    }
  }
 

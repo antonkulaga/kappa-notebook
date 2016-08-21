@@ -6,6 +6,7 @@ import java.nio.ByteBuffer
 import akka.actor.ActorRef
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.stream.actor.ActorPublisherMessage
+import akka.stream.actor.ActorPublisherMessage.Cancel
 import akka.stream.scaladsl.Sink
 import akka.util.ByteString
 import boopickle.DefaultBasic._

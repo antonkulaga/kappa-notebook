@@ -33,9 +33,6 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
 {
   self =>
 
-
-  folder.allFiles
-
   def loaded = folder != KappaFolder.empty
 
   lazy val sources: SortedSet[KappaSourceFile] = folder.files.collect{ case f: KappaSourceFile => f}

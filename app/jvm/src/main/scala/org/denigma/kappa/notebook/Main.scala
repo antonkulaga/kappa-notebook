@@ -29,7 +29,12 @@ object Main extends App {
   //val key = config.as[Option[String]]("app.key").getOrElse("files/")
   //val keyFiles =
 
-  val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
+  val filePath: String = sys.env.get("KAPPA_FILES") match {
+    case Some(str) =>
+      system.log.info("KAPPA FILES LOCATION IS TAKEN FROM KAPPA_FILES ENVIROMENT VARIABLE")
+      str
+    case other => config.as[Option[String]]("app.files").getOrElse("files/")
+  }
   val root = File(filePath)
   root.createIfNotExists(asDirectory = true)
   val router = new Router(File(filePath))

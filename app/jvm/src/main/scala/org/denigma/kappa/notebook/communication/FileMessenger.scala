@@ -18,12 +18,10 @@ trait FileMessenger extends Messenger {
 
   def fileManager: FileManager
 
-
   protected def containerMessages: PartialFunction[KappaMessage, Unit] = {
     case KappaMessage.Container(messages, _) =>
       messages.foreach(m=> self ! m)
   }
-
 
   protected def fileMessages: PartialFunction[KappaMessage, Unit] = {
 

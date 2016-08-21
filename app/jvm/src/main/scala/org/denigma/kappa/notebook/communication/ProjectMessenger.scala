@@ -23,6 +23,7 @@ trait ProjectMessenger extends Messenger {
 
     case ProjectRequests.GetList =>
       val list: SortedSet[KappaProject] = fileManager.loadProjectSet()
+      log.info("project list is: "+list.map(p=>p.folder.path))
       val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectResponses.ProjectList(list.toList))
       send(d)
 

@@ -33,6 +33,8 @@ object FileManager {
 
 class FileManager(val root: File, log: LoggingAdapter) {
 
+  log.info(s"FileManager is initialized with at ${root.pathAsString} folder")
+
   def create(project: KappaProject, rewriteIfExists: Boolean = false): Try[File] = {
     val p = if (project.folder == KappaFolder.empty) project.copy(folder = KappaFolder.empty.copy(path = project.name)) else project
     //log.info(s"write project folder ${p.folder.path}")
@@ -78,7 +80,7 @@ class FileManager(val root: File, log: LoggingAdapter) {
 
   def loadProjectSet(): SortedSet[KappaProject] = {
     SortedSet(root.children.collect{
-      case child if child.isDirectory => KappaProject(child.name)//loadProject(child.path)
+      case child if child.isDirectory && !child.name.startsWith(".") => KappaProject(child.name)//loadProject(child.path)
     }.toSeq:_*)
   }
 

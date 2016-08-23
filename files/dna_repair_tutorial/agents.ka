@@ -8,6 +8,8 @@
 #^ :comment "has many interactions"; :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 6; :from_chunk 87; :to_chunk 91; :from_token 1; :to_token 1 .
 %agent: CBP(tdg, chr) #^ http://www.uniprot.org/uniprot/Q92793
 
+#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 2; :from_chunk 62; :to_chunk 62; :from_token 5; :to_token 11 .
+#^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 3; :from_chunk 0; :to_chunk 0; :from_token 1; :to_token 5 .
 %agent: MECP2(GmC)  #^ http://www.uniprot.org/uniprot/P51608
 
 #^ :in_paper :dna_repair_tutorial/Kri_etal09.pdf; :on_page 7; :from_chunk 51; :to_chunk 64; :from_token 1; :to_token 5 .

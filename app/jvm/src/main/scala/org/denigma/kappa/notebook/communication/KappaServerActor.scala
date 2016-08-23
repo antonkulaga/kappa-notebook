@@ -40,17 +40,12 @@ class KappaServerActor extends Actor with ActorLogging {
 
       val sink: Sink[server.flows.Runnable[server.flows.SimulationContactResult], Any] = Sink.foreach {
         case (Left( (token, res: SimulationStatus, connectionMap)), model) =>
-
-          val mess = SimulationResult(res, token, Some(model))
-          //log.info("LEGEND = "+res.plot.get.legend)
-          //log.info("result is:\n "+mess)
-
-          userRef ! ServerResponse( serverName, SimulationResult( res, token, Some(model)) )
+          val result = SimulationResult(res, token, Some(model))
+          userRef ! ServerResponse( serverName, result )
 
         case (Right(errors), model) =>
-          //println("FILES =")
           val mess = SyntaxErrors(errors, model.files)
-          //log.info("result is with errors "+mess)
+          log.info(s"errors while running the model ${model.files.map(_._1)} at server ${serverName}:\n${errors}")
           userRef ! ServerResponse(serverName, mess )
       }
       val server = servers(serverName)
@@ -60,14 +55,11 @@ class KappaServerActor extends Actor with ActorLogging {
 
       val sink: Sink[server.ContactMapResult, Any] = Sink.foreach {
         case Left( connectionMap) =>
-
           val mess = ParseResult(connectionMap)
-          //println("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS   " +mess)
           userRef ! ServerResponse(serverName, mess )
 
         case Right(errors) =>
           val mess = SyntaxErrors(errors, p.files)
-          //println("RRRRRRRRRRRRRRRRRRRRSSSSSSSSSSSSSSSS   " +mess)
           userRef ! ServerResponse(serverName, mess )
       }
       val server = servers(serverName)
@@ -84,7 +76,6 @@ class KappaServerActor extends Actor with ActorLogging {
 
   protected def onServerCommands(sv: ServerMessage): Unit = runIfServerExists.orElse(otherCases)(sv)
 
-
   override def receive: Receive = {
 
     case ServerCommand(server, message) => onServerCommands(message)
@@ -93,7 +84,6 @@ class KappaServerActor extends Actor with ActorLogging {
 
     case other => this.log.error(s"some other message $other")
   }
-
 
 }
 

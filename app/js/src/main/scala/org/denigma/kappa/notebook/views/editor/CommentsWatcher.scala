@@ -54,7 +54,7 @@ class CommentsWatcher(
 
     val paperSelections: List[((Int, String), PaperSelection)] = lines.map{ case (num, line)=> (num, line) -> paperParser.annotation.parse(line) }.collect{
       case ((num, line), Parsed.Success(result, _))=>
-        dom.console.log("PAPER LINE=="+line)
+        //dom.console.log("PAPER LINE=="+line)
         (num, line) -> result
     }
 

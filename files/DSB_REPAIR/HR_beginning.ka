@@ -1,0 +1,23 @@
+#The first stages of HR, before the trifurcation of this pathway. Coefficients are unknown for me now.
+
+
+#Presynapsis
+  'MRX/N processing' dna(dna!2, rad51, mrx), ssdna(dna!2, rpa, rad51), Mre11-Rad50-Xrs2(dna) -> \
+dna(dna!2, rad51, mrx!3), ssdna(dna!2, rpa, rad51), Mre11-Rad50-Xrs2(dna!3)@ 1.0
+  'RPA binding' RPA(dna),dna(dna!2, rad51, mrx!3), ssdna(dna!2, rpa, rad51), Mre11-Rad50-Xrs2(dna!3) \
+->  RPA(dna!1),dna(dna!2, rad51, mrx!3), ssdna(dna!2, rpa!1, rad51), Mre11-Rad50-Xrs2(dna!3) @ 10.0
+   'Rad52 and Rad51 complexing' Rad52(rad51), Rad51(dna, rad52) -> Rad52(rad51!4), Rad51(dna, rad52!4)\
+@ 1.0
+   'Rad51-52 complex binding' RPA(dna!1),dna(dna!2, rad51, mrx!3), ssdna(dna!2, rpa!1, rad51), \
+Mre11-Rad50-Xrs2(dna!3), Rad52(rad51!4), Rad51(dna, rad52!4) ->RPA(dna!1),dna(dna!2, rad51, mrx!3),\
+ssdna(dna!2, rpa!1, rad51!5), Mre11-Rad50-Xrs2(dna!3), Rad52(rad51!4), Rad51(dna!5, rad52!4) @ 1.0
+
+#It was some problem for me: how to rightly code the binding between DNA strands
+#I
+
+#Synapsis
+
+
+
+
+#Postsynapsis

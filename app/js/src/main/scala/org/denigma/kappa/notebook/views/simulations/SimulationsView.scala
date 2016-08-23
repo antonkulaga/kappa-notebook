@@ -27,7 +27,6 @@ class SimulationsView(val elem: Element,
   self=>
 
   lazy val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
-  //this.items.map{ case its=> SortedSet.empty[String] ++ its.keySet.map(makeId) }
 
   val tab = Var("runner")
 
@@ -49,7 +48,7 @@ class SimulationsView(val elem: Element,
   }
 
 
-  def makeId(item: Item): String = "#"+item._1
+  def makeId(item: Key): String = "#"+item._1
 
   override def newItemView(key: Key, value: Value): SimulationRunView = this.constructItemView(key)( {
     case (el, mp) =>
@@ -61,17 +60,10 @@ class SimulationsView(val elem: Element,
 
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new WeirdTabHeaders(el, headers, tab)(str=>str).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new TabHeaders(el, headers, tab)(str=>str).withBinder(new GeneralBinder(_)))
     .register("runner")((el, args) => new RunnerView(el, tab, output, serverConnections, sourceMap).withBinder(n => new CodeBinder(n)))
 
   override def updateView(view: SimulationRunView, key: (Int, Option[LaunchModel]), old: SimulationStatus, current: SimulationStatus): Unit = {
     view.simulation() = current
   }
-}
-
-//TODO: fix this bug
-class WeirdTabHeaders(elem: Element, items: Rx[SortedSet[String]], selected: Var[String])(implicit getCaption: String => String)  extends TabHeaders(elem, items, selected)(getCaption) {
-  val runnerActive: Rx[Boolean] = selected.map(v => v=="runner")
-
-  dom.console.log("ITEMS + "+items.now)
 }

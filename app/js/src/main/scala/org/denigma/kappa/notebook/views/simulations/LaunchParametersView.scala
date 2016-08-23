@@ -3,26 +3,21 @@ package org.denigma.kappa.notebook.views.simulations
 import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
-import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages.SimulationStatus
-import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, MouseEvent}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
 class LaunchParametersView(val elem: Element,
                            val simulation: Rx[SimulationStatus],
-                           val params: Option[LaunchModel],
+                           val code: Rx[String],
+                           //val params: Option[LaunchModel],
                            val selected: Rx[String]
                        ) extends BindableView//FixedCollectionSeqView
 {
   self=>
 
   val active: Rx[Boolean] = selected.map(s=>s=="parameters")
-
-  //def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
-
-  //def opt(n: Double): Option[Double] = if(n > 0.0) Some(n) else None
 
   val events: Rx[Int] = simulation.map(sim=>sim.event.getOrElse(0))
 
@@ -34,9 +29,6 @@ class LaunchParametersView(val elem: Element,
     case (acc, e) => acc + "\n" + e
   })
 
-  val code = simulation.map(sim=>sim.code.orElse(params.map(_.fullCode)).getOrElse("### NODE CODE AVALIABLE ###"))
-  dom.console.error(simulation.now.code.toString)
-  //val points =  = simulation.map(sim=>sim.)
 
   val implicitSignature = Var(true)
 
@@ -44,7 +36,6 @@ class LaunchParametersView(val elem: Element,
 
   protected val maxTime = simulation.map(sim=>sim.max_time)
   protected val maxEvents =simulation.map(sim=>sim.max_events)
-
 
   val saveOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
 

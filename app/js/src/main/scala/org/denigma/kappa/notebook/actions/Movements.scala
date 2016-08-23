@@ -39,14 +39,15 @@ class Movements(annotationMode: Rx[AnnotationMode.AnnotationMode]) {
     }
 
   def toFigure(figure: String) =
-    if(annotationMode.now == AnnotationMode.ToAnnotation) {
-    KappaMessage.Container()
-    .andThen(Go.ToTab(MainTabs.Figures))
-    .andThen(GoToFigure(figure))}
+    if(annotationMode.now == AnnotationMode.ToAnnotation)
+      KappaMessage.Container()
+      .andThen(Go.ToTab(MainTabs.Figures))
+      .andThen(GoToFigure(figure))
     else {
       KappaMessage.Container()
       .andThen(Go.ToTab(MainTabs.Editor))
       .andThen(Move.RelativeTo(MainTabs.Editor, MainTabs.Figures, Move.Direction.RIGHT))
+      .andThen(GoToFigure(figure))
     }
 
 

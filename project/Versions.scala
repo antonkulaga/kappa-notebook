@@ -32,7 +32,7 @@ trait OtherJVM {
 
 	val akka = "2.4.9"
 
-	val circeHttp = "1.8.0"
+	val circeHttp = "1.9.0"
 
 	val libSBOLj = "2.1.0"
 
@@ -79,7 +79,7 @@ trait SharedVersions
 
 	val booPickle = "1.2.4"
 
-	val pprint: String ="0.4.1"
+	val pprint: String ="0.4.2"
 
 
 }

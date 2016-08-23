@@ -23,9 +23,12 @@ class SimulationRunView(val elem: Element,
 
   val tab: Var[String] = Var("plot")//Var("fluxes")
 
+  lazy val initialCode = simulation.map(sim=>sim.code.orElse(params.map(_.fullCode)).getOrElse("### NODE CODE AVALIABLE ###"))
+
   lazy val plot: Rx[KappaPlot] = simulation.map(s=>s.plot.getOrElse(KappaPlot.empty))
 
-  val fluxMap: Dynamic[Map[String, FluxMap]] = simulation.map(s=>s.flux_maps.map(fl=>fl.flux_name ->fl).toMap)
+  lazy val fluxMap: Dynamic[Map[String, FluxMap]] = simulation.map(s=>s.flux_maps.map(fl=>fl.flux_name ->fl).toMap)
+
   override lazy val injector = defaultInjector
     .register("Plot") {
       case (el, _) =>
@@ -33,7 +36,7 @@ class SimulationRunView(val elem: Element,
     }
     .register("Parameters") {
       case (el, _) =>
-        new LaunchParametersView(el, simulation, params, tab).withBinder(new CodeBinder(_))
+        new LaunchParametersView(el, simulation, initialCode, tab).withBinder(new CodeBinder(_))
     }
     .register("Console") {
       case (el, _) =>

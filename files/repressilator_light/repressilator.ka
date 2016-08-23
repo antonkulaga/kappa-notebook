@@ -1,9 +1,8 @@
 
 #### Signatures
 
-#^ :image plasmid.png
+#^ :image :repressilator_light/plasmid.png
 #^ :video https://www.youtube.com/watch?v=HFwSnqYC5LA
-
 
 %agent: pLac(up, binding, down)
 %agent: pTet(up, binding, down)
@@ -17,9 +16,7 @@
 %var: 'synth'   0.1
 %var: 'binding' 0.1
 %var: 'unbinding' 0.0001
-%var: 'degrad1' 0.001
-%var: 'degrad2' 0.001
-
+%var: 'degrad' 0.001
 
 %var: 'off_rate' 0.1 # per second 
 %var: 'mod_rate' 1 # per second 
@@ -31,12 +28,9 @@
 'cl.synthesis' pTet(binding) -> pTet(binding),cl() @ 'synth'
 'pTet.TetR' pTet(binding),TetR(dna) <-> pTet(binding!1),TetR(dna!1) @ 'binding' ,'unbinding'
 
-'tetR.degradation' TetR(dna) ->  @ 'degrad1'
-'tetR.degradation2' pTet(binding!1),TetR(dna!1) ->  pTet(binding) @ 'degrad2'
-'lacI.degradation' LacI(dna) ->  @ 'degrad1'
-'lacI.degradation2' pLac(binding!1),LacI(dna!1) ->  pLac(binding) @ 'degrad2'
-'cL.degradation' cl(dna) ->  @ 'degrad1'
-'pL.degradation' pL(binding!1),cl(dna!1) -> pL(binding) @ 'degrad2'
+'tetR.degradation' TetR() ->  @ 'degrad'
+'lacI.degradation' LacI() ->  @ 'degrad'
+'cL.degradation' cl() ->  @ 'degrad'
 
 %obs: 'LacI' LacI()
 %obs: 'TetR' TetR()

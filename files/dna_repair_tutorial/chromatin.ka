@@ -1,13 +1,17 @@
 #######
 # Chapter 'Chromatin control'
 #
-#
-'Chromatin compaction' MECP2(GmC!1),DNA(Base~mC,chr~opened!1) -> MECP2(GmC!1),DNA(Base~mC,chr~closed!1) @ 1.e-2
-'Chromatin opening' DNA(chr~closed!1),CBP(chr!1) -> DNA(chr~opened),CBP(chr) @ 1.e-2
-'DNA.chr--GmC.MECP2' MECP2(GmC),DNA(Base~mC,chr~opened) -> MECP2(GmC!1),DNA(Base~mC,chr~opened!1) @ 1.0
+'Chromatin compaction' MECP2(GmC!1), DNA(Base~mC,chr~opened!1) -> \
+	MECP2(GmC!1),DNA(Base~mC,chr~closed!1) @ 1.e-2
+'Chromatin opening' DNA(chr~closed!1),CBP(chr!1) -> \
+	DNA(chr~opened),CBP(chr) @ 1.e-2
+'DNA.chr--GmC.MECP2' MECP2(GmC), DNA(Base~mC,chr~opened) -> \
+	MECP2(GmC!1),DNA(Base~mC,chr~opened!1) @ 1.0
 'DNA(T:G)+MECP2' MECP2(GmC!1),DNA(Base~T,chr!1) -> MECP2(GmC),DNA(Base~T,chr) @ 1.e+5
 # 'DNA.chr--chr.CBP' DNA(chr~closed),CBP(chr) -> DNA(chr~closed!1),CBP(chr!1) @ 1.0 # Inactive rule
+
 'DNA.chr--chr.CBP Ref1' DNA(chr~closed),CBP(chr,tdg) -> DNA(chr~closed!1),CBP(chr!1,tdg) @ 1.0
 'DNA.chr--chr.CBP Ref2' DNA(chr~closed),CBP(chr,tdg!1),TDG(rd!1,N140,dnmt3a) -> DNA(chr~closed!1),CBP(chr!1,tdg!2),TDG(rd!2,N140,dnmt3a) @ 1.0
 'DNA.chr--chr.CBP Ref3' CBP(chr,tdg!1),DNA(chr~closed),TDG(rd!1,N140,dnmt3a!2),Dnmt3a(dna,tdg!2) -> CBP(chr!1,tdg!2),DNA(chr~closed!1),TDG(rd!2,N140,dnmt3a!3),Dnmt3a(dna,tdg!3) @ 1.0
+
 'DNA.chr+chr.CBP' DNA(chr!1),CBP(chr!1) -> DNA(chr),CBP(chr) @ 1.e-3

@@ -1,0 +1,34 @@
+#^ :in_paper :DSB_repair/heyer2007.pdf; :on_page 11; :from_chunk 0; :to_chunk 7; :from_token 1; :to_token 5 .
+
+#DNA single strands
+%agent: dna(dna, rad51, mrx)
+%agent: ssdna(dna, rpa, rad51)
+#%agent: dsdna1(dna, rad51, mrx)
+#%agent: dsdna1(dna, rad51, mrx)
+#%agent: ssdna2(dna, rad51, mrx)
+#%agent: dsdna1(dna, rad51, mrx)
+
+#HR initiation and beginning
+#%agent: Sgs1() ??
+#%agent: Srs2() anti-recombinase
+#%agent: Sws1() another mediator
+#%agent: Brca1(rad51, dna) #^ :in_paper :DSB_repair/heyer2007.pdf; :on_page 5; :from_chunk 53; :to_chunk 53; :from_token 2; :to_token 7 .
+#%agent: Rad55-Rad57 #^ :in_paper :DSB_repair/heyer2007.pdf; :on_page 14; :from_chunk 56; :to_chunk 56; :from_token 1; :to_token 1 .
+#^ :in_paper :DSB_repair/heyer2007.pdf; :on_page 16; :from_chunk 22; :to_chunk 22; :from_token 1; :to_token 3 .
+
+
+#also, the important question: our model is for S. cerevisae or for human? Because there are slight differences in proteins
+
+%agent: Mre11-Rad50-Xrs2(dna) 
+%agent: Rad51(dna, rad52) #^ :in_paper :DSB_repair/heyer2007.pdf; :on_page 5; :from_chunk 53; :to_chunk 53; :from_token 2; :to_token 7 .
+%agent: Rad52(rad51) #^ :in_paper :DSB_repair/heyer2007.pdf; :on_page 14; :from_chunk 12; :to_chunk 12; :from_token 1; :to_token 1 .
+%agent: RPA(dna) #^ :in_paper :DSB_repair/heyer2007.pdf; :on_page 13; :from_chunk 13; :to_chunk 19; :from_token 1; :to_token 2 .
+%agent: Rad54(dna) 
+
+#I'm not sure where to use it
+#
+#Transcriptional activators
+#%agent: Nej1(dna)
+#
+#Transcriptional repressord
+#%agent: MATa-MATalpha(dna)

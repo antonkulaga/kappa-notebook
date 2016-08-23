@@ -3,6 +3,7 @@ import org.denigma.binding.binders.Events
 import org.denigma.binding.views.BindableView
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.actions.Movements
+import org.scalajs.dom
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -65,6 +66,12 @@ class ProjectFileView(val elem: Element, val file: KappaFile, input: Var[KappaMe
   val renameClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   renameClick.triggerLater{
 
+  }
+
+  val downloadClick: Var[MouseEvent] = Var(Events.createMouseEvent())
+  downloadClick.triggerLater{
+    val url: String = dom.window.location.host +"/files/" + file.path
+    dom.window.open(url, "_blank")
   }
 
 

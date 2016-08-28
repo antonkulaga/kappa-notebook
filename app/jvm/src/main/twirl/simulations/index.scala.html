@@ -8,7 +8,8 @@
                     <a class="item" data-set-selected-on-click="runner" data-class-active-if="runnerActive">Create</a>
                 </div>
             </div>
-            @run()
-            @simulation()
+        @errors.html.server_errors()
+        @run()
+        @simulation()
     </div>
 </section>

@@ -53,8 +53,6 @@ class PaperParser extends RDFParser with BasicParser {
 
   lazy val to_token = P(PNAME_NS ~ "to_token" ~ spaces ~ UINT_VALUE)
 
-  lazy val d = P(optSpaces ~ CharIn(";\n") ~ optSpaces)
-
   lazy val annotation: P[PaperSelection] = P(optSpaces ~ (comment ~ d).? ~ paper ~ d ~ page ~ d ~ from_chunk ~ d ~ to_chunk ~ (d ~ from_token).? ~ (d ~ to_token).? ~ optSpaces ~ ".".? ).map{
     case (commentOpt, pap, pg, fromChunk, toChunk, fromTokenOpt, toTokenOpt) =>
         PaperSelection(pap, pg, fromChunk, toChunk, fromTokenOpt, toTokenOpt)

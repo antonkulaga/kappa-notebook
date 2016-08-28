@@ -12,6 +12,8 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val betterFiles = "2.16.0"
 
+	val javaTime = "0.2.0"
+
 }
 
 trait OtherJVM {

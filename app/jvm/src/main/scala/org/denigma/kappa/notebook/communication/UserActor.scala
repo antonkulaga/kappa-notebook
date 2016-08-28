@@ -30,7 +30,7 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
     case SocketMessages.IncomingMessage(channel, uname, message: TextMessage.Streamed, time) =>
 
     message.textStream.runReduce[String]{
-        case (a, b) => a++b
+        case (a, b) => a ++ b
       }.onComplete{
         case Failure(th)=> log.error("Binary streaming failed")
           val d = Pickle.intoBytes[KappaMessage](IncomingFailed("cannot open text stream", username))
@@ -129,10 +129,17 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
     .orElse(onKappaMessage)
     .orElse(onOtherMessage)
 
-  context.system.scheduler.schedule(10 seconds, 20 seconds){ //TODO: rewrite to timeout configs
+  override def preStart() =
+  {
+   super.preStart()
+   context.system.scheduler.schedule(10 seconds, 10 seconds){ //TODO: rewrite to timeout configs
     //println(s"keep $username alive")
     val d = Pickle.intoBytes[KappaMessage](KeepAlive(username))
-    send(d)
+      send(d)
+    }
+
+
+
   }
 
 }

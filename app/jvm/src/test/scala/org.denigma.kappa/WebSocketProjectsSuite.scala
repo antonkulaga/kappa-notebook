@@ -90,7 +90,6 @@ class WebSocketProjectsSuite extends BasicWebSocketSuite {
           val downloadRight: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big"))
           val dat: Array[Byte] = checkMessage(wsClient, downloadRight) {
             case FileResponses.Downloaded("big", data) =>
-
               val zp = fl.zip().byteArray
               data.sameElements(zp) shouldEqual true
               //data shouldEqual zp

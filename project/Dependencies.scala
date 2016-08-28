@@ -94,8 +94,9 @@ object Dependencies {
 
 		"com.lihaoyi" %%% "pprint" % Versions.pprint,
 
-		"com.lihaoyi" %% "sourcecode" % Versions.sourcecode
+		"com.lihaoyi" %% "sourcecode" % Versions.sourcecode,
 
+		"io.github.soc" %%% "scala-java-time" % "2.0.0-M3"
 
 	))
 

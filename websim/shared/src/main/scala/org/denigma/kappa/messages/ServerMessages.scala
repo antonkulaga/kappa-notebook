@@ -57,7 +57,7 @@ object ServerMessages {
     lazy val empty = SyntaxErrors(Nil, Nil)
   }
 
-  case class SyntaxErrors(errors: List[WebSimError], files: List[(String, String)]) extends ServerMessage with FileContainer
+  case class SyntaxErrors(errors: List[WebSimError], files: List[(String, String)], onExecution: Boolean = false) extends ServerMessage with FileContainer
   {
     def isEmpty = errors.isEmpty
 
@@ -130,6 +130,8 @@ object ServerMessages {
   {
 
     lazy val parameters = RunModel(fullCode, nb_plot, max_events, max_time)
+
+    lazy val fileNames = files.map(_._1)
 
   }
 

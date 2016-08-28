@@ -1,0 +1,19 @@
+@(content: Html)
+<section id="Notebook" data-view="Notebook" class="ui grid">
+  <section class="row">
+  @menu()
+  </section>
+  <section id="MainRow" class="row" data-mcs-theme="rounded-dots-dark">
+    <div class="ui blue secondary segment celled grid" id="MainGrid">
+      <div class="ui pages row">
+        @projects.html.index()
+        @editor.html.index()
+        @visualizations.html.index()
+        @simulations.html.index()
+        @papers.html.index()
+        @figures.html.index()
+        @settings.html.index()
+      </div>
+    </div>
+  </section>
+</section>

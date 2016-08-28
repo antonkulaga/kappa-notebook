@@ -1,26 +1,23 @@
 package org.denigma.kappa.notebook.views.editor
 
 import org.denigma.binding.binders.Events
-import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, UpdatableView}
+import org.denigma.binding.views.BindableView
 import org.denigma.codemirror._
 import org.denigma.codemirror.addons.lint._
 import org.denigma.codemirror.extensions._
-import org.denigma.kappa.messages.{FileRequests, KappaSourceFile}
+import org.denigma.kappa.messages.{Go, KappaMessage, KappaSourceFile}
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.notebook.views.common.TabItem
-import org.scalajs.dom
-import org.scalajs.dom.Event
 import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
 import scala.scalajs.js
-import scala.util._
 
 class CodeTab(val elem: Element,
               val path: String,
+              val input: Var[KappaMessage],
               val source: Var[KappaSourceFile],
               val selected: Var[String],
               val editorUpdates: Var[EditorUpdates],
@@ -37,6 +34,15 @@ class CodeTab(val elem: Element,
     case -1 => path
     case ind if ind == path.length -1 => path
     case ind => path.substring(ind+1)
+  }
+
+  input.onChange{
+    case Go.ToSource(p, from ,to) if p == path =>
+      val top = editor.getScrollInfo().dyn.top.asInstanceOf[Double]
+      editor.scrollTo(0, top)
+
+
+    case _=> //do nothing
   }
 
   override lazy val id: String = path
@@ -61,25 +67,22 @@ class CodeTab(val elem: Element,
       //println("active value for "+id+" is false and display is "+elem.style.display)
   }
 
-  errors.onChange{
-    case ers=>
-      import scalajs.js.JSConverters._
-      //dom.console.error(s"CodeTab $name ERRORS: "+ers.toList.mkString("\n"))
-      val found: List[LintFound] = ers.map{case e=> e:LintFound}
-      import scalajs.js.JSConverters._
-      def gts(text: String, options: LintOptions, cm: Editor): js.Array[LintFound] = {
-        found.toJSArray
-      }
-      val fun: js.Function3[String, LintOptions, Editor, js.Array[LintFound]] = gts _
+  errors.onChange{ ers=>
 
-      editor.setOption("lint", js.Dynamic.literal(
-        getAnnotations = fun
-      ))
+    //dom.console.error(s"CodeTab $name ERRORS: "+ers.toList.mkString("\n"))
+    val found: List[LintFound] = ers.map{e=> e:LintFound}
+    import scalajs.js.JSConverters._
+    def gts(text: String, options: LintOptions, cm: Editor): js.Array[LintFound] = {
+      found.toJSArray
+    }
+    val fun: js.Function3[String, LintOptions, Editor, js.Array[LintFound]] = gts _
+
+    editor.setOption("lint", js.Dynamic.literal(
+      getAnnotations = fun
+    ))
   }
-
   val code = Var(source.now.content)
-  code.onChange{
-    case str =>
+  code.onChange{ str =>
       if(source.now.content!=str) source() = source.now.copy(content = str, saved = false)
   }
 

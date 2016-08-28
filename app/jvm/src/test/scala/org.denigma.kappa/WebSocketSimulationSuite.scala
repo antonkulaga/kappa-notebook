@@ -90,7 +90,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
             case BinaryMessage.Strict(bytes) if {
               val mes = Unpickle[KappaMessage].fromBytes(bytes.asByteBuffer)
               mes match {
-                case ServerResponse(server, SyntaxErrors(_, _)) =>
+                case ServerResponse(server, SyntaxErrors(_, _, _)) =>
                   //println("expected errors are: "+ errors)
                   true
                 case _ => false

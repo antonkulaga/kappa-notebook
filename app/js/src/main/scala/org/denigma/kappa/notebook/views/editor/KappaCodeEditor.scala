@@ -4,6 +4,7 @@ import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.codemirror._
+import org.denigma.codemirror.addons.lint.{LintFound, LintOptions}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages.{ParseModel, ServerConnection, SyntaxErrors}
@@ -11,6 +12,7 @@ import org.denigma.kappa.messages.WebSimMessages.{Location, WebSimError, WebSimR
 import org.denigma.kappa.messages.{Go, KappaMessage, KappaSourceFile, ServerMessages}
 import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.views.common.{ServerConnections, TabHeaders}
+import org.denigma.kappa.notebook.views.errors.SyntaxErrorsView
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -18,6 +20,7 @@ import rx._
 
 import scala.collection.immutable._
 import scala.concurrent.duration._
+import scala.scalajs.js
 
 
 class KappaCodeEditor(val elem: Element,
@@ -42,7 +45,7 @@ class KappaCodeEditor(val elem: Element,
 
   items.afterLastChange(800 millis){
     its=>
-      //println("sending files for checking")
+      println("sending files for checking")
       val files: List[(String, String)] = its.values.map{ fl => (fl.name , fl.content) }.toList
       dom.console.log("files to send: "+files.map(nc=>nc._1).mkString(" | "))
       output() = ServerCommand(connections.now.currentServer, ParseModel(files))
@@ -83,6 +86,7 @@ class KappaCodeEditor(val elem: Element,
       syntaxErrors() = SyntaxErrors.empty
 
     case ServerResponse(server, s: SyntaxErrors) =>
+      dom.console.log("syntax errors = "+s)
       syntaxErrors() = s
 
     case other => //do nothing
@@ -104,13 +108,13 @@ class KappaCodeEditor(val elem: Element,
       val itemErrors = Rx{
         errorsByFiles().getOrElse(value(), Nil)
       }
-      val view: ItemView = new CodeTab(el, item, value, selected, editorUpdates, kappaCursor, itemErrors).withBinder(v => new CodeBinder(v) )
+      val view: ItemView = new CodeTab(el, item, input, value, selected, editorUpdates, kappaCursor, itemErrors).withBinder(v => new CodeBinder(v) )
       selected() = item
       view
   }
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selected)(TabHeaders.path2name).withBinder(new GeneralBinder(_)))
-    .register("errors")((el, args) => new ErrorsView(el, input, errorsInFiles, fullCode, movements).withBinder(new GeneralBinder(_)))
+    .register("SyntaxErrors")((el, args) => new SyntaxErrorsView(el, input, errorsInFiles, fullCode, movements).withBinder(new GeneralBinder(_)))
 
   override def updateView(view: CodeTab, key: String, old: KappaSourceFile, current: KappaSourceFile): Unit = {
     view.source() = current

@@ -37,6 +37,7 @@ class KappaServerActor extends Actor with ActorLogging {
 
   protected def runIfServerExists: PartialFunction[ServerMessage, Unit] ={
     case RunAtServer(username, serverName, lm: LaunchModel, userRef, interval) if servers.contains(serverName)=>
+      log.info(s"running model ${lm.runName} with files ${lm.fileNames} at server ${serverName}")
 
       val sink: Sink[server.flows.Runnable[server.flows.SimulationContactResult], Any] = Sink.foreach {
         case (Left( (token, res: SimulationStatus, connectionMap)), model) =>
@@ -44,7 +45,7 @@ class KappaServerActor extends Actor with ActorLogging {
           userRef ! ServerResponse( serverName, result )
 
         case (Right(errors), model) =>
-          val mess = SyntaxErrors(errors, model.files)
+          val mess = SyntaxErrors(errors, model.files, onExecution = true)
           log.info(s"errors while running the model ${model.files.map(_._1)} at server ${serverName}:\n${errors}")
           userRef ! ServerResponse(serverName, mess )
       }
@@ -59,7 +60,8 @@ class KappaServerActor extends Actor with ActorLogging {
           userRef ! ServerResponse(serverName, mess )
 
         case Right(errors) =>
-          val mess = SyntaxErrors(errors, p.files)
+          val mess = SyntaxErrors(errors, p.files, onExecution = false)
+          //println("syntax errors "+mess)
           userRef ! ServerResponse(serverName, mess )
       }
       val server = servers(serverName)
@@ -78,7 +80,9 @@ class KappaServerActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
 
-    case ServerCommand(server, message) => onServerCommands(message)
+    case ServerCommand(server, message) =>
+      log.info(s"server command for $server")
+      onServerCommands(message)
 
     case run: RunAtServer => onServerCommands(run)
 

@@ -2,8 +2,9 @@ package org.denigma.kappa.notebook.actions
 
 import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.parsers.PaperSelection
+import org.denigma.kappa.notebook.parsers.{AST, PaperSelection}
 import org.denigma.kappa.notebook.views.MainTabs
+import org.denigma.kappa.notebook.views.figures.{Figure, Image, Video}
 import org.denigma.kappa.notebook.views.settings.AnnotationMode
 import rx._
 
@@ -38,7 +39,7 @@ class Movements(annotationMode: Rx[AnnotationMode.AnnotationMode]) {
         .copy(betweenInterval = 200)
     }
 
-  def toFigure(figure: String) =
+  def toFigure(figure: Figure) =
     if(annotationMode.now == AnnotationMode.ToAnnotation)
       KappaMessage.Container()
       .andThen(Go.ToTab(MainTabs.Figures))
@@ -49,6 +50,12 @@ class Movements(annotationMode: Rx[AnnotationMode.AnnotationMode]) {
       .andThen(Move.RelativeTo(MainTabs.Editor, MainTabs.Figures, Move.Direction.RIGHT))
       .andThen(GoToFigure(figure))
     }
+
+  def toSource(path: String, begin: Int, end: Int) =
+    KappaMessage.Container()
+        .andThen(Go.ToTab(MainTabs.Editor))
+        .andThen(Go.ToSource(path, begin, end ))
+        .copy(betweenInterval = 200)
 
 
   def toFile(file: KappaFile):  KappaMessage.Container = file.fileType match {
@@ -65,12 +72,12 @@ class Movements(annotationMode: Rx[AnnotationMode.AnnotationMode]) {
     case FileType.video=>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Figures))
-        .andThen(GoToFigure(file.path))
+        .andThen(GoToFigure(Video(file.name, file.path)))
 
     case FileType.image=>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Figures))
-        .andThen(GoToFigure(file.path))
+        .andThen(GoToFigure(Image(file.name, file.path)))
 
     case other => KappaMessage.Container() //do nothing
   }

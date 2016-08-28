@@ -1,6 +1,7 @@
 package org.denigma.kappa.messages
 
-import org.denigma.kappa.notebook.parsers.PaperSelection
+import org.denigma.kappa.notebook.parsers.{AST, PaperSelection}
+import org.denigma.kappa.notebook.views.figures.Figure
 
 object GoToFigure {
 
@@ -8,7 +9,7 @@ object GoToFigure {
   implicit val classPickler: Pickler[GoToFigure] = boopickle.Default.generatePickler[GoToFigure]
 }
 
-case class GoToFigure(figureName: String) extends UIMessage
+case class GoToFigure(figure: Figure) extends UIMessage
 
 object GoToPaper {
   /*

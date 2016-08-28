@@ -70,7 +70,7 @@ class ProjectFileView(val elem: Element, val file: KappaFile, input: Var[KappaMe
 
   val downloadClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   downloadClick.triggerLater{
-    val url: String = dom.window.location.host +"/files/" + file.path
+    val url: String = "http://"+dom.window.location.host +"/files/" + file.path
     dom.window.open(url, "_blank")
   }
 

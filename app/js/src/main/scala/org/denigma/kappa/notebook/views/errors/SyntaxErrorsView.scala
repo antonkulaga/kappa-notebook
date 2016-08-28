@@ -1,16 +1,16 @@
-package org.denigma.kappa.notebook.views.editor
+package org.denigma.kappa.notebook.views.errors
 
-import org.denigma.binding.binders.{Events, GeneralBinder}
+import org.denigma.binding.binders.Events
 import org.denigma.binding.views.{BindableView, CollectionSeqView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
-import org.denigma.kappa.messages.{KappaSourceFile, KappaMessage}
+import org.denigma.kappa.messages.{KappaMessage, KappaSourceFile}
 import org.denigma.kappa.notebook.actions.Movements
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
-class ErrorsView(val elem: Element, input: Var[KappaMessage], val items: Rx[List[(KappaSourceFile, WebSimError)]], val fullCode: Rx[String], movements: Movements) extends CollectionSeqView {
+class SyntaxErrorsView(val elem: Element, input: Var[KappaMessage], val items: Rx[List[(KappaSourceFile, WebSimError)]], val fullCode: Rx[String], movements: Movements) extends CollectionSeqView {
 
   val hasErrors = items.map(f=>f.nonEmpty)
 

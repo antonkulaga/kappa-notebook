@@ -55,29 +55,9 @@ class KappaParser extends CommentLinksParser
 
   protected val text = P(digit | letter)
 
-  protected val integer: P[Int] = P(
-    "-".!.? ~ digit.rep(min = 1).!).map{
-      case (None, str) => str.toInt
-      case (Some(_), str) => - str.toInt
-    }
-
   protected val name = P(
     (digit | letter | CharIn("_+-")).rep(min = 1).!
   )
-
-
-  protected val normalNumber = P(
-    integer ~ ("."~ integer).?
-  ).map{
-    case (i, None) => i.toDouble
-    case (i, Some(o)) => (i + "." + o).toDouble
-  }
-
-  protected val eNumber = P( normalNumber ~ CharIn("Ee") ~ integer ).map{
-    case (a, b) => a * Math.pow(10, b)
-  }
-
-  val number: P[Double] = P( eNumber | normalNumber )
 
   val textWithSymbols = P(digit | letter | CharIn("_!@$%^&*()_+=-.,/|?><`~{}[]~"))
 
@@ -94,7 +74,7 @@ class KappaParser extends CommentLinksParser
   val side: P[Site] = P(name ~ state.rep ~ linkLabel.rep)
     .map{ case (n, states, links) => Site(n, states.toSet, links.toSet) }
 
-  val agent: P[Agent] = P(name ~ "(" ~ side.? ~ (optSpaces ~ "," ~ optSpaces ~ side).rep ~ ")").map{
+  val agent: P[Agent] = P(name ~ "(" ~ optSpaces ~side.? ~ (optSpaces ~ "," ~ optSpaces ~ side).rep ~ optSpaces ~")").map{
     case (n, sideOpt, sides2) => Agent(n,  sideOpt.map(s => sides2.toSet + s ).getOrElse(sides2.toSet))
   }
 

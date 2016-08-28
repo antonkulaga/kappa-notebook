@@ -173,6 +173,19 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       }
     }
 
+    "parsing agents with comments" in {
+      val parser = new KappaParser
+      import KappaModel._
+      val line = """%agent: DNA( #double stranded DNA about kilobase long \
+      chr~closed~opened, #state of chromatin \
+        Base~mC~C~T~U~x, rd, #base of DNA, "x" means NO base\
+      init~mC~C, \
+      status~ok~dom~hole\
+      )"""
+
+
+    }
+
     "parsing complex rules" in {
       import KappaModel._
       val dnaLeft1 = Agent("DNA", Set(Site("binding"), Site("type", Set(State("BBaR0010p3"))), Site("upstream", Set.empty, Set("2"))), position = 0)

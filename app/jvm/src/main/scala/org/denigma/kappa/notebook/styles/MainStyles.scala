@@ -37,18 +37,11 @@ class MainStyles extends Standalone with MediaQueries
 
   "#MainGrid" -(
     maxHeight(gridMaxHeight),
-    onTiny   -width(380 vw),
-    onLittle -width(375 vw),
-    onSmall  -width(350 vw),
-    onMedium -width(320 vw),
-    onLarge  -width(290 vw)
-    /*
-    onTiny   -width(430 vw),
-    onLittle -width(400 vw),
-    onSmall  -width(380 vw),
-    onMedium -width(340 vw),
-    onLarge  -width(300 vw)
-    */
+    onTiny   -width(375 vw),
+    onLittle -width(350 vw),
+    onSmall  -width(325 vw),
+    onMedium -width(300 vw),
+    onLarge  -width(275 vw)
     )
 
   "#main" -(

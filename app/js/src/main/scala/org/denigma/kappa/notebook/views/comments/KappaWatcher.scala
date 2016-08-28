@@ -1,14 +1,16 @@
-package org.denigma.kappa.notebook.views.editor
+package org.denigma.kappa.notebook.views.comments
 
+import org.denigma.binding.extensions._
 import org.denigma.codemirror.Editor
 import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.parsers.{KappaParser, ParsedLine}
+import org.denigma.kappa.notebook.views.editor.{EditorUpdates, EmptyCursor, KappaCursor, KappaEditorCursor}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import org.denigma.binding.extensions._
 
 import scala.concurrent.duration._
 
+import scalatags.JsDom.all._
 
 /**
   * Created by antonkulaga on 11/03/16.
@@ -42,7 +44,17 @@ class KappaWatcher(cursor: Var[KappaCursor], updates: Var[EditorUpdates])  {
 
   protected def getEditorLine(ed: Editor, line: Int, acc: String = ""): String = {
     val doc = ed.getDoc()
-    kappaParser.getKappaLine(doc.getLine)(line, doc.lineCount().toInt, acc)
+    def extractLine(num: Double): String ={
+      val l = doc.getLine(num)
+      val result = l.indexOf('#') match {
+        case -1 => l
+        case ind if l.endsWith("\\") => l.substring(0, ind)+"\\"
+        case ind if l.endsWith("\\\n") => l.substring(0, ind)+"\\\n"
+        case ind => l.substring(0, ind)+" "
+      }
+      result
+    }
+    kappaParser.getKappaLine(extractLine)(line, doc.lineCount().toInt, acc)
   }
 
   text.afterLastChange(400 millis)(t=>parseText(t))

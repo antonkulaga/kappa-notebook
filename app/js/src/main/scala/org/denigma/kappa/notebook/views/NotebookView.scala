@@ -11,6 +11,7 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
+import org.denigma.kappa.notebook.views.comments.{CommentsWatcher, KappaWatcher}
 import org.denigma.kappa.notebook.views.common.{FixedBinder, ServerConnections}
 import org.denigma.kappa.notebook.views.editor._
 import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView}
@@ -25,6 +26,11 @@ import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
+import org.threeten.bp.temporal._
+
+import scala.concurrent.duration._
+import org.threeten.bp._
+import org.scalajs.dom
 
 import scala.collection.immutable.SortedSet
 
@@ -42,8 +48,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val currentProject: Var[KappaProject] = Var(KappaProject.default)
 
-  //val currentProject: Var[CurrentProject] = Var(CurrentProject.fromKappaProject(KappaProject.default))
-
   val sourceMap: Var[Map[String, KappaSourceFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(folder = p.folder.addFiles(sourceMap.now.values.toList)))
 
   val currentProjectName: Rx[String] = currentProject.map(_.name)
@@ -52,13 +56,15 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
   val figures: Var[Map[String, Figure]] = Var(Map.empty)
 
-
   val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
 
   val serverConfiguration: Var[ServerConnections] = Var(ServerConnections.default)
 
   lazy val scrollable: Element = sq.byId("MainRow").get//this.viewElement//.parentElement
 
+  lazy val lastMessageTime: Var[LocalDateTime] = Var(LocalDateTime.now) //crashes!!!
+
+  val serverActive = Var(false)
 
   override def bindView() = {
     super.bindView()
@@ -70,10 +76,31 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     input.foreach(onMessage)
     connector.open()
   }
+  /*
+
+  protected def watchAlive() = {
+    input.foreach{
+      case ui: UIMessage => //do not count UI messages
+      case _ => lastMessageTime() = LocalDateTime.now
+    }
+    scalajs.js.timers.setInterval(20 seconds){
+      val current = LocalDateTime.now
+      val sec: Long = lastMessageTime.now.until(current, ChronoUnit.SECONDS)
+      if(sec > 10) {
+       serverActive() = false
+      val sec: Long = lastMessageTime.now.until(current, ChronoUnit.SECONDS)
+      val msg = s"Cannot connect to the server for ${sec} seconds!"
+      dom.console.error(msg)
+      dom.window.alert(msg)
+      }
+    }
+  }
+  */
 
   protected def goMessage(messages: List[KappaMessage], delay: Int): Unit = messages match {
     case Nil =>
-    case head::tail => input() = head
+    case head::tail =>
+      input() = head
       scalajs.js.timers.setTimeout(delay)(goMessage(tail, delay))
   }
 
@@ -99,6 +126,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
 
     case Failed(operation, ers, username) =>  kappaServerErrors() = kappaServerErrors.now.copy(errors = kappaServerErrors.now.errors ++ ers)
 
+
     case other => //do nothing
   }
 
@@ -119,7 +147,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
   lazy val annotationMode = Var(AnnotationMode.ToAnnotation)
   lazy val movements = new Movements(annotationMode)
 
-  val commentManager = new CommentsWatcher(editorsUpdates, figures, currentProjectName, input, movements)
+  val commentManager = new CommentsWatcher(editorsUpdates, input, movements)
 
   protected def addMenuItem(el: Element, title: String) = {
     menu() = menu.now :+ (title, el)
@@ -156,15 +184,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
         addMenuItem(el, MainTabs.Simulations)
         v
     }
-    /*
-    .register("Annotator"){
-      case (el, args) =>
-        val v = new AnnotatorNLP(el).withBinder(new GeneralBinder(_))
-        addMenuItem(el, MainTabs.Annotations)
-        v
-    }
-
-    */
     .register("Figures") {
       case (el, params) =>
         val v = new FiguresView(el, figures, input).withBinder(new CodeBinder(_))

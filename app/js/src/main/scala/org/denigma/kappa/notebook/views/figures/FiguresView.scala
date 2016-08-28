@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.figures
 
 import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, CollectionMapView, UpdatableView}
+import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.{GoToFigure, KappaMessage}
 import org.denigma.kappa.notebook.views.common.{TabHeaders, TabItem}
@@ -32,7 +32,10 @@ class FiguresView(val elem: Element,
   val empty = items.map(its=>its.isEmpty)
 
   input.onChange {
-    case GoToFigure(figure)=> selected() = figure
+    case GoToFigure(figure)=>
+      items() = items.now.updated(figure.url, figure)
+      selected() = figure.url
+
     case other => //do nothing
   }
 
@@ -40,10 +43,14 @@ class FiguresView(val elem: Element,
     case (el, params)=>
       el.id = item
       value match {
-        case img: Image => new ImgView(el, selected, Var(img)).withBinder(v=>new CodeBinder(v))
+        case img: Image =>
+          new ImgView(el, selected, Var(img)).withBinder(v=>new CodeBinder(v))
+
         case vid: Video if vid.url.contains("youtube") || vid.url.contains(YouTubeView.WATCH) =>
           new YouTubeView(el, selected, Var(vid)).withBinder(v=>new CodeBinder(v))
-        case vid: Video => new VideoView(el, selected, Var(vid)).withBinder(v=>new CodeBinder(v))
+
+        case vid: Video =>
+          new VideoView(el, selected, Var(vid)).withBinder(v=>new CodeBinder(v))
 
       }
   }
@@ -52,7 +59,8 @@ class FiguresView(val elem: Element,
 
 
   protected def getCaption(id: String): String ={
-    id.replaceAll("https://www.youtube.com/watch?v=", "youtube:")
+    id.replace("https://youtube.com/watch?v=", "youtube:")
+      .replace("https://www.youtube.com/watch?v=","youtube:")
   }
 
   override lazy val injector = defaultInjector
@@ -66,7 +74,13 @@ class FiguresView(val elem: Element,
 
 trait FigureView extends BindableView with TabItem
 
+object Figure {
 
+  import boopickle.Default._
+  implicit val classPickler = compositePickler[Figure]
+    .addConcreteType[Image]
+    .addConcreteType[Video]
+}
 trait Figure
 {
   def name: String

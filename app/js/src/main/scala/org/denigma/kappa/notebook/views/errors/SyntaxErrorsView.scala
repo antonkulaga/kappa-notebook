@@ -10,7 +10,11 @@ import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
-class SyntaxErrorsView(val elem: Element, input: Var[KappaMessage], val items: Rx[List[(KappaSourceFile, WebSimError)]], val fullCode: Rx[String], movements: Movements) extends CollectionSeqView {
+class SyntaxErrorsView(val elem: Element,
+                       input: Var[KappaMessage],
+                       val items: Rx[List[(KappaSourceFile, WebSimError)]],
+                       val fullCode: Rx[String],
+                       movements: Movements) extends CollectionSeqView {
 
   val hasErrors = items.map(f=>f.nonEmpty)
 

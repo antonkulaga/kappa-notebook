@@ -2,6 +2,7 @@ package org.denigma.kappa.messages
 
 import boopickle.{CompositePickler, Pickler}
 import boopickle.DefaultBasic._
+import org.denigma.kappa.notebook.parsers.AST
 
 
 object UIMessage {
@@ -27,7 +28,7 @@ object Go {
     implicit val sourcePickler: Pickler[ToSource] = boopickle.Default.generatePickler[ToSource]
   }
 
-  case class ToSource(path: String, begin: Int = 0, end: Int = 0) extends UIMessage
+  case class ToSource(path: AST.IRI, begin: Int = 0, end: Int = 0) extends UIMessage
 
 }
 

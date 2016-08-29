@@ -51,8 +51,7 @@ class YouTubeView(val elem: Element, val selected: Var[String], val video: Var[V
   }
 
   def initPlayer(ident: String) = {
-    YouTubeView.activateAPI().foreach{
-      case _=>
+    YouTubeView.activateAPI().foreach{ _=>
         val player = new Player(ident, PlayerOptions(
           //width = "100%",
           //height = "100%",

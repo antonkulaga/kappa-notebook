@@ -6,6 +6,7 @@ import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.parsers.{AST, FilesParser}
 import org.denigma.kappa.notebook.views.figures.{Figure, Image, Video}
+import org.scalajs.dom
 import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
 import rx.Var
@@ -17,23 +18,28 @@ class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage],
   override type Data = AST.IRI
 
   override def parse(editor: Editor, lines: List[(Int, String)], currentNum: Int): Unit = {
-    val images = lines.map{ case (num, line)=> (num, line) -> filesParser.image.parse(line) }.collect{
-      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Image(result.value, result.value)
-    }
 
-    val videos = lines.map{ case (num, line)=> (num, line) -> filesParser.video.parse(line) }.collect{
-      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Video(result.value, result.value)
+    val images = lines.map{ case (num, line)=> (num, line) -> filesParser.image.parse(line) }.collect{
+      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Image(result.local, result.local)
     }
 
     images.collectFirst{
       case ((n, line), result) if n == currentNum =>
+        //dom.console.log("IMAGE PARSE = "+result)
         val marker = makeFigureMarker(result, "Image")
         editor.setGutterMarker(n, "breakpoints", marker)
       //val image = img(src := result).render
       //editor.getDoc().dyn.addLineWidget(n, "/files/"+image) //trying to add figure directly to the code
     }
+
+
+    val videos = lines.map{ case (num, line)=> (num, line) -> filesParser.video.parse(line) }.collect{
+      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Video(result.local, result.local)
+    }
+
     videos.collectFirst{
       case ((n, line), result) if n == currentNum =>
+       // dom.console.log("VIDEO PARSE = "+result)
         val marker = makeFigureMarker(result, "Video")
         editor.setGutterMarker(n, "breakpoints", marker)
     }

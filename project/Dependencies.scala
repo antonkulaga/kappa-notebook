@@ -119,18 +119,6 @@ object Dependencies {
 		"com.iheart" %% "ficus" % Versions.ficus
 	))
 
-	/*
-	val ammonite = Def.setting(Seq(
-		"com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
-
-		"com.lihaoyi" %% "ammonite-shell" % Versions.ammonite,
-
-		"com.lihaoyi" %% "ammonite-repl" % Versions.ammonite % Test
-
-	))
-	*/
-
-
 	val compilers = Def.setting(Seq(
 		"org.scala-lang" % "scala-compiler" % Versions.scala
 	))

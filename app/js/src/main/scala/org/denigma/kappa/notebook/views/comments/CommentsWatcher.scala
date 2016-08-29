@@ -30,7 +30,6 @@ class CommentsWatcher(
   val linkWatcher = new LinkWatcher(commentsParser)
   val sourceWatcher = new SourceWatcher(filesParser, input, movements)
 
-
   protected def mergeComments(num: Int, ed: Editor, text: List[(Int,String)] = Nil): List[(Int, String)]  = if(num >= 0)  {
     val line = ed.getDoc().getLine(num)
     if(line.replace(" ","").replace("\t", "")=="") mergeComments(num -1, ed, text) else {
@@ -48,9 +47,10 @@ class CommentsWatcher(
   }
 
   protected def semanticSearch(editor: Editor, lines: List[(Int, String)], currentNum: Int): Unit = {
-    figuresWatcher.parse(editor, lines, currentNum)
     paperWathcer.parse(editor, lines, currentNum)
     linkWatcher.parse(editor, lines, currentNum)
+    sourceWatcher.parse(editor, lines, currentNum)
+    figuresWatcher.parse(editor, lines, currentNum)
   }
 
 

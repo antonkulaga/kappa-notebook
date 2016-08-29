@@ -5,18 +5,7 @@ import org.denigma.controls.papers.TextLayerSelection
 import org.denigma.controls.papers.TextLayerSelection.SimpleTextLayerSelection
 import org.denigma.kappa.notebook.parsers.AST.IRI
 
-object AST {
-  trait ASTElement
 
-  case class IRI(value: String) extends ASTElement
-  {
-    protected lazy val semicol = value.indexOf(":")
-
-    lazy val namespace = value.substring(0, Math.max(semicol, 0))
-    lazy val local = value.substring(Math.min(semicol+1, value.length))
-  }
-
-}
 
 //TODO: merge with
 case class PaperSelection(paper: IRI, page: Int, from_chunk: Int, to_chunk: Int, fromTokenOpt: Option[Int] = None, toTokenOpt: Option[Int] = None, comment: String = "") extends TextLayerSelection {
@@ -43,7 +32,7 @@ class PaperParser extends RDFParser with BasicParser {
 
   lazy val page = P( PNAME_NS ~ ("on_page" | "page") ~ spaces ~ UINT_VALUE)
 
-  lazy val paper = P(PNAME_NS ~ ("in_paper" | "paper") ~ spaces ~ IRI).map(AST.IRI)
+  lazy val paper = P(PNAME_NS ~ ("in_paper" | "paper") ~ spaces ~ IRI).map(v=>AST.IRI(v))
 
   lazy val from_chunk = P(PNAME_NS ~ "from_chunk" ~ spaces ~ UINT_VALUE)
 

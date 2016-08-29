@@ -60,7 +60,7 @@ lazy val websim = crossProject
   .settings(commonSettings ++ publishSettings: _*)
   .settings(
     name := "websim",
-    version := Versions.kappaNotebook
+    version := Versions.websim
   ).disablePlugins(RevolverPlugin)
   .jsSettings(
     persistLauncher in Compile := true,

@@ -79,8 +79,21 @@ class KappaCodeEditor(val elem: Element,
   val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(v => v.path))
 
   input.onChange{
-    case Go.ToSource(name, from, to)=>
-      selected() = name
+    case Go.ToSource(iri, from, to) if iri.local!=""=>
+      val its = items.now
+      if(its.contains(iri.value)) {
+
+        selected() = iri.value
+      }
+      else
+      if (its.contains(iri.local))
+      {
+        selected() = iri.local
+      }
+      else
+        {
+          its.collectFirst{ case (a, b) if b.name ==iri.name => b.path}.foreach(s=> selected() = s)
+        }
 
     case KappaMessage.ServerResponse(server, ServerMessages.ParseResult(cmap)) => //hide syntax errors when parsing succedded
       syntaxErrors() = SyntaxErrors.empty

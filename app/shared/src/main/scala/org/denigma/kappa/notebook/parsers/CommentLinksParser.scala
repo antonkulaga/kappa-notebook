@@ -40,7 +40,7 @@ class CommentLinksParser extends BasicParser
   protected val protocol = P( ("http" | "ftp" ) ~ "s".? ~ "://" )
   val comment = notComment.rep  ~ commentSign ~ AnyChar.rep.!
   val link: P[String] = P(optSpaces ~ "<".? ~ (protocol ~ notBracketsOrSpace.rep).! ~ ">".? ) //map(_.toString)
-  val nlinkAfterComment: Parser[String] = P( notComment.rep  ~ commentSign ~ optSpaces ~ link )
+  val linkAfterComment: Parser[String] = P( notComment.rep  ~ commentSign ~ optSpaces ~ link )
 
 
 }

@@ -60,7 +60,7 @@ class MainMenuView(
 
   protected def move(origin: String, moved: String, dir: Move.Direction.Direction) = {
     val its = items.now
-    dom.console.log(s"MOVE FROM $origin to $moved $dir")
+    //dom.console.log(s"MOVE FROM $origin to $moved $dir")
 
     (its.indexWhere{ case (name, e) => name == origin}, its.indexWhere{ case (name, e) => name == moved}, dir) match {
 
@@ -95,10 +95,12 @@ class MainMenuView(
         items() = (its.take(two) ++ its.slice(two+1, one+1) :+ item2) ++ its.slice(one+1, its.length)
         moveElement(item1._2, item2._2, dir)
     }
+    /*
     println("ITEMS BEFORE = " + its.map(_._1))
     println("ITEMS ELEMENTS IDs = " + its.map(_._2.id))
     println("ITEMS NOW = " + items.now.map(_._1))
     println("ITEMS NOW ELEMENTS IDs = " + items.now.map(_._2.id))
+    */
   }
 
 

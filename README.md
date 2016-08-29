@@ -4,30 +4,49 @@ Kappa notebook
 [![Gitter chat channel](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/denigma/denigma-libs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 This project is a webinterface that runs kappa models and displays the results.
-It also visualizes rules and in the nearest Future will support semantic annotations and collaborative work on the models.
-[Kappa](http://dev.executableknowledge.org/) is a rule-based language for modeling protein networks.
+It also visualizes rules and in partially supports semantic annotations and collaborative work on the models.
+Kappa is a rule-based language for modeling protein networks.
 
 You can try Kappa-notebook at [http://kappa.antonkulaga.name](http://kappa.antonkulaga.name) or build it from sources. 
-Note: sometimes it can be broken as I use this address as a playground.
+Note #1: sometimes it can be broken as I use this address as a playground.
+Note #2: It is recommended to use it from Chrome. Internet Explorer is not supported
+
+![Screenshot](/screenshot.jpg?raw=true "Kappa-notebook screenshot")
+
+
+Using WebSim scala API
+----------------------
+
+The server version of Kappa simulator is called WebSim. Scala API to interact with WebSim is included in this repository
+and situated inside _websim_ subproject, it also contains integration tests so you can check if it works with your version of WebSim.
+To add WebSim API to your Scala project add following dependencies to your sbt configuration:
+```sbt
+resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases")
+libraryDependencies += "org.denigma" %% "websim" % "0.0.15"
+```
+It also contains some shared (ScalaJVM/ScalaJS) case classes that can be used to exchange messages between client and server part.
 
 Building from source and running examples
 -----------------------------------------
+
+Clone the repository and initialize sumbmodule with example models:
+```bash
+git clone https://github.com/antonkulaga/kappa-notebook
+git submodule init
+git submodule update
+```
 
 To build from source:
 Install [sbt](http://www.scala-sbt.org/)
 Make sure that [KaSim Server](https://github.com/Kappa-Dev/KaSim) is up and running in your system (see instructions of building it from source below)
 Type the following commands:
-```scala
+```bash
 $ sbt // to open sbt console
 $ re-start // will open akka-http application with examples
 ```
 It will open a local version of kappa-notebook at http://localhost:1234/ 
 If you have a debian-based Linux you can also run sbt _debian:packageBin_ command to create a deb installer in the _target_ folder
 
-Using WebSim scala API
-----------------------
-
-Scala API for dealing with WebSim (Kappa server) is now separated into websim subproject and published as a separate library so you can use it to build your own Scala client.
 
 Building WebSim server
 ----------------------
@@ -38,14 +57,13 @@ Right now there is not public release of WebSim so you have to build it yourself
 
 To build WebSim for Ubuntu/Mint and other Debian based distributions:
 
-    ```bash
-        #install opam by:
-        wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin
-        opam init #init opam
-        opam install yojson atdgen lwt cohttp depext #install main dependencies
-        opam depext conf-ncurses.1 #do it f there will be problems with ncurses and run installation of dependencies after it
-    ```
-
+```bash
+    #install opam by:
+    wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin
+    opam init #init opam
+    opam install yojson atdgen lwt cohttp depext #install main dependencies
+    opam depext conf-ncurses.1 #do it f there will be problems with ncurses and run installation of dependencies after it
+```
 
     * go into KaSim folder up to date in master branch and invoke ‘make WebSim.native’
     * ./WebSim.native launch it on port 8080

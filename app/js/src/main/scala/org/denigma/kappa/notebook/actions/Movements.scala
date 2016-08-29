@@ -51,10 +51,10 @@ class Movements(annotationMode: Rx[AnnotationMode.AnnotationMode]) {
       .andThen(GoToFigure(figure))
     }
 
-  def toSource(path: String, begin: Int, end: Int) =
+  def toSource(iri: AST.IRI, begin: Int, end: Int) =
     KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Editor))
-        .andThen(Go.ToSource(path, begin, end ))
+        .andThen(Go.ToSource(iri, begin, end ))
         .copy(betweenInterval = 200)
 
 
@@ -67,7 +67,7 @@ class Movements(annotationMode: Rx[AnnotationMode.AnnotationMode]) {
     case FileType.source =>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Editor))
-        .andThen(Go.ToSource(file.path))
+        .andThen(Go.ToSource(AST.IRI(file.path)))
 
     case FileType.video=>
       KappaMessage.Container()

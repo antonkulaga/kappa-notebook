@@ -29,6 +29,18 @@ class KappaWatcher(cursor: Var[KappaCursor], updates: Var[EditorUpdates])  {
 
   protected val initParser = kappaParser.init
 
+  lazy val cursorChanges = cursor.zip
+  cursorChanges.onChange{
+    case (KappaEditorCursor(file, editor, lineNum, ch), _) =>
+      editor.getGutterElement() match {
+        case null =>
+        case e if e.classList.contains("viz") =>
+          //TODO: finish
+        case other =>
+      }
+    case _=>
+  }
+
   val text: Rx[String] = cursor.map{
     case EmptyCursor => ""
     case KappaEditorCursor(file, editor, lineNum, ch) =>
@@ -44,12 +56,28 @@ class KappaWatcher(cursor: Var[KappaCursor], updates: Var[EditorUpdates])  {
 
   protected def getEditorLine(ed: Editor, line: Int, acc: String = ""): String = {
     val doc = ed.getDoc()
+
+    def cutLine(l: String, ind: Int) = l.substring(0, ind).trim match {
+      case "" => ""
+      case other => other + "\\"
+    }
+
     def extractLine(num: Double): String ={
       val l = doc.getLine(num)
       val result = l.indexOf('#') match {
         case -1 => l
-        case ind if l.endsWith("\\") => l.substring(0, ind)+"\\"
-        case ind if l.endsWith("\\\n") => l.substring(0, ind)+"\\\n"
+        case ind if l.endsWith("\\") =>
+          l.substring(0, ind).trim match {
+            case "" => ""
+            case v => v+ "\\"
+          }
+
+        case ind if l.endsWith("\\\n") =>
+          l.substring(0, ind).trim match {
+            case "" | "\n" => ""
+            case v => v+ "\\\n"
+          }
+
         case ind => l.substring(0, ind)+" "
       }
       result

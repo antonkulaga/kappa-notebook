@@ -9,6 +9,7 @@ import org.denigma.codemirror.extensions._
 import org.denigma.kappa.messages.{Go, KappaMessage, KappaSourceFile}
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.notebook.views.common.TabItem
+import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -37,10 +38,13 @@ class CodeTab(val elem: Element,
   }
 
   input.onChange{
-    case Go.ToSource(p, from ,to) if p == path =>
-      val top = editor.getScrollInfo().dyn.top.asInstanceOf[Double]
-      editor.scrollTo(0, top)
+    case Go.ToSource(p, from ,to) if p.value == path | p.local ==path | p.local == name | (p.value == "" && active.now) =>
+      println(s"from ${from} to ${to}")
+      editor.getDoc().setCursor(js.Dynamic.literal(line = from, ch = 1).asInstanceOf[Position])
 
+    case Go.ToSource(p, from ,to) if p.local == name | (p.value == "" && active.now) =>
+      println(s"from ${from} to ${to}")
+      editor.getDoc().setCursor(js.Dynamic.literal(line = from, ch = 1).asInstanceOf[Position])
 
     case _=> //do nothing
   }
@@ -101,6 +105,7 @@ class CodeTab(val elem: Element,
       case KappaEditorCursor(fl, editor, prevLine, prevCh) if prevLine != c.line || prevCh != c.ch || editor != ed =>
         editor.addLineClass(c.line, "background", "focused")
         editor.removeLineClass(prevLine, "background", "focused")
+
         kappaCursor() = KappaEditorCursor(source.now, ed, c.line, c.ch)
 
       case _ => //do nothing

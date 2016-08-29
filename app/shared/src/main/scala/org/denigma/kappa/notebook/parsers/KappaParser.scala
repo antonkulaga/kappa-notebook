@@ -59,7 +59,7 @@ class KappaParser extends CommentLinksParser
     (digit | letter | CharIn("_+-")).rep(min = 1).!
   )
 
-  val textWithSymbols = P(digit | letter | CharIn("_!@$%^&*()_+=-.,/|?><`~{}[]~"))
+  val textWithSymbols = P(digit | letter | CharIn("_!@$%^&*()_+=-.,/|?><`~{}[]~:"))
 
   val tokenDeclaration = P("%token:"~optSpaces~name)
 

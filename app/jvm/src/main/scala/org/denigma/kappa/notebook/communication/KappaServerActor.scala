@@ -2,40 +2,36 @@ package org.denigma.kappa.notebook.communication
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.Sink
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages._
 import org.denigma.kappa.messages.WebSimMessages._
 import org.denigma.kappa.notebook.services.WebSimClient
 
-import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
+/**
+  * An actor that is used to run WebSim server
+  */
 class KappaServerActor extends Actor with ActorLogging {
 
   implicit def system: ActorSystem = context.system
   implicit val materializer: ActorMaterializer = ActorMaterializer()
+  import com.typesafe.config.Config
   import net.ceedubs.ficus.Ficus._
   import net.ceedubs.ficus.readers.ArbitraryTypeReader._
-
-  import com.typesafe.config.Config
   val config: Config = system.settings.config
   val defaultServers = config.as[List[ServerConnection]]("app.servers")
 
-  var servers= defaultServers.map{
-    case s => s.name -> new WebSimClient(s)(system, materializer)
-  }.toMap
+  var servers= defaultServers.map{ s => s.name -> new WebSimClient(s)(system, materializer) }.toMap
 
-
-  protected def addServer(s: WebSimClient) = {
-    val version: Future[Version] = s.getVersion()
-    import akka.pattern._
-    import akka.pattern.pipe
-    //version.pipeTo(self)
-  }
-
-
+  /**
+    * Processes requests that should execute code on the server
+    * @return
+    */
   protected def runIfServerExists: PartialFunction[ServerMessage, Unit] ={
+
+    //starts simulation on the server and streams the results to the sender
     case RunAtServer(username, serverName, lm: LaunchModel, userRef, interval) if servers.contains(serverName)=>
       log.info(s"running model ${lm.runName} with files ${lm.fileNames} at server ${serverName}")
 
@@ -52,6 +48,7 @@ class KappaServerActor extends Actor with ActorLogging {
       val server = servers(serverName)
       server.runStreamed(lm, sink, interval)
 
+    //checks kappa model for errors and returns either ContactMap or syntax errors
     case RunAtServer(username, serverName, p: ParseModel, userRef, interval) if servers.contains(serverName)=>
 
       val sink: Sink[server.ContactMapResult, Any] = Sink.foreach {
@@ -78,6 +75,10 @@ class KappaServerActor extends Actor with ActorLogging {
 
   protected def onServerCommands(sv: ServerMessage): Unit = runIfServerExists.orElse(otherCases)(sv)
 
+  /**
+    * Main receive methods that process messages that go to the actor
+    * @return
+    */
   override def receive: Receive = {
 
     case ServerCommand(server, message) =>

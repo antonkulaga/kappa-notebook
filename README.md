@@ -3,12 +3,28 @@ Kappa notebook
 
 [![Gitter chat channel](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/denigma/denigma-libs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-This project is a webinterface that runs kappa models and displays the results.
-It also visualizes rules and in partially supports semantic annotations and collaborative work on the models.
+Kappa notebook is a webapplication that::
+* runs kappa models and displays the results.
+* visualizes rules
+* supports annotations from papers, pictures, videos and links
+* displays contact-maps
+* allows to work with multiple kappa-projects
+ 
+In plans::
+* Fluxes visualizations
+* Generating kappa models from plasmid-maps in SBOL format.
+* Collaborative editing of models
+* Static Analysis output
+* Basic NLP to detect entities inside papers
+* Management of connections to multiple WebSim servers
+* other improvements
+
 Kappa is a rule-based language for modeling protein networks.
 
 You can try Kappa-notebook at [http://kappa.antonkulaga.name](http://kappa.antonkulaga.name) or build it from sources. 
+
 Note #1: sometimes it can be broken as I use this address as a playground.
+
 Note #2: It is recommended to use it from Chrome. Internet Explorer is not supported
 
 ![Screenshot](/screenshot.jpg?raw=true "Kappa-notebook screenshot")
@@ -18,7 +34,7 @@ Using WebSim scala API
 ----------------------
 
 The server version of Kappa simulator is called WebSim. Scala API to interact with WebSim is included in this repository
-and situated inside _websim_ subproject, it also contains integration tests so you can check if it works with your version of WebSim.
+and situated inside [websim subproject](/websim), it also contains some integration tests so you can check if it works with your version of WebSim.
 To add WebSim API to your Scala project add following dependencies to your sbt configuration:
 ```sbt
 resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases")
@@ -26,17 +42,21 @@ libraryDependencies += "org.denigma" %% "websim" % "0.0.15"
 ```
 It also contains some shared (ScalaJVM/ScalaJS) case classes that can be used to exchange messages between client and server part.
 
+Most of the code is located inside [WebSimClient class](/websim/jvm/src/main/scala/org/denigma/kappa/notebook/services/WebSimClient.scala)
+
+The API is mostly akka-streams oriented. [Here](/app/jvm/src/main/scala/org/denigma/kappa/notebook/communication/KappaServerActor.scala) is how it is used inside kappa-notebook.
+
 Building from source and running examples
 -----------------------------------------
 
-Clone the repository and initialize sumbmodule with example models:
+To clone the repository and initialize sumbmodule with example models:
 ```bash
 git clone https://github.com/antonkulaga/kappa-notebook
 git submodule init
 git submodule update
 ```
-
 To build from source:
+```
 Install [sbt](http://www.scala-sbt.org/)
 Make sure that [KaSim Server](https://github.com/Kappa-Dev/KaSim) is up and running in your system (see instructions of building it from source below)
 Type the following commands:
@@ -53,7 +73,7 @@ Building WebSim server
 
 In order to work Kappa-notebook has to be connected to a WebSim server. 
 WebSim server is a version of [Kappa Simulation (KaSim)](https://github.com/Kappa-Dev/KaSim) with REST API.
-Right now there is not public release of WebSim so you have to build it yourself.
+Right now there is no public release of WebSim so you have to build it yourself.
 
 To build WebSim for Ubuntu/Mint and other Debian based distributions:
 
@@ -69,5 +89,5 @@ To build WebSim for Ubuntu/Mint and other Debian based distributions:
     * ./WebSim.native launch it on port 8080
     * test it by asking http://localhost:8080/v1/version in your browser
     
-Note: sometimes building can be tricky. The most common problem is when ocaml is installed from ubuntu/debian ocaml package and it does not see dependencies installed by opam.
-That is why I recommend to avoid installing ocaml from packages but to install binary version of opam and from it - install everything else.
+Note: sometimes building can be tricky. For instance in Ubuntu-based distros the most common problem is when ocaml is installed from ubuntu/debian ocaml package and it does not see dependencies installed by opam.
+That is why I recommend to install binary version of opam and from it - install everything else.

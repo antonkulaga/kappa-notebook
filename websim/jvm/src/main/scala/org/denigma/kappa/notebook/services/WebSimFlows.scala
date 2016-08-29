@@ -20,7 +20,6 @@ trait WebSimFlows extends CirceSupport{
     pprint.pprintln(something)
   }
 
-
   type Token = Int
 
   def base: String

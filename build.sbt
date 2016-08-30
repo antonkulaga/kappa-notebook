@@ -125,6 +125,8 @@ lazy val app = crossProject
 lazy val appJS = app.js
 lazy val appJVM = app.jvm settings (scalaJSProjects := Seq(appJS))
 
+(managedClasspath in Runtime) += (packageBin in appJVM in Assets).value
+
 lazy val root = Project("root",file("."),settings = commonSettings)
   .settings(
     name := "kappa-notebook-root",
@@ -136,4 +138,4 @@ lazy val root = Project("root",file("."),settings = commonSettings)
     packageDescription := """Kappa notebook runs kappa from the browser""",
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M"),
     initialCommands in (Test, console) := Console.out
-  ) dependsOn appJVM aggregate(appJVM, appJS) enablePlugins JavaServerAppPackaging
+  ) dependsOn appJVM aggregate(appJVM, appJS) enablePlugins JavaAppPackaging

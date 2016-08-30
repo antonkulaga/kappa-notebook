@@ -46,6 +46,12 @@ Most of the code is located inside [WebSimClient class](/websim/jvm/src/main/sca
 
 The API is mostly akka-streams oriented. [Here](/app/jvm/src/main/scala/org/denigma/kappa/notebook/communication/KappaServerActor.scala) is how it is used inside kappa-notebook.
 
+Running prebuilt binary
+-----------------------
+
+Get a latest zip from https://github.com/antonkulaga/kappa-notebook/releases, unpack it and run `bin/kappa-notebook-root`.
+That will start notebook on http://localhost:1234
+
 Building from source and running examples
 -----------------------------------------
 
@@ -85,9 +91,10 @@ To build WebSim for Ubuntu/Mint and other Debian based distributions:
     opam depext conf-ncurses.1 #do it f there will be problems with ncurses and run installation of dependencies after it
 ```
 
-    * go into KaSim folder up to date in master branch and invoke ‘make WebSim.native’
-    * ./WebSim.native launch it on port 8080
-    * test it by asking http://localhost:8080/v1/version in your browser
+ * `git clone git@github.com:Kappa-Dev/KaSim.git`
+ * in KaSim folder run `make WebSim.native`
+ * run `./WebSim.native`. That will start server on default port 8080
+ * test it by opening http://localhost:8080/v1/version in your browser
     
 Note: sometimes building can be tricky. For instance in Ubuntu-based distros the most common problem is when ocaml is installed from ubuntu/debian ocaml package and it does not see dependencies installed by opam.
 That is why I recommend to install binary version of opam and from it - install everything else.

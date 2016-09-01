@@ -13,23 +13,27 @@ import rx._
 
 import scala.collection.immutable._
 import org.denigma.binding.extensions._
-
-
-
-
+import org.scalajs.dom.MouseEvent
 
 class ChartView(val elem: Element,
                val title: Rx[String],
                val plot: Rx[KappaPlot],
+               val maxOpt: Rx[Option[Double]],
                val selected: Var[String]
               ) extends FlexibleLinearPlot{
 
-
   val active: rx.Rx[Boolean] = selected.map(value => value == "plot")
 
- //protected def defaultWidth: Double = Math.max(dom.window.innerWidth / 2, 400)
 
- //protected def defaultHeight: Double = Math.max(dom.window.innerHeight / 2, 400)
+  protected def withMax(value: Point): Point = maxOpt.now match {
+    case Some(v) if v >= value.x =>  value.copy(x = v)
+    case Some(v) =>
+      dom.console.error(s"time/events canno be larger than max!")
+      value
+    case _ => value
+  }
+
+  override def onMaxChange(value: Point): Unit = super.onMaxChange(withMax(value))
 
  protected def defaultWidth: Double = 1000
 
@@ -47,23 +51,19 @@ class ChartView(val elem: Element,
 
  val legend = plot.map(p=>p.legend)
 
- val legendList: Rx[List[(String, Int, LineStyles)]] = legend.map{ case l =>
-   //println("legend changed = "+l)
-   l.zipWithIndex.map{ case (tlt, i) =>
-     (tlt, i, KappaSeries.randomLineStyle())
-   }
+ val legendList: Rx[List[(String, Int, LineStyles)]] = legend.map{ l =>
+   l.zipWithIndex.map{ case (tlt, i) => (tlt, i, KappaSeries.randomLineStyle())}
  }
 
- val items: Rx[List[Var[KappaSeries]]] = plot.map { case p =>
-   //println("items changed")
-   legendList.now.map { case (tlt, i, style) =>
-     Var(KappaSeries(tlt, p.time_series.map(o => Point(o.time, o.values(i))), style))
-   }
+ val items: Rx[List[Var[KappaSeries]]] = Rx{
+   val p = plot()
+   val leg = legendList()
+   leg.map { case (tlt, i, style) => Var(KappaSeries(tlt, p.time_series.map(o => Point(o.time, o.values(i))), style))}
  }
 
  override def max(series: Series)(fun: Point => Double): Point = if(series.points.nonEmpty) series.points.maxBy(fun) else Point(0.0, 0.0)
 
- override val max: rx.Rx[Point] = items.map{case its=>
+ override val max: rx.Rx[Point] = items.map{ its=>
    val x = its.foldLeft(0.0){ case (acc, series)=> Math.max(acc, if(series.now.points.nonEmpty) series.now.points.maxBy(_.x).x else 0.0)}
    val y = its.foldLeft(0.0){ case (acc, series)=> Math.max(acc, if(series.now.points.nonEmpty) series.now.points.maxBy(_.y).y else 0.0)}
    Point(x, y)
@@ -73,10 +73,8 @@ class ChartView(val elem: Element,
    case (el, mp) => new SeriesView(el, item, transform).withBinder(new GeneralBinder(_))
  }
 
- def getFirst[T](pf: PartialFunction[Element,T]): Option[T] = pf.lift(elem).orElse(elem.children.collectFirst(pf))
-
  import org.denigma.binding.extensions._
- val savePlot = Var(Events.createMouseEvent())
+ val savePlot: Var[MouseEvent] = Var(Events.createMouseEvent())
  savePlot.triggerLater{
    elem.selectByClass("plot") match {
      case null =>
@@ -87,18 +85,23 @@ class ChartView(val elem: Element,
 
      case _ =>
        dom.console.error("cannot find chart SVG element")
-
    }
-
-   /*
-   getFirst[String]{ case svg: SVGElement => svg.outerHTML} match {
-     case Some(html)=>
-       saveAs(title.now+".svg", html)
-     case None=>
-       dom.console.error("cannot find svg element among childrens") //note: buggy
-   }
-   */
  }
+
+
+  val saveCSV: Var[MouseEvent] = Var(Events.createMouseEvent())
+  saveCSV.triggerLater{
+    val p = plot.now
+    val head = p.legend.foldLeft("time"){ case (acc, e) => acc + "," +e} + "\n"
+    val body =  p.time_series.foldLeft(""){
+      case (acc, s) =>
+        acc + s.time + s.values.foldLeft(""){
+          case (a, ss) => a +"," + ss
+        } + "\n"
+      }
+    val txt = head + body
+    saveAs(title.now+".csv", txt)
+  }
 
  override lazy val injector = defaultInjector
    .register("ox"){case (el, args) => new AxisView(el, scaleX, chartStyles.map(_.scaleX))

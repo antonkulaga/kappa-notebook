@@ -219,7 +219,7 @@ trait  RuleGraphWithForces extends VisualGraph{
   def massByNode(node: KappaNode): Double = node match {
     case n: AgentNode => 1.4
     case s: SiteNode => 1.0
-    case st: StateNode => 0.8
+    case st: StateNode => 0.4
   }
 
   protected def computeSpring(edge: Edge): SpringParams = (edge.from, edge.to) match {

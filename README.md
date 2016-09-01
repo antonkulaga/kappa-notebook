@@ -79,6 +79,9 @@ Building WebSim server
 
 In order to work Kappa-notebook has to be connected to a WebSim server. 
 WebSim server is a version of [Kappa Simulation (KaSim)](https://github.com/Kappa-Dev/KaSim) with REST API.
+There is a [nightly build](http://www.kappalanguage.org/nightly-builds/WebSim_master_x86_64_ubuntu16.04) of WebSim for Ubuntu,
+if you have another OS, you have to build it yourself.
+
 Right now there is no public release of WebSim so you have to build it yourself.
 
 To build WebSim for Ubuntu/Mint and other Debian based distributions:

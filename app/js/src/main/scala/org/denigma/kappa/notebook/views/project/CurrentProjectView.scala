@@ -22,7 +22,6 @@ import scala.util.{Failure, Success}
 
 class CurrentProjectView(val elem: Element,
                          val currentProject: Var[KappaProject],
-                         //val sourceMap: Var[Map[String, KappaSourceFile]],
                          input: Var[KappaMessage],
                          output: Var[KappaMessage],
                          uploadId: String,

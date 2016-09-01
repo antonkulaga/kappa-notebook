@@ -74,7 +74,9 @@ object Dependencies {
 
 		"org.denigma" %%% "binding-controls" % Versions.bindingControls,
 
-		"org.denigma" %%% "annotator" % Versions.annotator
+		"org.denigma" %%% "annotator" % Versions.annotator,
+
+		"fr.hmil" %%% "roshttp" % Versions.roshttp
 	))
 
 	//common purpose libs

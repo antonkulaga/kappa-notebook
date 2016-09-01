@@ -99,7 +99,8 @@ trait TabGridsStyles extends MainStyles {
     )
 
   "#ProjectsPanel" -(
-    minWidth(345 px) important
+    minWidth(345 px) important,
+    overflowY.auto important
     )
 
   "#Simulations" -(

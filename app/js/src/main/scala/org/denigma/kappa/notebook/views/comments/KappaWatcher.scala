@@ -13,7 +13,9 @@ import scala.concurrent.duration._
 import scalatags.JsDom.all._
 
 /**
-  * Created by antonkulaga on 11/03/16.
+  * Used by vizualizations - extracts kappa rules/agents/obs/etc. from chosen and neibouring lines
+  * @param cursor
+  * @param updates
   */
 class KappaWatcher(cursor: Var[KappaCursor], updates: Var[EditorUpdates])  {
 
@@ -56,29 +58,16 @@ class KappaWatcher(cursor: Var[KappaCursor], updates: Var[EditorUpdates])  {
 
   protected def getEditorLine(ed: Editor, line: Int, acc: String = ""): String = {
     val doc = ed.getDoc()
-
-    def cutLine(l: String, ind: Int) = l.substring(0, ind).trim match {
-      case "" => ""
-      case other => other + "\\"
-    }
-
     def extractLine(num: Double): String ={
       val l = doc.getLine(num)
-      val result = l.indexOf('#') match {
-        case -1 => l
-        case ind if l.endsWith("\\") =>
+      val str = if(l.endsWith("\n")) l.dropRight(1) else l
+      val result = str.indexOf('#') match {
+        case -1 =>l
+        case ind if str.endsWith("\\") =>
           l.substring(0, ind).trim match {
-            case "" => ""
             case v => v+ "\\"
           }
-
-        case ind if l.endsWith("\\\n") =>
-          l.substring(0, ind).trim match {
-            case "" | "\n" => ""
-            case v => v+ "\\\n"
-          }
-
-        case ind => l.substring(0, ind)+" "
+        case ind => l.substring(0, ind)
       }
       result
     }

@@ -44,12 +44,15 @@ class FiguresView(val elem: Element,
       el.id = item
       value match {
         case img: Image =>
+          println("IMAGE ="+img.url)
           new ImgView(el, selected, Var(img)).withBinder(v=>new CodeBinder(v))
 
         case vid: Video if vid.url.contains("youtube") || vid.url.contains(YouTubeView.WATCH) =>
+          println("YOUTEUBE = "+vid)
           new YouTubeView(el, selected, Var(vid)).withBinder(v=>new CodeBinder(v))
 
         case vid: Video =>
+          println("VIDEO = "+vid.url)
           new VideoView(el, selected, Var(vid)).withBinder(v=>new CodeBinder(v))
 
       }
@@ -58,8 +61,8 @@ class FiguresView(val elem: Element,
   val headers = itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
 
 
-  protected def getCaption(id: String): String ={
-    id.replace("https://youtube.com/watch?v=", "youtube:")
+  protected def getCaption(url: String): String ={
+    url.replace("https://youtube.com/watch?v=", "youtube:")
       .replace("https://www.youtube.com/watch?v=","youtube:")
   }
 

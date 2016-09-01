@@ -22,7 +22,7 @@ trait OtherJVM {
 
 	val bcrypt = "2.4"
 
-	val ammonite = "0.7.4"
+	val ammonite = "0.7.5"
 
 	val apacheCodec = "1.10"
 
@@ -69,7 +69,7 @@ trait SharedVersions
 
 	val annotator = "0.0.5"
 
-	val circe = "0.4.1"
+	val circe = "0.5.0"
 
 	val scalaTags = "0.6.0"
 
@@ -85,6 +85,7 @@ trait SharedVersions
 
 	val pprint: String ="0.4.2"
 
+	val roshttp = "1.1.0"
 
 }
 

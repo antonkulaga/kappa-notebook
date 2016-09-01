@@ -57,7 +57,8 @@ object ServerMessages {
     lazy val empty = SyntaxErrors(Nil, Nil)
   }
 
-  case class SyntaxErrors(errors: List[WebSimError], files: List[(String, String)], onExecution: Boolean = false) extends ServerMessage with FileContainer
+  case class SyntaxErrors(errors: List[WebSimError], files: List[(String, String)], onExecution: Boolean = false)
+    extends ServerMessage with FileContainer
   {
     def isEmpty = errors.isEmpty
 
@@ -101,8 +102,6 @@ object ServerMessages {
       case (acc, (name, content)) if content.endsWith("\n") => acc + content
       case (acc, (name, content)) => acc + content + "\n"
     }
-
-    //https://github.com/antonkulaga/kappa-notebook/blob/master/websim/shared/src/main/scala/org/denigma/kappa/messages/WebSimMessages.scala
 
     lazy val fileSizes: scala.List[((Int, Int), String)] = fileLines.foldLeft(List.empty[((Int, Int), String)]) {
       case (Nil, (name, content)) => ((1, content.length), name) :: Nil

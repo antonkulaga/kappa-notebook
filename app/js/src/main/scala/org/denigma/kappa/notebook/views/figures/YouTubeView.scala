@@ -53,8 +53,8 @@ class YouTubeView(val elem: Element, val selected: Var[String], val video: Var[V
   def initPlayer(ident: String) = {
     YouTubeView.activateAPI().foreach{ _=>
         val player = new Player(ident, PlayerOptions(
-          //width = "100%",
-          //height = "100%",
+          width = "100%",
+          height = "100%",
           videoId = videoID.now,
           events =  playerEvents,
           playerVars = PlayerVars(

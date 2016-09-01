@@ -41,16 +41,19 @@ class KappaParser extends CommentLinksParser
   def mergeLine(str: String) = str.replace("\\\n"," ").trim
 
   def getKappaLine(getLine: Double => String)(line: Int, count: Int, acc: String = ""): String = {
-    val t: String = getLine(line).trim
-    if(t.endsWith("\\") && (line+ 1)< count) {
-      val newLine =" " + (t.indexOf("#") match {
-        case -1 => t.dropRight(1)
+    val str = getLine(line).trim match {
+      case v if v.endsWith("\n") => v.dropRight(1)
+      case other => other
+    }
+    if(str.endsWith("\\") && (line+ 1)< count) {
+      val newLine =str.indexOf("#") match {
+        case -1 => str.dropRight(1)
         case index =>
-          val withoutComment: String = t.dropRight(t.length - index)
+          val withoutComment: String = str.dropRight(str.length - index + 1)
           withoutComment
-      })
-      getKappaLine(getLine)(line + 1, count, acc+ newLine)
-    } else (acc+ " " + t).trim
+      }
+      getKappaLine(getLine)(line + 1, count, acc + newLine)
+    } else (acc+ " " + str).trim
   }
 
   protected val text = P(digit | letter)

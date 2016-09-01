@@ -2,7 +2,6 @@ package org.denigma.kappa.messages
 
 import boopickle.CompositePickler
 
-import scala.List
 import scala.collection.immutable._
 
 object WebSimMessages {
@@ -180,8 +179,10 @@ object WebSimMessages {
   {
     def notFinished: Boolean = percentage < 100.0 && is_running//.getOrElse(true)
 
-    def percentage: Double = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
+    lazy val percentage: Double = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
 
-    def runParameters: RunModel = RunModel(code.getOrElse(""), nb_plot, max_events, max_time)
+    lazy val runParameters: RunModel = RunModel(code.getOrElse(""), nb_plot, max_events, max_time)
+
+    lazy val max: Option[Double] = max_time.orElse(max_events.map(e=>e:Double))
   }
 }

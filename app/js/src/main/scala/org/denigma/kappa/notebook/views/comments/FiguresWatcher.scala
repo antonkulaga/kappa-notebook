@@ -20,7 +20,7 @@ class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage],
   override def parse(editor: Editor, lines: List[(Int, String)], currentNum: Int): Unit = {
 
     val images = lines.map{ case (num, line)=> (num, line) -> filesParser.image.parse(line) }.collect{
-      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Image(result.local, result.local)
+      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Image(result.path, result.path)
     }
 
     images.collectFirst{
@@ -34,7 +34,7 @@ class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage],
 
 
     val videos = lines.map{ case (num, line)=> (num, line) -> filesParser.video.parse(line) }.collect{
-      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Video(result.local, result.local)
+      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Video(result.path, result.path)
     }
 
     videos.collectFirst{
@@ -62,6 +62,8 @@ class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage],
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
+        dom.console.log("MOVES TO FIGURE:")
+        pprint.pprintln(figure)
         input() = movements.toFigure(figure)
     }
     html

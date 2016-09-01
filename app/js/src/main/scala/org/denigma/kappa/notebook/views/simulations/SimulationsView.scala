@@ -45,9 +45,9 @@ class SimulationsView(val elem: Element,
 
   input.foreach{
     case KappaMessage.ServerResponse(server, SimulationResult(status, token, params) ) =>
-      dom.console.log("observables: "+ status.plot.map(p=>p.legend) +"percentage: "+ status.percentage)
       errors() = List.empty[String]
       items() = items.now.updated((token, params), status)
+      require(items.now.exists{ case (key, value) => value==status}, "statu should be added to items")
 
     case ServerErrors(list) =>
       dom.console.error("server errors = "+list)

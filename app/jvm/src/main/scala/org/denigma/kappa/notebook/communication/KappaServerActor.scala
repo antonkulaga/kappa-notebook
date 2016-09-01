@@ -38,7 +38,8 @@ class KappaServerActor extends Actor with ActorLogging {
       val sink: Sink[server.flows.Runnable[server.flows.SimulationContactResult], Any] = Sink.foreach {
         case (Left( (token, res: SimulationStatus, connectionMap)), model) =>
           val result = SimulationResult(res, token, Some(model))
-          userRef ! ServerResponse( serverName, result )
+          val resp = ServerResponse( serverName, result )
+          userRef ! resp
 
         case (Right(errors), model) =>
           val mess = SyntaxErrors(errors, model.files, onExecution = true)

@@ -21,8 +21,11 @@ object KappaProject extends FileFilters{
   implicit val ordering = new Ordering[KappaProject] {
     override def compare(x: KappaProject, y: KappaProject): Int = x.name.compare(y.name) match {
       case 0 =>
-        x.hashCode().compare(y.hashCode())
-      case other => other
+        x.folder.path.compare(y.folder.path) match {
+          case 0 =>     x.hashCode().compare(y.hashCode())
+          case value => value
+        }
+      case value => value
     }
   }
 }

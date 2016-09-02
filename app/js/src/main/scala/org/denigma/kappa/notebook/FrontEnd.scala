@@ -25,15 +25,15 @@ object FrontEnd extends BindableView with scalajs.js.JSApp
 
   lazy val elem: Element = dom.document.body
 
-  val session = new AjaxSession()
 
   /**
    * Register views
    */
   override lazy val injector = defaultInjector
-    .register("Login")((el, args) => new LoginView(el, session).withBinder(new GeneralBinder(_)))
-    .register("Notebook")((el, args) => new NotebookView(el, session).withBinder(n => new CodeBinder(n)))
-
+    .register("Notebook"){case (el, args) =>
+      val username = args.get("username").map(v=>v.toString).getOrElse("guest" + Math.random() * 1000)
+      new NotebookView(el, username).withBinder(n => new CodeBinder(n))
+    }
 
   this.withBinders(me => List(new GeneralBinder(me), new NavigationBinder(me)))
 

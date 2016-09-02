@@ -1,5 +1,5 @@
-@()
-<section class="ui three wide column page segment tab" data-view="KappaEditor" id="KappaEditor">
+@(width: String = "three wide")
+<section class="ui column @width page segment tab" data-view="KappaEditor" id="KappaEditor">
     @commons.html.header("Editor")
   <div class="attached wide tab noscroll column segment">
     @errors.html.syntax_errors()

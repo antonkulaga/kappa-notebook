@@ -25,7 +25,7 @@ class WebSocketManager(system: ActorSystem, fileManager: FileManager){
 
   val servers = system.actorOf(Props[KappaServerActor])
 
-  protected def makeIncomingFlow(channel: String, username: String) = Flow[Message].map {  case mes => SocketMessages.IncomingMessage(channel, username, mes) }
+  protected def makeIncomingFlow(channel: String, username: String) = Flow[Message].map { mes => SocketMessages.IncomingMessage(channel, username, mes) }
 
   protected val outgoingFlow = Flow[SocketMessages.OutgoingMessage].map{ case SocketMessages.OutgoingMessage(_, _, message, _) => message }
 
@@ -36,19 +36,28 @@ class WebSocketManager(system: ActorSystem, fileManager: FileManager){
     * @param username name of a user that connects
     * @return
     */
-  def openChannel(channel: String, username: String = "guest"): Flow[Message, Message, Any] = {
-    val partial: Graph[FlowShape[Message, Message], ActorRef] = GraphDSL.create(
+  def openChannel(channel: String, username: String): Flow[Message, Message, Any] = {
+    val partial = createWebSocketGraph(channel, username)
+    Flow.fromGraph(partial).recover { case ex =>
+      val message = s"WS stream for $channel failed for $username with the following cause:\n  $ex"
+      this.system.log.error(message)
+      val d = Pickle.intoBytes[KappaMessage](ServerErrors(List(message)))
+      BinaryMessage(ByteString(d))
+    }
+  }
+
+  protected def createWebSocketGraph(channel: String, username: String) = {
+    GraphDSL.create(
       Source.actorPublisher[OutgoingMessage](Props(classOf[UserActor],
         username,
         servers, //receives a reference to server actor
         fileManager))
-    )
-    {
+    ) {
       implicit builder => user =>
-      import GraphDSL.Implicits._
-        val fromWebsocket: FlowShape[Message, IncomingMessage] = builder.add( makeIncomingFlow(channel, username) )
-        val backToWebsocket: FlowShape[OutgoingMessage, Message] = builder.add( outgoingFlow )
-        val actorAsSource: PortOps[SocketMessages.ChannelMessage] = builder.materializedValue.map{ case actor =>  SocketMessages.UserJoined(username, channel, actor) }
+        import GraphDSL.Implicits._
+        val fromWebsocket: FlowShape[Message, IncomingMessage] = builder.add(makeIncomingFlow(channel, username))
+        val backToWebsocket: FlowShape[OutgoingMessage, Message] = builder.add(outgoingFlow)
+        val actorAsSource: PortOps[SocketMessages.ChannelMessage] = builder.materializedValue.map { actor => SocketMessages.UserJoined(username, channel, actor) }
 
         //send messages to the actor, if send also UserLeft(user) before stream completes.
         val chatActorSink: Sink[ChannelMessage, NotUsed] = Sink.actorRef[SocketMessages.ChannelMessage](allRoom, UserLeft(username, channel))
@@ -65,18 +74,8 @@ class WebSocketManager(system: ActorSystem, fileManager: FileManager){
 
         user ~> backToWebsocket
 
-      FlowShape( fromWebsocket.in, backToWebsocket.out )
+        FlowShape(fromWebsocket.in, backToWebsocket.out)
 
     }.named("socket_flow")
-
-    Flow.fromGraph(partial).recover { case ex =>
-      val message = s"WS stream for $channel failed for $username with the following cause:\n  $ex"
-      this.system.log.error(message)
-      val d = Pickle.intoBytes[KappaMessage](ServerErrors(List(message)))
-      BinaryMessage(ByteString(d))
-      //throw ex
-
-    }
-  }//.via(reportErrorsFlow(channel, username)) // ... then log any processing errors on stdin
-
+  }
 }

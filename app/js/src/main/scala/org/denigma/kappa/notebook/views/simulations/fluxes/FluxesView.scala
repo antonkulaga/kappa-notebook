@@ -14,11 +14,11 @@ import scala.collection.immutable.SortedSet
 
 class FluxesView(val elem: Element, val items: Rx[Map[String, FluxMap]], tab: Rx[String]) extends CollectionMapView{
 
-  val active: Rx[Boolean] = tab.map(s=>s=="fluxes")
+  lazy val active: Rx[Boolean] = tab.map(s=>s=="fluxes")
 
-  val notEmpty: Rx[Boolean] = items.map(its=>its.nonEmpty)
+  lazy val nonEmpty: Rx[Boolean] = items.map(its=>its.nonEmpty)
 
-  val selected: Var[String] = Var("")
+  lazy val selected: Var[String] = Var("")
 
   val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
 
@@ -30,6 +30,7 @@ class FluxesView(val elem: Element, val items: Rx[Map[String, FluxMap]], tab: Rx
 
   override def newItemView(item: Key, value: Value): FluxView = constructItemView(item){
     case (el, mp) =>
+      el.id = item
       selected() = item
       new FluxView(el, item, Var(value), selected).withBinder(v=> new CodeBinder(v))
   }

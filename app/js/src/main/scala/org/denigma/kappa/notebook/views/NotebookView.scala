@@ -2,10 +2,7 @@ package org.denigma.kappa.notebook.views
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
-import org.denigma.codemirror.{Editor, PositionLike}
 import org.denigma.controls.code.CodeBinder
-import org.denigma.controls.login.Session
-import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages.ServerMessages.KappaServerErrors
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
@@ -23,22 +20,15 @@ import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.denigma.kappa.notebook.views.visual.VisualPanelView
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
-import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
-import rx._
-import org.threeten.bp.temporal._
-
-import scala.concurrent.duration._
 import org.threeten.bp._
-import org.scalajs.dom
+import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
 
-import scala.collection.immutable.SortedSet
-
-class NotebookView(val elem: Element, val session: Session) extends BindableView
+class NotebookView(val elem: Element, username: String) extends BindableView
 {
   self =>
 
-  val connector: WebSocketTransport = WebSocketTransport("notebook", "guest" + Math.random() * 1000)
+  val connector: WebSocketTransport = WebSocketTransport("notebook", username)
 
   val (input: Var[KappaMessage], output: Var[KappaMessage]) = connector.IO
 
@@ -76,26 +66,6 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     input.foreach(onMessage)
     connector.open()
   }
-  /*
-
-  protected def watchAlive() = {
-    input.foreach{
-      case ui: UIMessage => //do not count UI messages
-      case _ => lastMessageTime() = LocalDateTime.now
-    }
-    scalajs.js.timers.setInterval(20 seconds){
-      val current = LocalDateTime.now
-      val sec: Long = lastMessageTime.now.until(current, ChronoUnit.SECONDS)
-      if(sec > 10) {
-       serverActive() = false
-      val sec: Long = lastMessageTime.now.until(current, ChronoUnit.SECONDS)
-      val msg = s"Cannot connect to the server for ${sec} seconds!"
-      dom.console.error(msg)
-      dom.window.alert(msg)
-      }
-    }
-  }
-  */
 
   protected def goMessage(messages: List[KappaMessage], delay: Int): Unit = messages match {
     case Nil =>
@@ -180,7 +150,7 @@ class NotebookView(val elem: Element, val session: Session) extends BindableView
     }
     .register("Simulations") {
       case (el, params) =>
-        val v = new SimulationsView(el, sourceMap, input, output, serverConfiguration).withBinder(new CodeBinder(_))
+        val v = new SimulationsView(el, sourceMap, input, output, serverConfiguration).withBinder(s=>new CodeBinder(s))
         addMenuItem(el, MainTabs.Simulations)
         v
     }

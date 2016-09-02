@@ -5,6 +5,8 @@ import org.denigma.threejs._
 import org.denigma.binding.extensions._
 import org.denigma.kappa.model.Change
 
+import scala.scalajs.js
+
 trait KappaEdge extends ForceEdge {
 
   override type FromNode <: KappaNode
@@ -15,15 +17,57 @@ trait KappaEdge extends ForceEdge {
 
 }
 
-trait ChangeableEdge extends ArrowEdge {
+trait ChangeableEdge extends LineEdge {
 
   def status: Change.Value
 
-  def opacity: Double = arrow.line.material.opacity
+  def opacity: Double = line.material.opacity
   def opacity_=(value: Double) = {
-    arrow.cone.material.opacity = value
-    arrow.line.material.opacity = value
+    //arrow.cone.material.opacity = value
+    //arrow.line.material.opacity = value
+    line.material.opacity = value
   }
+}
+
+trait LineEdge extends KappaEdge {
+
+  self =>
+
+  def lineParams: LineParams
+
+  def direction: Vector3 = new Vector3().subVectors(targetPos, sourcePos)
+
+  def middleDivider: Double = 2
+
+  def middle: Vector3 = new Vector3((sourcePos.x + targetPos.x) / middleDivider, (sourcePos.y + targetPos.y) / middleDivider, (sourcePos.z + targetPos.z) / middleDivider)
+
+  lazy protected val parameters  = js.Dynamic.literal(color = lineParams.lineColor, linewidth = lineParams.thickness).asInstanceOf[LineBasicMaterialParameters]
+  lazy val material = new LineBasicMaterial( parameters )
+  lazy val line = new Line(makeGeometry(), material)
+
+  import org.denigma.threejs.{Geometry, THREE, Vector3}
+
+  protected def makeGeometry() = {
+    val geometry = new Geometry()
+    geometry.vertices.push(from.position)
+    geometry.vertices.push(middle)
+    geometry.vertices.push(to.position)
+    geometry
+  }
+
+  protected def posLine() = {
+    line.geometry = makeGeometry()
+    line.geometry.dynamic = true
+    line.geometry.verticesNeedUpdate = true
+  }
+
+
+  def update(): Unit = {
+    posLine()
+  }
+
+  update()
+
 }
 
 trait ArrowEdge extends KappaEdge {

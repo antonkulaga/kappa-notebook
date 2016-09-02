@@ -25,7 +25,7 @@ You can try Kappa-notebook at [http://kappa.antonkulaga.name](http://kappa.anton
 
 Note #1: sometimes it can be broken as I use this address as a playground.
 
-Note #2: It is recommended to use it from Chrome. Internet Explorer is not supported
+Note #2: It is recommended to use it from Chrome. Internet Explorer and Safari are not supported.
 
 ![Screenshot](/screenshot.jpg?raw=true "Kappa-notebook screenshot")
 

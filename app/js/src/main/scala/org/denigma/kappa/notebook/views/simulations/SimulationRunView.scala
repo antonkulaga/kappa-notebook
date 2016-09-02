@@ -15,17 +15,20 @@ class SimulationRunView(val elem: Element,
                         val token: Int,
                         val params: Option[LaunchModel],
                         val selected: Var[String],
-                        val simulation: Var[SimulationStatus] = Var(SimulationStatus.empty))
+                        val simulation: Var[SimulationStatus])
   extends BindableView with TabItem
 {
 
-  val tab: Var[String] = Var("plot")//Var("fluxes")
+  val tab: Var[String] = Var("plot")
 
-  lazy val initialCode = simulation.map(sim=>sim.code.orElse(params.map(_.fullCode)).getOrElse("### NODE CODE AVALIABLE ###"))
+  val initialCode = simulation.map(sim=>sim.code.orElse(params.map(_.fullCode)).getOrElse("### NODE CODE AVALIABLE ###"))
 
-  lazy val plot: Rx[KappaPlot] = simulation.map{s=> s.plot.getOrElse(KappaPlot.empty) }
+  val plot: Rx[KappaPlot] = simulation.map{s=>
+    println("SIMULATION CHANGE = "+s.plot.map(p=>p.legend))
+    s.plot.getOrElse(KappaPlot.empty)
+  }
 
-  val percantage = simulation.map(s=>s.percentage)
+  //val percentage = simulation.map(s=>s.percentage)
 
   val maxOpt = simulation.map(s=>s.max)
 
@@ -49,3 +52,13 @@ class SimulationRunView(val elem: Element,
         new FluxesView(el, fluxMap, tab).withBinder(new CodeBinder(_))
     }
 }
+
+
+
+
+
+
+
+
+
+

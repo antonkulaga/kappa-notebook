@@ -50,12 +50,18 @@ class FluxNode(val flux: RuleFlux)(implicit val create: FluxNode => RuleFluxView
 
 }
 
-class FluxEdge(val from: FluxNode, val to: FluxNode, val value: Double, val lineParams: LineParams)(implicit val create: FluxEdge => RuleFluxEdgeView) extends ArrowEdge{
+class FluxEdge(val from: FluxNode, val to: FluxNode, val value: Double)(implicit val create: FluxEdge => RuleFluxEdgeView) extends ArrowEdge{
+  self =>
 
   override type FromNode = FluxNode
   override type ToNode = FluxNode
 
   val view = create(this)
+
+  val color = if(Math.abs(value) < 1) { Colors.blue
+  } else if(value> 0) Colors.green else Colors.red
+
+  lazy val lineParams = LineParams(lineColor = self.color)
 
   override def update() = {
     posArrow()
@@ -115,8 +121,7 @@ class FluxGraphView(val elem: Element,
   val edges: Rx[Vector[Edge]] = nodesByName.map{ nds => nds.flatMap{
       case (name, node) => node.flux.flux.collect {
         case (key, value) if value != 0.0 =>
-
-          new FluxEdge(node, nds(key), value, edgeVisual.line)
+          new FluxEdge(node, nds(key), value)
       }
     }.toVector
   }
@@ -136,8 +141,8 @@ class FluxGraphView(val elem: Element,
     SpringParams(length, 0.5 + p * 2, 1, 1  )
   }
 
-  //protected val gravityForce = new Gravity[FluxNode, FluxEdge](ForceLayoutParams.default2D.springMult / 4, ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
-  protected val repulsionForce = new Repulsion[FluxNode, FluxEdge](ForceLayoutParams.default2D.repulsionMult)(compareRepulsion)
+  protected lazy val gravityForce = new Gravity[Node, Edge](ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
+  protected val repulsionForce = new Repulsion[FluxNode, FluxEdge](ForceLayoutParams.default2D.repulsionMult / 5)(compareRepulsion)
   protected val springForce = new SpringForce[FluxNode, FluxEdge](ForceLayoutParams.default2D.springMult)(computeSpring)
   //protected val borderForce = new BorderForce[FluxNode, FluxEdge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
 
@@ -156,7 +161,7 @@ class FluxGraphView(val elem: Element,
     width,
     height,
     layouts,
-    1000.0
+    800.0
   )
 
   def onEdgesChanges(removed: Seq[Edge], added: Seq[Edge]): Unit = {
@@ -166,7 +171,7 @@ class FluxGraphView(val elem: Element,
         viz.removeObject(r.arrow)
     }
     for(a <- added) {
-        viz.addSprite(a.view.container)
+        //viz.addSprite(a.view.container)
         viz.addObject(a.arrow)
     }
   }
@@ -198,6 +203,9 @@ class FluxGraphView(val elem: Element,
     edges.removedInserted.foreach{case (removed, inserted)=> onEdgesChanges(removed.toList, inserted.toList)}
     layouts.now.foreach(_.start(viz.width, viz.height, viz.camera))
 
+    println("EDGES = ")
+    nodes.now.foreach(n => pprint.pprintln(n))
+    edges.now.foreach(e=> pprint.pprintln(e))
     //bug fix
     onNodesChanges(Seq.empty, nodes.now)
     onEdgesChanges(Seq.empty, edges.now)

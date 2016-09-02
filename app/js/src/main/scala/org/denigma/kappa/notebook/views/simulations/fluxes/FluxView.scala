@@ -20,6 +20,10 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
 
   override type ItemView = HitsView
 
+  override lazy val items: Rx[SortedSet[RuleFlux]] = item.map(i => RuleFlux.fromFluxMap(i))
+
+  lazy val nonEmpty: Rx[Boolean] = items.map(its=>its.nonEmpty)
+
   lazy val container = elem.selectByClass("graph")
 
   val fluxName: Rx[String] =  item.map(fl=>fl.flux_name)
@@ -30,22 +34,24 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
   val fluxes = item.map(fl => fl.flux_fluxs)
 
 
-  val active = tab.map(t=>t==name)
+  lazy val active = tab.map(t=>t==name)
 
-  override val items: Rx[SortedSet[RuleFlux]] = item.map(i => RuleFlux.fromFluxMap(i))
-  items.foreach(i=>println("items are = "+items.now))
 
   override def newItemView(item: Item): ItemView = this.constructItemView(item){
     case (el, _) => new HitsView(el, item).withBinder(v => new CodeBinder(v))
   }
 
-  val s =dom.document.getElementById("canvas") match {
+  val s = dom.document.getElementById("canvas") match {
     case s: SVG => s
-    case other => throw new Exception("cannot find SVG canvas from FluxView")
+    case _ => throw new Exception("cannot find SVG canvas from FluxView")
   }
 
   override lazy val injector = defaultInjector
     .register("FluxGraphView") { case (el, args) =>
-      new FluxGraphView(el, items, new KappaNodeVisualSettings(14, 3), new KappaEdgeVisualSettings(8, 2, LineParams(Colors.green)), s).withBinder(v => new CodeBinder(v))
+      new FluxGraphView(el, items,
+        KappaNodeVisualSettings(14, 3),
+        KappaEdgeVisualSettings(8, 2,
+          LineParams(Colors.green)),
+        s).withBinder(v => new CodeBinder(v))
     }
 }

@@ -1,10 +1,6 @@
-@(content: Html)
+@(content: List[Html])
 <section id="Notebook" data-view="Notebook" class="ui page grid">
-  <section class="row">
-  @menu()
-  </section>
   <section class="equal width row" data-mcs-theme="rounded-dots-dark">
-      @content
+      @{for(c <- content) yield c }
   </section>
-
 </section>

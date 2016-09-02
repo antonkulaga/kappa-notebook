@@ -20,8 +20,9 @@ class Pages extends Directives with PJax{
 
   def page: Route =  path("page") { ctx=>
     ctx.complete {
-      val code = editor.html.index()
-      val pg = loadPage(code)
+      val code = editor.html.index("eight wide")
+      val paper = papers.html.index("eight wide")
+      val pg = loadPage(html.altbook(List(code, paper)))
       HttpResponse(  entity = HttpEntity(MediaTypes.`text/html`.withCharset(HttpCharsets.`UTF-8`), pg.body  ))
     }
   }

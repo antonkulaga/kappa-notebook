@@ -27,11 +27,13 @@ class SimulationsView(val elem: Element,
 {
   self=>
 
+  override lazy val items: Var[Map[Key, Value]] = Var(Map.empty[Key, Value])
+
   lazy val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
 
-  val tab = Var("runner")
+  lazy val tab = Var("runner")
 
-  val runnerActive: Rx[Boolean] = tab.map(tb=>tb=="runner")
+  lazy val runnerActive: Rx[Boolean] = tab.map(tb=>tb=="runner")
 
   override type Key = (Int, Option[LaunchModel])
 
@@ -39,15 +41,15 @@ class SimulationsView(val elem: Element,
 
   override type ItemView = SimulationRunView
 
-  val items: Var[Map[Key, Value]] = Var(Map.empty[Key, Value])
 
   lazy val errors = Var(List.empty[String])
 
   input.foreach{
     case KappaMessage.ServerResponse(server, SimulationResult(status, token, params) ) =>
       errors() = List.empty[String]
+      println("status received "+status.plot.map(p=>p.legend))
       items() = items.now.updated((token, params), status)
-      require(items.now.exists{ case (key, value) => value==status}, "statu should be added to items")
+      //require(items.now.exists{ case (key, value) => value==status}, "status should be added to items")
 
     case ServerErrors(list) =>
       dom.console.error("server errors = "+list)
@@ -66,7 +68,7 @@ class SimulationsView(val elem: Element,
   override def newItemView(key: Key, value: Value): SimulationRunView = this.constructItemView(key)( {
     case (el, mp) =>
       el.id =  makeId(key) //bad practice
-      val view = new SimulationRunView(el, key._1, key._2, tab, Var(SimulationStatus.empty)).withBinder(new CodeBinder(_))
+      val view = new SimulationRunView(el, key._1, key._2, tab, Var(value)).withBinder(new CodeBinder(_))
       tab() = view.id
       view
   })
@@ -78,6 +80,7 @@ class SimulationsView(val elem: Element,
     .register("ServerErrors")((el, args) => new ServerErrorsView(el, errors).withBinder(n => new CodeBinder(n)))
 
   override def updateView(view: SimulationRunView, key: (Int, Option[LaunchModel]), old: SimulationStatus, current: SimulationStatus): Unit = {
+    println("status updated "+current.plot.map(p=>p.legend))
     view.simulation() = current
   }
 }

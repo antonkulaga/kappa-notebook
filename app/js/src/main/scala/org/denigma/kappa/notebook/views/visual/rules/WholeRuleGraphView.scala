@@ -26,8 +26,6 @@ class WholeRuleGraphView(val elem: Element,
                         ) extends RuleGraphWithForces
 {
 
-
-
   lazy val size: (Double, Double) = elem.getBoundingClientRect() match {
     case rect: ClientRect if rect.width < 100 || rect.height < 100 => (400.0, 400.0)
     case rect: ClientRect => (rect.width, rect.height)
@@ -52,7 +50,6 @@ class WholeRuleGraphView(val elem: Element,
         None
     }
   }
-
 
   val viz = new Visualizer(container,
     width,
@@ -151,13 +148,13 @@ class WholeRuleGraphView(val elem: Element,
 
   def onEdgesChanges(removed: Set[Edge], added: Set[Edge]): Unit = {
     for(r <- removed) r match {
-      case link: KappaLinkEdge => viz.removeObject(link.arrow)
-      case arr: Edge => viz.removeObject(arr.arrow)
+      case link: KappaLinkEdge => viz.removeObject(link.line)
+      case arr: Edge => viz.removeObject(arr.line)
       case _ => dom.console.log("weird edge")
     }
     for(a <- added) a match {
-      case link: KappaLinkEdge => viz.addObject(link.arrow)
-      case arr: Edge => viz.addObject(arr.arrow)
+      case link: KappaLinkEdge => viz.addObject(link.line)
+      case arr: Edge => viz.addObject(arr.line)
       case _ => dom.console.log("weird edge")
     }
   }

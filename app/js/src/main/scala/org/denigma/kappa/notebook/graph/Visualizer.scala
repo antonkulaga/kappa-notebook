@@ -42,7 +42,6 @@ class Visualizer (val container: HTMLElement,
     ).asInstanceOf[ WebGLRendererParameters]
     import org.denigma.threejs._
     val vr = new WebGLRenderer(params)
-
     vr.domElement.style.position = "absolute"
     vr.domElement.style.left	  = "0"
     vr.domElement.style.top	  = "0"

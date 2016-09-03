@@ -38,10 +38,12 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
 
 
   override def newItemView(item: Item): ItemView = this.constructItemView(item){
-    case (el, _) => new HitsView(el, item).withBinder(v => new CodeBinder(v))
+    case (el, _) =>
+      println(s"hitsview added ${item.name}")
+      new HitsView(el, item).withBinder(v => new CodeBinder(v))
   }
 
-  val s = dom.document.getElementById("canvas") match {
+  lazy val s = dom.document.getElementById("canvas") match {
     case s: SVG => s
     case _ => throw new Exception("cannot find SVG canvas from FluxView")
   }
@@ -49,8 +51,8 @@ class FluxView(val elem: Element, val name: String, val item: Var[FluxMap], val 
   override lazy val injector = defaultInjector
     .register("FluxGraphView") { case (el, args) =>
       new FluxGraphView(el, items,
-        KappaNodeVisualSettings(14, 3),
-        KappaEdgeVisualSettings(8, 2,
+        KappaNodeVisualSettings(12, 2),
+        KappaEdgeVisualSettings(8, 1,
           LineParams(Colors.green)),
         s).withBinder(v => new CodeBinder(v))
     }

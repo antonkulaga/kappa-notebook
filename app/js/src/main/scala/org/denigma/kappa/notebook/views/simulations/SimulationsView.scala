@@ -47,7 +47,6 @@ class SimulationsView(val elem: Element,
   input.foreach{
     case KappaMessage.ServerResponse(server, SimulationResult(status, token, params) ) =>
       errors() = List.empty[String]
-      println("status received "+status.plot.map(p=>p.legend))
       items() = items.now.updated((token, params), status)
       //require(items.now.exists{ case (key, value) => value==status}, "status should be added to items")
 

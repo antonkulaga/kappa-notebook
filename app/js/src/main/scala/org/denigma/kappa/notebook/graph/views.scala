@@ -17,8 +17,6 @@ trait KappaView extends KappaPainter {
 
   def label: String
 
-  //type Data <: KappaNamedElement
-
   def fontSize: Double
   def padding: Double
   protected def gradientName: String
@@ -44,7 +42,7 @@ trait KappaView extends KappaPainter {
     drawSVG(rect.width + st *2, rect.height + st *2 , List(gradient.now), List(lb))
   }
 
-  protected val sprite: Rx[HtmlSprite] = svg.map {
+  lazy val sprite: Rx[HtmlSprite] = svg.map {
     s =>
       val sp = new HtmlSprite(s.render)
       sp

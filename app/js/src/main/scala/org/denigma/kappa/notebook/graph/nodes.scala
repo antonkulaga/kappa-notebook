@@ -5,8 +5,6 @@ import org.denigma.kappa.model.Change
 import scala.collection.immutable._
 import org.denigma.kappa.notebook.graph.layouts.{ForceNode, LayoutInfo}
 
-import scala.List
-
 object OrganizedChangeableNode {
   def emptyChangeMap[T] = Map(Change.Added -> Set.empty[T], Change.Removed -> Set.empty[T], Change.Unchanged -> Set.empty[T], Change.Updated -> Set.empty[T])
 }

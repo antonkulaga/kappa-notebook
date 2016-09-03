@@ -23,7 +23,7 @@ class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Doubl
       val deltaY = l1.pos.y - l2.pos.y
       val deltaZ = l1.pos.z - l2.pos.z
 
-      val distance = Math.max(EPSILON, l1.pos.distanceTo(l2.pos))
+      val distance = max(EPSILON, l1.pos.distanceTo(l2.pos))
       val (m1, m2) = compare(edge.from, edge.to)
 
       val force1= distance  / (attractionGlobal * m2)
@@ -49,17 +49,14 @@ class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Doubl
 
 case class SpringParams(length: Double, strength: Double = 1, mass1: Double = 1, mass2: Double = 1)
 
-class SpringForce[Node <: ForceNode, Edge <: ForceEdge](val springMult: Double, EPSILON: Double = 0.001)
+class SpringForce[Node <: ForceNode, Edge <: ForceEdge](val springMult: Double, EPSILON: Double = 0.01)
                                                   (val compute: (Edge) => SpringParams )
   extends Force[Node, Edge] {
-
 
   override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
     val attractionGlobal = springMult * forceConstant
     for {i <- edges.indices} {
       val edge = edges(i)
-      //val l1 = edge.from.view.layout
-      //val l2 = edge.to.view.layout
       val l1 = edge.from.layoutInfo
       val l2 = edge.to.layoutInfo
 
@@ -67,14 +64,11 @@ class SpringForce[Node <: ForceNode, Edge <: ForceEdge](val springMult: Double, 
       val deltaY = l1.pos.y - l2.pos.y
       val deltaZ = l1.pos.z - l2.pos.z
 
-      val distance = Math.max(EPSILON, l1.pos.distanceTo(l2.pos))
-      //val (m1, m2) = compare(edge.from, edge.to)
+      val distance = max(EPSILON, l1.pos.distanceTo(l2.pos))
       val SpringParams(length, strength, mass1, mass2) = compute(edge)
 
       val force1= (distance - length)  * strength * mass2 * attractionGlobal / 2
       val force2 = (distance - length) * strength * mass1 *  attractionGlobal / 2
-      //println(s"SPRING = (distance(${distance}) - length(${length}))  * springMult($springMult} * forceConstant ${forceConstant} = $force1")
-
 
       l1.force -= force1
       l2.force += force2
@@ -227,7 +221,6 @@ class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double,
     for {i <- nodes.indices}
     {
       val no1 = nodes(i)
-      //val n1 = no1.view
       val l1 = no1.layoutInfo
       if(i==0) l1.setOffsets(0, 0, 0)
 
@@ -244,7 +237,7 @@ class Repulsion[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double,
         val deltaZ = l1.pos.z - l2.pos.z
         val (m1, m2) = compareRepulstion(no1, no2)
 
-        val distance = Math.max(EPSILON * 5, l1.pos.distanceTo(l2.pos))
+        val distance = max(EPSILON * 5, l1.pos.distanceTo(l2.pos))
         val distSquared  = Math.pow(distance, 2)
         val force1 =  (repulsion * repulsion) * m2 / distSquared
         //println(s"t distance ${distance}: (repulsion(${repulsion}) * repulsion(${repulsion})) * m1(${m2}) / distSquared(${distSquared})) = $force1")

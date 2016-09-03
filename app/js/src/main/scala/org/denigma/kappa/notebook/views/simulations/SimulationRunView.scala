@@ -24,7 +24,6 @@ class SimulationRunView(val elem: Element,
   val initialCode = simulation.map(sim=>sim.code.orElse(params.map(_.fullCode)).getOrElse("### NODE CODE AVALIABLE ###"))
 
   val plot: Rx[KappaPlot] = simulation.map{s=>
-    println("SIMULATION CHANGE = "+s.plot.map(p=>p.legend))
     s.plot.getOrElse(KappaPlot.empty)
   }
 

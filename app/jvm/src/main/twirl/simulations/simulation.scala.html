@@ -6,8 +6,9 @@
     <a class="item" data-set-tab-on-click="parameters" data-class-active-if="Parameters.active">Parameters</a>
     <a class="item" data-set-tab-on-click="fluxes" data-class-active-if="Fluxes.active">Fluxes</a>
   </div>
-  @plot()
+  @simulations.plots.html.plot()
   @console()
   @parameters()
-  @fluxes()
+  @simulations.fluxmaps.html.fluxes()
+
 </section>

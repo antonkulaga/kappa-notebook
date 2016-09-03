@@ -1,6 +1,6 @@
 package org.denigma.kappa.notebook.graph
 
-import org.denigma.kappa.notebook.graph.layouts.ForceEdge
+import org.denigma.kappa.notebook.graph.layouts.{ForceEdge, ForceNode}
 import org.denigma.threejs._
 import org.denigma.binding.extensions._
 import org.denigma.kappa.model.Change
@@ -9,11 +9,12 @@ import scala.scalajs.js
 
 trait KappaEdge extends ForceEdge {
 
-  override type FromNode <: KappaNode
-  override type ToNode <: KappaNode
 
-  def sourcePos: Vector3 = from.view.container.position
-  def targetPos: Vector3 = to.view.container.position
+  override type FromNode <: ForceNode//KappaNode
+  override type ToNode <: ForceNode//KappaNode
+
+  def sourcePos: Vector3 = from.position
+  def targetPos: Vector3 = to.position
 
 }
 
@@ -21,17 +22,16 @@ trait ChangeableEdge extends LineEdge {
 
   def status: Change.Value
 
-  def opacity: Double = line.material.opacity
-  def opacity_=(value: Double) = {
-    //arrow.cone.material.opacity = value
-    //arrow.line.material.opacity = value
-    line.material.opacity = value
-  }
 }
 
 trait LineEdge extends KappaEdge {
 
   self =>
+
+  def opacity: Double = line.material.opacity
+  def opacity_=(value: Double) = if(line.material.opacity!= value) {
+    line.material.opacity = value
+  }
 
   def lineParams: LineParams
 
@@ -44,8 +44,6 @@ trait LineEdge extends KappaEdge {
   lazy protected val parameters  = js.Dynamic.literal(color = lineParams.lineColor, linewidth = lineParams.thickness).asInstanceOf[LineBasicMaterialParameters]
   lazy val material = new LineBasicMaterial( parameters )
   lazy val line = new Line(makeGeometry(), material)
-
-  import org.denigma.threejs.{Geometry, THREE, Vector3}
 
   protected def makeGeometry() = {
     val geometry = new Geometry()
@@ -65,8 +63,6 @@ trait LineEdge extends KappaEdge {
   def update(): Unit = {
     posLine()
   }
-
-  update()
 
 }
 

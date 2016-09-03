@@ -40,7 +40,6 @@ class WholeRuleGraphView(val elem: Element,
 
   lazy val container: HTMLElement = sq.byId(containerName).get
 
-
   protected def makeLinkEdge(siteFrom: String, fromPos:Int, siteTo: String, toPos:Int, source: Map[(String, Int), SiteNode], status: Change.Change)
                             (implicit getLineParams: Change.Change => LineParams): Option[KappaLinkEdge] = {
     (source.get((siteFrom, fromPos)), source.get(siteTo, toPos)) match {
@@ -145,7 +144,6 @@ class WholeRuleGraphView(val elem: Element,
     }
   }
 
-
   def onEdgesChanges(removed: Set[Edge], added: Set[Edge]): Unit = {
     for(r <- removed) r match {
       case link: KappaLinkEdge => viz.removeObject(link.line)
@@ -231,8 +229,6 @@ class WholeRuleGraphView(val elem: Element,
     }
 
     val allLinks = removedLinks ++ addedLinks ++ unchangedLinks
-
-    //allLinks.foreach(k => dom.console.log(s"LINK FORM ${k.from.site} TO ${k.to.site} WITH CHANGE ${k.status}"))
 
     val allChildEdges = allAgentNodes.flatMap(a => a.allChildEdges)
 

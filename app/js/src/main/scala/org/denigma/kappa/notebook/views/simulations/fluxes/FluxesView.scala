@@ -22,7 +22,7 @@ class FluxesView(val elem: Element, val items: Rx[Map[String, FluxMap]], tab: Rx
 
   val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
 
-  type Key= String
+  type Key = String
 
   type Value = FluxMap
 
@@ -32,6 +32,7 @@ class FluxesView(val elem: Element, val items: Rx[Map[String, FluxMap]], tab: Rx
     case (el, mp) =>
       el.id = item
       selected() = item
+      println(s"flux view ${item} added")
       new FluxView(el, item, Var(value), selected).withBinder(v=> new CodeBinder(v))
   }
 

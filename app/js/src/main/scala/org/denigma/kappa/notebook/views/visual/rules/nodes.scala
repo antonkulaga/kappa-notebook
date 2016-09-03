@@ -107,7 +107,6 @@ class AgentNode(val agent: KappaModel.Agent, val children: Map[Change.Change, Se
 
   lazy val view: KappaAgentView = fun(this)
 
-
   lazy val childEdges: Map[Change.Change, Set[ChildEdge]] = children.mapValues {
     set => set.map { s =>
       val lp = getLineParams(this, s)

@@ -3,15 +3,17 @@ package org.denigma.kappa.notebook.graph.layouts
 import org.denigma.kappa.notebook.graph.Randomizable
 import org.denigma.kappa.notebook.graph.layouts.LayoutMode.LayoutMode
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
+import org.scalajs.dom
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
+
 import scala.collection.immutable._
 
 object ForceLayoutParams {
 
   lazy val default2D = ForceLayoutParams(0.9, 100, 1, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(0.9, 100, 1, new Vector3(0.0, 0.0, 0.0), LayoutMode.ThreeD)
+  lazy val default3D = ForceLayoutParams(0.3, 0.1, 1, new Vector3(0.0, 0.0, 0.0), LayoutMode.ThreeD)
 
 }
 
@@ -27,6 +29,10 @@ case class ForceLayoutParams(
 
 trait Force[Node, Edge]
 {
+   protected def max(v1: Double, v2: Double) = {
+    if(v1.isNaN || v1.isInfinite) v2 else if(v2.isNaN ||  v2.isInfinite) v1 else Math.max(v1, v2)
+  }
+
   def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double): Unit
 
 }
@@ -70,7 +76,7 @@ trait ForceLayout extends GraphLayout  with Randomizable
 
   var EPSILON = 0.01
 
-  val maxIterations = 1000
+  lazy val maxIterations = 1000
   val layoutIterations: Var[Double] = Var(0)
   val temperature = Rx{
     1 - layoutIterations() / maxIterations
@@ -136,13 +142,14 @@ trait ForceLayout extends GraphLayout  with Randomizable
       l.pos.y += l.offset.y / 3 + l.offset.y * temperature.now / 3
       l.pos.z += l.offset.z / 3 * l.offset.z * temperature.now  / 3
 
-      val delta = node.position.x - l.pos.x
-      //println("delta = "+delta)
-
-
       node.position.x -= (node.position.x - l.pos.x)
       node.position.y -= (node.position.y - l.pos.y)
       node.position.z -= (node.position.z - l.pos.z)
+      if(node.position.x.isNaN || node.position.y.isNaN || node.position.z.isNaN) {
+        //dom.console.error("NANO DETECTED")
+        dom.console.error(s"position(${node.position.x} , ${node.position.y}, ${node.position.z})")
+        throw new Exception("invalid argument the position must be:")
+      }
       l.setOffsets(0, 0, 0)
     }
   }

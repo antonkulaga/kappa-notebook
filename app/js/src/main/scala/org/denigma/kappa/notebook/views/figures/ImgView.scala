@@ -16,6 +16,10 @@ class ImgView(val elem: Element, val selected: Var[String], val image: Var[Image
 {
   val src = image.map(i=>"/files/"+i.url)
 
+  val text = image.map(img=>img.text)
+
+  lazy val hasText = image.map(img=>img.text!="")
+
   lazy val figureId = this.id + "_figure"
 
   protected def addFigure() = {
@@ -37,4 +41,4 @@ class ImgView(val elem: Element, val selected: Var[String], val image: Var[Image
 
 }
 
-case class Image(name: String, url: String) extends Figure
+case class Image(name: String, url: String, text: String) extends Figure

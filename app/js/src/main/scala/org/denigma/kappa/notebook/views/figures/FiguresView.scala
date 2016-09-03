@@ -88,4 +88,5 @@ trait Figure
 {
   def name: String
   def url: String
+  def text: String
 }

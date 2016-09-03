@@ -9,11 +9,14 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 
 import scala.collection.immutable._
 
+/**
+  * Configuration parameters for Force Layout
+  */
 object ForceLayoutParams {
 
   lazy val default2D = ForceLayoutParams(0.9, 100, 1, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(0.3, 0.1, 1, new Vector3(0.0, 0.0, 0.0), LayoutMode.ThreeD)
+  lazy val default3D = ForceLayoutParams(0.5, 0.5, 1, new Vector3(0.0, 0.0, 0.0), LayoutMode.ThreeD)
 
 }
 
@@ -115,7 +118,6 @@ trait ForceLayout extends GraphLayout  with Randomizable
     if(keepGoing(nodes.now.size))
     {
       var forceConstant: Double = 1.0//Math.sqrt(height * width / nodes.now.size) / 50
-
       for(force <- forces)
       {
         force.tick(width, height, camera, nodes.now, edges.now, forceConstant)
@@ -138,13 +140,14 @@ trait ForceLayout extends GraphLayout  with Randomizable
       //l.pos.y += (l.offset.y / length) * Math.min(length, temperature)
       //l.pos.z += (l.offset.z / length) * Math.min(length, temperature)
 
-      l.pos.x += l.offset.x / 3 + l.offset.x * temperature.now / 3
-      l.pos.y += l.offset.y / 3 + l.offset.y * temperature.now / 3
-      l.pos.z += l.offset.z / 3 * l.offset.z * temperature.now  / 3
+      l.pos.x += l.offset.x / 3.0 + l.offset.x * temperature.now / 3.0
+      l.pos.y += l.offset.y / 3.0 + l.offset.y * temperature.now / 3.0
+      l.pos.z += l.offset.z / 3.0 + l.offset.z * temperature.now  / 3.0
 
       node.position.x -= (node.position.x - l.pos.x)
       node.position.y -= (node.position.y - l.pos.y)
       node.position.z -= (node.position.z - l.pos.z)
+
       if(node.position.x.isNaN || node.position.y.isNaN || node.position.z.isNaN) {
         //dom.console.error("NANO DETECTED")
         dom.console.error(s"position(${node.position.x} , ${node.position.y}, ${node.position.z})")

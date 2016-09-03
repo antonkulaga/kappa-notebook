@@ -71,6 +71,14 @@ trait RDFChars extends SimpleTypes{
 
 }
 
+trait ExtRDFParser extends RDFParser with BasicParser{
+
+  lazy val IRI_lite = P("<".? ~ ((IRIREF_CHAR | UCHAR).rep).! ~ ">".? | PrefixedName) //just to ease the restrictions
+
+  lazy val comment = P( PNAME_NS ~ ("comment" | "has_comment") ~ spaces ~ STRING_LITERAL_QUOTE)
+
+}
+
 trait RDFParser extends RDFChars {
 
 

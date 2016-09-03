@@ -20,7 +20,11 @@ import org.scalajs.dom.ext._
 class YouTubeView(val elem: Element, val selected: Var[String], val video: Var[Video]) extends FigureView {
 
 
- lazy val videoID =video.map(v=>YouTubeView.idFromURL(v.url)) //"HFwSnqYC5LA"
+  lazy val videoID =video.map(v=>YouTubeView.idFromURL(v.url)) //"HFwSnqYC5LA"
+
+  lazy val text = video.map(v=>v.text)
+
+  lazy val hasText = video.map(vid=>vid.text!="")
 
   def onPlayerReady(event:  im.conversant.apps.youtube.Event): Any = {
     println("on play ready")
@@ -54,7 +58,7 @@ class YouTubeView(val elem: Element, val selected: Var[String], val video: Var[V
     YouTubeView.activateAPI().foreach{ _=>
         val player = new Player(ident, PlayerOptions(
           width = "100%",
-          height = "100%",
+          //height = "100%",
           videoId = videoID.now,
           events =  playerEvents,
           playerVars = PlayerVars(

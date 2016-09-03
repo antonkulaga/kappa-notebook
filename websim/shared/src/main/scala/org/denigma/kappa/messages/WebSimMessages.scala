@@ -179,7 +179,7 @@ object WebSimMessages {
   {
     def notFinished: Boolean = percentage < 100.0 && is_running//.getOrElse(true)
 
-    lazy val percentage: Double = event_percentage.orElse(time_percentage).get //showd throw if neither events not time are set
+    lazy val percentage: Double = event_percentage.orElse(time_percentage).get //throw if neither events not time are set
 
     lazy val runParameters: RunModel = RunModel(code.getOrElse(""), nb_plot, max_events, max_time)
 

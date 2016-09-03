@@ -24,13 +24,13 @@ class SourceWatcher(val filesParser: FilesParser, input: Var[KappaMessage], move
     }
 
     val nums: List[((Int, String), Int)] = lines.map{ case (num, line) => (num, line) -> filesParser.onLine.parse(line) }.collect {
-      case ((num, line), Parsed.Success(result, _)) => (num, line) -> result
+      case ((num, line), Parsed.Success((_, result), _)) => (num, line) -> result
     }
 
     sources.collectFirst{
-      case ((n, line), result) if n == currentNum =>
+      case ((n, line), (_, file, num)) if n == currentNum =>
         //dom.console.log("SOURCE PARSE = "+result)
-        val marker = makeMarker(result)
+        val marker = makeMarker((file, num))
         editor.setGutterMarker(n, "breakpoints", marker)
     }
 

@@ -72,12 +72,12 @@ class Movements(annotationMode: Rx[AnnotationMode.AnnotationMode]) {
     case FileType.video=>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Figures))
-        .andThen(GoToFigure(Video(file.name, file.path)))
+        .andThen(GoToFigure(Video(file.name, file.path, "")))
 
     case FileType.image=>
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Figures))
-        .andThen(GoToFigure(Image(file.name, file.path)))
+        .andThen(GoToFigure(Image(file.name, file.path, "")))
 
     case other => KappaMessage.Container() //do nothing
   }

@@ -14,7 +14,7 @@ class LayoutInfo(val mass: Double = 1.0)
   def init(v: Vector3) =  {
     if(pos.x==0) pos.x = v.x
     if(pos.y==0) pos.y = v.y
-    if(pos.z==0) pos.z = v.z
+    if(pos.z==0 || pos.z.isNaN || pos.z.isInfinity) pos.z = v.z
   }
 
   def pos_(v: Vector3): Unit = setPoses(v.x, v.y, v.z)

@@ -24,11 +24,9 @@ case class PaperSelection(paper: IRI, page: Int, from_chunk: Int, to_chunk: Int,
   override def toToken: String = toTokenOpt.map(t => t.toString).getOrElse("")
 }
 
-class PaperParser extends RDFParser with BasicParser {
+class PaperParser extends ExtRDFParser {
 
   lazy val UINT_VALUE = P(DIGIT.rep(1).!).map(v => Integer.parseInt(v))
-
-  lazy val comment = P( PNAME_NS ~ ("comment" | "has_comment") ~ spaces ~ STRING_LITERAL_QUOTE)
 
   lazy val page = P( PNAME_NS ~ ("on_page" | "page") ~ spaces ~ UINT_VALUE)
 

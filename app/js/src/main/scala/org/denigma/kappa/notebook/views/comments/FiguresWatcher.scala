@@ -20,7 +20,7 @@ class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage],
   override def parse(editor: Editor, lines: List[(Int, String)], currentNum: Int): Unit = {
 
     val images = lines.map{ case (num, line)=> (num, line) -> filesParser.image.parse(line) }.collect{
-      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Image(result.path, result.path)
+      case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
 
     images.collectFirst{
@@ -34,7 +34,7 @@ class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage],
 
 
     val videos = lines.map{ case (num, line)=> (num, line) -> filesParser.video.parse(line) }.collect{
-      case ((num, line), Parsed.Success(result, _))=> (num, line) -> Video(result.path, result.path)
+      case ((num, line), Parsed.Success(result, _))=> (num, line) -> result
     }
 
     videos.collectFirst{

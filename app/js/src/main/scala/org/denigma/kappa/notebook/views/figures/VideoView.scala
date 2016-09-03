@@ -9,13 +9,16 @@ import scalatags.JsDom.all._
 import scalajs.js
 import org.scalajs.dom.ext._
 
-case class Video(name: String, url: String) extends Figure
+case class Video(name: String, url: String, text: String) extends Figure
 
 class VideoView(val elem: Element, val selected: Var[String], val video: Var[Video]) extends FigureView
 {
 
-
   lazy val figureId = this.id + "_figure"
+
+  lazy val text = video.map(v=>v.text)
+
+  lazy val hasText = video.map(vid=>vid.text!="")
 
   override def bindView() = {
     if(!elem.children.exists(e=>e.id == figureId)) {

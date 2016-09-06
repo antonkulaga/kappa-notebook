@@ -3,10 +3,9 @@ package org.denigma.kappa.notebook.views.papers
 import org.denigma.binding.extensions._
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
-import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.parsers.PaperSelection
 import org.denigma.pdf.extensions.Page
-import org.querki.jquery.$
+import org.querki.jquery._
 import org.scalajs.dom
 import org.scalajs.dom.ext._
 import org.scalajs.dom.html.Canvas
@@ -19,6 +18,9 @@ import scala.collection.immutable._
 import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
+import org.querki.jquery.$
+import org.denigma.malihu.scrollbar.JQueryScrollbar._
+import org.denigma.malihu.scrollbar._
 
 class PublicationView(val elem: Element,
                       val selected: Var[String],
@@ -29,6 +31,19 @@ class PublicationView(val elem: Element,
   override type ItemView = ArticlePageView
 
   lazy val selections: Var[Set[PaperSelection]] = Var(Set.empty[PaperSelection])
+  lazy val scroller = initScroller()
+
+  override def bindView(): Unit = {
+    super.bindView()
+    val sc = scroller //to init lazy value
+  }
+
+
+  protected def initScroller(): JQueryScrollbar = {
+    val params = new mCustomScrollbarParams(theme = "rounded-dots-dark", axis = "y", advanced = new mCustomScrollbarAdvancedParams(true), mouseWheel = new MouseWheel(false))
+    $(elem).mCustomScrollbar(params)
+  }
+
 
   def scrollTo(selection: PaperSelection, retry: Int = 5, timeout: FiniteDuration = 800 millis): Unit = {
       itemViews.now.get(selection.page) match {
@@ -36,8 +51,9 @@ class PublicationView(val elem: Element,
           v.getSpans(selection).collectFirst{case e: HTMLElement =>e} match {
             case Some(e) =>
               scalajs.js.timers.setTimeout(50 millis) {
-                $(elem).dyn.scrollTo(e)
-                v.highlight(selection)
+                scroller.scrollTo(e)
+                //$(elem).dyn.scrollTo(e)
+                //v.highlight(selection)
                 //val top = e.getBoundingClientRect().top - elem.getBoundingClientRect().top
                 //println(s"offset ${e.offsetTop}")
                 //elem.scrollT=op = top
@@ -63,6 +79,7 @@ class PublicationView(val elem: Element,
           }
       }
   }
+
 
   lazy val active: rx.Rx[Boolean] = selected.map{
     value =>
@@ -163,9 +180,6 @@ class ArticlePageView(val elem: Element,
     case canv: HTMLDivElement => canv
   }).get //unsafe
 
-  override def bindView() = {
-    super.bindView()
-  }
 
   def getSpans(sel: TextLayerSelection): List[Element] = sel.selectTokenSpans(textDiv)
 
@@ -177,6 +191,11 @@ class ArticlePageView(val elem: Element,
       if (sp.classList.contains("highlight"))
         sp.classList.remove("highlight")
     }
+  }
+
+  protected def initScroller(): JQueryScrollbar = {
+    val params = new mCustomScrollbarParams(theme = "rounded-dots-dark", axis = "y", advanced = new mCustomScrollbarAdvancedParams(true))
+    $(elem).mCustomScrollbar(params)
   }
 
 

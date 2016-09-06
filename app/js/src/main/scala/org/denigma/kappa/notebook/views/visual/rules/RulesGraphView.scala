@@ -4,11 +4,9 @@ import org.denigma.binding.views.BindableView
 import org.denigma.kappa.model.Change
 import org.denigma.kappa.model.Change.Change
 import org.denigma.kappa.notebook.graph._
-import org.denigma.kappa.notebook.graph.layouts._
 import org.scalajs.dom.svg.LinearGradient
 import rx._
 
-import scala.Vector
 import scala.collection.immutable._
 import scalatags.JsDom.TypedTag
 
@@ -208,43 +206,4 @@ trait VisualGraph extends BindableView {
   }
   */
 
-}
-
-
-trait  RuleGraphWithForces extends VisualGraph{
-
-  lazy val minSpring = 75
-
-  def massByNode(node: KappaNode): Double = node match {
-    case n: AgentNode => 1.4
-    case s: SiteNode => 1.0
-    case st: StateNode => 0.4
-  }
-
-  protected def computeSpring(edge: Edge): SpringParams = (edge.from, edge.to) match {
-    case (from: SiteNode, to: SiteNode) => SpringParams(minSpring * 1.4, 1.4, massByNode(from), massByNode(to))
-    case (from: SiteNode, to: AgentNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
-    case (from: AgentNode, to: SiteNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
-    case (from: AgentNode, to: AgentNode) => SpringParams(minSpring, 2, massByNode(from), massByNode(to))
-    case (from: KappaNode, to: KappaNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
-  }
-
-  protected lazy val forces: Vector[Force[ Node, Edge]] = Vector(
-    repulsionForce,
-    springForce
-    //gravityForce
-    //,borderForce
-  )
-  protected lazy val gravityForce = new Gravity[Node, Edge](ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
-  protected lazy val repulsionForce: Repulsion[Node, Edge] = new Repulsion[Node, Edge](ForceLayoutParams.default2D.repulsionMult)(compareRepulsion)
-  protected lazy val springForce: SpringForce[Node, Edge] = new SpringForce[Node, Edge](ForceLayoutParams.default2D.springMult)(computeSpring)
-  //protected lazy val borderForce: BorderForce[Node, Edge] = new BorderForce[Node, Edge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
-
-  protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (massByNode(node1), massByNode(node2))
-
-
-  lazy val iterationsPerFrame = Var(1) //Var(10)
-  lazy val firstFrameIterations = Var(0) //Var(300)
-
-  def layouts: Var[Vector[GraphLayout]]
 }

@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.views.menus
 import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
-import org.denigma.kappa.messages.{Go, KappaMessage, Move}
+import org.denigma.kappa.messages.{Go, KappaMessage}
 import org.denigma.kappa.notebook.views.common.FixedPopStateEvent
 import org.denigma.malihu.scrollbar.JQueryScrollbar._
 import org.denigma.malihu.scrollbar._
@@ -109,7 +109,7 @@ class ScrollerView(val elem: Element,
   }
 
   protected def initScroller(): JQueryScrollbar = {
-    val params = new mCustomScrollbarParams(axis = "x", advanced = new mCustomScrollbarAdvancedParams(true), mouseWheel = new MouseWheel(false))
+    val params = new mCustomScrollbarParams(theme = "rounded-dots-dark", axis = "x", advanced = new mCustomScrollbarAdvancedParams(true), mouseWheel = new MouseWheel(false))
     $(scrollPanel).mCustomScrollbar(params)
   }
 

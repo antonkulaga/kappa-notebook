@@ -8,7 +8,6 @@ import org.denigma.kappa.notebook.parsers.{GraphUpdate, ParsedLine}
 import org.denigma.kappa.notebook.views.common.FixedBinder
 import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
 import org.denigma.kappa.notebook.views.visual.rules._
-import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -67,5 +66,8 @@ class VisualPanelView(val elem: Element, val currentLine: Rx[String], val parsed
         //2 in one
         new WholeRuleGraphView(el,
           updateInfo, showState,
-          args.getOrElse("container", "whole-graph-container").toString, RulesVisualSettings(s)).withBinder(n => new FixedBinder(n)) }
+          args.getOrElse("container", "whole-graph-container").toString,
+          RulesVisualSettings(s),
+          input
+        ).withBinder(n => new FixedBinder(n)) }
 }

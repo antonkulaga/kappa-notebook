@@ -1,5 +1,6 @@
 package org.denigma.malihu.scrollbar
-import org.querki.jquery.{$, JQuery}
+import org.querki.jquery.JQuery
+import org.scalajs.dom.raw.Element
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
@@ -13,6 +14,10 @@ object JQueryScrollbar {
       jq.mCustomScrollbar("scrollTo", selector)
     }
 
+    def scrollTo(element: Element): Any = {
+      jq.mCustomScrollbar("scrollTo", element)
+    }
+
   }
 }
 
@@ -20,17 +25,17 @@ object JQueryScrollbar {
 trait JQueryScrollbar extends JQuery {
   def mCustomScrollbar(params: mCustomScrollbarParams): JQueryScrollbar = js.native
 
-  def mCustomScrollbar(to: String, selector: String) = js.native
+  def mCustomScrollbar(to: String, selector: String): JQueryScrollbar = js.native
+
+  def mCustomScrollbar(to: String, element: Element): JQueryScrollbar = js.native
 
 }
 
-
 @ScalaJSDefined
 class mCustomScrollbarParams(val axis: String,
-                             //val theme: String,
+                             val theme: String,
                              val advanced: mCustomScrollbarAdvancedParams,
-                             val mouseWheel: MouseWheel = new MouseWheel()
-                             /*val callbacks:  mCustomScrollbarCallbacks = js.native*/) extends js.Object{
+                             val mouseWheel: MouseWheel = new MouseWheel()) extends js.Object{
 
 }
 
@@ -41,6 +46,11 @@ class mCustomScrollbarAdvancedParams(val autoExpandHorizontalScroll: Boolean,
                                      val updateOnBrowserResize:Boolean = true
                                     ) extends js.Object{
 
+}
+
+object mCustomScrollbarCallbacks {
+
+  def apply(onOverflowX: () => _, onOverflowY: () => _) = new mCustomScrollbarCallbacks(onOverflowX, onOverflowY)
 }
 
 @ScalaJSDefined

@@ -25,7 +25,7 @@ class SpringForce[Node <: ForceNode, Edge <: ForceEdge](val springMult: Double, 
 
       val force1= (distance - length)  * strength * mass2 * attractionGlobal / 2
       val force2 = (distance - length) * strength * mass1 *  attractionGlobal / 2
-      println(s"SPRING FORCES ${force1} ${force2}")
+      //println(s"SPRING FORCES ${force1} ${force2}")
 
       //l1.force -= force1
       //l2.force += force2

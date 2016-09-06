@@ -1,29 +1,30 @@
 package org.denigma.kappa.notebook.views.visual.rules
 
 import org.denigma.binding.extensions._
-import org.denigma.kappa.model.Change.Change
+import org.denigma.kappa.messages.KappaMessage
+import org.denigma.kappa.model.KappaModel.{Site, State}
 import org.denigma.kappa.model.{Change, KappaModel}
-import org.denigma.kappa.model.KappaModel.{Agent, Site, State}
+import org.denigma.kappa.notebook.actions.Commands
 import org.denigma.kappa.notebook.graph._
-import org.denigma.kappa.notebook.graph.layouts.{ForceLayoutParams, GraphLayout}
-import org.denigma.kappa.notebook.parsers.{GraphUpdate, GraphUpdateInfo}
+import org.denigma.kappa.notebook.graph.layouts._
+import org.denigma.kappa.notebook.parsers.GraphUpdateInfo
 import org.denigma.kappa.notebook.views.visual.ShowParameters
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
-import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
+import rx._
 
 import scala.Predef.{Map, Set}
-import scala.{List, Vector}
 import scala.collection.immutable._
+import scala.{List, Vector}
 
 class WholeRuleGraphView(val elem: Element,
                          val update: Rx[GraphUpdateInfo],
                          val showState: Rx[ShowParameters.ShowParameters],
                          val containerName: String,
-                         val visualSettings: RulesVisualSettings
-                        ) extends RuleGraphWithForces
+                         val visualSettings: RulesVisualSettings,
+                         val input: Var[KappaMessage]
+                        ) extends VisualGraph
 {
 
   lazy val size: (Double, Double) = elem.getBoundingClientRect() match {
@@ -50,6 +51,46 @@ class WholeRuleGraphView(val elem: Element,
     }
   }
 
+  lazy val minSpring = 75
+
+  def massByNode(node: KappaNode): Double = node match {
+    case n: AgentNode => 1.4
+    case s: SiteNode => 1.0
+    case st: StateNode => 0.4
+  }
+
+  protected def computeSpring(edge: Edge): SpringParams = (edge.from, edge.to) match {
+    case (from: SiteNode, to: SiteNode) => SpringParams(minSpring * 1.4, 1.4, massByNode(from), massByNode(to))
+    case (from: SiteNode, to: AgentNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
+    case (from: AgentNode, to: SiteNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
+    case (from: AgentNode, to: AgentNode) => SpringParams(minSpring, 2, massByNode(from), massByNode(to))
+    case (from: KappaNode, to: KappaNode) => SpringParams(minSpring, 1, massByNode(from), massByNode(to))
+  }
+
+  val forceLayoutParams = Var(ForceLayoutParams.default2D)
+
+  protected lazy val forces: Rx[Vector[Force[ Node, Edge]]] = Rx{
+    val params = forceLayoutParams()
+    val repulsionForce = new Repulsion[Node, Edge](params.repulsionMult)(compareRepulsion)
+    val springForce = new SpringForce[Node, Edge](params.springMult)(computeSpring)
+    val gravityForce = new Gravity[Node, Edge](params.gravityMult, params.center)
+    Vector(
+      repulsionForce,
+      springForce,
+      gravityForce
+    )
+  }
+
+  protected lazy val mode = forceLayoutParams.map(p=>p.mode)
+
+
+  protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (massByNode(node1), massByNode(node2))
+
+
+  lazy val iterationsPerFrame = Var(10)//Var(1) //Var(10)
+  lazy val firstFrameIterations = Var(300)//Var(0) //Var(300)
+
+
   val viz = new Visualizer(container,
     width,
     height,
@@ -58,6 +99,20 @@ class WholeRuleGraphView(val elem: Element,
     iterationsPerFrame,
     firstFrameIterations
   )
+
+
+  lazy val layouts: Rx[Vector[GraphLayout]] = Rx{
+    val layout = new RulesForceLayout(nodes, edges, mode(), forces())
+    Vector(layout)
+  }
+
+
+  input.onChange{
+    case Commands.SetLayoutParameters("rules", params) =>
+      forceLayoutParams() = params
+
+    case other => //do nothing
+  }
 
   implicit def lineParamsByStatus(status: Change.Change): LineParams = status match {
     case Change.Removed => LineParams(Colors.red)
@@ -313,7 +368,5 @@ class WholeRuleGraphView(val elem: Element,
     subscribeUpdates()
     viz.render()
   }
-
-  lazy val layouts: Var[Vector[GraphLayout]] = Var(Vector(new RulesForceLayout(nodes, edges, ForceLayoutParams.default2D.mode, forces)))
 
 }

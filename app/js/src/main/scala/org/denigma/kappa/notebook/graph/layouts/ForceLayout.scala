@@ -14,9 +14,9 @@ import scala.collection.immutable._
   */
 object ForceLayoutParams {
 
-  lazy val default2D = ForceLayoutParams(100, 1, 1, new Vector3(0.0, 0.0, 0.0))
+  lazy val default2D = ForceLayoutParams(100, 0.9, 1, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(100, 1, 1, new Vector3(0.0, 0.0, 0.0), LayoutMode.ThreeD)
+  lazy val default3D = ForceLayoutParams(100, 0.9, 1, new Vector3(0.0, 0.0, 0.0), LayoutMode.ThreeD)
 
 }
 
@@ -134,7 +134,7 @@ trait ForceLayout extends GraphLayout  with Randomizable
     }
   }
 
-  def position(nodes: Vector[Node], div: Double = 4) = {
+  def position(nodes: Vector[Node], div: Double = 2.5) = {
     for {i <- nodes.indices} {
       val node = nodes(i)//.view
       val l = info(node)

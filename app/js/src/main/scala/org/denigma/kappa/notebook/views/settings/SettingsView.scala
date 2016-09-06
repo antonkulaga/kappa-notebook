@@ -55,8 +55,8 @@ class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotati
     scalajs.js.timers.setTimeout(autosaveDuraction)(sendSaveCommand())
   }
 
-  val rulesGraphRepulsion = Var(50)
-  val rulesGraphSpring = Var(10)
+  val rulesGraphRepulsion = Var(100)
+  val rulesGraphSpring = Var(0.9)
   val rulesGraphGravity = Var(1)
   val rulesMode = Var(LayoutMode.TwoD)
   val rulesCenter = Var(new Vector3(0, 0, 0))
@@ -70,7 +70,9 @@ class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotati
     ForceLayoutParams(repulsion, spring, gravity, center, mode)
   }
 
-  rulesGraphParams.onChange{ params =>
+  rulesGraphParams.foreach{ params =>
+    println("send params = ")
+    pprint.pprintln(params)
     input() = Commands.SetLayoutParameters("rules", params)
   }
 
@@ -89,7 +91,7 @@ class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotati
     ForceLayoutParams(repulsion, spring, gravity, center, mode)
   }
 
-  fluxGraphParams.onChange{ params =>
+  fluxGraphParams.foreach{ params =>
     input() = Commands.SetLayoutParameters("flux", params)
   }
 

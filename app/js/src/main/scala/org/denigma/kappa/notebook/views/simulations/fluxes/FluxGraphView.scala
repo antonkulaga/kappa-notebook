@@ -3,16 +3,12 @@ package org.denigma.kappa.notebook.views.simulations.fluxes
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
 import org.denigma.kappa.notebook.graph._
-import org.denigma.kappa.notebook.graph.drawing.{KappaPainter, Rectangle}
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook.graph.layouts._
-import rx._
-import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all.attrs._
-import org.denigma.threejs.extras.HtmlSprite
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
-import org.scalajs.dom.svg.{LinearGradient, SVG}
+import org.scalajs.dom.svg.SVG
+import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
 
 import scala.Vector
 import scala.collection.immutable._
@@ -62,7 +58,7 @@ class FluxGraphView(val elem: Element,
   }
 
 
-  lazy val springBase = 150 + nodes.now.length * 10
+  lazy val springBase = 100 + nodes.now.length * 10
 
   val container = elem.selectByClass(containerClass).asInstanceOf[HTMLElement]
 
@@ -84,15 +80,10 @@ class FluxGraphView(val elem: Element,
     case other => (1, 1)
   }
 
-  protected def percent(value: Double): Double = (value, max.now, min.now) match {
-    case (v, mx, _) if v > 0 => v / mx
-    case (v, _, mi) if v < 0 => v / mi
-    case _ => 0.0
-  }
-
   protected def computeSpring(edge: Edge) = {
-    val p = percent(edge.value)
-    val length = (1 - p) * springBase + 0.1 * springBase
+    val p = edge.percent.now
+    val length = (1 - p) * springBase + 0.3 * springBase
+    dom.console.log(s"${edge.from.label} => ${edge.to.label} VALUE(${edge.value}) PERCENT${p} LENGTH${length} MIN${min.now} MAX${max.now}")
     SpringParams(length, 0.5 + p * 2, 1, 1  )
   }
 
@@ -105,8 +96,8 @@ class FluxGraphView(val elem: Element,
   protected val forces: Vector[Force[ Node, Edge]] = Vector(
     repulsionForce,
     //attractionForce,
-    springForce
-    //gravityForce
+    springForce,
+    gravityForce
     //borderForce
   )
 

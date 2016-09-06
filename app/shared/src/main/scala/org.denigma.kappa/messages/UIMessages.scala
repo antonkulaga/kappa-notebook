@@ -6,7 +6,6 @@ import org.denigma.kappa.notebook.parsers.AST
 
 
 object UIMessage {
-  import boopickle.DefaultBasic._
 
   implicit val UIMessagePickler: CompositePickler[UIMessage] = compositePickler[UIMessage]
     //.addConcreteType[GoToPaper]
@@ -38,4 +37,3 @@ object MoveTo {
   }
   case class Tab(name: String, shift: Int = 0, switch: Boolean = false) extends UIMessage //if shift
 }
-

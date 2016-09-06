@@ -11,7 +11,6 @@ import rx._
 import scala.Vector
 import scala.collection.immutable._
 import scalatags.JsDom.TypedTag
-import rx.Ctx.Owner.Unsafe.Unsafe
 
 
 case class Gradient(name: String, change: Change, tag: TypedTag[LinearGradient])
@@ -232,20 +231,20 @@ trait  RuleGraphWithForces extends VisualGraph{
 
   protected lazy val forces: Vector[Force[ Node, Edge]] = Vector(
     repulsionForce,
-    springForce,
-    gravityForce
+    springForce
+    //gravityForce
     //,borderForce
   )
   protected lazy val gravityForce = new Gravity[Node, Edge](ForceLayoutParams.default2D.gravityMult, ForceLayoutParams.default2D.center)
   protected lazy val repulsionForce: Repulsion[Node, Edge] = new Repulsion[Node, Edge](ForceLayoutParams.default2D.repulsionMult)(compareRepulsion)
   protected lazy val springForce: SpringForce[Node, Edge] = new SpringForce[Node, Edge](ForceLayoutParams.default2D.springMult)(computeSpring)
-  protected lazy val borderForce: BorderForce[Node, Edge] = new BorderForce[Node, Edge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
+  //protected lazy val borderForce: BorderForce[Node, Edge] = new BorderForce[Node, Edge](ForceLayoutParams.default2D.repulsionMult / 5, 10, 0.9, ForceLayoutParams.default2D.center)
 
   protected def compareRepulsion(node1: Node, node2: Node): (Double, Double) = (massByNode(node1), massByNode(node2))
 
 
-  lazy val iterationsPerFrame = Var(10)
-  lazy val firstFrameIterations = Var(300)
+  lazy val iterationsPerFrame = Var(1) //Var(10)
+  lazy val firstFrameIterations = Var(0) //Var(300)
 
   def layouts: Var[Vector[GraphLayout]]
 }

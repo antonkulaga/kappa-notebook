@@ -1,24 +1,17 @@
 import com.typesafe.sbt.SbtNativePackager.autoImport._
-import com.typesafe.sbt.gzip.Import.gzip
+import com.typesafe.sbt.web.SbtWeb
 import com.typesafe.sbt.web.SbtWeb.autoImport._
-import com.typesafe.sbt.web.pipeline.Pipeline
-import com.typesafe.sbt.web.{PathMapping, SbtWeb}
+import com.typesafe.sbt.gzip.Import.gzip
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
-import org.scalajs.sbtplugin.ScalaJSPluginInternal
-import playscalajs.PlayScalaJS
 import sbt.Keys._
 import sbt._
-import spray.revolver.RevolverPlugin.autoImport._
 
 lazy val bintrayPublishIvyStyle = settingKey[Boolean]("=== !publishMavenStyle") //workaround for sbt-bintray bug
 
 lazy val publishSettings = Seq(
   bintrayRepository := "denigma-releases",
-
   bintrayOrganization := Some("denigma"),
-
   licenses += ("MPL-2.0", url("http://opensource.org/licenses/MPL-2.0")),
-
   bintrayPublishIvyStyle := true
 )
 
@@ -37,22 +30,13 @@ lazy val commonSettings = Seq(
   organization := "org.denigma",
   scalacOptions ++= Seq( "-feature", "-language:_" ),
   javacOptions ++= Seq("-encoding", "UTF-8"),
-  // Enable JAR export for staging
-  exportJars := true,
   parallelExecution in Test := false,
   resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"), //for scala-js-binding
   resolvers += Resolver.jcenterRepo,
   unmanagedClasspath in Compile <++= unmanagedResources in Compile,
   libraryDependencies ++= Dependencies.commonShared.value ++ Dependencies.testing.value,
   updateOptions := updateOptions.value.withCachedResolution(true) //to speed up dependency resolution
-) //++ eclipseSettings
-
-
-val scalaJSDevStage  = Def.taskKey[Pipeline.Stage]("Apply fastOptJS on all Scala.js projects")
-
-def scalaJSDevTaskStage: Def.Initialize[Task[Pipeline.Stage]] = Def.task { mappings: Seq[PathMapping] =>
-  mappings ++ PlayScalaJS.devFiles(Compile).value ++ PlayScalaJS.sourcemapScalaFiles(fastOptJS).value
-}
+)
 
 lazy val websim = crossProject
   .crossType(CrossType.Full)
@@ -62,6 +46,7 @@ lazy val websim = crossProject
     name := "websim",
     version := Versions.websim
   ).disablePlugins(RevolverPlugin)
+  .jsConfigure(p=>p.enablePlugins(ScalaJSWeb))
   .jsSettings(
     persistLauncher in Compile := true,
     persistLauncher in Test := false
@@ -87,55 +72,40 @@ lazy val app = crossProject
   .jsSettings(
     libraryDependencies ++= Dependencies.sjsLibs.value,
     persistLauncher in Compile := true,
+    emitSourceMaps in fullOptJS := true,
     persistLauncher in Test := false,
     jsDependencies += RuntimeDOM % Test
   )
-  // adding the `it` configuration
-  .configs(IntegrationTest).
-  // adding `it` tasks
-  settings(Defaults.itSettings:_*).
-  // add `shared` folder to `jvm` source directories
-  jvmSettings(unmanagedSourceDirectories in IntegrationTest ++= CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq).
-  // add `shared` folder to `js` source directories
-  jsSettings(unmanagedSourceDirectories in IntegrationTest ++= CrossType.Full.sharedSrcDir(baseDirectory.value, "it").toSeq)
-  // adding ScalaJSClassLoader to `js` configuration
-  .jsSettings(inConfig(IntegrationTest)(ScalaJSPluginInternal.scalaJSTestSettings):_*)
-  .jsConfigure(p=>p.enablePlugins(ScalaJSPlay))
+  .jsConfigure(p=>p.enablePlugins(ScalaJSWeb))
   .jvmSettings(
     mainClass in Compile := Some("org.denigma.kappa.notebook.Main"),
+    pipelineStages in Assets := Seq(scalaJSPipeline, gzip),
+    compile in Compile <<= (compile in Compile) dependsOn scalaJSPipeline.map(f => f(Seq.empty)),
     libraryDependencies ++= Dependencies.compilers.value ++ Dependencies.otherJvm.value,
-    scalaJSDevStage := scalaJSDevTaskStage.value,
     (emitSourceMaps in fullOptJS) := true,
-    pipelineStages in Assets := {
-      val stages = sys.env.get("APP_MODE") match {
+    isDevMode in scalaJSPipeline := { sys.env.get("APP_MODE") match {
         case Some(str) if str.toLowerCase.startsWith("prod") =>
-          println("PROJECT IS IN PRODUCTION MODE")
-          Seq(scalaJSProd, gzip)
-        case other =>
-          println("PROJECT IS IN DEVELOPMENT MODE")
-          Seq(scalaJSDevStage, gzip)
+	        println("PRODUCTION MODE")
+          true
+        case other => (devCommands in scalaJSPipeline).value.contains(state.value.history.current)
       }
-      stages
     },
-    libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value// ++ Dependencies.ammonite.value,
-    //initialCommands in (Test, console) := Console.out
+    libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value
   )
-  .jvmConfigure(p => p.enablePlugins(SbtTwirl, SbtWeb, PlayScalaJS))
+  .jvmConfigure(p => p.enablePlugins(SbtTwirl, SbtWeb))
 
 lazy val appJS = app.js
 lazy val appJVM = app.jvm settings (scalaJSProjects := Seq(appJS))
 
-(managedClasspath in Runtime) += (packageBin in appJVM in Assets).value
 
 lazy val root = Project("root",file("."),settings = commonSettings)
   .settings(
     name := "kappa-notebook-root",
     version := Versions.kappaNotebook,
     mainClass in Compile := (mainClass in appJVM in Compile).value,
-    (fullClasspath in Runtime) += (packageBin in appJVM in Assets).value,
+    (managedClasspath in Runtime) += (packageBin in appJVM in Assets).value,
     maintainer := "Anton Kulaga <antonkulaga@gmail.com>",
     packageSummary := "kappa-notebook",
     packageDescription := """Kappa notebook runs kappa from the browser""",
-    javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M"),
-    initialCommands in (Test, console) := Console.out
+    javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M")
   ) dependsOn appJVM aggregate(appJVM, appJS) enablePlugins JavaAppPackaging

@@ -78,6 +78,8 @@ class PapersView(val elem: Element,
   val selectionOpt: Var[Option[Selection]] = Var(None)
 
   connector.input.onChange {
+
+
     case GoToPaper(loc)=> paperURI() = loc //just switches to another paper
 
     case GoToPaperSelection(selection) =>

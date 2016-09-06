@@ -2,8 +2,6 @@ package org.denigma.kappa.notebook.styles
 
 import org.denigma.controls.papers.MediaQueries
 
-import scalacss.mutable.StyleSheet
-
 import scalacss.Defaults._
 trait CodeStyles extends MainStyles{
 

@@ -14,16 +14,15 @@ import scala.collection.immutable._
   */
 object ForceLayoutParams {
 
-  lazy val default2D = ForceLayoutParams(0.9, 100, 1, new Vector3(0.0, 0.0, 0.0))
+  lazy val default2D = ForceLayoutParams(100, 1, 1, new Vector3(0.0, 0.0, 0.0))
 
-  lazy val default3D = ForceLayoutParams(0.5, 0.5, 1, new Vector3(0.0, 0.0, 0.0), LayoutMode.ThreeD)
+  lazy val default3D = ForceLayoutParams(100, 1, 1, new Vector3(0.0, 0.0, 0.0), LayoutMode.ThreeD)
 
 }
 
 case class ForceLayoutParams(
-                            //attractionMult: Double,
-                            springMult: Double,
                             repulsionMult: Double,
+                            springMult: Double,
                             gravityMult: Double,
                             center: Vector3,
                             mode: LayoutMode = LayoutMode.TwoD
@@ -105,7 +104,14 @@ trait ForceLayout extends GraphLayout  with Randomizable
   def active = _active
 
   protected def randomize(nds: Vector[Node]) = {
-    for(n <- nds) info(n).init(randomPos())
+    for(n <- nds) {
+      val inf = info(n)
+      val pos = randomPos()
+      n.position.x = pos.x
+      n.position.y = pos.y
+      n.position.z = pos.z
+      info(n).fillIfEmpty(pos)
+    }
   }
 
   def start(width: Double, height: Double, camera: PerspectiveCamera): Unit = {
@@ -121,39 +127,33 @@ trait ForceLayout extends GraphLayout  with Randomizable
       for(force <- forces)
       {
         force.tick(width, height, camera, nodes.now, edges.now, forceConstant)
-        this.position(nodes.now)
       }
+      this.position(nodes.now)
       layoutIterations() = layoutIterations.now + 1
       this.update(this.edges.now)
     }
   }
 
-  def position(nodes: Vector[Node]) = {
+  def position(nodes: Vector[Node], div: Double = 4) = {
     for {i <- nodes.indices} {
       val node = nodes(i)//.view
-      //val view = node.view
       val l = info(node)
 
-      val length = Math.max(EPSILON, l.offset.length())
-      //println(s"Math.min(length($length), temperature($temperature))")
-      //l.pos.x += (l.offset.x / length) * Math.min(length, temperature)
-      //l.pos.y += (l.offset.y / length) * Math.min(length, temperature)
-      //l.pos.z += (l.offset.z / length) * Math.min(length, temperature)
+      val dx = l.offset.x / 3.0 + l.offset.x * temperature.now / 3.0
+      val dy =  l.offset.y / 3.0 + l.offset.y * temperature.now / 3.0
+      val dz = l.offset.z / 3.0 + l.offset.z * temperature.now  / 3.0
 
-      l.pos.x += l.offset.x / 3.0 + l.offset.x * temperature.now / 3.0
-      l.pos.y += l.offset.y / 3.0 + l.offset.y * temperature.now / 3.0
-      l.pos.z += l.offset.z / 3.0 + l.offset.z * temperature.now  / 3.0
-
-      node.position.x -= (node.position.x - l.pos.x)
-      node.position.y -= (node.position.y - l.pos.y)
-      node.position.z -= (node.position.z - l.pos.z)
+      node.position.x += dx / div
+      node.position.y += dy / div
+      node.position.z += dz / div
 
       if(node.position.x.isNaN || node.position.y.isNaN || node.position.z.isNaN) {
         //dom.console.error("NANO DETECTED")
         dom.console.error(s"position(${node.position.x} , ${node.position.y}, ${node.position.z})")
         throw new Exception("invalid argument the position must be:")
       }
-      l.setOffsets(0, 0, 0)
+      l.offset = (0.0, 0.0, 0.0)
+      l.pos = node.position
     }
   }
 

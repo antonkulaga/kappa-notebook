@@ -118,7 +118,9 @@ object Dependencies {
     "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
 
 
-		"com.iheart" %% "ficus" % Versions.ficus
+		"com.iheart" %% "ficus" % Versions.ficus,
+
+		"com.vmunier" %% "scalajs-scripts" % Versions.scalaJSscripts
 	))
 
 	val compilers = Def.setting(Seq(

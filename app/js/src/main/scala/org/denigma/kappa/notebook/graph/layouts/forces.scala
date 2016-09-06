@@ -1,8 +1,6 @@
 package org.denigma.kappa.notebook.graph.layouts
 
-import org.denigma.kappa.notebook.graph.drawing.Rectangle
 import org.denigma.threejs.{PerspectiveCamera, Vector3}
-import org.scalajs.dom
 
 
 class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Double, EPSILON: Double = 0.001)
@@ -29,8 +27,8 @@ class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Doubl
       val force1= distance  / (attractionGlobal * m2)
       val force2 = distance  / (attractionGlobal * m1)
 
-      l1.force -= force1
-      l2.force += force2
+      //l1.force -= force1
+      //l2.force += force2
 
       l1.offset.x -= deltaX  * force1
       l1.offset.y -= deltaY  * force1
@@ -45,53 +43,6 @@ class Attraction[Node <: ForceNode, Edge <: ForceEdge](val attractionMult: Doubl
 
 }
 
-class BorderForce[Node <: ForceNode, Edge <: ForceEdge](val repulsionMult: Double, val threshold: Double, mult: Double, center: Vector3, EPSILON: Double = 0.1) extends Force[Node, Edge] {
-
-  def border(width: Double, height: Double) = Rectangle.fromCorners(center.x - width / 2, center.y - height / 2, center.x + width / 2, center.y + height / 2)
-
-  def toHorBorders(rect: Rectangle, x: Double) = (x - rect.left, rect.right - x)
-
-  def toVerBorders(rect: Rectangle, y: Double) = (y - rect.top,  rect.bottom - y)
-
-  def toBorder: PartialFunction[(Double, Double), Double] = {
-    case (ld, rd) if (ld - threshold) < 0.0  =>
-      ld - threshold
-
-    case (ld, rd) if (rd - threshold) < 0.0  =>
-      Math.abs(rd - threshold)
-
-    case _ => 0
-  }
-
-
-  override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
-    val repulsion = repulsionMult * forceConstant
-    val rect = border(width *  mult, height * mult)
-    for {
-      i <- nodes.indices
-    }
-    {
-      val no1 = nodes(i)
-      val l1 = no1.layoutInfo
-      if(i==0) l1.setOffsets(0, 0, 0)
-
-      val deltaX = toBorder(toHorBorders(rect, l1.pos.x))
-      val deltaY = toBorder(toVerBorders(rect, l1.pos.y))
-      val deltaZ = 0
-
-      val distance = Math.max(Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2)), EPSILON)
-      if(distance > 0) {
-        val force =  (repulsion * repulsion) / Math.pow(distance, 2)
-        l1.force += force
-        l1.offset.x = l1.offset.x - (deltaX / distance) * force
-        l1.offset.y = l1.offset.y - (deltaY / distance) * force
-        l1.offset.z = 0
-      }
-    }
-  }
-
-}
-
 class Gravity[Node <: ForceNode, Edge <: ForceEdge](val gravityMult: Double, center: Vector3,  EPSILON: Double = 0.01) extends Force[Node, Edge] {
 
   override def tick(width: Double, height: Double, camera: PerspectiveCamera, nodes: Vector[Node], edges: Vector[Edge], forceConstant: Double) = {
@@ -100,20 +51,20 @@ class Gravity[Node <: ForceNode, Edge <: ForceEdge](val gravityMult: Double, cen
     {
       val no1 = nodes(i)
       val l1 = no1.layoutInfo
-      if(i==0) l1.setOffsets(0, 0, 0)
+      //if(i==0) l1.setOffsets(0, 0, 0)
 
-      l1.force = 0
-      l1.init(no1.position)
+      //l1.force = 0
+      l1.fillIfEmpty(no1.position)
 
       val deltaX = l1.pos.x - center.x
       val deltaY = l1.pos.y - center.y
       val deltaZ = l1.pos.z - center.z
 
-      val distance = Math.max(EPSILON, l1.pos.distanceTo(center))
+      val distance = Math.max(1, l1.pos.distanceTo(center))//Math.max(EPSILON, l1.pos.distanceTo(center))
 
       val force =  attraction * gravityMult / Math.sqrt(distance)
 
-      l1.force += force
+      //l1.force += force
       l1.offset.x = l1.offset.x - (deltaX / distance) * force
       l1.offset.y = l1.offset.y - (deltaY / distance) * force
       l1.offset.z = l1.offset.z - (deltaZ / distance) * force

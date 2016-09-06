@@ -1,11 +1,9 @@
 package org.denigma.kappa.notebook.styles
 
-
 import org.denigma.controls.papers.MediaQueries
 
-import scalacss.mutable.StyleSheet
 import scalacss.Defaults._
-import scalacss.mutable.StyleSheet.Standalone
+import scalacss.internal.mutable.StyleSheet.Standalone
 
 /**
   * Created by antonkulaga on 7/17/16.

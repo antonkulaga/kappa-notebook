@@ -1,24 +1,19 @@
 package org.denigma.kappa.notebook.views.common
 
-import org.denigma.binding.binders.{Events, GeneralBinder, ReactiveBinder}
+import org.denigma.binding.binders.{Events, ReactiveBinder}
 import org.denigma.binding.extensions._
 import org.denigma.binding.macroses._
 import org.denigma.binding.views.BindableView
-import org.denigma.codemirror.extensions.EditorConfig
-import org.denigma.codemirror.{CodeMirror, Editor}
 import org.denigma.controls.code.CodeBinder
-import org.querki.jquery._
 import org.scalajs.dom
-import org.scalajs.dom.raw._
-import rx._
 import org.scalajs.dom.ext._
-import org.scalajs.dom.{Element => _, Event => _, KeyboardEvent => _, _}
+import org.scalajs.dom.raw._
+import org.scalajs.dom.{Element => _, Event => _, KeyboardEvent => _}
+import rx._
 
 import scala.scalajs.js
 import scala.util.{Failure, Success, Try}
 //import rx.Ctx.Owner.voodoo
-import rx.Ctx.Owner.Unsafe.Unsafe
-
 import scala.collection.immutable.Map
 class FixedBinder[View <: BindableView](view: View, recover: Option[ReactiveBinder] = None)
                                        (implicit
@@ -84,14 +79,12 @@ class FixedBinder[View <: BindableView](view: View, recover: Option[ReactiveBind
     inp.attributes.get("type").map(_.value.toString) match {
       case Some("checkbox") =>
         subscribeOnEvent(inp, rxName, "checked", Events.change, bools){
-          case  any =>
-            any.asInstanceOf[Boolean]
+          any => any.asInstanceOf[Boolean]
         }
 
       case Some("radio") =>
         subscribeOnEvent(inp, rxName, "checked", Events.change, bools){
-          case  any =>
-            any.asInstanceOf[Boolean]
+          any => any.asInstanceOf[Boolean]
         }
         
       case _ =>

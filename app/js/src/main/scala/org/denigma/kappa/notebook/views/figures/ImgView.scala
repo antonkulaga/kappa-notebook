@@ -6,7 +6,7 @@ import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import scalatags.JsDom.all
 import scalatags.JsDom.all._
-import scalajs.js
+import scala.scalajs.js
 import org.scalajs.dom.ext._
 
 /**
@@ -24,7 +24,7 @@ class ImgView(val elem: Element, val selected: Var[String], val image: Var[Image
 
   protected def addFigure() = {
     if(!elem.children.exists(e=>e.id == figureId)) {
-      val dataKey = "data-bind-src".attr
+      val dataKey = attr("data-bind-src")
       val figure = img(all.id := figureId, dataKey := "src",`class` := "ui huge image")
       elem.appendChild(figure.render)
 

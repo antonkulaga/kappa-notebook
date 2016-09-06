@@ -1,7 +1,5 @@
 package org.denigma.kappa.notebook.graph.layouts
-import org.denigma.kappa.notebook.graph.drawing.Rectangle
-import org.denigma.threejs.{PerspectiveCamera, Vector3}
-import org.scalajs.dom
+import org.denigma.threejs.PerspectiveCamera
 
 
 case class SpringParams(length: Double, strength: Double = 1, mass1: Double = 1, mass2: Double = 1)
@@ -22,14 +20,15 @@ class SpringForce[Node <: ForceNode, Edge <: ForceEdge](val springMult: Double, 
       val deltaY = l1.pos.y - l2.pos.y
       val deltaZ = l1.pos.z - l2.pos.z
 
-      val distance = max(EPSILON, l1.pos.distanceTo(l2.pos))
+      val distance = max(1, l1.pos.distanceTo(l2.pos))//max(EPSILON, l1.pos.distanceTo(l2.pos))
       val SpringParams(length, strength, mass1, mass2) = compute(edge)
 
       val force1= (distance - length)  * strength * mass2 * attractionGlobal / 2
       val force2 = (distance - length) * strength * mass1 *  attractionGlobal / 2
+      println(s"SPRING FORCES ${force1} ${force2}")
 
-      l1.force -= force1
-      l2.force += force2
+      //l1.force -= force1
+      //l2.force += force2
 
       l1.offset.x -= (deltaX / distance)  * force1
       l1.offset.y -= (deltaY / distance)  * force1

@@ -46,7 +46,7 @@ class YouTubeView(val elem: Element, val selected: Var[String], val video: Var[V
 
   override def bindView() = {
     if(!elem.children.exists(e=>e.id == figureId)) {
-      val dataKey = "data-bind-src".attr
+      val dataKey = attr("data-bind-src")
       val child = div(all.id := figureId)
       elem.appendChild(child.render)
     }

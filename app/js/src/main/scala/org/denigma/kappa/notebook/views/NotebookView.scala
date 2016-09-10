@@ -156,7 +156,7 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     }
     .register("Figures") {
       case (el, params) =>
-        val v = new FiguresView(el, figures, input).withBinder(new CodeBinder(_))
+        val v = new FiguresView(el, figures, input, kappaCursor).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Figures)
         v
     }

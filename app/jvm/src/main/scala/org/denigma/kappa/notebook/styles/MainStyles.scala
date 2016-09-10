@@ -83,6 +83,6 @@ class MainStyles extends Standalone with MediaQueries
     )
 
   "#VisualPanel" - (
-      minWidth(700 px)
+      minWidth(600 px)
     )
 }

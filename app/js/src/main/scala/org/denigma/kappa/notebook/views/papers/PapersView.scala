@@ -9,8 +9,9 @@ import org.denigma.kappa.messages.{GoToPaper, GoToPaperSelection, KappaBinaryFil
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.actions.Commands
 import org.denigma.kappa.notebook.parsers.PaperSelection
+import org.denigma.kappa.notebook.views.annotations.CommentInserter
 import org.denigma.kappa.notebook.views.common.TabHeaders
-import org.denigma.kappa.notebook.views.editor.{EmptyCursor, KappaCursor, KappaEditorCursor}
+import org.denigma.kappa.notebook.views.editor.{KappaCursor, KappaEditorCursor}
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -21,13 +22,21 @@ import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
 
+/**
+  * This class manages papers
+  * @param elem Element to which view is bound to
+  * @param connector class that provides websocket connection and input/output vars to subscribe to
+  * @param projectPapers papers of the project
+  * @param kappaCursor is used to suggest insertions of comments
+  */
 class PapersView(val elem: Element,
                  val connector: WebSocketTransport,
                  val projectPapers: Rx[Map[String, KappaBinaryFile]],
                  val kappaCursor: Var[KappaCursor]) extends BindableView
-  with CollectionMapView {
+  with CollectionMapView with CommentInserter {
 
   val paperSelections: Var[List[PaperSelection]] = Var(Nil)
+
   val currentSelection = paperSelections.map(s => s.headOption)
 
   val paperURI: Var[String] = Var("")
@@ -43,16 +52,6 @@ class PapersView(val elem: Element,
   override type Value = Paper
 
   override type ItemView = PublicationView
-
-  lazy val line: Rx[String] = kappaCursor.map{
-    case KappaEditorCursor(file, ed, l, ch) => l +":" + ch
-    case _ => ""
-  }
-
-  lazy val codeFile = kappaCursor.map{
-    case KappaEditorCursor(file, ed, l, ch) =>  file.path
-    case _ => ""
-  }
 
   val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
 
@@ -77,9 +76,9 @@ class PapersView(val elem: Element,
 
   val selectionOpt: Var[Option[Selection]] = Var(None)
 
-
   lazy val input = connector.input
 
+  //subscribption on some events/commands
   input.onChange {
 
 
@@ -115,30 +114,7 @@ class PapersView(val elem: Element,
 
   }
 
-  lazy val lineNumber = kappaCursor.map{c => c.lineNum}
-  lazy val charNumber = kappaCursor.map{c => c.ch}
-
-  val canInsert: Rx[Boolean] = kappaCursor.map(c => c != EmptyCursor)
-  val insertComment = Var(Events.createMouseEvent())
-  insertComment.triggerLater{
-    kappaCursor.now match {
-      case c @ KappaEditorCursor(file, ed, lineNum, ch) =>
-        val doc = ed.getDoc()
-        val line = doc.getLine(lineNum)
-        doc.replaceRange(comment.now, c.position, c.position)
-
-      case _ => dom.console.error("EDITOR IS NOT AVALIABLE TO INSERT")
-    }
-  }
-
-  //TODO: fix this ugly button
-  val showSelections = Var(true)
-  showSelections.onChange{
-    case false => //itemViews.now.foreach(i => )
-    case true =>
-  }
-
-  val domSelections: Var[Map[Item, (Map[Int, List[TextLayerSelection]])]] = Var(Map.empty[Item, (Map[Int, List[TextLayerSelection]])])
+  lazy val domSelections: Var[Map[Item, (Map[Int, List[TextLayerSelection]])]] = Var(Map.empty[Item, (Map[Int, List[TextLayerSelection]])])
 
   override protected def subscribeUpdates(): Unit =
   {
@@ -166,13 +142,6 @@ class PapersView(val elem: Element,
     }
   }
 
-  protected def toURI(str: String) = str.replace(" ", "%20") match {
-    case s if s.contains(":") => s
-    case other => ":" + other
-  }
-
-  val additionalComment = Var("")
-
   protected def makeComment(chosen: Map[Item, (Map[Int, List[TextLayerSelection]])], addComment: String) = {
     val com = if(addComment=="") " " else ":comment \""+ addComment +"\"; "
     chosen.foldLeft(""){
@@ -189,13 +158,15 @@ class PapersView(val elem: Element,
     }
   }
 
-  lazy val comment: Rx[String] = Rx{ //TODO: fix this bad unoptimized code
+  override lazy val comment: Rx[String] = Rx{ //TODO: fix this bad unoptimized code
     val chosen = domSelections()
     val com = additionalComment()
     makeComment(chosen, com)
   }
 
-  val hasComment = comment.map(c => c != "")
+
+  lazy val hasComment: Rx[Boolean] = comment.map(c => c != "")
+
 
   override def newItemView(item: Key, paper: Paper): PublicationView = this.constructItemView(item){
     case (el, params)=>

@@ -1,15 +1,25 @@
 package org.denigma.kappa.notebook.views.figures
 
-import scala.scalajs.js
-import org.scalajs.dom
+import org.scalajs.dom.ext._
 import org.scalajs.dom.raw.Element
-import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
+
 import scalatags.JsDom.all
 import scalatags.JsDom.all._
-import org.scalajs.dom.ext._
+object Video {
+  val WATCH = "watch?v="
+
+  def shorterURL(url: String) = if(url.contains(Video.WATCH)) {
+    val i = url.indexOf(Video.WATCH)
+    url.substring(i+Video.WATCH.length)
+  } else url
+}
 
 case class Video(name: String, url: String, text: String) extends Figure
+{
+  lazy val isYouTube = url.contains("youtube") || url.contains(Video.WATCH)
+}
 
 class VideoView(val elem: Element, val selected: Var[String], val video: Var[Video]) extends FigureView
 {

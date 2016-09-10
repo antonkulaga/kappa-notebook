@@ -62,8 +62,6 @@ class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage],
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        dom.console.log("MOVES TO FIGURE:")
-        pprint.pprintln(figure)
         input() = movements.toFigure(figure)
     }
     html

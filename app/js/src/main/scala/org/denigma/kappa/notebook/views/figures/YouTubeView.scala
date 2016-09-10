@@ -78,15 +78,7 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 object YouTubeView {
 
-  def idFromURL(str: String): String = str match {
-    case url if url.contains(YouTubeView.WATCH) =>
-      val i = url.indexOf(YouTubeView.WATCH)
-      url.substring(i+YouTubeView.WATCH.length)
-
-    case v => v
-  }
-
-  val WATCH = "watch?v="
+  def idFromURL(str: String): String = Video.shorterURL(str)
 
   val activated = Var(false)
 

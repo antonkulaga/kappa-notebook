@@ -37,11 +37,9 @@ class LaunchParametersView(val elem: Element,
   protected val maxTime = simulation.map(sim=>sim.max_time)
   protected val maxEvents =simulation.map(sim=>sim.max_events)
 
-  val saveOutput: Var[MouseEvent] = Var(Events.createMouseEvent())
+  val saveConcat: Var[MouseEvent] = Var(Events.createMouseEvent())
 
-  saveOutput.triggerLater{
-    saveAs("log.txt", console.now)
+  saveConcat.triggerLater{
+    saveAs(selected.now+".ka", console.now)
   }
-  //protected val nbPlot = points.map(p=> if(p>0) Some(p) else None)
-
 }

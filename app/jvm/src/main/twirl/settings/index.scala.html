@@ -1,77 +1,87 @@
 @()
 <section class="ui one wide column segment" data-view="Settings" id="Settings" data-view="Settings">
   @commons.html.header("Settings")
-  <div class="ui blue segment">
-    <div class="ui checkbox">
-      <input type="checkbox" name="autosave" data-bind="autosave" checked="checked">
-      <label>Autosave each 10 seconds</label>
-    </div>
-  </div>
-  <div class="ui blue segment">
-    <div class="ui form">
-      <div class="grouped fields">
-        <div class="field">
-            <input data-bind="websim">
-            <label>WebSim server url</label>
-        </div>
-      </div>
-  </div>
-  <div class="ui blue segment">
-    <div class="ui form">
-      <div class="grouped fields">
-        <label>On code line annotation click:</label>
-        <div class="field">
-          <div class="ui radio checkbox">
-            <input id="toAnnotation" type="radio" name="onannotation" data-bind="toAnnotation">
-            <label>Move to annotation figure/paper</label>
+  <div class="ui equal width celled grid">
+    <div class="ui equal width row">
+      <section class="ui column">
+        <div class="ui blue segment">
+          <div class="ui checkbox">
+            <input type="checkbox" name="autosave" data-bind="autosave" checked="checked">
+            <label>Autosave each 10 seconds</label>
           </div>
         </div>
-        <div class="field">
-          <div class="ui radio checkbox">
-            <input id="toEditor" type="radio" name="onannotation" data-bind="toEditor" checked="checked">
-            <label>Move figure/paper annotation to the right from editor</label>
+        <div class="ui blue segment">
+          <div class="ui form">
+            <div class="grouped fields">
+              <div class="field">
+                <input data-bind="websim">
+                <label>WebSim server url</label>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+        <div class="ui blue segment">
+          <div class="ui form">
+            <div class="grouped fields">
+              <label>On code line annotation click:</label>
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input id="toAnnotation" type="radio" name="onannotation" data-bind="toAnnotation">
+                  <label>Move to annotation figure/paper</label>
+                </div>
+              </div>
+              <div class="field">
+                <div class="ui radio checkbox">
+                  <input id="toEditor" type="radio" name="onannotation" data-bind="toEditor" checked="checked">
+                  <label>Move figure/paper annotation to the right from editor</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--
+      </section>
+      <section class="ui column">
+        -->
+        <div class="ui blue segment">
+          <div class="ui form">
+            <div class="grouped fields">
+              <label>Rule graph layout parameters:</label>
+              <div class="field">
+                <input data-bind="rulesGraphRepulsion">
+                <label>Repulsion</label>
+              </div>
+              <div class="field">
+                <input data-bind="rulesGraphAttraction">
+                <label>Attraction</label>
+              </div>
+              <div class="field">
+                <input data-bind="rulesGraphGravity">
+                <label>Gravity</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ui blue segment">
+          <div class="ui form">
+            <div class="grouped fields">
+              <label>Flux graph layout parameters:</label>
+              <div class="field">
+                <input data-bind="fluxGraphRepulsion">
+                <label>Repulsion</label>
+              </div>
+              <div class="field">
+                <input data-bind="fluxGraphAttraction">
+                <label>Attraction</label>
+              </div>
+              <div class="field">
+                <input data-bind="fluxGraphGravity">
+                <label>Gravity</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
-  <div class="ui blue segment">
-    <div class="ui form">
-      <div class="grouped fields">
-        <label>Rule graph layout parameters:</label>
-        <div class="field">
-          <input data-bind="rulesGraphRepulsion">
-          <label>Repulsion</label>
-        </div>
-        <div class="field">
-          <input data-bind="rulesGraphAttraction">
-          <label>Attraction</label>
-        </div>
-        <div class="field">
-          <input data-bind="rulesGraphGravity">
-          <label>Gravity</label>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="ui blue segment">
-    <div class="ui form">
-      <div class="grouped fields">
-        <label>Flux graph layout parameters:</label>
-        <div class="field">
-          <input data-bind="fluxGraphRepulsion">
-          <label>Repulsion</label>
-        </div>
-        <div class="field">
-          <input data-bind="fluxGraphAttraction">
-          <label>Attraction</label>
-        </div>
-        <div class="field">
-          <input data-bind="fluxGraphGravity">
-          <label>Gravity</label>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </section>

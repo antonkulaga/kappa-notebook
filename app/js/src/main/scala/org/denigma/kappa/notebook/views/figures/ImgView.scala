@@ -1,20 +1,19 @@
 package org.denigma.kappa.notebook.views.figures
 
-import org.scalajs.dom
+import org.scalajs.dom.ext._
 import org.scalajs.dom.raw.Element
-import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx._
+
 import scalatags.JsDom.all
 import scalatags.JsDom.all._
-import scala.scalajs.js
-import org.scalajs.dom.ext._
 
 /**
   * Created by antonkulaga on 30/06/16.
   */
 class ImgView(val elem: Element, val selected: Var[String], val image: Var[Image]) extends FigureView
 {
-  val src = image.map(i=>"/files/"+i.url)
+  val src = image.map(i=> if(i.url.contains(":")) i.url else "/files/"+i.url)
 
   val text = image.map(img=>img.text)
 

@@ -21,6 +21,12 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 
+/**
+  * Class to show the paper, its subviews are pages
+  * @param elem elements the view is bound to
+  * @param selected Var shared between all papers
+  * @param paper the paper
+  */
 class PublicationView(val elem: Element,
                       val selected: Var[String],
                       val paper: Var[Paper]
@@ -40,6 +46,10 @@ class PublicationView(val elem: Element,
     val sc = scroller //to init lazy value
   }
 
+  /**
+    * Initializes malihu custom scrollbar for the paper
+    * @return
+    */
   protected def initScroller(): JQueryScrollbar = {
     //val params = new mCustomScrollbarParams(theme = "rounded-dots-dark", axis = "y", advanced = new mCustomScrollbarAdvancedParams(true), mouseWheel = new MouseWheel(true))
 
@@ -53,6 +63,10 @@ class PublicationView(val elem: Element,
     $(elem).mCustomScrollbar(params)
   }
 
+  /**
+    * Is used p
+    *
+    */
   protected def updatePages() = {
     val pgs = selectedPages.now
     for((item, view) <- itemViews.now){

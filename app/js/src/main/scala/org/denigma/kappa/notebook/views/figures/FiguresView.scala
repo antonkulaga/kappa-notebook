@@ -1,11 +1,13 @@
 package org.denigma.kappa.notebook.views.figures
 
-import org.denigma.binding.binders.GeneralBinder
+import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.{GoToFigure, KappaMessage}
+import org.denigma.kappa.notebook.views.annotations.CommentInserter
 import org.denigma.kappa.notebook.views.common.{TabHeaders, TabItem}
+import org.denigma.kappa.notebook.views.editor.KappaCursor
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -17,8 +19,9 @@ import scala.collection.immutable
   */
 class FiguresView(val elem: Element,
                   val items: Var[Map[String, Figure]],
-                  val input: Rx[KappaMessage]
-                 ) extends CollectionMapView with TabItem
+                  val input: Var[KappaMessage],
+                  val kappaCursor: Var[KappaCursor]
+                 ) extends CollectionMapView with TabItem with CommentInserter
 {
 
   override type Value = Figure
@@ -27,9 +30,24 @@ class FiguresView(val elem: Element,
 
   override type Key = String
 
-  val selected = Var("")
+  val selected = Var("create")
 
   val empty = items.map(its=>its.isEmpty)
+
+
+  lazy val comment: Rx[String] = Rx{ //TODO: fix this bad unoptimized code
+    val figurePath = selected()
+    if(figurePath=="" || figurePath =="create") "" else {
+      val addComment = additionalComment()
+      val com = if(addComment=="") " " else ":comment \""+ addComment +"\"; "
+      items.now(figurePath) match {
+        case i: Image => s"#^${com}:image ${toURI(figurePath)}"
+        case other => s"#^${com}:video ${toURI(figurePath)}"
+      }
+    }
+  }
+
+  lazy val hasComment = comment.map(com=>com!="")
 
   input.onChange {
     case GoToFigure(figure)=>
@@ -44,15 +62,12 @@ class FiguresView(val elem: Element,
       el.id = item
       value match {
         case img: Image =>
-          println("IMAGE ="+img.url)
           new ImgView(el, selected, Var(img)).withBinder(v=>new CodeBinder(v))
 
-        case vid: Video if vid.url.contains("youtube") || vid.url.contains(YouTubeView.WATCH) =>
-          println("YOUTEUBE = "+vid)
+        case vid: Video if vid.isYouTube =>
           new YouTubeView(el, selected, Var(vid)).withBinder(v=>new CodeBinder(v))
 
         case vid: Video =>
-          println("VIDEO = "+vid.url)
           new VideoView(el, selected, Var(vid)).withBinder(v=>new CodeBinder(v))
 
       }
@@ -68,9 +83,26 @@ class FiguresView(val elem: Element,
 
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, selected)(getCaption).withBinder(new GeneralBinder(_)))
+    .register("creator"){(el, args)=>
+      el.id = "create"
+      new FigureCreator(el, input, selected).withBinder(new GeneralBinder(_))
+    }
 
   override def updateView(view: FigureView, key: String, old: Figure, current: Figure): Unit = {
     //do nothing
+  }
+}
+
+class FigureCreator(val elem: Element, input: Var[KappaMessage], val selected: Var[String]) extends BindableView with TabItem{
+
+  val url = Var("")
+  val description = Var("")
+  val addClick = Var(Events.createMouseEvent())
+  addClick.triggerLater{
+    val str = url.now
+    val text = description.now
+    input() = GoToFigure(Image(str, str, text))
+    url()= ""
   }
 }
 

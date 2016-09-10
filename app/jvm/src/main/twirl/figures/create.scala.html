@@ -1,0 +1,20 @@
+@()
+<section class="ui bottom attached tab segment" data-view="creator"  data-class-active-if="active">
+  <div class="ui blue message">
+      <div class="ui form">
+        <div class="grouped fields">
+          <label>Adding image:</label>
+          <div class="field">
+            <label>Image URL:</label>
+            <input data-bind="url"><br>
+          </div>
+          <div class="field">
+            <label>Description</label>
+            <input data-bind="description">
+          </div>
+        </div>
+      </div>
+  </div>
+  <button class="ui positive button" data-click="addClick">Add</button>
+
+</section>

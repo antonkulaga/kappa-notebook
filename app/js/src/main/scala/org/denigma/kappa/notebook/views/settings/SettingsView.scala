@@ -58,14 +58,14 @@ class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotati
   }
 
   val rulesGraphRepulsion = Var(100)
-  val rulesGraphSpring = Var(0.9)
+  val rulesGraphAttraction = Var(0.9)
   val rulesGraphGravity = Var(1)
   val rulesMode = Var(LayoutMode.TwoD)
   val rulesCenter = Var(new Vector3(0, 0, 0))
 
   val rulesGraphParams = Rx{
     val repulsion = rulesGraphRepulsion()
-    val spring = rulesGraphSpring()
+    val spring = rulesGraphAttraction()
     val gravity = rulesGraphGravity()
     val mode = rulesMode()
     val center = rulesCenter()
@@ -79,14 +79,14 @@ class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotati
   }
 
   val fluxGraphRepulsion = Var(30)
-  val fluxGraphSpring = Var(10)
+  val fluxGraphAttraction = Var(10)
   val fluxGraphGravity = Var(1)
   val fluxMode = Var(LayoutMode.ThreeD)
   val fluxCenter = Var(new Vector3(0, 0 ,0))
 
   val fluxGraphParams = Rx{
     val repulsion = fluxGraphRepulsion()
-    val spring = fluxGraphSpring()
+    val spring = fluxGraphAttraction()
     val gravity = fluxGraphGravity()
     val mode = fluxMode()
     val center = fluxCenter()

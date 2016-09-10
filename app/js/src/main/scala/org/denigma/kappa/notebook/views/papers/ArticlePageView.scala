@@ -16,7 +16,7 @@ import scala.concurrent.Promise
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
 
-class ArticlePageView(val elem: Element,
+class ArticlePageView(val elem: HTMLElement,
                       val num: Int,
                       val page: Page,
                       val scale: Rx[Double]
@@ -85,7 +85,7 @@ class ArticlePageView(val elem: Element,
       case None =>
         dom.console.error("cannot find textdiv parent!")
     }
-    pageRenderer.adjustSize(emptyCanvas, textDiv, scale.now)
+    pageRenderer.adjustSize(elem, emptyCanvas, textDiv, scale.now)
   }
 
   def hide() = {
@@ -116,7 +116,7 @@ class ArticlePageView(val elem: Element,
   lazy val renderedPage = renderPromise.future
 
   override protected def renderPage(page: Page): Unit = {
-    pageRenderer.adjustSize(emptyCanvas, textDiv, scale.now)
+    pageRenderer.adjustSize(elem, emptyCanvas, textDiv, scale.now)
     pageRenderer.render(canvas, textDiv, scale.now).onComplete{
       case Success(result)=>
         if(checkVisibility()) makeVisible() else hide()

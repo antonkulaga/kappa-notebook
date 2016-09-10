@@ -6,13 +6,12 @@ import org.denigma.codemirror.Editor
 import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.parsers.{PaperParser, PaperSelection}
-import org.scalajs.dom.html.Anchor
 import org.scalajs.dom.raw.MouseEvent
 import rx.Var
 
 import scalatags.JsDom.all._
 
-class PaperWathcer(paperParser: PaperParser, input: Var[KappaMessage], movements: Movements) extends Watcher {
+class PaperWatcher(paperParser: PaperParser, input: Var[KappaMessage], movements: Movements) extends Watcher {
   override type Data = PaperSelection
 
   override def parse(editor: Editor, lines: List[(Int, String)], currentNum: Int): Unit = {

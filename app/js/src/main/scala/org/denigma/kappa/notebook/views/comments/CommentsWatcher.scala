@@ -26,7 +26,7 @@ class CommentsWatcher(
   lazy val filesParser = new FilesParser()
 
   val figuresWatcher = new FiguresWatcher(filesParser, input, movements)
-  val paperWathcer = new PaperWathcer(new PaperParser, input, movements)
+  val paperWathcer = new PaperWatcher(new PaperParser, input, movements)
   val linkWatcher = new LinkWatcher(commentsParser)
   val sourceWatcher = new SourceWatcher(filesParser, input, movements)
 

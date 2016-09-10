@@ -63,18 +63,22 @@ class PublicationView(val elem: Element,
   def scrollTo(selection: PaperSelection, retry: Int = 5, timeout: FiniteDuration = 800 millis): Unit = {
       itemViews.now.get(selection.page) match {
         case Some(v) =>
-          v.getSpans(selection).collectFirst{case e: HTMLElement =>e} match {
-            case Some(e) =>
-              updatePages()
-              scalajs.js.timers.setTimeout(150 millis) {
-                scroller.scrollTo(e)
+          v.renderedPage.onComplete{
+            case Success(p) =>
+              v.getSpans(selection).collectFirst{case e: HTMLElement =>e} match {
+                case Some(e) =>
+                  updatePages()
+                  scalajs.js.timers.setTimeout(150 millis) {
+                    scroller.scrollTo(e)
+                  }
+                case None =>
+                  if(paper.now.numPages >= selection.page && retry > 0){
+                    dom.console.log(s"page ${selection.page} is not yet loaded, retrying ...")
+                    scalajs.js.timers.setTimeout(timeout){scrollTo(selection, retry -1)}
+                  }
+                  else dom.console.error(s"selection selects and mepty element, selection is ${selection.page}")
               }
-            case None =>
-              if(paper.now.numPages >= selection.page && retry > 0){
-                dom.console.log(s"page ${selection.page} is not yet loaded, retrying ...")
-                scalajs.js.timers.setTimeout(timeout){scrollTo(selection, retry -1)}
-              }
-              else dom.console.error(s"selection selects and mepty element, selection is ${selection.page}")
+            case Failure(th) => dom.console.error(s"page ${selection.page} failed to render")
           }
 
         case None =>
@@ -111,10 +115,10 @@ class PublicationView(val elem: Element,
   scale.onChange{ value => dom.console.log(s"scale changed to $value")}
 
   override def newItemView(item: Int, value: Page): ItemView = this.constructItemView(item){
-    case (el, args) =>
+    case (el: HTMLElement, args) =>
       val view = new ItemView(el, item, value, scale).withBinder(v=>new CodeBinder(v))
-
       view
+    case (el, _) => throw new Exception(s"NOT AN HTMLElement: ${el.outerHTML}")
   }
 
   override def updateView(view: ArticlePageView, key: Int, old: Page, current: Page): Unit = {

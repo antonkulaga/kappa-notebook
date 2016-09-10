@@ -22,10 +22,11 @@ class FixedPageRenderer(page: Page) {
     canvas -> viewport
   }
 
-  def adjustSize(canvas: Canvas, textLayerDiv: HTMLElement, scale:Double) = {
+  def adjustSize(parent: HTMLElement, canvas: Canvas, textLayerDiv: HTMLElement, scale:Double) = {
     val viewport: PDFPageViewport = page.viewport(scale)
     adjustCanvasSize(canvas, viewport)
-    alignTextLayer(canvas, textLayerDiv, viewport)
+
+    alignTextLayer(parent, textLayerDiv, viewport)
 
   }
 
@@ -49,7 +50,7 @@ class FixedPageRenderer(page: Page) {
           val text: Future[(Canvas, HTMLElement, List[(String, Node)])] = page.textContentFut.flatMap {
             textContent =>
               val layer = new TextLayerRenderer(vp, textContent)
-              alignTextLayer(canvas, textLayerDiv, vp)
+              //alignTextLayer(canvas.parentElement, textLayerDiv, vp)
               layer.render(timeout).map { res=>  (canvas, textLayerDiv , res)}
           }
           text
@@ -57,11 +58,12 @@ class FixedPageRenderer(page: Page) {
   }
 
 
-  protected def alignTextLayer(canvas: Canvas, textLayerDiv: HTMLElement, viewport: PDFPageViewport) = {
+  protected def alignTextLayer(element: HTMLElement, textLayerDiv: HTMLElement, viewport: PDFPageViewport) = {
     textLayerDiv.style.height = viewport.height + "px"
     textLayerDiv.style.width = viewport.width + "px"
-    textLayerDiv.style.top = canvas.offsetTop + "px"
-    textLayerDiv.style.left = canvas.offsetLeft + "px"
+    textLayerDiv.style.top = element.offsetTop + "px"
+    textLayerDiv.style.left = element.offsetLeft + "px"
+    textLayerDiv.scrollTop = element.scrollTop
   }
 
 

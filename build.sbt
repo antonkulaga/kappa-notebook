@@ -90,7 +90,6 @@ lazy val app = crossProject
         case Some(str)  if str.toLowerCase.startsWith("dev") =>
           println("DEVELOPMENT MODE")
           true
-
         case other =>
           true
           //(devCommands in scalaJSPipeline).value.contains(state.value.history.current)
@@ -113,5 +112,6 @@ lazy val root = Project("root",file("."),settings = commonSettings)
     maintainer := "Anton Kulaga <antonkulaga@gmail.com>",
     packageSummary := "kappa-notebook",
     packageDescription := """Kappa notebook runs kappa from the browser""",
-    javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M")
+    javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M"),
+    scalacOptions += "-target:jvm-1.8"
   ) dependsOn appJVM aggregate(appJVM, appJS) enablePlugins JavaAppPackaging

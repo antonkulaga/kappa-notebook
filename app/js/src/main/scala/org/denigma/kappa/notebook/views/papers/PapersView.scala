@@ -90,8 +90,8 @@ class PapersView(val elem: Element,
       paperURI.Internal.value = selection.label //TODO: fix this ugly workaround
 
       paperLoader.getPaper(selection.label, 12 seconds).onComplete{
-        case Success(pp) =>
-          paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(pp.name, pp)
+        case Success(paper) =>
+          paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(paper.name, paper)
           itemViews.now.values.foreach(p => p.selections() = Set.empty) //TODO: fix this ugly cleaning workaround
           itemViews.now.get(paperURI.now) match {
             case Some(v) =>

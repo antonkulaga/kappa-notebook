@@ -1,6 +1,5 @@
 package org.denigma.kappa.notebook.actions
 
-import org.denigma.controls.papers.Bookmark
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.parsers.{AST, PaperSelection}
 import org.denigma.kappa.notebook.views.MainTabs
@@ -29,13 +28,13 @@ class Movements(annotationMode: Rx[AnnotationMode.AnnotationMode]) {
     if(annotationMode.now == AnnotationMode.ToAnnotation) {
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Papers))
-        .andThen(GoToPaperSelection(paperSelection))
+        .andThen(GoToPaperSelection(paperSelection, true))
         .copy(betweenInterval = 300)
     } else {
       KappaMessage.Container()
         .andThen(Go.ToTab(MainTabs.Editor))
         .andThen(Move.RelativeTo(MainTabs.Editor, MainTabs.Papers, Move.Direction.RIGHT))
-        .andThen(GoToPaperSelection(paperSelection))
+        .andThen(GoToPaperSelection(paperSelection, true))
         .copy(betweenInterval = 200)
     }
 

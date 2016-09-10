@@ -1,24 +1,12 @@
 @(width: String = "three wide")
 <section class="ui @width column page segment noscroll" data-view="Papers" id="Papers">
   @commons.html.header("Papers")
-  <table class="ui small table"  style="width: 100%">
-    <tbody>
-    <tr>
-        <td><button  data-class-green-if="hasComment" class="ui small inverted button" data-event-click="insertComment">Insert comment</button></td>
-        <th>text</th>
-        <td><input class="ui input" type="text" data-bind="additionalComment"></td>
-        <th>in file</th>
-        <td class="pointed" data-bind="codeFile" data-click="toSource"><i class="ui File Code Outline icon"></i></td>
-        <th>on line</th>
-        <td data-bind="line"></td>
-    </tr>
-    <tr>
-        <td colspan="5"><span placeholder="comment to insert" data-bind="comment"></span></td>
-    </tr>
-    </tbody>
-  </table>
-  <div class="ui top attached pointing menu" data-view="headers">
-    <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
-  </div>
+  @comment()
+  <section class="ui top attached pointing menu" data-view="headers">
+    <div data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption">
+        <a data-bind-href="src"> <i class="download icon"></i> </a>
+        <i class="close outline icon" data-on-click="closePaper"></i>
+    </div>
+  </section>
     @publication()
 </section>

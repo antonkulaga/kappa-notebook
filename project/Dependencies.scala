@@ -44,7 +44,9 @@ object Dependencies {
 
 		"org.denigma" %%% "pdf-js-facade" % Versions.pdfJSFacade,
 
-		"org.singlespaced" %%% "scalajs-d3" % Versions.d3jsFacade
+		"org.singlespaced" %%% "scalajs-d3" % Versions.d3jsFacade,
+
+		"org.querki" %%% "querki-jsext" % Versions.jsext
 	))
 
 	//dependencies on javascript libs

@@ -44,5 +44,5 @@ class Router(files: File)(implicit fm: Materializer, system: ActorSystem) extend
 
   lazy val pagesRoutes =  new Pages().routes
 
-  def routes = headRoutes ~ loadFiles ~ registrationRoutes ~ websocketsRoutes ~ headRoutes ~ pagesRoutes
+  def routes = headRoutes ~ loadFiles ~ registrationRoutes ~ websocketsRoutes ~ pagesRoutes
 }

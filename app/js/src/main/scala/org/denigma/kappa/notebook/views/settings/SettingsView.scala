@@ -25,6 +25,8 @@ class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotati
   val toEditor = Var(false)
   toEditor.foreach{v => if(v) annotationMode() = AnnotationMode.ToEditor}
 
+  val websim = Var("http://localhost:8080")
+
   annotationMode.onChange //UGFLY PART TODO: fix it
   {
     case AnnotationMode.ToAnnotation =>

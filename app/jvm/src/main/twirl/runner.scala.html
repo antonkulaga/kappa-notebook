@@ -1,6 +1,7 @@
 @import org.denigma.kappa.notebook.utils.Mode
 @(into:String = "main",leftSidebar:Boolean = false)
 <script src="/resources/kappa-notebook@{Mode.current}"></script>
+@scalajs.html.scripts("client", name => s"/assets/$name", name => getClass.getResource(s"/public/$name") != null)
 <script>
         $( document ).ready(function() {
             selectionchange.start();

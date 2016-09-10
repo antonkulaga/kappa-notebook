@@ -86,8 +86,14 @@ lazy val app = crossProject
     isDevMode in scalaJSPipeline := { sys.env.get("APP_MODE") match {
         case Some(str) if str.toLowerCase.startsWith("prod") =>
 	        println("PRODUCTION MODE")
+          false
+        case Some(str)  if str.toLowerCase.startsWith("dev") =>
+          println("DEVELOPMENT MODE")
           true
-        case other => (devCommands in scalaJSPipeline).value.contains(state.value.history.current)
+
+        case other =>
+          true
+          //(devCommands in scalaJSPipeline).value.contains(state.value.history.current)
       }
     },
     libraryDependencies ++= Dependencies.akka.value ++ Dependencies.webjars.value

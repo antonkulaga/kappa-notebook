@@ -1,6 +1,6 @@
 package org.denigma.kappa.messages
 
-import org.denigma.kappa.notebook.parsers.{AST, PaperSelection}
+import org.denigma.kappa.notebook.parsers.PaperSelection
 import org.denigma.kappa.notebook.views.figures.Figure
 
 object GoToFigure {
@@ -21,4 +21,4 @@ object GoToPaper {
 
 case class GoToPaper (paperURI: String) extends UIMessage
 
-case class GoToPaperSelection(selection: PaperSelection) extends UIMessage
+case class GoToPaperSelection(selection: PaperSelection, exclusive: Boolean) extends UIMessage

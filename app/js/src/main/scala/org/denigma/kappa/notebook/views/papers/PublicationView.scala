@@ -4,11 +4,12 @@ import org.denigma.binding.extensions._
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
 import org.denigma.kappa.notebook.parsers.PaperSelection
+import org.denigma.malihu.scrollbar.JQueryScrollbar._
+import org.denigma.malihu.scrollbar._
 import org.denigma.pdf.extensions.Page
-import org.querki.jquery._
+import org.querki.jquery.$
 import org.scalajs.dom
 import org.scalajs.dom.ext._
-import org.scalajs.dom.html.Canvas
 import org.scalajs.dom.raw.{Element, _}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -17,10 +18,8 @@ import scala.annotation.tailrec
 import scala.collection.immutable._
 import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.scalajs.js
 import scala.util.{Failure, Success}
-import org.querki.jquery.$
-import org.denigma.malihu.scrollbar.JQueryScrollbar._
-import org.denigma.malihu.scrollbar._
 
 class PublicationView(val elem: Element,
                       val selected: Var[String],
@@ -31,6 +30,9 @@ class PublicationView(val elem: Element,
   override type ItemView = ArticlePageView
 
   lazy val selections: Var[Set[PaperSelection]] = Var(Set.empty[PaperSelection])
+
+  lazy val selectedPages = selections.map(s=>s.map(ss=>ss.page))
+
   lazy val scroller = initScroller()
 
   override def bindView(): Unit = {
@@ -38,35 +40,41 @@ class PublicationView(val elem: Element,
     val sc = scroller //to init lazy value
   }
 
-
   protected def initScroller(): JQueryScrollbar = {
-    val params = new mCustomScrollbarParams(theme = "rounded-dots-dark", axis = "y", advanced = new mCustomScrollbarAdvancedParams(true), mouseWheel = new MouseWheel(false))
+    //val params = new mCustomScrollbarParams(theme = "rounded-dots-dark", axis = "y", advanced = new mCustomScrollbarAdvancedParams(true), mouseWheel = new MouseWheel(true))
+
+    val callbacks = ScrollbarCallbacks.setWhileScrolling(updatePages).setOnScroll(updatePages)
+    val params = mCustomScrollbarParams
+      .theme("rounded-dots-dark")
+      .axis("y")
+      .advanced(new mCustomScrollbarAdvancedParams(true))
+      .mouseWheel(new MouseWheel(true, disableOver = js.Array("select","option","keygen","datalist")))
+      .callbacks(callbacks)
     $(elem).mCustomScrollbar(params)
   }
 
+  protected def updatePages() = {
+    val pgs = selectedPages.now
+    for((item, view) <- itemViews.now){
+      if(view.checkVisibility() || pgs.contains(item)) view.makeVisible() else view.hide()
+    }
+  }
 
   def scrollTo(selection: PaperSelection, retry: Int = 5, timeout: FiniteDuration = 800 millis): Unit = {
       itemViews.now.get(selection.page) match {
         case Some(v) =>
           v.getSpans(selection).collectFirst{case e: HTMLElement =>e} match {
             case Some(e) =>
-              scalajs.js.timers.setTimeout(50 millis) {
+              updatePages()
+              scalajs.js.timers.setTimeout(150 millis) {
                 scroller.scrollTo(e)
-                //$(elem).dyn.scrollTo(e)
-                //v.highlight(selection)
-                //val top = e.getBoundingClientRect().top - elem.getBoundingClientRect().top
-                //println(s"offset ${e.offsetTop}")
-                //elem.scrollT=op = top
-
               }
             case None =>
               if(paper.now.numPages >= selection.page && retry > 0){
                 dom.console.log(s"page ${selection.page} is not yet loaded, retrying ...")
                 scalajs.js.timers.setTimeout(timeout){scrollTo(selection, retry -1)}
               }
-              else{
-                dom.console.error(s"selection selects and mepty element, selection is ${selection.page}")
-              }
+              else dom.console.error(s"selection selects and mepty element, selection is ${selection.page}")
           }
 
         case None =>
@@ -82,9 +90,7 @@ class PublicationView(val elem: Element,
 
 
   lazy val active: rx.Rx[Boolean] = selected.map{
-    value =>
-      //println(s"VALUE = ${value} PAPER = ${paper.now.name}")
-      value == paper.now.name
+    value => value == paper.now.name
   }
 
   override  val paperContainer = elem.children.collectFirst{
@@ -107,6 +113,7 @@ class PublicationView(val elem: Element,
   override def newItemView(item: Int, value: Page): ItemView = this.constructItemView(item){
     case (el, args) =>
       val view = new ItemView(el, item, value, scale).withBinder(v=>new CodeBinder(v))
+
       view
   }
 
@@ -114,12 +121,25 @@ class PublicationView(val elem: Element,
     dom.console.error("page view should be not updateble!")
   }
 
+
   protected def seqRender(num: Int, p: Paper, retries: Int = 0): Unit = if(num < p.numPages){
     p.loadPage(num).onComplete{
       case Success(page) =>
         this.items() = items.now.updated(page.num, page)
         import scala.concurrent.duration._
-        scalajs.js.timers.setTimeout(100 millis)(seqRender(num + 1, p, 0))
+        scalajs.js.timers.setTimeout(100 millis){
+          this.itemViews.now.get(page.num) match {
+            case Some(v) =>
+              v.renderedPage.onComplete{
+                case Success(result) =>
+                  seqRender(num + 1, p, 0)
+                case Failure(th) => dom.console.error(s"failed to load ${num} with error: $th")
+                  seqRender(num + 1, p, 0)
+              }
+            case None =>
+              dom.console.error("page view for the $num was not added!")
+          }
+        }
 
       case Failure(th) =>
         dom.console.error(s"cannot load page $num in paper ${p.name} with exception ${th}")
@@ -151,61 +171,3 @@ class PublicationView(val elem: Element,
 
 }
 
-class ArticlePageView(val elem: Element,
-                      val num: Int,
-                      val page: Page,
-                      val scale: Rx[Double]
-                     )  extends PageView {
- val name = Var("page_"+num)
- val title = Var("page_"+num)
-
-  def textLayerSelection(sel: Selection): List[TextLayerSelection] = {
-    if(sel.anchorNode.isInside(textDiv) || sel.focusNode.isInside(textDiv)) sel.map{ range =>
-      TextLayerSelection.fromRange("", range)}.toList
-    else List.empty[TextLayerSelection]
-  }
-
-
-  override lazy val canvas = {
-    elem.getElementsByTagName("canvas").collectFirst{
-      case canv: Canvas => canv
-    }.orElse(elem.children.collectFirst {
-        case canv: Canvas => canv
-      }).get
-  } //unsafe
-
-  override lazy val textDiv = elem.getElementsByClassName("textLayer").collectFirst{
-    case el: HTMLDivElement => el
-  }.orElse(elem.children.collectFirst {
-    case canv: HTMLDivElement => canv
-  }).get //unsafe
-
-
-  def getSpans(sel: TextLayerSelection): List[Element] = sel.selectTokenSpans(textDiv)
-
-
-  def unhighlight(sel: TextLayerSelection ) = {
-    val spans = getSpans(sel)
-    dom.console.log(s"DE_HIGHLIGHT fromChunk ${sel.fromChunk} toChunk ${sel.toChunk} fromToken ${sel.fromToken} toToken ${sel.toToken} spans length = ${spans.length}")
-    spans.foreach { sp =>
-      if (sp.classList.contains("highlight"))
-        sp.classList.remove("highlight")
-    }
-  }
-
-  protected def initScroller(): JQueryScrollbar = {
-    val params = new mCustomScrollbarParams(theme = "rounded-dots-dark", axis = "y", advanced = new mCustomScrollbarAdvancedParams(true))
-    $(elem).mCustomScrollbar(params)
-  }
-
-
-  def highlight(sel: TextLayerSelection) = {
-    //println("chunks are: ")
-    val spans = getSpans(sel)
-    //spans.foreach(s=>println(s.outerHTML))
-    dom.console.log(s"HIGHLIGHT fromChunk ${sel.fromChunk} toChunk ${sel.toChunk} fromToken ${sel.fromToken} toToken ${sel.toToken} spans length = ${spans.length}")
-    spans.foreach{ sp=> if(!sp.classList.contains("highlight")) sp.classList.add("highlight") }
-  }
-
-
-}

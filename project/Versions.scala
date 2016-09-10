@@ -34,9 +34,9 @@ trait OtherJVM {
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.9"
+	val akka = "2.4.10"
 
-	val circeHttp = "1.9.0"
+	val circeHttp = "1.10.0"
 
 	val libSBOLj = "2.1.0"
 
@@ -61,8 +61,9 @@ trait ScalaJSVersions {
 
 	val d3jsFacade = "0.3.3"
 
-	val pdfJSFacade = "0.8.0-0.0.4"
+	val pdfJSFacade = "0.8.0-0.0.5"
 
+	val jsext = "0.7"
 }
 
 //versions for libs that are shared between client and server

@@ -1,8 +1,31 @@
 package org.denigma.kappa.notebook
 
 import fastparse.all.Parsed
+import org.scalajs.dom.ClientRect
+import org.scalajs.dom.raw.Element
 
 object extensions extends SharedExtensions{
+
+  implicit class ClientRectExt(rect: ClientRect) {
+
+    def intersects(other: ClientRect): Boolean = {
+      rect.left <= other.right && rect.right >= other.left &&
+      rect.top <= other.bottom && rect.bottom >= other.top
+    }
+
+  }
+
+  implicit class BoundingExt(element: Element) {
+
+    def intersects(other: Element): Boolean = {
+      val rect = element.getBoundingClientRect()
+      val otherRect = other.getBoundingClientRect()
+      //println(s"RECT: left(${rect.left}) top(${rect.top}) right(${rect.right}) bottom(${rect.bottom})")
+      //println(s"OTHER: left(${otherRect.left}) top(${otherRect.top}) right(${otherRect.right}) bottom(${otherRect.bottom})")
+      rect.intersects(otherRect)
+    }
+
+  }
 
   implicit class ParsedExt[T](source: Parsed[T]) {
 

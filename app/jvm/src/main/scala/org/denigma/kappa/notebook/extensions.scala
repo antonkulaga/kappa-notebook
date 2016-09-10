@@ -1,6 +1,5 @@
 package org.denigma.kappa.notebook
 
-import org.denigma.kappa.notebook.SharedExtensions
 import better.files._
 object extensions extends SharedExtensions{
 

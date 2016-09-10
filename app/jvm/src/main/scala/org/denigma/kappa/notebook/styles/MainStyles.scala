@@ -43,8 +43,8 @@ class MainStyles extends Standalone with MediaQueries
     )
 
   "#main" -(
-    overflowX.auto,
-    overflowY.hidden
+    //.overflowX.auto,
+    //overflowY.hidden
     )
 
   "#grid" -(

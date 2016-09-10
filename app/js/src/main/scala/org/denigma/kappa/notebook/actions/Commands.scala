@@ -12,5 +12,7 @@ object Commands {
 
   case class SetLayoutParameters(graph: String, parameters: ForceLayoutParams) extends UIMessage
 
+  case class CloseFile(path: String) extends UIMessage
+
 }
 

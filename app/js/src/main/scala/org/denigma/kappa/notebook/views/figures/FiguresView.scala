@@ -5,8 +5,10 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.{GoToFigure, KappaMessage}
+import org.denigma.kappa.notebook.actions.{Commands, Movements}
+import org.denigma.kappa.notebook.parsers.AST
 import org.denigma.kappa.notebook.views.annotations.CommentInserter
-import org.denigma.kappa.notebook.views.common.{TabHeaders, TabItem}
+import org.denigma.kappa.notebook.views.common.{FileTabHeaders, TabItem}
 import org.denigma.kappa.notebook.views.editor.KappaCursor
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -20,7 +22,8 @@ import scala.collection.immutable
 class FiguresView(val elem: Element,
                   val items: Var[Map[String, Figure]],
                   val input: Var[KappaMessage],
-                  val kappaCursor: Var[KappaCursor]
+                  val kappaCursor: Var[KappaCursor],
+                  val movements: Movements
                  ) extends CollectionMapView with TabItem with CommentInserter
 {
 
@@ -54,7 +57,19 @@ class FiguresView(val elem: Element,
       items() = items.now.updated(figure.url, figure)
       selected() = figure.url
 
+    case  Commands.CloseFile(path) =>
+      if(items.now.contains(path)) {
+        items() = items.now - path
+      } else {
+        //dom.console.error(s"cannot find ${path}")
+      }
+
     case other => //do nothing
+  }
+
+  val toSource = Var(Events.createMouseEvent())
+  toSource.onChange{
+    ev =>  movements.toSource(AST.IRI(codeFile.now), lineNumber.now, lineNumber.now)
   }
 
   override def newItemView(item: Item, value: Value): ItemView=  this.constructItemView(item){
@@ -82,7 +97,7 @@ class FiguresView(val elem: Element,
   }
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new TabHeaders(el, headers, selected)(getCaption).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new FileTabHeaders(el, headers, input, selected)(FileTabHeaders.path2name).withBinder(new GeneralBinder(_)))
     .register("creator"){(el, args)=>
       el.id = "create"
       new FigureCreator(el, input, selected).withBinder(new GeneralBinder(_))

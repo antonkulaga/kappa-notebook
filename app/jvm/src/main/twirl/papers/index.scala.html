@@ -3,9 +3,13 @@
   @commons.html.header("Papers")
   @annotations.html.comment()
   <section class="ui top attached pointing menu" data-view="headers">
-    <div data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption">
-        <a data-bind-href="src"> <i class="download icon"></i> </a>
-        <i class="close outline icon" data-on-click="closePaper"></i>
+    <div data-template="true" class="item" data-event-click="select" data-class-active-if="active">
+        <span  data-bind="caption"></span>
+        &nbsp;&nbsp;
+        <a data-bind-href="src"  target="_blank"> <i class="download icon"></i> </a>
+        <button class="ui tiny icon compact button" data-event-click="closeClick">
+            <i class="close outline icon"></i>
+        </button>
     </div>
   </section>
     @publication()

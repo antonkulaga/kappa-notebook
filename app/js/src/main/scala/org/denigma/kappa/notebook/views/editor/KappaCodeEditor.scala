@@ -3,12 +3,10 @@ package org.denigma.kappa.notebook.views.editor
 import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView}
-import org.denigma.codemirror._
-import org.denigma.codemirror.addons.lint.{LintFound, LintOptions}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
-import org.denigma.kappa.messages.ServerMessages.{ParseModel, ServerConnection, SyntaxErrors}
-import org.denigma.kappa.messages.WebSimMessages.{Location, WebSimError, WebSimRange}
+import org.denigma.kappa.messages.ServerMessages.{ParseModel, SyntaxErrors}
+import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.messages.{Go, KappaMessage, KappaSourceFile, ServerMessages}
 import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.views.common.{ServerConnections, TabHeaders}
@@ -20,9 +18,18 @@ import rx._
 
 import scala.collection.immutable._
 import scala.concurrent.duration._
-import scala.scalajs.js
 
-
+/**
+  * Kappa code editor (contains tabs with code files)
+  * @param elem HTML element to bind to
+  * @param items
+  * @param input for subscription to incoming messages
+  * @param output for sending messages (to the server and to other windows)
+  * @param kappaCursor to inform about position of the cursor
+  * @param editorUpdates to inform about updates of the code
+  * @param connections to keep server connections
+  * @param movements settings for animation movements
+  */
 class KappaCodeEditor(val elem: Element,
                       val items: Var[Map[String, KappaSourceFile]],
                       val input: Var[KappaMessage],
@@ -43,16 +50,15 @@ class KappaCodeEditor(val elem: Element,
 
   val isConnected = connections.map(c=>c.isConnected)
 
-  items.afterLastChange(800 millis){
+  items.afterLastChange(1 second){
     its=>
-      println("sending files for checking")
+      //println("sending files for checking")
       val files: List[(String, String)] = its.values.map{ fl => (fl.name , fl.content) }.toList
-      dom.console.log("files to send: "+files.map(nc=>nc._1).mkString(" | "))
+      //dom.console.log("files to send: "+files.map(nc=>nc._1).mkString(" | "))
       output() = ServerCommand(connections.now.currentServer, ParseModel(files))
   }
 
   val selected: Var[String] = Var("")
-
 
   val syntaxErrors = Var(SyntaxErrors.empty)
 

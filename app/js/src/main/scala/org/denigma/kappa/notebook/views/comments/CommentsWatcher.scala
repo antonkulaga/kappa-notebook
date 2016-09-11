@@ -7,12 +7,7 @@ import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.parsers._
 import org.denigma.kappa.notebook.views.editor.EditorUpdates
-import org.denigma.kappa.notebook.views.figures.{Figure, Image, Video}
-import org.scalajs.dom.html.Anchor
-import org.scalajs.dom.raw.MouseEvent
 import rx._
-
-import scalatags.JsDom.all._
 
 class CommentsWatcher(
                        val updates: Var[EditorUpdates],
@@ -60,7 +55,6 @@ class CommentsWatcher(
       (editor, changedLines) <- upd.changedLinesOpt
       (num, line) <- changedLines
     } {
-
       searchInComments(editor, num)
     }
   }

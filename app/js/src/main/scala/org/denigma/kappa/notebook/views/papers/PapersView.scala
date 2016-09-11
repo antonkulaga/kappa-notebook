@@ -2,16 +2,16 @@ package org.denigma.kappa.notebook.views.papers
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, CollectionMapView, CollectionSortedSetView}
+import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
 import org.denigma.kappa.messages.{GoToPaper, GoToPaperSelection, KappaBinaryFile, KappaMessage}
 import org.denigma.kappa.notebook._
-import org.denigma.kappa.notebook.actions.Commands
-import org.denigma.kappa.notebook.parsers.PaperSelection
+import org.denigma.kappa.notebook.actions.{Commands, Movements}
+import org.denigma.kappa.notebook.parsers.{AST, PaperSelection}
 import org.denigma.kappa.notebook.views.annotations.CommentInserter
-import org.denigma.kappa.notebook.views.common.TabHeaders
-import org.denigma.kappa.notebook.views.editor.{KappaCursor, KappaEditorCursor}
+import org.denigma.kappa.notebook.views.common.{FileTabHeaders, FileTabItemView, TabHeaders}
+import org.denigma.kappa.notebook.views.editor.KappaCursor
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -32,7 +32,9 @@ import scala.util.{Failure, Success}
 class PapersView(val elem: Element,
                  val connector: WebSocketTransport,
                  val projectPapers: Rx[Map[String, KappaBinaryFile]],
-                 val kappaCursor: Var[KappaCursor]) extends BindableView
+                 val kappaCursor: Var[KappaCursor],
+                 val movements: Movements
+                ) extends BindableView
   with CollectionMapView with CommentInserter {
 
   val paperSelections: Var[List[PaperSelection]] = Var(Nil)
@@ -69,7 +71,7 @@ class PapersView(val elem: Element,
   val toSource = Var(Events.createMouseEvent())
   toSource.onChange{
     ev => currentSelection.now match {
-      case Some(s) => dom.console.log(s"click on $s")//input() = Movements.toFile(s.)
+      case Some(s) => input() = movements.toSource(AST.IRI(codeFile.now), lineNumber.now, lineNumber.now)
       case None =>
     }
   }
@@ -104,10 +106,11 @@ class PapersView(val elem: Element,
         case Failure(th)=> dom.console.error(s"Cannot load paper ${selection.label}: "+th)
       }
 
-    case  Commands.CloseFile(path) => if(items.now.contains(path)) {
+    case  Commands.CloseFile(path) =>
+      if(items.now.contains(path)) {
       items() = items.now - path
     } else {
-      dom.console.error(s"cannot find ${path}")
+      //dom.console.error(s"cannot find ${path}")
     }
 
     case other => //do nothing
@@ -164,9 +167,7 @@ class PapersView(val elem: Element,
     makeComment(chosen, com)
   }
 
-
   lazy val hasComment: Rx[Boolean] = comment.map(c => c != "")
-
 
   override def newItemView(item: Key, paper: Paper): PublicationView = this.constructItemView(item){
     case (el, params)=>
@@ -176,43 +177,9 @@ class PapersView(val elem: Element,
   }
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new PaperHeaders(el, headers, input, paperURI)(TabHeaders.path2name).withBinder(new GeneralBinder(_)))
-    //.register("Bookmarks")((el, args) => new BookmarksView(el, location, null).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new FileTabHeaders(el, headers, input, paperURI)(FileTabHeaders.path2name).withBinder(new GeneralBinder(_)))
 
   override def updateView(view: PublicationView, key: Key, old: Paper, current: Paper): Unit = {
     view.paper() = current
   }
-}
-
-
-class PaperHeaders(val elem: Element, val items: Rx[SortedSet[String]], input: Var[KappaMessage], val selected: Var[String])(implicit getCaption: String => String) extends CollectionSortedSetView {
-
-  override type Item =  String
-
-  override type ItemView = PaperHeaderItemView
-
-  override def newItemView(item: Item): ItemView= constructItemView(item){
-    case (el, _) => new PaperHeaderItemView(el, input, item,  selected)(getCaption).withBinder(new GeneralBinder(_))
-  }
-}
-
-class PaperHeaderItemView(val elem: Element, input: Var[KappaMessage], itemId: String,  val selected: Var[String] )(implicit getCaption: String => String) extends BindableView {
-
-  val caption: Var[String] = Var(getCaption(itemId))
-
-  val active: rx.Rx[Boolean] = selected.map(value => value == itemId)
-
-  val select = Var(Events.createMouseEvent())
-  select.triggerLater({
-    selected() = itemId
-  })
-
-  val src = Var(if(itemId.contains(":")) itemId else "/files/"+itemId)
-
-  val paperClose = Var(Events.createMouseEvent())
-  paperClose.onChange{ ev=>
-    input() = Commands.CloseFile(itemId)
-  }
-
-
 }

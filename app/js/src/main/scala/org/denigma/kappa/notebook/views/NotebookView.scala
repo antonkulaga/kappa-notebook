@@ -38,7 +38,11 @@ class NotebookView(val elem: Element, username: String) extends BindableView
 
   val currentProject: Var[KappaProject] = Var(KappaProject.default)
 
-  val sourceMap: Var[Map[String, KappaSourceFile]] = currentProject.extractVar(p=>p.sourceMap)((p, s)=>p.copy(folder = p.folder.addFiles(sourceMap.now.values.toList)))
+  val sourceMap: Var[Map[String, KappaSourceFile]] = currentProject.extractVar(p=>p.sourceMap)
+    {(p, s) =>
+      val files = sourceMap.now.values.toList
+      p.copy(folder = p.folder.addFiles(files))
+    }
 
   val currentProjectName: Rx[String] = currentProject.map(_.name)
 
@@ -156,13 +160,13 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     }
     .register("Figures") {
       case (el, params) =>
-        val v = new FiguresView(el, figures, input, kappaCursor).withBinder(new CodeBinder(_))
+        val v = new FiguresView(el, figures, input, kappaCursor, movements).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Figures)
         v
     }
     .register("Papers") {
       case (el, params) =>
-        val v = new PapersView(el, connector, papers, kappaCursor).withBinder(new CodeBinder(_))
+        val v = new PapersView(el, connector, papers, kappaCursor, movements).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Papers)
         v
     }

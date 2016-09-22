@@ -2,18 +2,15 @@ package org.denigma.kappa.notebook.views.comments
 
 import fastparse.all._
 import org.denigma.codemirror.Editor
-import org.denigma.kappa.messages.KappaMessage
-import org.denigma.kappa.notebook.actions.Movements
+import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.parsers.{AST, FilesParser}
-import org.denigma.kappa.notebook.views.figures.{Figure, Image, Video}
-import org.scalajs.dom
-import org.scalajs.dom.html.Anchor
+import org.denigma.kappa.notebook.views.figures.Figure
 import org.scalajs.dom.raw.MouseEvent
 import rx.Var
 
 import scalatags.JsDom.all._
 
-class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage], val movements: Movements) extends Watcher {
+class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage]) extends Watcher {
 
   override type Data = AST.IRI
 
@@ -62,7 +59,7 @@ class FiguresWatcher(val filesParser: FilesParser, val input: Var[KappaMessage],
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        input() = movements.toFigure(figure)
+        input() = Animate(Go.ToFigure(figure), true)
     }
     html
   }

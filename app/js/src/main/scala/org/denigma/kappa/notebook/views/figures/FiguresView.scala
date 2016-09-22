@@ -4,8 +4,8 @@ import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.{GoToFigure, KappaMessage}
-import org.denigma.kappa.notebook.actions.{Commands, Movements}
+import org.denigma.kappa.messages.{Animate, Go, KappaMessage}
+import org.denigma.kappa.notebook.actions.Commands
 import org.denigma.kappa.notebook.parsers.AST
 import org.denigma.kappa.notebook.views.annotations.CommentInserter
 import org.denigma.kappa.notebook.views.common.{FileTabHeaders, TabItem}
@@ -20,12 +20,12 @@ import scala.collection.immutable
   * Created by antonkulaga on 08/06/16.
   */
 class FiguresView(val elem: Element,
-                  val items: Var[Map[String, Figure]],
                   val input: Var[KappaMessage],
-                  val kappaCursor: Var[KappaCursor],
-                  val movements: Movements
+                  val kappaCursor: Var[KappaCursor]
                  ) extends CollectionMapView with TabItem with CommentInserter
 {
+
+  val items: Var[Map[String, Figure]] = Var(Map.empty)
 
   override type Value = Figure
 
@@ -53,7 +53,7 @@ class FiguresView(val elem: Element,
   lazy val hasComment = comment.map(com=>com!="")
 
   input.onChange {
-    case GoToFigure(figure)=>
+    case Go.ToFigure(figure)=>
       items() = items.now.updated(figure.url, figure)
       selected() = figure.url
 
@@ -69,7 +69,7 @@ class FiguresView(val elem: Element,
 
   val toSource = Var(Events.createMouseEvent())
   toSource.onChange{
-    ev =>  movements.toSource(AST.IRI(codeFile.now), lineNumber.now, lineNumber.now)
+    ev => input() = Animate(Go.ToSource(AST.IRI(codeFile.now), lineNumber.now, lineNumber.now), true)
   }
 
   override def newItemView(item: Item, value: Value): ItemView=  this.constructItemView(item){
@@ -116,7 +116,7 @@ class FigureCreator(val elem: Element, input: Var[KappaMessage], val selected: V
   addClick.triggerLater{
     val str = url.now
     val text = description.now
-    input() = GoToFigure(Image(str, str, text))
+    input() = Animate(Go.ToFigure(Image(str, str, text)), false)
     url()= ""
   }
 }

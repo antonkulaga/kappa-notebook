@@ -5,15 +5,13 @@ import org.denigma.controls.charts._
 import org.denigma.kappa.messages.KappaSeries
 import org.denigma.kappa.messages.WebSimMessages.KappaPlot
 import org.scalajs.dom
-import org.scalajs.dom.ext._
+import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw.{Element, SVGElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 
 import scala.collection.immutable._
-import org.denigma.binding.extensions._
-import org.scalajs.dom.MouseEvent
 
 class ChartView(val elem: Element,
                val title: Rx[String],
@@ -98,7 +96,7 @@ class ChartView(val elem: Element,
         acc + s.time + s.values.foldLeft(""){
           case (a, ss) => a +"," + ss
         } + "\n"
-      }
+      }.reverse
     val txt = head + body
     saveAs(title.now+".csv", txt)
   }

@@ -22,7 +22,7 @@ class FixedPageRenderer(page: Page) {
     canvas -> viewport
   }
 
-  def adjustSize(parent: HTMLElement, canvas: Canvas, textLayerDiv: HTMLElement, scale:Double) = {
+  def adjustSize(parent: HTMLElement, canvas: Canvas, textLayerDiv: HTMLElement, scale: Double) = {
     val viewport: PDFPageViewport = page.viewport(scale)
     adjustCanvasSize(canvas, viewport)
 

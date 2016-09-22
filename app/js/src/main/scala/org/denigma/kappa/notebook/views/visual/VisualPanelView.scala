@@ -5,7 +5,6 @@ import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.notebook.parsers.{GraphUpdate, ParsedLine}
-import org.denigma.kappa.notebook.views.common.FixedBinder
 import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
 import org.denigma.kappa.notebook.views.visual.rules._
 import org.scalajs.dom.raw.Element
@@ -69,5 +68,5 @@ class VisualPanelView(val elem: Element, val currentLine: Rx[String], val parsed
           args.getOrElse("container", "whole-graph-container").toString,
           RulesVisualSettings(s),
           input
-        ).withBinder(n => new FixedBinder(n)) }
+        ).withBinder(n => new  CodeBinder(n)) }
 }

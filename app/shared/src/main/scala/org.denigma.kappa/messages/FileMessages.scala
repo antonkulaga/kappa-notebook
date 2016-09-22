@@ -80,6 +80,7 @@ case class KappaFolder(path: String,
 {
   self =>
 
+
   def markSaved(pathes: List[String]) = self.mapFiles{
     case b: KappaBinaryFile if !b.saved && pathes.contains(b.path) => b.copy(saved = true)
     case s: KappaSourceFile if !s.saved && pathes.contains(s.path) => s.copy(saved = true)
@@ -126,13 +127,11 @@ case class KappaFolder(path: String,
     this.copy(files = files.filterNot(f => fs.contains(f.path)))
   }
 
-  def withFolders(folders: List[KappaFolder]): KappaFolder= {
-    ???
-  }
 
   lazy val allFiles: SortedSet[KappaFile] = files ++ folders.flatMap(f=>f.allFiles)
 
   lazy val allFilesMap: Map[String, KappaFile] = allFiles.map(f => (f.path, f)).toMap
+
 }
 
 
@@ -157,6 +156,8 @@ object KappaSourceFile
       case other => other
     }
   }
+
+  lazy val empty = KappaSourceFile("", "")
 }
 
 /*
@@ -252,6 +253,8 @@ object FileRequests {
 
   object Remove {
     implicit val classPickler: Pickler[Remove] = boopickle.Default.generatePickler[Remove]
+
+    lazy val empty  = Remove(Set.empty[String])
   }
 
   case class Remove(pathes: Set[String]) extends FileRequest
@@ -276,6 +279,7 @@ object FileRequests {
 
   object Save{
     implicit val classPickler: Pickler[Save] = boopickle.Default.generatePickler[Save]
+    lazy val empty = Save(Nil, false, false)
   }
 
   case class Save(files: List[KappaFile], rewrite: Boolean, getSaved: Boolean = false) extends FileRequest

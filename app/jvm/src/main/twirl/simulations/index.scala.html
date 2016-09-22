@@ -3,7 +3,14 @@
      @commons.html.header("Simulations")
     <div class="equal width noscroll segment">
             <div class="ui top attached pointing menu"  data-view="headers">
-                <a data-template="true" class="item" data-on-click="select" data-class-active-if="active" data-bind="caption"></a>
+                <div data-template="true" class="item" data-event-click="select" data-class-active-if="active">
+                    <span  data-bind="caption"></span>
+                        &nbsp;&nbsp;
+                    <a data-bind-href="src"  target="_blank"> <i class="download icon"></i> </a>
+                    <button class="ui tiny icon compact button" data-event-click="closeClick">
+                        <i class="close outline icon"></i>
+                    </button>
+                </div>
                 <div class="right attached inverted secondary blue pointing menu">
                     <a class="item" data-set-selected-on-click="runner">Create</a>
                 </div>

@@ -3,19 +3,18 @@ package org.denigma.kappa.notebook.views
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.ServerMessages.KappaServerErrors
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.actions.Movements
+import org.denigma.kappa.notebook.circuits.{KappaEditorCircuit, NotebookCircuit, SettingsCircuit, SimulationsCircuit}
 import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
-import org.denigma.kappa.notebook.views.comments.{CommentsWatcher, KappaWatcher}
-import org.denigma.kappa.notebook.views.common.{FixedBinder, ServerConnections}
+import org.denigma.kappa.notebook.views.comments.KappaWatcher
 import org.denigma.kappa.notebook.views.editor._
-import org.denigma.kappa.notebook.views.figures.{Figure, FiguresView}
+import org.denigma.kappa.notebook.views.figures.FiguresView
 import org.denigma.kappa.notebook.views.menus.MainMenuView
 import org.denigma.kappa.notebook.views.papers.PapersView
 import org.denigma.kappa.notebook.views.project.ProjectsPanelView
-import org.denigma.kappa.notebook.views.settings.{AnnotationMode, SettingsView}
+import org.denigma.kappa.notebook.views.settings.SettingsView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.denigma.kappa.notebook.views.visual.VisualPanelView
 import org.scalajs.dom.raw.Element
@@ -32,27 +31,17 @@ class NotebookView(val elem: Element, username: String) extends BindableView
 
   val (input: Var[KappaMessage], output: Var[KappaMessage]) = connector.IO
 
-  val serverErrors = Var(ServerErrors.empty)
+  lazy val settings = new SettingsCircuit(input, output)
 
-  val kappaServerErrors = Var(KappaServerErrors.empty)
+  lazy val movements = new Movements(input, output, settings.annotationMode)
 
-  val currentProject: Var[KappaProject] = Var(KappaProject.default)
+  lazy val notebookCircuit = new NotebookCircuit(input, output)
 
-  val sourceMap: Var[Map[String, KappaSourceFile]] = currentProject.extractVar(p=>p.sourceMap)
-    {(p, s) =>
-      val files = sourceMap.now.values.toList
-      p.copy(folder = p.folder.addFiles(files))
-    }
+  lazy val simulationsCircuit = new SimulationsCircuit(input, output, notebookCircuit.currentProject, settings.serverConfiguration)
 
-  val currentProjectName: Rx[String] = currentProject.map(_.name)
+  lazy val editorCircuit = new KappaEditorCircuit(input, output, simulationsCircuit.runnableFiles)
 
-  val papers = currentProject.map(p=>p.papers.map(p => (p.path, p)).toMap)
-
-  val figures: Var[Map[String, Figure]] = Var(Map.empty)
-
-  val editorsUpdates: Var[EditorUpdates] = Var(EditorUpdates.empty)
-
-  val serverConfiguration: Var[ServerConnections] = Var(ServerConnections.default)
+  val currentProjectName: Rx[String] = notebookCircuit.currentProject.map(_.name)
 
   lazy val scrollable: Element = sq.byId("MainRow").get//this.viewElement//.parentElement
 
@@ -67,41 +56,12 @@ class NotebookView(val elem: Element, username: String) extends BindableView
       val toLoad = ProjectRequests.Load(KappaProject.default)
       connector.output() = toLoad //ask to load default project
     }
-    input.foreach(onMessage)
+    settings.activate()
+    movements.activate()
+    notebookCircuit.activate()
+    simulationsCircuit.activate()
+    editorCircuit.activate()
     connector.open()
-  }
-
-  protected def goMessage(messages: List[KappaMessage], delay: Int): Unit = messages match {
-    case Nil =>
-    case head::tail =>
-      input() = head
-      scalajs.js.timers.setTimeout(delay)(goMessage(tail, delay))
-  }
-
-  protected def onMessage(message: KappaMessage): Unit = message match {
-
-    case KappaMessage.Container(messages, 0) =>
-
-      messages.foreach(mess=> input() = mess) //flatmapping
-
-    case KappaMessage.Container(messages, delay) =>
-
-      goMessage(messages, delay)
-
-    case ProjectResponses.LoadedProject(proj) =>
-      //println("LOADED PROJECT IS")
-      //pprint.log(proj)
-      currentProject() = proj
-
-
-    case KappaMessage.ServerResponse(server, ers: ServerErrors) =>  serverErrors() = ers
-
-    case KappaMessage.ServerResponse(server, ers: KappaServerErrors) => kappaServerErrors() = ers
-
-    case Failed(operation, ers, username) =>  kappaServerErrors() = kappaServerErrors.now.copy(errors = kappaServerErrors.now.errors ++ ers)
-
-
-    case other => //do nothing
   }
 
  //import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all
@@ -114,14 +74,9 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     t
   }
 
-  val kappaCursor: Var[KappaCursor] = Var(EmptyCursor)
-  //val kappaWatcher: KappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates)
-
   val menu: Var[List[(String, Element)]] = Var(List.empty[(String, Element)])
-  lazy val annotationMode = Var(AnnotationMode.ToAnnotation)
-  lazy val movements = new Movements(annotationMode)
 
-  val commentManager = new CommentsWatcher(editorsUpdates, input, movements)
+
 
   protected def addMenuItem(el: Element, title: String) = {
     menu() = menu.now :+ (title, el)
@@ -131,48 +86,48 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     .register("MainMenuView") {
       case (el, args) =>
         elem.parentElement
-        new MainMenuView(el, input, scrollable, menu, movements).withBinder(n => new CodeBinder(n))
+        new MainMenuView(el, input, scrollable, menu).withBinder(n => new CodeBinder(n))
     }
     .register("ProjectsPanel"){
       case (el, args) =>
-        val v = new ProjectsPanelView(el, currentProject, connector.input, connector.output, movements).withBinder(n => new CodeBinder(n))
+        val v = new ProjectsPanelView(el, notebookCircuit).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Projects)
         v
      }
     .register("KappaEditor"){
       case (el, args) =>
-        val editor = new KappaCodeEditor(el, sourceMap, input, output, kappaCursor, editorsUpdates, serverConfiguration, movements).withBinder(n => new CodeBinder(n))
+        val ed = new KappaCodeEditor(el, editorCircuit).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Editor)
-        editor
+        ed
     }
     .register("VisualPanel"){
       case (el, args) =>
-        val kappaWatcher = new KappaWatcher(kappaCursor, editorsUpdates)
-        val v = new VisualPanelView(el, kappaWatcher.text, kappaWatcher.parsed, input, s).withBinder(n => new FixedBinder(n))
+        val kappaWatcher = new KappaWatcher(editorCircuit.kappaCursor, editorCircuit.editorsUpdates)
+        val v = new VisualPanelView(el, kappaWatcher.text, kappaWatcher.parsed, input, s).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Visualizations)
         v
     }
     .register("Simulations") {
       case (el, params) =>
-        val v = new SimulationsView(el, sourceMap, input, output, serverConfiguration).withBinder(s=>new CodeBinder(s))
+        val v = new SimulationsView(el, simulationsCircuit).withBinder(s=>new CodeBinder(s))
         addMenuItem(el, MainTabs.Simulations)
         v
     }
     .register("Figures") {
       case (el, params) =>
-        val v = new FiguresView(el, figures, input, kappaCursor, movements).withBinder(new CodeBinder(_))
+        val v = new FiguresView(el, input, editorCircuit.kappaCursor).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Figures)
         v
     }
     .register("Papers") {
       case (el, params) =>
-        val v = new PapersView(el, connector, papers, kappaCursor, movements).withBinder(new CodeBinder(_))
+        val v = new PapersView(el, connector, editorCircuit.kappaCursor).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Papers)
         v
     }
     .register("Settings") {
       case (el, params) =>
-        val v = new SettingsView(el, connector.input, annotationMode).withBinder(new FixedBinder(_))
+        val v = new SettingsView(el, input, settings.annotationMode).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Settings)
         v
     }

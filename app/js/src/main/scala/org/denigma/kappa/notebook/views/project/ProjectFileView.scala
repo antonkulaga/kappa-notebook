@@ -2,7 +2,6 @@ package org.denigma.kappa.notebook.views.project
 import org.denigma.binding.binders.Events
 import org.denigma.binding.views.BindableView
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.actions.Movements
 import org.scalajs.dom
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Element
@@ -12,7 +11,11 @@ import rx._
 
 import scala.collection.immutable._
 
-class ProjectFileView(val elem: Element, val file: KappaFile, input: Var[KappaMessage], output: Var[KappaMessage], movements: Movements) extends BindableView {
+class ProjectFileView(val elem: Element,
+                      val file: KappaFile,
+                      val saveRequest: Var[FileRequests.Save],
+                      val removeRequest: Var[FileRequests.Remove],
+                      val openFile: Var[KappaFile]) extends BindableView {
 
   val editable = Var(false)
 
@@ -41,26 +44,20 @@ class ProjectFileView(val elem: Element, val file: KappaFile, input: Var[KappaMe
 
   val fileClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   fileClick.triggerLater{
-    if(!editable.now) goToFile()
+    if(!editable.now) openFile() = file
   }
 
-  protected def goToFile() = {
-    input() = movements.toFile(file)
-  }
 
   val removeClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   removeClick.triggerLater{
     val message = s"Do you really want to remove '${file.name}' file?"
     val confirmation = window.confirm(message)
-    if(confirmation) output() = FileRequests.Remove(Set(file.path))
+    if(confirmation) removeRequest() = FileRequests.Remove(Set(file.path))
   }
 
   val saveClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   saveClick.triggerLater{
-    val saveRequest = FileRequests.Save( List(file), rewrite = true)
-    //println("save request")
-    //pprint.pprintln(saveRequest)
-    output() = saveRequest
+   saveRequest() =  FileRequests.Save( List(file), rewrite = true)
   }
 
   val renameClick: Var[MouseEvent] = Var(Events.createMouseEvent())

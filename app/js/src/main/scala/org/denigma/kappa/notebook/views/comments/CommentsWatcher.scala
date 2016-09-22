@@ -4,15 +4,13 @@ import fastparse.all._
 import org.denigma.binding.extensions._
 import org.denigma.codemirror.Editor
 import org.denigma.kappa.messages.KappaMessage
-import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.parsers._
 import org.denigma.kappa.notebook.views.editor.EditorUpdates
 import rx._
 
 class CommentsWatcher(
                        val updates: Var[EditorUpdates],
-                       val input: Var[KappaMessage],
-                       val movements: Movements
+                       val input: Var[KappaMessage]
                      )  {
 
   updates.onChange(changeHandler) //subscription
@@ -20,10 +18,10 @@ class CommentsWatcher(
   lazy val commentsParser = new CommentLinksParser
   lazy val filesParser = new FilesParser()
 
-  val figuresWatcher = new FiguresWatcher(filesParser, input, movements)
-  val paperWathcer = new PaperWatcher(new PaperParser, input, movements)
+  val figuresWatcher = new FiguresWatcher(filesParser, input)
+  val paperWathcer = new PaperWatcher(new PaperParser, input)
   val linkWatcher = new LinkWatcher(commentsParser)
-  val sourceWatcher = new SourceWatcher(filesParser, input, movements)
+  val sourceWatcher = new SourceWatcher(filesParser, input)
 
   protected def mergeComments(num: Int, ed: Editor, text: List[(Int,String)] = Nil): List[(Int, String)]  = if(num >= 0)  {
     val line = ed.getDoc().getLine(num)

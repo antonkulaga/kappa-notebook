@@ -6,21 +6,25 @@ import org.denigma.binding.views.BindableView
 import org.denigma.codemirror._
 import org.denigma.codemirror.addons.lint._
 import org.denigma.codemirror.extensions._
-import org.denigma.kappa.messages.{Go, KappaMessage, KappaSourceFile}
+import org.denigma.kappa.messages.{Go, KappaMessage, KappaSourceFile, SourceUpdate}
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, HTMLTextAreaElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
+
+import scalajs.js.JSConverters._
 import rx._
 
+import scala.concurrent.duration._
 import scala.scalajs.js
 
+
 class CodeTab(val elem: Element,
-              val path: String,
-              val input: Var[KappaMessage],
               val source: Var[KappaSourceFile],
               val selected: Var[String],
+              val input: Var[KappaMessage],
+              val output: Var[KappaMessage],
               val editorUpdates: Var[EditorUpdates],
               val kappaCursor: Var[KappaCursor],
               val errors: Rx[List[WebSimError]]
@@ -29,27 +33,31 @@ class CodeTab(val elem: Element,
     with EditorView
     with TabItem
 {
+
+
+  def path = source.map(s=>s.path)
+
   val wrapLines: Var[Boolean] = Var(false)
 
-  lazy val name = path.lastIndexOf("/") match {
-    case -1 => path
-    case ind if ind == path.length -1 => path
-    case ind => path.substring(ind+1)
-  }
+  lazy val name = source.map(s=>s.name)
 
   input.onChange{
-    case Go.ToSource(p, from ,to) if p.value == path | p.local ==path | p.local == name | (p.value == "" && active.now) =>
+    case Go.ToSource(p, from ,to) if p.value == path.now | p.local ==path.now | p.local == name.now | (p.value == "" && active.now) =>
       println(s"from ${from} to ${to}")
       editor.getDoc().setCursor(js.Dynamic.literal(line = from, ch = 1).asInstanceOf[Position])
 
-    case Go.ToSource(p, from ,to) if p.local == name | (p.value == "" && active.now) =>
+    case Go.ToSource(p, from ,to) if p.local == name.now | (p.value == "" && active.now) =>
       println(s"from ${from} to ${to}")
       editor.getDoc().setCursor(js.Dynamic.literal(line = from, ch = 1).asInstanceOf[Position])
+
+    case Go.ToFile(s: KappaSourceFile) if path.now == s.path =>
+      source() = s
+      code() = s.content
 
     case _=> //do nothing
   }
 
-  override lazy val id: String = path
+  override lazy val id: String = path.now
 
   override def mode = "Kappa"
 
@@ -75,7 +83,6 @@ class CodeTab(val elem: Element,
 
     //dom.console.error(s"CodeTab $name ERRORS: "+ers.toList.mkString("\n"))
     val found: List[LintFound] = ers.map{e=> e:LintFound}
-    import scalajs.js.JSConverters._
     def gts(text: String, options: LintOptions, cm: Editor): js.Array[LintFound] = {
       found.toJSArray
     }
@@ -89,6 +96,15 @@ class CodeTab(val elem: Element,
   code.onChange{ str =>
       if(source.now.content!=str) source() = source.now.copy(content = str, saved = false)
   }
+
+  lazy val updateAfter = 800 millis
+
+  lazy val delayedCode = code.afterLastChange(updateAfter){
+   value =>
+      output() = SourceUpdate(source.now, source.now.copy(content = value))
+  }
+
+
 
   override def unbindView() = {
     super.unbindView()

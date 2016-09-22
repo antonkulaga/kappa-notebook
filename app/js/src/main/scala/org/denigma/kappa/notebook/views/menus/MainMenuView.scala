@@ -4,7 +4,7 @@ import org.denigma.binding.binders._
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionSeqView}
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.{KappaMessage, Move}
+import org.denigma.kappa.messages.{Go, KappaMessage, Move}
 import org.denigma.kappa.notebook.actions.Movements
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, HTMLElement}
@@ -19,14 +19,12 @@ import scala.scalajs.js.annotation.JSExport
   * @param input input Var that is used to get data from socket and also to send/receive commands to UI views
   * @param scrollPanel panel that is used for scrolling
   * @param items menu items
-  * @param movements configuration for movements between tabs
   */
 class MainMenuView(
                    val elem: Element,
                    val input: Var[KappaMessage],
                    val scrollPanel: Element,
-                   val items: Var[List[(String, Element)]],
-                   val movements: Movements
+                   val items: Var[List[(String, Element)]]
                   ) extends BindableView with /*Fixed*/CollectionSeqView{
 
   type Item =  (String, Element)
@@ -123,7 +121,7 @@ class MainMenuView(
   }
 
   override def newItemView(item: (String, Element)): MainMenuItemView = this.constructItemView(item){
-    case (el: HTMLElement, _) => new MainMenuItemView(el, item, input, movements).withBinder(new CodeBinder(_))
+    case (el: HTMLElement, _) => new MainMenuItemView(el, item, input).withBinder(new CodeBinder(_))
     case _ => throw new Exception("Element is not an HTML Element")
   }
 
@@ -149,8 +147,7 @@ class MainMenuView(
 class MainMenuItemView(
                         val elem: HTMLElement,
                         val item: (String, Element),
-                        val input: Var[KappaMessage],
-                        val movements: Movements
+                        val input: Var[KappaMessage]
                       ) extends BindableView {
 
   self =>
@@ -222,7 +219,7 @@ class MainMenuItemView(
 
   @JSExport
   def click(): Unit = {
-    input() =  movements.toTab(itemName.now)
+    input() = Go.ToTab(itemName.now)
   }
 
   menuClick.triggerLater{ click() }

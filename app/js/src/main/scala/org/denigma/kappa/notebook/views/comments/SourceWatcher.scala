@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.comments
 
 import fastparse.core.Parsed
 import org.denigma.codemirror.Editor
-import org.denigma.kappa.messages.KappaMessage
+import org.denigma.kappa.messages.{Animate, Go, KappaMessage}
 import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.parsers.{AST, FilesParser}
 import org.scalajs.dom
@@ -12,7 +12,7 @@ import rx.Var
 
 import scalatags.JsDom.all._
 
-class SourceWatcher(val filesParser: FilesParser, input: Var[KappaMessage], movements: Movements) extends Watcher{
+class SourceWatcher(val filesParser: FilesParser, input: Var[KappaMessage]) extends Watcher{
 
 
   override type Data = (AST.IRI, Option[Int])
@@ -50,7 +50,7 @@ class SourceWatcher(val filesParser: FilesParser, input: Var[KappaMessage], move
     val html = tag.render
     html.onclick = {
           event: MouseEvent =>
-            input() = movements.toSource(AST.IRI(""), n, n)
+            input() = Animate(Go.ToSource(AST.IRI(""), n, n), true)
     }
     html
   }
@@ -65,12 +65,12 @@ class SourceWatcher(val filesParser: FilesParser, input: Var[KappaMessage], move
       case (iri, Some(num)) =>
         html.onclick = {
           event: MouseEvent =>
-            input() = movements.toSource(iri, num, num)
+            input() = Animate(Go.ToSource(iri, num, num), true)
         }
       case (iri, None) =>
         html.onclick = {
           event: MouseEvent =>
-            input() = movements.toSource(iri, 0, 0)
+            input() = Animate(Go.ToSource(iri, 0, 0), true)
         }
     }
 

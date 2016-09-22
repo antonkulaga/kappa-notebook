@@ -89,6 +89,21 @@ object ServerMessages {
     implicit val classPickler: Pickler[LaunchModel] = boopickle.Default.generatePickler[LaunchModel]
 
     def fromRunModel(file: String, model: RunModel) = LaunchModel(List(file->model.code), max_events = model.max_events, max_time = model.max_time, nb_plot = model.nb_plot)
+
+    lazy val empty = LaunchModel(Nil, None, None, None )
+  }
+
+  case class LaunchModel( files: List[(String, String)],
+                         nb_plot: Option[Int] = Some(1000),
+                         max_events: Option[Int],
+                         max_time: Option[Double] = None,
+                         runName: String = "") extends ServerMessage with FileContainer
+  {
+
+    lazy val parameters = RunModel(fullCode, nb_plot, max_events, max_time)
+
+    lazy val fileNames = files.map(_._1)
+
   }
 
   trait FileContainer {
@@ -107,7 +122,7 @@ object ServerMessages {
       case (Nil, (name, content)) => ((1, content.length), name) :: Nil
 
       case (
-          (((prevFrom, prevTo)), prevName) :: tail, (name, content)
+        (((prevFrom, prevTo)), prevName) :: tail, (name, content)
         ) =>
         val from = prevTo
         ((from, from + content.length -1), name) ::((prevFrom, prevTo), prevName) :: tail
@@ -121,18 +136,6 @@ object ServerMessages {
     }
   }
 
-  case class LaunchModel( files: List[(String, String)],
-                         nb_plot: Option[Int] = Some(1000),
-                         max_events: Option[Int],
-                         max_time: Option[Double] = None,
-                         runName: String = "") extends ServerMessage with FileContainer
-  {
-
-    lazy val parameters = RunModel(fullCode, nb_plot, max_events, max_time)
-
-    lazy val fileNames = files.map(_._1)
-
-  }
 
   object ParseModel {
     implicit val classPickler: Pickler[ParseModel] = boopickle.Default.generatePickler[ParseModel]

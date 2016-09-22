@@ -2,21 +2,17 @@ package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views._
-import org.denigma.kappa.messages.KappaMessage.ServerCommand
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
-import org.denigma.kappa.messages.{KappaMessage, KappaSourceFile}
-import org.denigma.kappa.notebook.views.common.ServerConnections
+import org.denigma.kappa.messages.SourcesFileSelector
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 
-
 class RunnerView(val elem: Element,
                  val tab: Var[String],
-                 sender: Var[KappaMessage],
-                 serverConnections: Rx[ServerConnections],
-                 val sourceMap: Rx[Map[String, KappaSourceFile]]
+                 val configurations: Rx[Map[String, SourcesFileSelector]],
+                 val runner: Var[(LaunchModel, String)]
                  ) extends BindableView//FixedCollectionSeqView
 {
   self=>
@@ -37,6 +33,7 @@ class RunnerView(val elem: Element,
 
   val implicitSignature = Var(true)
 
+
   // val gluttony: Var[Boolean] = Var(false)
 
   protected val maxTime = time.map(t => if(t > 0) Some(t) else None)
@@ -44,14 +41,10 @@ class RunnerView(val elem: Element,
   protected val nbPlot = points.map(p=> if(p>0) Some(p) else None)
 
   protected def launch() = {
-    val items = sourceMap.now.map{
-      case (key, value) => key -> value.content
-    }.toList
-    val params = LaunchModel(items, nb_plot = self.nbPlot.now, max_events = self.maxEvents.now, max_time = self.maxTime.now)
-    val message = ServerCommand(serverConnections.now.currentServer, params)
-    sender.push(message)
+    val params = LaunchModel(Nil, nb_plot = self.nbPlot.now, max_events = self.maxEvents.now, max_time = self.maxTime.now)
+    runner() = (params, "")
   }
 
   val run = Var(org.denigma.binding.binders.Events.createMouseEvent)
-  run.triggerLater{launch() }
+  run.triggerLater{ launch() }
 }

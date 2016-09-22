@@ -96,8 +96,12 @@ object WebSimMessages {
   object RunModel {
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[RunModel] = boopickle.Default.generatePickler[RunModel]
+
+    lazy val empty = RunModel("", None, None, None)
   }
   case class RunModel(code: String, nb_plot: Option[Int] = Some(250), max_events: Option[Int], max_time: Option[Double] = None) extends WebSimMessage
+
+  trait RunParameters
 
   object Observable {
     import boopickle.DefaultBasic._

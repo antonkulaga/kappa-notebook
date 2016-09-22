@@ -89,9 +89,8 @@ class BookmarksView(val elem: Element, location: Var[Bookmark], textLayer: Eleme
   override protected def subscribeUpdates() = {
     super.subscribeUpdates()
     selectionRanges.afterLastChange(500 millis){
-      case sels=>
-        lastSelections() = sels.map{
-          case s=>
+      sels=>
+        lastSelections() = sels.map{ s=>
             val textSelection: TextLayerSelection = TextLayerSelection.fromRange("", s)
             textSelection
         }

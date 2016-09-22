@@ -3,15 +3,14 @@ package org.denigma.kappa.notebook.views.comments
 
 import fastparse.all._
 import org.denigma.codemirror.Editor
-import org.denigma.kappa.messages.KappaMessage
-import org.denigma.kappa.notebook.actions.Movements
+import org.denigma.kappa.messages.{Animate, Go, KappaMessage}
 import org.denigma.kappa.notebook.parsers.{PaperParser, PaperSelection}
 import org.scalajs.dom.raw.MouseEvent
 import rx.Var
 
 import scalatags.JsDom.all._
 
-class PaperWatcher(paperParser: PaperParser, input: Var[KappaMessage], movements: Movements) extends Watcher {
+class PaperWatcher(paperParser: PaperParser, input: Var[KappaMessage]) extends Watcher {
   override type Data = PaperSelection
 
   override def parse(editor: Editor, lines: List[(Int, String)], currentNum: Int): Unit = {
@@ -28,10 +27,7 @@ class PaperWatcher(paperParser: PaperParser, input: Var[KappaMessage], movements
     }
   }
 
-
-
-
-  protected def makeMarker(paper: PaperSelection) = {
+  protected def makeMarker(selection: PaperSelection) = {
     /*
     val tag = button(`class` := "ui icon tiny button", i(`class` := "label File Code Outline icon", onclick := {
       //println(s"mouse down on $num")
@@ -46,7 +42,7 @@ class PaperWatcher(paperParser: PaperParser, input: Var[KappaMessage], movements
     val html = tag.render
     html.onclick = {
       event: MouseEvent =>
-        input() = movements.toPaper(paper)
+        input() = Animate(Go.ToPaperSelection(selection, true), true)
     }
     html
   }

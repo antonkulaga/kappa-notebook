@@ -14,5 +14,7 @@ object Commands {
 
   case class CloseFile(path: String) extends UIMessage
 
+  case class CloseSimulation(token: Int) extends UIMessage
+
 }
 

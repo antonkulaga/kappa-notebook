@@ -3,7 +3,7 @@ package org.denigma.kappa.notebook.views.simulations
 import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.views.{BindableView, CollectionSeqView}
 import org.scalajs.dom.raw.Element
-import rx.Var
+import rx.{Rx, Var}
 import rx.Ctx.Owner.Unsafe.Unsafe
 
 object ServerErrorsView {
@@ -12,7 +12,7 @@ object ServerErrorsView {
     val message = Var(error)
   }
 }
-class ServerErrorsView(val elem: Element, val items: Var[List[String]]) extends BindableView with CollectionSeqView {
+class ServerErrorsView(val elem: Element, val items: Rx[List[String]]) extends BindableView with CollectionSeqView {
   import ServerErrorsView._
 
   type Item = String

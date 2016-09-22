@@ -1,9 +1,12 @@
 package org.denigma.kappa.messages
 
 import boopickle.CompositePickler
+import boopickle.DefaultBasic._
 
 import scala.collection.immutable._
-import boopickle.DefaultBasic._
+
+
+
 
 object KappaProject extends FileFilters{
 
@@ -56,6 +59,30 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
     .filterNot(videoFilter)
     .filterNot(paperFilter)
 }
+
+case class PathSourceSelector(pathes: List[String]) extends SourcesFileSelector(
+  proj => {
+    val fls = proj.sourceMap
+    pathes.collect{
+      case p if {
+        val r = fls.contains(p)
+        if(!r) println(s"cannot find file ${p}")
+        r
+      } => fls(p)
+    }
+  }
+)
+
+case object DefaultSourceSelector extends SourcesFileSelector( proj => proj.folder.files.collect{ case f: KappaSourceFile => f}.toList)
+
+class SourcesFileSelector(fun: KappaProject=> List[KappaSourceFile]) extends KappaPathSelector[KappaSourceFile](fun)
+
+
+class KappaPathSelector[T <: KappaPath](fun: KappaProject => List[T]) extends Function1[KappaProject, List[T]]
+{
+  def apply(value: KappaProject): List[T] = fun(value)
+}
+
 
 trait FileFilters {
   protected def sourceFilter(f: KappaFile): Boolean =  f.name.endsWith(".ka") || f.name.endsWith(".ttl")

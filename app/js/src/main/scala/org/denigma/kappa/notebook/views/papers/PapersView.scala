@@ -5,12 +5,12 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.controls.papers._
-import org.denigma.kappa.messages.{GoToPaper, GoToPaperSelection, KappaBinaryFile, KappaMessage}
+import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
-import org.denigma.kappa.notebook.actions.{Commands, Movements}
+import org.denigma.kappa.notebook.actions.Commands
 import org.denigma.kappa.notebook.parsers.{AST, PaperSelection}
 import org.denigma.kappa.notebook.views.annotations.CommentInserter
-import org.denigma.kappa.notebook.views.common.{FileTabHeaders, FileTabItemView, TabHeaders}
+import org.denigma.kappa.notebook.views.common.FileTabHeaders
 import org.denigma.kappa.notebook.views.editor.KappaCursor
 import org.scalajs.dom
 import org.scalajs.dom.raw._
@@ -26,16 +26,15 @@ import scala.util.{Failure, Success}
   * This class manages papers
   * @param elem Element to which view is bound to
   * @param connector class that provides websocket connection and input/output vars to subscribe to
-  * @param projectPapers papers of the project
   * @param kappaCursor is used to suggest insertions of comments
   */
 class PapersView(val elem: Element,
                  val connector: WebSocketTransport,
-                 val projectPapers: Rx[Map[String, KappaBinaryFile]],
-                 val kappaCursor: Var[KappaCursor],
-                 val movements: Movements
+                 val kappaCursor: Var[KappaCursor]
                 ) extends BindableView
   with CollectionMapView with CommentInserter {
+
+  val paperFiles: Var[Map[String, KappaBinaryFile]] = Var(Map.empty[String, KappaBinaryFile])
 
   val paperSelections: Var[List[PaperSelection]] = Var(Nil)
 
@@ -43,7 +42,7 @@ class PapersView(val elem: Element,
 
   val paperURI: Var[String] = Var("")
 
-  val paperLoader: WebSocketPaperLoader = WebSocketPaperLoader(connector, projectPapers)
+  val paperLoader: WebSocketPaperLoader = WebSocketPaperLoader(connector, paperFiles)
 
   val items: Var[Map[String, Paper]] = paperLoader.loadedPapers
 
@@ -71,7 +70,7 @@ class PapersView(val elem: Element,
   val toSource = Var(Events.createMouseEvent())
   toSource.onChange{
     ev => currentSelection.now match {
-      case Some(s) => input() = movements.toSource(AST.IRI(codeFile.now), lineNumber.now, lineNumber.now)
+      case Some(s) => input() =  Animate(Go.ToSource(AST.IRI(codeFile.now), lineNumber.now, lineNumber.now), true)
       case None =>
     }
   }
@@ -83,10 +82,15 @@ class PapersView(val elem: Element,
   //subscribption on some events/commands
   input.onChange {
 
+    case Go.ToFile(b: KappaBinaryFile) if b.fileType == FileType.pdf && b.isEmpty =>
+      paperURI() = b.path
 
-    case GoToPaper(loc)=> paperURI() = loc //just switches to another paper
+    case Go.ToFile(b: KappaBinaryFile) if b.fileType == FileType.pdf =>
+      paperLoader.paperFiles() = paperLoader.paperFiles.now.updated(b.path, b)
 
-    case GoToPaperSelection(selection, exc) =>
+    case Go.ToPaper(loc, _)=> paperURI() = loc //just switches to another paper
+
+    case Go.ToPaperSelection(selection, exc) =>
 
       paperURI.Internal.value = selection.label //TODO: fix this ugly workaround
 

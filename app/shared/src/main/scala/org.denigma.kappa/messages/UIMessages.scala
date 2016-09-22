@@ -1,35 +1,22 @@
 package org.denigma.kappa.messages
 
-import boopickle.{CompositePickler, Pickler}
 import boopickle.DefaultBasic._
-import org.denigma.kappa.notebook.parsers.AST
+import boopickle.{CompositePickler, Pickler}
+import org.denigma.kappa.messages.WebSimMessages.WebSimError
 
 
 object UIMessage {
 
   implicit val UIMessagePickler: CompositePickler[UIMessage] = compositePickler[UIMessage]
     //.addConcreteType[GoToPaper]
-    .addConcreteType[Go.ToSource]
-    .addConcreteType[Go.ToTab]
+    //.addConcreteType[Go.ToSource]
+    //.addConcreteType[Go.ToTab]
     .addConcreteType[MoveTo.Tab]
 }
 
 
 trait UIMessage extends KappaMessage
 
-object Go {
-  object ToTab {
-    implicit val classPickler: Pickler[ToTab] = boopickle.Default.generatePickler[ToTab]
-  }
-  case class ToTab(name: String) extends UIMessage
-
-  object ToSource {
-    implicit val sourcePickler: Pickler[ToSource] = boopickle.Default.generatePickler[ToSource]
-  }
-
-  case class ToSource(path: AST.IRI, begin: Int = 0, end: Int = 0) extends UIMessage
-
-}
 
 object MoveTo {
   object Tab {
@@ -37,3 +24,18 @@ object MoveTo {
   }
   case class Tab(name: String, shift: Int = 0, switch: Boolean = false) extends UIMessage //if shift
 }
+
+
+object SourceUpdate {
+  implicit val classPickler: Pickler[SourceUpdate] = boopickle.Default.generatePickler[SourceUpdate]
+}
+case class SourceUpdate(from: KappaSourceFile, to: KappaSourceFile) extends UIMessage
+
+case class Errors(byFiles: Map[String, WebSimError], other: List[String]) extends UIMessage
+
+object Animate {
+
+  lazy val empty = Animate(EmptyKappaMessage, true)
+}
+
+case class Animate(message: KappaMessage, annotation: Boolean) extends UIMessage

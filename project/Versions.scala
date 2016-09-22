@@ -8,9 +8,9 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val websim = "0.0.15"
 
-	val binding = "0.8.14"
+	val binding = "0.8.15"
 
-	val bindingControls = "0.0.21"
+	val bindingControls = "0.0.22"
 
 	val betterFiles = "2.16.0"
 
@@ -22,7 +22,7 @@ trait OtherJVM {
 
 	val bcrypt = "2.4"
 
-	val ammonite = "0.7.6"
+	val ammonite = "0.7.7"
 
 	val apacheCodec = "1.10"
 
@@ -72,7 +72,7 @@ trait SharedVersions
 
 	val annotator = "0.0.5"
 
-	val circe = "0.5.1"
+	val circe = "0.5.2"
 
 	val scalaTags = "0.6.0"
 
@@ -80,7 +80,7 @@ trait SharedVersions
 
 	val scalaTest = "3.0.0"
 
-	val fastparse = "0.3.7"
+	val fastparse = "0.4.1"
 
 	val quicklens = "1.4.7"
 

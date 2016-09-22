@@ -16,14 +16,14 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js.typedarray.ArrayBuffer
 
 case class WebSocketPaperLoader(subscriber: WebSocketTransport,
-                                projectPapers: Rx[Map[String, KappaBinaryFile]],
+                                paperFiles: Var[Map[String, KappaBinaryFile]],
                                 loadedPapers: Var[Map[String, Paper]] = Var(Map.empty[String, Paper]))
   extends PaperLoader {
 
   override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
   {
     if(loadedPapers.now.contains(path)) Future.successful(loadedPapers.now(path)) else
-      projectPapers.now.get(path) match {
+      paperFiles.now.get(path) match {
         case Some(f) if f.isEmpty => send(path)(timeout)
         case Some(f) =>
           val data: ArrayBuffer = subscriber.bytes2message(f.content)

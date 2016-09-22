@@ -79,9 +79,9 @@ lazy val app = crossProject
   .jsConfigure(p=>p.enablePlugins(ScalaJSWeb))
   .jvmSettings(
     mainClass in Compile := Some("org.denigma.kappa.notebook.Main"),
+    libraryDependencies ++= Dependencies.compilers.value ++ Dependencies.otherJvm.value,
     pipelineStages in Assets := Seq(scalaJSPipeline, gzip),
     compile in Compile <<= (compile in Compile) dependsOn scalaJSPipeline.map(f => f(Seq.empty)),
-    libraryDependencies ++= Dependencies.compilers.value ++ Dependencies.otherJvm.value,
     (emitSourceMaps in fullOptJS) := true,
     isDevMode in scalaJSPipeline := { sys.env.get("APP_MODE") match {
         case Some(str) if str.toLowerCase.startsWith("prod") =>

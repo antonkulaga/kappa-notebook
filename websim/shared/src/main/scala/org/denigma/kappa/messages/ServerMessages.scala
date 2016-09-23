@@ -97,7 +97,7 @@ object ServerMessages {
                          nb_plot: Option[Int] = Some(1000),
                          max_events: Option[Int],
                          max_time: Option[Double] = None,
-                         runName: String = "") extends ServerMessage with FileContainer
+                         runName: String = "") extends ServerMessage with FileContainer with RunParameters
   {
 
     lazy val parameters = RunModel(fullCode, nb_plot, max_events, max_time)

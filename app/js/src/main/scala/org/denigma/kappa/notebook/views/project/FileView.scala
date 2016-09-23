@@ -11,11 +11,11 @@ import rx._
 
 import scala.collection.immutable._
 
-class ProjectFileView(val elem: Element,
-                      val file: KappaFile,
-                      val saveRequest: Var[FileRequests.Save],
-                      val removeRequest: Var[FileRequests.Remove],
-                      val openFile: Var[KappaFile]) extends BindableView {
+class FileView(val elem: Element,
+               val file: KappaFile,
+               val saveRequest: Var[FileRequests.Save],
+               val removeRequest: Var[FileRequests.Remove],
+               val openFile: Var[KappaFile]) extends BindableView {
 
   val editable = Var(false)
 

@@ -9,55 +9,16 @@ import org.denigma.kappa.notebook.views.settings.AnnotationMode
 import org.scalajs.dom
 import rx._
 
-class Movements(input: Var[KappaMessage], output: Var[KappaMessage], annotationMode: Rx[AnnotationMode.AnnotationMode]) extends Circuit(input, output){
 
-
-
-  /*
-  def toTab(name: String) = Go.ToTab(name)
-
-  def toPaper(paper: String, page: Int) =
-    if(annotationMode.now == AnnotationMode.ToAnnotation) {
-      KappaMessage.Container()
-        .andThen(Go.ToTab(MainTabs.Papers))
-        .andThen(GoToPaper(paper))
-        .copy(betweenInterval = 300)
-    } else {
-      KappaMessage.Container()
-        .andThen(Go.ToTab(MainTabs.Editor))
-        .andThen(Move.RelativeTo(MainTabs.Editor, MainTabs.Papers, Move.Direction.RIGHT))
-        .copy(betweenInterval = 300)
-    }
-
-  def toPaper(paperSelection: PaperSelection) =
-    if(annotationMode.now == AnnotationMode.ToAnnotation) {
-      KappaMessage.Container()
-        .andThen(Go.ToTab(MainTabs.Papers))
-        .andThen(GoToPaperSelection(paperSelection, true))
-        .copy(betweenInterval = 300)
-    } else {
-      KappaMessage.Container()
-        .andThen(Go.ToTab(MainTabs.Editor))
-        .andThen(Move.RelativeTo(MainTabs.Editor, MainTabs.Papers, Move.Direction.RIGHT))
-        .andThen(GoToPaperSelection(paperSelection, true))
-        .copy(betweenInterval = 200)
-    }
-
-  def toFigure(figure: Figure) =
-    if(annotationMode.now == AnnotationMode.ToAnnotation)
-      KappaMessage.Container()
-      .andThen(Go.ToTab(MainTabs.Figures))
-      .andThen(GoToFigure(figure))
-    else {
-      KappaMessage.Container()
-      .andThen(Go.ToTab(MainTabs.Editor))
-      .andThen(Move.RelativeTo(MainTabs.Editor, MainTabs.Figures, Move.Direction.RIGHT))
-      .andThen(GoToFigure(figure))
-    }
-
-    case other => KappaMessage.Container() //do nothing
-  }
+/**
+  * This Circuit is responsible for Animations
+  * TODO: make containers compartible with UIMessage
+  * @param input
+  * @param output
+  * @param annotationMode
   */
+class Animations(input: Var[KappaMessage], output: Var[KappaMessage], annotationMode: Rx[AnnotationMode.AnnotationMode]) extends Circuit(input, output){
+
 
   protected def tabByFileType(fileType: FileType) = fileType match {
     case FileType.pdf => Some(MainTabs.Papers)

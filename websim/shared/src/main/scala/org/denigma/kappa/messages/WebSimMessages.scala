@@ -99,9 +99,13 @@ object WebSimMessages {
 
     lazy val empty = RunModel("", None, None, None)
   }
-  case class RunModel(code: String, nb_plot: Option[Int] = Some(250), max_events: Option[Int], max_time: Option[Double] = None) extends WebSimMessage
+  case class RunModel(code: String, nb_plot: Option[Int] = Some(250), max_events: Option[Int], max_time: Option[Double] = None) extends WebSimMessage with RunParameters
 
-  trait RunParameters
+  trait RunParameters {
+    def nb_plot: Option[Int]
+    def max_events: Option[Int]
+    def max_time: Option[Double]
+  }
 
   object Observable {
     import boopickle.DefaultBasic._

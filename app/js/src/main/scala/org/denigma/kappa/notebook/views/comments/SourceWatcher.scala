@@ -3,11 +3,8 @@ package org.denigma.kappa.notebook.views.comments
 import fastparse.core.Parsed
 import org.denigma.codemirror.Editor
 import org.denigma.kappa.messages.{Animate, Go, KappaMessage}
-import org.denigma.kappa.notebook.actions.Movements
 import org.denigma.kappa.notebook.parsers.{AST, FilesParser}
-import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
-import org.scalajs.dom.html.Anchor
 import rx.Var
 
 import scalatags.JsDom.all._

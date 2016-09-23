@@ -4,7 +4,7 @@ import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.{Animate, Go, KappaMessage}
+import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.actions.Commands
 import org.denigma.kappa.notebook.parsers.AST
 import org.denigma.kappa.notebook.views.annotations.CommentInserter
@@ -52,7 +52,18 @@ class FiguresView(val elem: Element,
 
   lazy val hasComment = comment.map(com=>com!="")
 
+
+
   input.onChange {
+
+    case Go.ToFile(b: KappaFile) if b.fileType == FileType.image =>
+      val image = Image(b.name, b.path, "")
+      input() = Go.ToFigure(image)
+
+    case Go.ToFile(b: KappaBinaryFile) if b.fileType == FileType.video =>
+      val video = Video(b.name, b.path, "")
+      input() = Go.ToFigure(video)
+
     case Go.ToFigure(figure)=>
       items() = items.now.updated(figure.url, figure)
       selected() = figure.url
@@ -88,7 +99,7 @@ class FiguresView(val elem: Element,
       }
   }
 
-  val headers = itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
+  val headers = items.map(i=>i.keys.toList) //itemViews.map(its=> immutable.SortedSet.empty[String] ++ its.values.map(_.id))
 
 
   protected def getCaption(url: String): String ={

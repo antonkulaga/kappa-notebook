@@ -2,7 +2,8 @@ package org.denigma.kappa.messages
 
 import boopickle.DefaultBasic._
 import boopickle.{CompositePickler, Pickler}
-import org.denigma.kappa.messages.WebSimMessages.WebSimError
+import org.denigma.kappa.messages.ServerMessages.{LaunchModel, ServerConnection}
+import org.denigma.kappa.messages.WebSimMessages.{RunModel, RunParameters, WebSimError}
 
 
 object UIMessage {
@@ -13,6 +14,7 @@ object UIMessage {
     //.addConcreteType[Go.ToTab]
     .addConcreteType[MoveTo.Tab]
 }
+case object EmptyUIMEssage extends UIMessage
 
 
 trait UIMessage extends KappaMessage
@@ -27,7 +29,7 @@ object MoveTo {
 
 
 object SourceUpdate {
-  implicit val classPickler: Pickler[SourceUpdate] = boopickle.Default.generatePickler[SourceUpdate]
+  //implicit val classPickler: Pickler[SourceUpdate] = boopickle.Default.generatePickler[SourceUpdate]
 }
 case class SourceUpdate(from: KappaSourceFile, to: KappaSourceFile) extends UIMessage
 
@@ -39,3 +41,18 @@ object Animate {
 }
 
 case class Animate(message: KappaMessage, annotation: Boolean) extends UIMessage
+
+case class RunConfiguration(files: List[KappaSourceFile],
+                            parameters: RunParameters,
+                            projectName: String,
+                            configurationName: String = "default",
+                            serverConnectionOpt: Option[ServerConnection] = None
+                           ) extends UIMessage
+{
+  lazy val fullCode = files.foldLeft(""){case (acc, e) => acc + e}
+
+  lazy val names = files.map(f=>f.name)
+
+  lazy val pathes = files.map(f=>f.path)
+
+}

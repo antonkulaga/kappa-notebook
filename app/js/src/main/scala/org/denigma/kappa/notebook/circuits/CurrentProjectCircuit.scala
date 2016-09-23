@@ -44,10 +44,7 @@ class CurrentProjectCircuit(input: Var[KappaMessage],
 
     case resp @ FileResponses.SavedFiles(Left(pathes)) =>
       val proj = currentProject.now
-
       currentProject() = { proj.copy(folder = proj.folder.markSaved(pathes)) }
-    //println("save resp")
-    //pprint.pprintln(resp)
 
     case resp @ FileResponses.SavedFiles(Right(files)) =>
       val proj = currentProject.now

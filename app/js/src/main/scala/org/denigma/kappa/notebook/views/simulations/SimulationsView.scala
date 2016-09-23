@@ -10,7 +10,7 @@ import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages.SimulationStatus
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.actions.Commands
-import org.denigma.kappa.notebook.circuits.SimulationsCircuit
+import org.denigma.kappa.notebook.circuits.{ErrorsCircuit, SimulationsCircuit}
 import org.denigma.kappa.notebook.views.common._
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -19,13 +19,14 @@ import rx._
 import scala.collection.immutable._
 
 class SimulationsView(val elem: Element,
-                      val circuit: SimulationsCircuit
+                      val simulationCircuit: SimulationsCircuit,
+                      val errorsCircuit: ErrorsCircuit
                      )
   extends BindableView with Uploader /*with TabItem*/ with CollectionMapView //with CollectionSortedSetView
 {
   self=>
 
-  override lazy val items: Rx[Map[Key, Value]] = circuit.simulationResults
+  override lazy val items: Rx[Map[Key, Value]] = simulationCircuit.simulationResults
 
   lazy val headers = itemViews.map(its=>SortedSet.empty[String] ++ its.values.map(_.id))
 
@@ -39,7 +40,6 @@ class SimulationsView(val elem: Element,
 
   override type ItemView = SimulationRunView
 
-
   def makeId(item: Key): String = "#"+item._1
 
   override def newItemView(key: Key, value: Value): SimulationRunView = this.constructItemView(key)( {
@@ -50,11 +50,10 @@ class SimulationsView(val elem: Element,
       view
   })
 
-
   override lazy val injector = defaultInjector
     .register("headers")((el, args) => new TabHeaders(el, headers, tab)(str=>str).withBinder(new GeneralBinder(_)))
-    .register("runner")((el, args) => new RunnerView(el, tab, circuit.configurations, circuit.launcher).withBinder(n => new CodeBinder(n)))
-    .register("ServerErrors")((el, args) => new ServerErrorsView(el, circuit.serverErrors.map(e=>e.errors)).withBinder(n => new CodeBinder(n)))
+    .register("runner")((el, args) => new RunnerView(el, tab, simulationCircuit.configurations, simulationCircuit.launcher).withBinder(n => new CodeBinder(n)))
+    .register("ServerErrors")((el, args) => new ServerErrorsView(el, errorsCircuit.serverErrors.map(e=>e.errors)).withBinder(n => new CodeBinder(n)))
 
   override def updateView(view: SimulationRunView, key: (Int, Option[LaunchModel]), old: SimulationStatus, current: SimulationStatus): Unit = {
     println("status updated "+current.plot.map(p=>p.legend))

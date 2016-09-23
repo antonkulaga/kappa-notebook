@@ -5,12 +5,15 @@ import org.denigma.binding.views.{BindableView, CollectionSeqView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.messages.{Animate, Go, KappaMessage, KappaSourceFile}
-import org.denigma.kappa.notebook.circuits.KappaEditorCircuit
+import org.denigma.kappa.notebook.circuits.{ErrorsCircuit, KappaEditorCircuit}
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
-class SyntaxErrorsView(val elem: Element, circuit: KappaEditorCircuit) extends CollectionSeqView {
+class SyntaxErrorsView(val elem: Element, circuit: ErrorsCircuit) extends CollectionSeqView {
+
+  override type Item = (KappaSourceFile, WebSimError)
+  override type ItemView =  WebSimErrorView
 
   val items = Var(List.empty[(KappaSourceFile, WebSimError)])
 
@@ -18,17 +21,11 @@ class SyntaxErrorsView(val elem: Element, circuit: KappaEditorCircuit) extends C
 
   override def newItemView(item: Item): ItemView = this.constructItemView(item){
     case (el, _)=>
-      //val code = fullCode.now
-      val code = circuit.fullCode.now
-      val error = item._2
-      val (chFrom ,chTo) = (error.range.from_position.chr, error.range.to_position.chr)
-      val errorCode = code.substring(chFrom, chTo)
-      println(s"FROM $chFrom TO $chTo TEXT = $errorCode")
+      val errorCode = circuit.errorCode(item._2)
+      //println(s"FROM $chFrom TO $chTo TEXT = $errorCode")
       new WebSimErrorView(el,  circuit.input, item._1, item._2, errorCode).withBinder(v=>new CodeBinder(v))
   }
 
-  override type Item = (KappaSourceFile, WebSimError)
-  override type ItemView =  WebSimErrorView
 }
 
 class WebSimErrorView(val elem: Element, input: Var[KappaMessage], file: KappaSourceFile, error: WebSimError, textUnderError: String) extends BindableView {

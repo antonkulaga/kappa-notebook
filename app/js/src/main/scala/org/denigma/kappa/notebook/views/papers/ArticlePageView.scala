@@ -3,6 +3,7 @@ package org.denigma.kappa.notebook.views.papers
 import org.denigma.binding.extensions._
 import org.denigma.controls.papers._
 import org.denigma.kappa.notebook.extensions._
+import org.denigma.kappa.notebook.views.common.OptimizedView
 import org.denigma.pdf.extensions.Page
 import org.scalajs.dom
 import org.scalajs.dom.Node
@@ -20,7 +21,7 @@ class ArticlePageView(val elem: HTMLElement,
                       val num: Int,
                       val page: Page,
                       val scale: Rx[Double]
-                     )  extends PageView {
+                     )  extends PageView with OptimizedView {
  val name = Var("page_"+num)
  val title = Var("page_"+num)
 
@@ -28,14 +29,6 @@ class ArticlePageView(val elem: HTMLElement,
     if(sel.anchorNode.isInside(textDiv) || sel.focusNode.isInside(textDiv)) sel.map{ range =>
       TextLayerSelection.fromRange("", range)}.toList
     else List.empty[TextLayerSelection]
-  }
-
-  def checkVisibility(): Boolean = parent match {
-    case Some(par) =>
-      par.elem.intersects(elem)
-    case None =>
-      dom.console.error("cannot find a parent for the page")
-      false
   }
 
   protected var canvasParent: Option[Element] = None

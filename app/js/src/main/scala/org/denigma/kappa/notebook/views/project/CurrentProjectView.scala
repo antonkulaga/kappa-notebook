@@ -26,7 +26,7 @@ class CurrentProjectView(val elem: Element,
 
   val removeRequest = circuit.outgoingPortFrom(FileRequests.Remove.empty)
 
-  val toFile = circuit.intoIncomingPort[KappaFile, KappaMessage](KappaSourceFile.empty, skipFirst = true)(f=>Animate(Go.ToFile(f), false))
+  val openFile = circuit.intoIncomingPort[KappaFile, KappaMessage](KappaSourceFile.empty, skipFirst = true)(f=>Animate(Go.ToFile(f), false))
 
   lazy val currentProject = circuit.currentProject
 
@@ -38,7 +38,7 @@ class CurrentProjectView(val elem: Element,
 
   override type Item = KappaFile
 
-  override type ItemView = ProjectFileView
+  override type ItemView = FileView
 
   val newFileName: Var[String] = Var("")
 
@@ -75,7 +75,7 @@ class CurrentProjectView(val elem: Element,
 
 
   override def newItemView(item: Item): ItemView = constructItemView(item){
-    case (el, _) => new ProjectFileView(el, item, saveRequest, removeRequest, toFile).withBinder(v => new GeneralBinder(v))
+    case (el, _) => new FileView(el, item, saveRequest, removeRequest, openFile).withBinder(v => new GeneralBinder(v))
   }
 
   val name = currentProject.map(proj => proj.name)

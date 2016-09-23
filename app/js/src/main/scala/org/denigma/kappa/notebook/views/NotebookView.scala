@@ -5,8 +5,8 @@ import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
-import org.denigma.kappa.notebook.actions.Movements
-import org.denigma.kappa.notebook.circuits.{KappaEditorCircuit, NotebookCircuit, SettingsCircuit, SimulationsCircuit}
+import org.denigma.kappa.notebook.actions.Animations
+import org.denigma.kappa.notebook.circuits._
 import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook.views.comments.KappaWatcher
 import org.denigma.kappa.notebook.views.editor._
@@ -29,17 +29,41 @@ class NotebookView(val elem: Element, username: String) extends BindableView
 
   val connector: WebSocketTransport = WebSocketTransport("notebook", username)
 
-  val (input: Var[KappaMessage], output: Var[KappaMessage]) = connector.IO
+  val (fromServer: Rx[KappaMessage], toServer: Var[KappaMessage]) = connector.IO
 
-  lazy val settings = new SettingsCircuit(input, output)
+  val interfaceIO: Var[UIMessage] = Var(EmptyUIMEssage)
+  fromServer.onChange{
+    case mess: UIMessage => interfaceIO() = mess //for collaboration we allow to send ui messages from the server
+    case other => //do nothing
+  }
 
-  lazy val movements = new Movements(input, output, settings.annotationMode)
+  val input: Var[KappaMessage] = Var(EmptyKappaMessage) //combines to inputs
+
+  fromServer.onChange{ message => input() = message }
+  interfaceIO.onChange{ messageUI => input() = messageUI }
+
+  val output: Var[KappaMessage] = Var(EmptyKappaMessage)
+  output.onChange{
+    case message: UIMessage =>
+      interfaceIO() = message
+
+    case serverMessage =>
+      output() = serverMessage
+  }
+
+  lazy val settings = new SettingsCircuit(interfaceIO, interfaceIO)
+
+  lazy val currentServer = settings.websimConnections.now.currentServer
+
+  lazy val movements = new Animations(input, output, settings.annotationMode)
 
   lazy val notebookCircuit = new NotebookCircuit(input, output)
 
-  lazy val simulationsCircuit = new SimulationsCircuit(input, output, notebookCircuit.currentProject, settings.serverConfiguration)
+  lazy val simulationsCircuit = new SimulationsCircuit(input, output, notebookCircuit.currentProject, settings.websimConnections)
 
-  lazy val editorCircuit = new KappaEditorCircuit(input, output, simulationsCircuit.runnableFiles)
+  lazy val errorsCircuit = new ErrorsCircuit(input, output, simulationsCircuit.runConfiguration)
+
+  lazy val editorCircuit = new KappaEditorCircuit(input, output, simulationsCircuit.runConfiguration)
 
   val currentProjectName: Rx[String] = notebookCircuit.currentProject.map(_.name)
 
@@ -61,6 +85,7 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     notebookCircuit.activate()
     simulationsCircuit.activate()
     editorCircuit.activate()
+    errorsCircuit.activate()
     connector.open()
   }
 
@@ -96,7 +121,7 @@ class NotebookView(val elem: Element, username: String) extends BindableView
      }
     .register("KappaEditor"){
       case (el, args) =>
-        val ed = new KappaCodeEditor(el, editorCircuit).withBinder(n => new CodeBinder(n))
+        val ed = new KappaCodeEditor(el, editorCircuit, errorsCircuit).withBinder(n => new CodeBinder(n))
         addMenuItem(el, MainTabs.Editor)
         ed
     }
@@ -109,7 +134,7 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     }
     .register("Simulations") {
       case (el, params) =>
-        val v = new SimulationsView(el, simulationsCircuit).withBinder(s=>new CodeBinder(s))
+        val v = new SimulationsView(el, simulationsCircuit, errorsCircuit).withBinder(s=>new CodeBinder(s))
         addMenuItem(el, MainTabs.Simulations)
         v
     }
@@ -127,7 +152,7 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     }
     .register("Settings") {
       case (el, params) =>
-        val v = new SettingsView(el, input, settings.annotationMode).withBinder(new CodeBinder(_))
+        val v = new SettingsView(el, settings).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Settings)
         v
     }

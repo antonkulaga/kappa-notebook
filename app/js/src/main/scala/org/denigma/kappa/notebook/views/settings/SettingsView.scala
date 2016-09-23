@@ -7,6 +7,7 @@ import org.scalajs.dom.raw.Element
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
+import org.denigma.kappa.notebook.circuits.SettingsCircuit
 import org.denigma.kappa.notebook.graph.layouts.{ForceLayoutParams, LayoutMode}
 import org.denigma.threejs.Vector3
 
@@ -18,8 +19,12 @@ object AnnotationMode extends Enumeration {
   val ToEditor, ToAnnotation = Value
 }
 
-class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotationMode: Var[AnnotationMode.AnnotationMode]) extends BindableView {
+class SettingsView(val elem: Element, circuit: SettingsCircuit) extends BindableView {
+
   val toAnnotation = Var(true)
+
+  def annotationMode = circuit.annotationMode
+
   toAnnotation.foreach{ v => if(v) annotationMode() = AnnotationMode.ToAnnotation }
 
   val toEditor = Var(false)
@@ -53,7 +58,7 @@ class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotati
   }
 
   protected def sendSaveCommand(): Unit  = if(autosave.now) {
-    input() = Commands.SaveAll
+    circuit.input() = Commands.SaveAll
     scalajs.js.timers.setTimeout(autosaveDuraction)(sendSaveCommand())
   }
 
@@ -75,7 +80,7 @@ class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotati
   rulesGraphParams.foreach{ params =>
     println("send params = ")
     pprint.pprintln(params)
-    input() = Commands.SetLayoutParameters("rules", params)
+    circuit.output() = Commands.SetLayoutParameters("rules", params)
   }
 
   val fluxGraphRepulsion = Var(30)
@@ -94,7 +99,7 @@ class SettingsView(val elem: Element, val input: Var[KappaMessage], val annotati
   }
 
   fluxGraphParams.foreach{ params =>
-    input() = Commands.SetLayoutParameters("flux", params)
+    circuit.output() = Commands.SetLayoutParameters("flux", params)
   }
 
 }

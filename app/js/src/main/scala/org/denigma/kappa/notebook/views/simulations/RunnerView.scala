@@ -42,6 +42,7 @@ class RunnerView(val elem: Element,
 
   protected def launch() = {
     val params = LaunchModel(Nil, nb_plot = self.nbPlot.now, max_events = self.maxEvents.now, max_time = self.maxTime.now)
+    println("PARAMS TO RUN = "+(params, ""))
     runner() = (params, "")
   }
 

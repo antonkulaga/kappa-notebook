@@ -54,7 +54,7 @@ class PapersView(val elem: Element,
 
   override type ItemView = PublicationView
 
-  val headers = itemViews.map(its=> SortedSet.empty[String] ++ its.values.map(_.id))
+  val headers = itemViews.map(its=> its.values.map(_.id).toList) // TODO: fix to normal list
 
   paperURI.foreach{
     case paper if paper!="" =>
@@ -83,15 +83,19 @@ class PapersView(val elem: Element,
   input.onChange {
 
     case Go.ToFile(b: KappaBinaryFile) if b.fileType == FileType.pdf && b.isEmpty =>
+      println("GO TO EMPTY PAPER IS DETECTED")
       paperURI() = b.path
 
     case Go.ToFile(b: KappaBinaryFile) if b.fileType == FileType.pdf =>
+      println("GO TO PAPER IS DETECTED")
       paperLoader.paperFiles() = paperLoader.paperFiles.now.updated(b.path, b)
 
-    case Go.ToPaper(loc, _)=> paperURI() = loc //just switches to another paper
+    case Go.ToPaper(loc, _)=>
+      println(s"go to paper ${loc}")
+      paperURI() = loc //just switches to another paper
 
     case Go.ToPaperSelection(selection, exc) =>
-
+      println("GO TO PAPER LOCATION")
       paperURI.Internal.value = selection.label //TODO: fix this ugly workaround
 
       paperLoader.getPaper(selection.label, 12 seconds).onComplete{

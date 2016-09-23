@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.circuits
 
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.actions.{Commands, Movements}
+import org.denigma.kappa.notebook.actions.{Commands, Animations}
 import org.scalajs.dom
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe

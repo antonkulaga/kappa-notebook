@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.common
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, CollectionSortedSetView}
+import org.denigma.binding.views.{BindableView, CollectionSeqView, CollectionSortedSetView}
 import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.notebook.actions.Commands
 import org.scalajs.dom.raw.Element
@@ -22,14 +22,15 @@ object FileTabHeaders {
   }
 }
 
-class FileTabHeaders(val elem: Element, val items: Rx[SortedSet[String]], val input: Var[KappaMessage], val selected: Var[String])(implicit getCaption: String => String) extends CollectionSortedSetView {
+class FileTabHeaders(val elem: Element, val items: Rx[List[String]], val input: Var[KappaMessage], val selected: Var[String])
+                    (implicit getCaption: String => String) extends CollectionSeqView {
 
   override type Item =  String
 
   override type ItemView = FileTabItemView
 
   override def newItemView(item: Item): ItemView= constructItemView(item){
-    case (el, _) => new FileTabItemView(el, item, input,  selected)(getCaption).withBinder(new GeneralBinder(_))
+    case (el, _) => new FileTabItemView(el, item, input, selected)(getCaption).withBinder(new GeneralBinder(_))
   }
 }
 

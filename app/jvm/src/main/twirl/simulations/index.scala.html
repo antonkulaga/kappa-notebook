@@ -6,13 +6,13 @@
                 <div data-template="true" class="item" data-event-click="select" data-class-active-if="active">
                     <span  data-bind="caption"></span>
                         &nbsp;&nbsp;
-                    <a data-bind-href="src"  target="_blank"> <i class="download icon"></i> </a>
                     <button class="ui tiny icon compact button" data-event-click="closeClick">
                         <i class="close outline icon"></i>
                     </button>
                 </div>
                 <div class="right attached inverted secondary blue pointing menu">
-                    <a class="item" data-set-selected-on-click="runner">Create</a>
+                    <button class="ui positive item" data-set-selected-on-click="runner">
+                        Create</button>
                 </div>
             </div>
         @errors.html.server_errors()

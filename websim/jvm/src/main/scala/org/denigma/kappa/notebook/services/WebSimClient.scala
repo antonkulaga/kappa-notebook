@@ -28,6 +28,37 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
 
   protected lazy val ModelPool = Http().cachedHostConnectionPool[ModelPoolMessage](connectionParameters.host, connectionParameters.port)
 
+
+  /*
+      method parse :
+      ApiTypes_j.code ->
+      ApiTypes_j.parse ApiTypes_j.result Lwt.t
+    method start :
+      ApiTypes_j.parameter ->
+      ApiTypes_j.token ApiTypes_j.result Lwt.t
+    method status :
+      ApiTypes_j.token ->
+      ApiTypes_j.state ApiTypes_j.result Lwt.t
+    method list :
+      unit ->
+      ApiTypes_j.catalog ApiTypes_j.result Lwt.t
+    method stop :
+      ApiTypes_j.token ->
+      unit ApiTypes_j.result Lwt.t
+    method perturbate :
+      ApiTypes_j.token ->
+      ApiTypes_j.perturbation ->
+      unit ApiTypes_j.result Lwt.t
+    method pause :
+      ApiTypes_j.token ->
+      unit ApiTypes_j.result Lwt.t
+    method continue :
+      ApiTypes_j.token ->
+      ApiTypes_j.parameter ->
+      unit ApiTypes_j.result Lwt.t
+  end;;
+   */
+
   /**
     * @return version of WebSim API
     */
@@ -72,6 +103,21 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
   def stop(token: Token): Future[SimulationStatus] = {
     val source: Source[Token, NotUsed] = Source.single(token)
     source.via(flows.simulationStatusFlow).map(_._2) runWith Sink.head
+  }
+
+  def pause(token: Token) = {
+    val source: Source[Token, NotUsed] = Source.single(token)
+    source.via(flows.pauseRequestFlow).map(_._2) runWith Sink.head
+  }
+
+  def continue(token: Token) = {
+    val source: Source[Token, NotUsed] = Source.single(token)
+    source.via(flows.pauseRequestFlow).map(_._2) runWith Sink.head
+  }
+
+  def pertubations(token: Token) = {
+    val source: Source[Token, NotUsed] = Source.single(token)
+    source.via(flows.perturbateFlow).map(_._2) runWith Sink.head
   }
 
   /**

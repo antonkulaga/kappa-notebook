@@ -10,13 +10,13 @@ class CommentsParserSuite extends WordSpec with Matchers with Inside  {
 
       val parser = new CommentLinksParser
       inside(parser.linkAfterComment.parse("'a.b' A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B")) {
-        case failure: Parsed.Failure =>
+        case failure: Parsed.Failure[_,_] =>
       }
 
       val comment = "#^ hello world"
 
       inside(parser.linkAfterComment.parse(comment)) {
-        case failure: Parsed.Failure =>
+        case failure: Parsed.Failure[_,_] =>
       }
 
       val linkAfterComment = "#^ http://hello.world"

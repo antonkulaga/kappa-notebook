@@ -1,12 +1,13 @@
 package org.denigma.kappa.notebook.views.editor
 
+
 import org.denigma.binding.binders.Events
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
 import org.denigma.codemirror._
 import org.denigma.codemirror.addons.lint._
 import org.denigma.codemirror.extensions._
-import org.denigma.kappa.messages.{Go, KappaMessage, KappaSourceFile, SourceUpdate}
+import org.denigma.kappa.messages._
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.notebook.views.common.TabItem
 import org.scalajs.dom
@@ -23,109 +24,33 @@ import scala.scalajs.js
 class CodeTab(val elem: Element,
               val source: Var[KappaSourceFile],
               val selected: Var[String],
-              val input: Var[KappaMessage],
-              val output: Var[KappaMessage],
               val editorUpdates: Var[EditorUpdates],
-              val kappaCursor: Var[KappaCursor],
-              val errors: Rx[List[WebSimError]]
-             )  
-  extends BindableView 
-    with EditorView
-    with TabItem
-{
-
-
-  def path = source.map(s=>s.path)
-
-  val wrapLines: Var[Boolean] = Var(false)
-
-  lazy val name = source.map(s=>s.name)
-
-  input.onChange{
-    case Go.ToSource(p, from ,to) if p.value == path.now | p.local ==path.now | p.local == name.now | (p.value == "" && active.now) =>
-      println(s"from ${from} to ${to}")
-      editor.getDoc().setCursor(js.Dynamic.literal(line = from, ch = 1).asInstanceOf[Position])
-
-    case Go.ToSource(p, from ,to) if p.local == name.now | (p.value == "" && active.now) =>
-      println(s"from ${from} to ${to}")
-      editor.getDoc().setCursor(js.Dynamic.literal(line = from, ch = 1).asInstanceOf[Position])
-
-    case Go.ToFile(s: KappaSourceFile) if path.now == s.path =>
-      source() = s
-      code() = s.content
-
-    case _=> //do nothing
-  }
-
-  override lazy val id: String = path.now
-
-  override def mode = "Kappa"
-
-  val notSaved = source.map(s => !s.saved)
-
-  /*
-  val saveClick = Var(Events.createMouseEvent())
-  saveClick.triggerLater{
-    val saveRequest = FileRequests.Save("", List(source.now), rewrite = true, getSaved = true)
-  }
-  */
+              val kappaCursor: Var[KappaCursor])  extends BindableView
+  with EditorView
+  with TabItem{
 
   active.onChange{
     case true =>
-      //if(this._editor!=null) editor.refresh()
+    //if(this._editor!=null) editor.refresh()
 
     case false =>
       elem.style.display = "none"
-      //println("active value for "+id+" is false and display is "+elem.style.display)
+    //println("active value for "+id+" is false and display is "+elem.style.display)
   }
 
-  errors.onChange{ ers=>
+  lazy val name = source.map(s=>s.name)
 
-    //dom.console.error(s"CodeTab $name ERRORS: "+ers.toList.mkString("\n"))
-    val found: List[LintFound] = ers.map{e=> e:LintFound}
-    def gts(text: String, options: LintOptions, cm: Editor): js.Array[LintFound] = {
-      found.toJSArray
-    }
-    val fun: js.Function3[String, LintOptions, Editor, js.Array[LintFound]] = gts _
+  lazy val path = source.map(s=>s.path)
 
-    editor.setOption("lint", js.Dynamic.literal(
-      getAnnotations = fun
-    ))
-  }
+  lazy val wrapLines: Var[Boolean] = Var(false)
+
+  override lazy val id: String = path.now
+
+  val notSaved = source.map(s => !s.saved)
+
   val code = Var(source.now.content)
   code.onChange{ str =>
-      if(source.now.content!=str) source() = source.now.copy(content = str, saved = false)
-  }
-
-  lazy val updateAfter = 800 millis
-
-  lazy val delayedCode = code.afterLastChange(updateAfter){
-   value =>
-      output() = SourceUpdate(source.now, source.now.copy(content = value))
-  }
-
-
-
-  override def unbindView() = {
-    super.unbindView()
-    source.kill()
-  }
-  
-  protected def onCursorActivity(ed: Editor) = {
-    val c = doc.getCursor()
-    kappaCursor.now match {
-      case EmptyCursor =>
-        editor.addLineClass(c.line, "background", "focused")
-        kappaCursor() = KappaEditorCursor(source.now, editor, c.line, c.ch)
-
-      case KappaEditorCursor(fl, editor, prevLine, prevCh) if prevLine != c.line || prevCh != c.ch || editor != ed =>
-        editor.addLineClass(c.line, "background", "focused")
-        editor.removeLineClass(prevLine, "background", "focused")
-
-        kappaCursor() = KappaEditorCursor(source.now, ed, c.line, c.ch)
-
-      case _ => //do nothing
-    }
+    if(source.now.content!=str) source() = source.now.copy(content = str, saved = false)
   }
 
   override def makeEditor(area: HTMLTextAreaElement, textValue: String, codeMode: String, readOnly: Boolean = false): Editor = {
@@ -135,7 +60,7 @@ class CodeTab(val elem: Element,
       .value(textValue)
       .readOnly(readOnly)
       .viewportMargin(Integer.MAX_VALUE)
-       .extraKeys(js.Dictionary( ("Alt-F", "findPersistent")))
+      .extraKeys(js.Dictionary( ("Alt-F", "findPersistent")))
       .gutters(js.Array(gutters, "CodeMirror-linenumbers", "breakpoints"))
       .lineWrapping(wrapLines.now)
 
@@ -143,7 +68,7 @@ class CodeTab(val elem: Element,
     //config.dyn.scrollbarStyle = null
     CodeMirror.fromTextArea(area, config)
   }
-  
+
 
   override def addEditor(name: String, element: ViewElement, codeMode: String): Unit = element match {
     case area: HTMLTextAreaElement =>
@@ -162,15 +87,24 @@ class CodeTab(val elem: Element,
       throw new Exception(message)
   }
 
-  val onLeave = Var(Events.createMouseEvent())
-  onLeave.triggerLater{
-    updateCursor()
+
+  protected def onInputChange(message: KappaMessage): Unit = message match {
+      case Go.ToSource(p, from ,to) if p.value == path.now | p.local ==path.now | p.local == name.now | (p.value == "" && active.now) =>
+        println(s"from ${from} to ${to}")
+        editor.getDoc().setCursor(js.Dynamic.literal(line = from, ch = 1).asInstanceOf[Position])
+
+      case Go.ToSource(p, from ,to) if p.local == name.now | (p.value == "" && active.now) =>
+        println(s"from ${from} to ${to}")
+        editor.getDoc().setCursor(js.Dynamic.literal(line = from, ch = 1).asInstanceOf[Position])
+
+      case Go.ToFile(s: KappaSourceFile) if path.now == s.path =>
+        source() = s
+        code() = s.content
+        selected() = s.path
+
+      case _=> //do nothing
   }
 
-  val save = Var(Events.createMouseEvent())
-  save.triggerLater{
-    //saveAs(name, code.now)
-  }
 
   override def onChanges(ed: Editor, ch: js.Array[EditorChangeLike]): Unit = {
     editorUpdates() = EditorUpdates(Option(ed), ch.toList)
@@ -182,8 +116,40 @@ class CodeTab(val elem: Element,
     updateCursor()
   }
 
+
+
+  protected def onCursorActivity(ed: Editor) = {
+    val c = doc.getCursor()
+    kappaCursor.now match {
+      case EmptyCursor =>
+        editor.addLineClass(c.line, "background", "focused")
+        kappaCursor() = KappaEditorCursor(source.now, editor, c.line, c.ch)
+
+      case KappaEditorCursor(fl, editor, prevLine, prevCh) if prevLine != c.line || prevCh != c.ch || editor != ed =>
+        editor.addLineClass(c.line, "background", "focused")
+        editor.removeLineClass(prevLine, "background", "focused")
+
+        kappaCursor() = KappaEditorCursor(source.now, ed, c.line, c.ch)
+
+      case _ => //do nothing
+    }
+  }
+
+
+  val onLeave = Var(Events.createMouseEvent())
+  onLeave.triggerLater{
+    updateCursor()
+  }
+
+  override def unbindView() = {
+    super.unbindView()
+    source.kill()
+  }
+
+
   protected def updateCursor() = {
     val cur: Position = doc.getCursor()
     kappaCursor() = KappaEditorCursor(source.now, editor, cur.line, cur.ch)
   }
+
 }

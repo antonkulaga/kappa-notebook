@@ -83,6 +83,7 @@ trait EditorView extends BindableView with EditorMaker with WithMirrors{
 
   withBinder(v=>new EditorsBinder(v, mode))
 
+
 }
 
 

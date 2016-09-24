@@ -67,6 +67,7 @@ class SourceWatcher(val filesParser: FilesParser, input: Var[KappaMessage]) exte
       case (iri, None) =>
         html.onclick = {
           event: MouseEvent =>
+            println("IRI IS "+iri)
             input() = Animate(Go.ToSource(iri, 0, 0), true)
         }
     }

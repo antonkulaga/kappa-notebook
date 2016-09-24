@@ -22,6 +22,7 @@ object AST {
     lazy val namespace = value.substring(0, Math.max(semicol, 0))
     lazy val local = value.substring(Math.min(semicol+1, value.length))
     lazy val path = if(namespace.nonEmpty) value else local
+
   }
 
 }

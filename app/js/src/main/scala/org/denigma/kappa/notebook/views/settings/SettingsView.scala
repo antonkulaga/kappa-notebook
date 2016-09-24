@@ -99,7 +99,7 @@ class SettingsView(val elem: Element, circuit: SettingsCircuit) extends Bindable
   }
 
   fluxGraphParams.foreach{ params =>
-    circuit.output() = Commands.SetLayoutParameters("flux", params)
+    circuit.input() = Commands.SetLayoutParameters("flux", params)
   }
 
 }

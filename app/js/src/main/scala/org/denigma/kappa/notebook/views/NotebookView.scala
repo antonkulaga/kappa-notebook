@@ -5,18 +5,19 @@ import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
-import org.denigma.kappa.notebook.actions.Animations
+import org.denigma.kappa.notebook.actions.AnimationsCircuit
 import org.denigma.kappa.notebook.circuits._
 import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook.views.comments.KappaWatcher
 import org.denigma.kappa.notebook.views.editor._
 import org.denigma.kappa.notebook.views.figures.FiguresView
 import org.denigma.kappa.notebook.views.menus.MainMenuView
-import org.denigma.kappa.notebook.views.papers.PapersView
+import org.denigma.kappa.notebook.views.papers.{PapersView, WebSocketPaperLoader}
 import org.denigma.kappa.notebook.views.project.ProjectsPanelView
 import org.denigma.kappa.notebook.views.settings.SettingsView
 import org.denigma.kappa.notebook.views.simulations.SimulationsView
 import org.denigma.kappa.notebook.views.visual.VisualPanelView
+import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import org.threeten.bp._
@@ -44,18 +45,18 @@ class NotebookView(val elem: Element, username: String) extends BindableView
 
   val output: Var[KappaMessage] = Var(EmptyKappaMessage)
   output.onChange{
-    case message: UIMessage =>
+   /*
+    case message: UIMessage => //TODO: check if it is safe
       interfaceIO() = message
-
-    case serverMessage =>
-      output() = serverMessage
+      */
+    case serverMessage => toServer() = serverMessage
   }
 
-  lazy val settings = new SettingsCircuit(interfaceIO, interfaceIO)
+  lazy val settings = new SettingsCircuit(input, output)
 
   lazy val currentServer = settings.websimConnections.now.currentServer
 
-  lazy val movements = new Animations(input, output, settings.annotationMode)
+  lazy val animations = new AnimationsCircuit(input, output, notebookCircuit.currentProject, settings.annotationMode)
 
   lazy val notebookCircuit = new NotebookCircuit(input, output)
 
@@ -65,7 +66,11 @@ class NotebookView(val elem: Element, username: String) extends BindableView
 
   lazy val editorCircuit = new KappaEditorCircuit(input, output, simulationsCircuit.runConfiguration)
 
-  val currentProjectName: Rx[String] = notebookCircuit.currentProject.map(_.name)
+  lazy val currentProjectName: Rx[String] = notebookCircuit.currentProject.map(_.name)
+
+  lazy val paperLoader = WebSocketPaperLoader(connector, notebookCircuit.currentProject.map(p=>p.paperMap))
+
+  lazy val papersCircuit = new PaperCircuit(input, output, paperLoader)
 
   lazy val scrollable: Element = sq.byId("MainRow").get//this.viewElement//.parentElement
 
@@ -81,11 +86,12 @@ class NotebookView(val elem: Element, username: String) extends BindableView
       connector.output() = toLoad //ask to load default project
     }
     settings.activate()
-    movements.activate()
+    animations.activate()
     notebookCircuit.activate()
     simulationsCircuit.activate()
     editorCircuit.activate()
     errorsCircuit.activate()
+    papersCircuit.activate()
     connector.open()
   }
 
@@ -100,8 +106,6 @@ class NotebookView(val elem: Element, username: String) extends BindableView
   }
 
   val menu: Var[List[(String, Element)]] = Var(List.empty[(String, Element)])
-
-
 
   protected def addMenuItem(el: Element, title: String) = {
     menu() = menu.now :+ (title, el)
@@ -146,7 +150,7 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     }
     .register("Papers") {
       case (el, params) =>
-        val v = new PapersView(el, connector, editorCircuit.kappaCursor).withBinder(new CodeBinder(_))
+        val v = new PapersView(el, papersCircuit, editorCircuit.kappaCursor).withBinder(new CodeBinder(_))
         addMenuItem(el, MainTabs.Papers)
         v
     }

@@ -58,15 +58,15 @@ class VisualPanelView(val elem: Element, val currentLine: Rx[String], val parsed
   lazy val updateInfo = update.map(_.updateInfo)
 
   override lazy val injector = defaultInjector
-        .register("ContactMapView") {
-          (el, args) =>new ContactMapView(el, input, contactActive).withBinder(v=>new CodeBinder(v))
-        }
-        .register("WholeGraph") {  (el, args) =>
-        //2 in one
-        new WholeRuleGraphView(el,
-          updateInfo, showState,
-          args.getOrElse("container", "whole-graph-container").toString,
-          RulesVisualSettings(s),
-          input
-        ).withBinder(n => new  CodeBinder(n)) }
+      .register("ContactMapView") {
+        (el, args) =>new ContactMapView(el, input, contactActive).withBinder(v=>new CodeBinder(v))
+      }
+      .register("WholeGraph") {  (el, args) =>
+      //2 in one
+      new WholeRuleGraphView(el,
+        updateInfo, showState,
+        args.getOrElse("container", "whole-graph-container").toString,
+        RulesVisualSettings(s),
+        input
+      ).withBinder(n => new  CodeBinder(n)) }
 }

@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.project
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
-import org.denigma.binding.views.CollectionSortedSetView
+import org.denigma.binding.views.{CollectionMapView, CollectionSortedSetView}
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.circuits.CurrentProjectCircuit
 import org.scalajs.dom
@@ -20,23 +20,31 @@ import scala.util.{Failure, Success}
 class CurrentProjectView(val elem: Element,
                          val circuit: CurrentProjectCircuit,
                          val uploadId: String
-                        ) extends CollectionSortedSetView {
+                        ) extends CollectionMapView {
 
   val saveRequest = circuit.outgoingPortFrom(FileRequests.Save.empty)
 
   val removeRequest = circuit.outgoingPortFrom(FileRequests.Remove.empty)
 
-  val openFile = circuit.intoIncomingPort[KappaFile, KappaMessage](KappaSourceFile.empty, skipFirst = true)(f=>Animate(Go.ToFile(f), false))
+  val openFile = circuit.intoIncomingPort[KappaFile, KappaMessage](KappaSourceFile.empty, skipFirst = true){
+    f=>
+      val message = Go.ToFile(f)
+      println(s"to file name ${f.path}")
+      Animate(message, false)
+  }
 
   lazy val currentProject = circuit.currentProject
 
-  lazy val items: Rx[SortedSet[KappaFile]] = currentProject.map(proj => proj.folder.files)
+
+  override type Key = String
+
+  override type Value = KappaFile
+
+  lazy val items: Rx[Map[String, KappaFile]] = currentProject.map(proj => proj.folder.allFilesMap)
 
   lazy val projectName = currentProject.map(_.name)
 
   lazy val uploadInput = sq.byId(uploadId).get.asInstanceOf[Input]
-
-  override type Item = KappaFile
 
   override type ItemView = FileView
 
@@ -73,12 +81,22 @@ class CurrentProjectView(val elem: Element,
     circuit.saveAll()
    }
 
-
+/*
   override def newItemView(item: Item): ItemView = constructItemView(item){
     case (el, _) => new FileView(el, item, saveRequest, removeRequest, openFile).withBinder(v => new GeneralBinder(v))
   }
+*/
 
-  val name = currentProject.map(proj => proj.name)
+
+  override def updateView(view: FileView, key: String, old: KappaFile, current: KappaFile): Unit = {
+    view.file() = current
+  }
+
+  override def newItemView(key: String, value: KappaFile): FileView = this.constructItemView(key){
+    case (el, _) =>
+      new FileView(el, Var(value), saveRequest, removeRequest, openFile).withBinder(v => new GeneralBinder(v))
+  }
+
   val save = Var(Events.createMouseEvent())
   save.onChange{ ev =>
       circuit.output() = ProjectRequests.Save(currentProject.now)
@@ -118,7 +136,6 @@ class CurrentProjectView(val elem: Element,
     //val uploadRequest = FileRequests.Save(projectName.now, List(k), rewrite = false, getSaved = true)
     //output() = uploadRequest
   }
-
 }
 
 

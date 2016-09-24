@@ -115,17 +115,17 @@ case class KappaFolder(path: String,
     this.copy(path = np, newFolders, newFiles)
   }
 
-  def addFiles(fs: List[KappaFile]): KappaFolder = {
+  def addFiles(fs: List[KappaFile]): KappaFolder = if(fs.nonEmpty){
    val (right, wrong) = fs.partition(f => f.isInside(this))
     if(wrong.nonEmpty) println(s"WRONG FILES INSIDE ${path} ARE = "+wrong.mkString(" | "))
     val ps = right.map(_.path).toSet
     //merge is bad because subfolders are not take into account
     this.copy(files = self.files.filterNot(f => ps.contains(f.path)) ++ right)
-  }
+  } else this
 
-  def removeFiles(fs: Set[String]) = {
+  def removeFiles(fs: Set[String]) = if(fs.nonEmpty){
     this.copy(files = files.filterNot(f => fs.contains(f.path)))
-  }
+  } else this
 
 
   lazy val allFiles: SortedSet[KappaFile] = files ++ folders.flatMap(f=>f.allFiles)

@@ -2,6 +2,7 @@ package org.denigma.kappa.messages
 
 import boopickle.CompositePickler
 import boopickle.DefaultBasic._
+import org.denigma.kappa.notebook.parsers.AST
 
 import scala.collection.immutable._
 
@@ -34,10 +35,11 @@ object KappaProject extends FileFilters{
 }
 
 
-
-case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, saved: Boolean = false) extends KappaFileMessage with FileFilters
+case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, saved: Boolean = false) extends KappaFileMessage
 {
   self =>
+
+  import FileFilters._
 
   def loaded = folder != KappaFolder.empty
 
@@ -47,14 +49,23 @@ case class KappaProject(name: String, folder: KappaFolder = KappaFolder.empty, s
 
   lazy val papers: SortedSet[KappaBinaryFile] = folder.files.collect{ case f: KappaBinaryFile if paperFilter(f) => f}
 
+  lazy val paperMap: Map[String, KappaBinaryFile] = papers.map(p=> (p.path, p)).toMap
+
   lazy val images: SortedSet[KappaBinaryFile] = folder.files.collect{ case f: KappaBinaryFile if imageFilter(f) => f}
+
+  lazy val imageMap = images.map(f=>f.path -> f).toMap
 
   lazy val videos: SortedSet[KappaBinaryFile] = folder.files.collect{ case f: KappaBinaryFile if videoFilter(f) => f}
 
   lazy val nonsourceFiles: SortedSet[KappaFile] = folder.files.filterNot(sourceFilter)
 
+  lazy val rdfFiles = folder.files.filter(rdfFilter)
+
+  //def toAbsolute(iri: AST.IRI) = if(iri.namespace==":" || iri.namespace ==":current" || iri.namespace == ":project") iri.copy()
+
   lazy val otherFiles: SortedSet[KappaFile] = folder.files
     .filterNot(sourceFilter)
+    .filterNot(rdfFilter)
     .filterNot(imageFilter)
     .filterNot(videoFilter)
     .filterNot(paperFilter)
@@ -73,7 +84,7 @@ case class PathSourceSelector(pathes: List[String]) extends SourcesFileSelector(
   }
 )
 
-case object DefaultSourceSelector extends SourcesFileSelector( proj => proj.folder.files.collect{ case f: KappaSourceFile => f}.toList)
+case object DefaultSourceSelector extends SourcesFileSelector( proj => proj.sources.toList)
 
 class SourcesFileSelector(fun: KappaProject=> List[KappaSourceFile]) extends KappaPathSelector[KappaSourceFile](fun)
 
@@ -83,23 +94,27 @@ class KappaPathSelector[T <: KappaPath](fun: KappaProject => List[T]) extends Fu
   def apply(value: KappaProject): List[T] = fun(value)
 }
 
+object FileFilters extends FileFilters
 
 trait FileFilters {
-  protected def sourceFilter(f: KappaFile): Boolean =  f.name.endsWith(".ka") || f.name.endsWith(".ttl")
 
-  protected def imageFilter(f: KappaFile): Boolean =   f.name.endsWith(".svg") ||
+  def rdfFilter(f: KappaFile) =  f.name.endsWith(".ttl") || f.name.endsWith(".nt")
+
+  def sourceFilter(f: KappaFile): Boolean =  f.name.endsWith(".ka") || rdfFilter(f)
+
+  def imageFilter(f: KappaFile): Boolean =   f.name.endsWith(".svg") ||
     f.name.endsWith(".gif") ||
     f.name.endsWith(".jpg") ||
     f.name.endsWith(".png") ||
     f.name.endsWith(".webp")
 
 
-  protected def videoFilter(f: KappaFile): Boolean =   f.name.endsWith(".avi") ||
+  def videoFilter(f: KappaFile): Boolean =   f.name.endsWith(".avi") ||
     f.name.endsWith(".mp4") ||
     f.name.endsWith(".flv") ||
     f.name.endsWith(".mpeg")
 
-  protected def paperFilter(f: KappaFile): Boolean =   f.name.endsWith(".pdf")
+  def paperFilter(f: KappaFile): Boolean =   f.name.endsWith(".pdf")
 }
 
 object ProjectRequests {

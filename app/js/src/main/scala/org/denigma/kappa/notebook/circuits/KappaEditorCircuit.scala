@@ -1,25 +1,31 @@
 package org.denigma.kappa.notebook.circuits
 
-import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
-import org.denigma.kappa.messages.ServerMessages.{ParseModel, SyntaxErrors}
-import org.denigma.kappa.messages.WebSimMessages.WebSimError
+import org.denigma.binding.extensions._
+import org.denigma.kappa.messages.KappaMessage.ServerCommand
+import org.denigma.kappa.messages.ServerMessages.ParseModel
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.actions.Commands.CloseFile
 import org.denigma.kappa.notebook.views.comments.CommentsWatcher
-import org.denigma.kappa.notebook.views.common.ServerConnections
 import org.denigma.kappa.notebook.views.editor.{EditorUpdates, EmptyCursor, KappaCursor}
-import org.scalajs.dom
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
 /**
   * Created by antonkulaga on 9/15/16.
   */
-class KappaEditorCircuit(input: Var[KappaMessage], output: Var[KappaMessage],
+class KappaEditorCircuit(input: Var[KappaMessage],
+                         output: Var[KappaMessage],
                          val runConfiguration: Rx[RunConfiguration]
                         ) extends Circuit(input, output){
 
-  val openedFiles: Var[List[Var[KappaSourceFile]]] = Var(Nil)
+  val openOrder: Var[List[String]] = Var(Nil)
+
+  val items = Var(Map.empty[String, KappaSourceFile])
+  items.updates.onChange(updateOpened)
+
+  protected def updateOpened(upd: MapUpdate[String, KappaSourceFile]) = {
+    openOrder() = openOrder.now.filterNot(o=>upd.removed.contains(o)) ++ upd.added.keysIterator.toList
+  }
 
   val kappaCursor: Var[KappaCursor] = Var(EmptyCursor)
 
@@ -29,26 +35,28 @@ class KappaEditorCircuit(input: Var[KappaMessage], output: Var[KappaMessage],
 
   val currentServer = runConfiguration.map(c=>c.serverConnectionOpt.map(cc=>cc.server).getOrElse(""))
 
-  protected def hasFile(path: String) = openedFiles.now.exists(f=>f.now.path == path)
-
   protected def onInputMessage(message: KappaMessage) = message match {
 
+    case ProjectResponses.LoadedProject(proj) =>
+      val files = proj.sourceMap.collectFirst{ case (path, f) if f.name.toLowerCase.contains("readme") => Map( (path, f))}.getOrElse(Map.empty[String, KappaSourceFile])
+      items() = files
 
-    case Go.ToFile(f: KappaSourceFile)  if !hasFile(f.path)=>
+    /*
+    case Commands.OpenFile(f: KappaSourceFile)  if !hasFile(f.path)=>
       openedFiles() = openedFiles.now :+ Var(f)
+    */
+    case Go.ToFile(f: KappaSourceFile)  if !items.now.contains(f.path)=>
+      items() = items.now.updated(f.path, f)
 
-    case CloseFile(path) if hasFile(path) =>
-      openedFiles() = openedFiles.now.filterNot(f=>f.now.path == path)
+    case CloseFile(path) if items.now.contains(path)=>
+      items() = items.now - path
 
-
-    case SourceUpdate(from, to) =>
-
-        output() = ServerCommand(currentServer.now, ParseModel(runConfiguration.now.files.map(f=>f.name->f.content)))
+    case f: FilesUpdate if f.nonEmpty=>
+      println("SENDING FILES TO PARSE")
+      val toParse =  ParseModel(runConfiguration.now.tuples)
+      output() = ServerCommand(currentServer.now, toParse)
 
     case other => //do nothing
   }
-
-  //def childCircuit(ed: EditorUpdates)
-
 
 }

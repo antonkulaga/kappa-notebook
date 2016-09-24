@@ -40,7 +40,7 @@ class SimulationRunView(val elem: Element,
     }
     .register("Parameters") {
       case (el, _) =>
-        new LaunchParametersView(el, simulation, initialCode, tab).withBinder(new CodeBinder(_))
+        new LaunchParametersView(el, simulation, initialCode, params, tab).withBinder(new CodeBinder(_))
     }
     .register("Console") {
       case (el, _) =>

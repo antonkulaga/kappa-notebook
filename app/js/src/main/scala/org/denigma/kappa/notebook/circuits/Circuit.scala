@@ -66,9 +66,4 @@ abstract class Circuit[From, To](val input: Var[From], val output: Var[To]) {
   }
   def outgoingPortFrom[To2 <: To](value: To2, skipFirst: Boolean = true) = outgoingPort(Var(value), skipFirst)
 
-  def toInto[Cir <: Circuit[From, To]](cir: Cir) = {
-    incomingPort(cir.input)
-    outgoingPort(cir.output)
-    cir
-  }
 }

@@ -65,7 +65,11 @@ trait TabGridsStyles extends MainStyles {
     onMedium -(height(70 vh) important),
     onLarge -(height(75 vh) important)
     */
-    height(69 vh) important,
+    onTiny -( minHeight(63 vh) important),
+    onLittle -( minHeight(65 vh) important),
+    onSmall -( minHeight(67 vh) important),
+    onMedium -( minHeight(69 vh)important),
+    onLarge -( minHeight(71 vh) important),
     overflow.visible important
     //overflowY.scroll
     )

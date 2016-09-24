@@ -59,7 +59,7 @@ class ScrollerView(val elem: Element,
     case Some(target) =>
       val tid = target.id
       val hash =  "#"+tid
-      if(dom.window.location.hash==hash || dom.window.location.hash==tid) {
+      if(dom.window.location.hash==hash || dom.window.location.hash==tid|| dom.window.location.hash==null) {
         dom.window.location.hash = ""
       }
       val stateObject = new ScrollPosition(tid, scrollPanel.scrollLeft)
@@ -82,13 +82,15 @@ class ScrollerView(val elem: Element,
       case Some(element)=>
         //val left = element.offsetLeft
         //scrollPanel.scrollLeft = left
-        scroller.scrollTo("#"+ident)
+        //scroller.scrollTo("#"+ident)
+        scroller.scrollTo(element)
       case None =>
         dom.console.error("cannot scroll to "+ident)
     }
   }
 
   protected def popStateHandler(ppe: PopStateEvent): Unit = {
+    println("POP STATE HANDLER = "+ppe)
     ppe.state match {
       case value if js.isUndefined(value) => dom.console.error("scroll to undefined id")
       case null => dom.console.info("scroll to null")

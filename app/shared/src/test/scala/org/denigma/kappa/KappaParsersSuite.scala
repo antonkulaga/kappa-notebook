@@ -18,11 +18,11 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       import KappaModel._
       val parser = new KappaParser
       inside(parser.agent.parse("%wrongagent: A(x,c) # Declaration of agent A")) {
-        case failure: Parsed.Failure =>
+        case failure: Parsed.Failure[_, _] =>
       }
 
       inside(parser.agent.parse("'a.b' A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B")) {
-        case failure: Parsed.Failure =>
+        case failure: Parsed.Failure[_, _] =>
       }
 
       inside(parser.agent.parse("A(x,c~u!1)")) {
@@ -42,7 +42,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       val parser = new KappaParser
       val wrong = "token: atp"
       inside(parser.tokenDeclaration.parse(wrong)) {
-        case failure: Parsed.Failure =>
+        case failure: Parsed.Failure[_, _] =>
       }
       val right = "%token: atp"
       inside(parser.tokenDeclaration.parse(right)) {
@@ -56,7 +56,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       val parser = new KappaParser
       val wrong = "'a.b'qwe A(x),B(x) -> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B "
       inside(parser.rule.parse(wrong)) {
-        case failure: Parsed.Failure =>
+        case failure: Parsed.Failure[_, _] =>
       }
       val right = "'a.b' A(x),B(x) -> A(x!1),B(x!1) @ 'on_rate'"
       inside(parser.rule.parse(right)) {
@@ -85,7 +85,7 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       val parser = new KappaParser
       val wrong = "'a.b'qwe A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate' #A binds B "
       inside(parser.rule.parse(wrong)) {
-        case failure: Parsed.Failure =>
+        case failure: Parsed.Failure[_, _] =>
       }
       val right = "'a.b' A(x),B(x) <-> A(x!1),B(x!1) @ 'on_rate','off_rate'"
       inside(parser.rule.parse(right)) {

@@ -59,8 +59,6 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
 
   def onKappaMessage: Receive = {
     case message: KappaMessage =>
-      //println("received :")
-      //pprint.pprintln(message)
       kappaHandler(message)
   }
 
@@ -103,8 +101,6 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
 
     case result: ServerResponse =>
       val d = Pickle.intoBytes[KappaMessage](result)
-      //println("send server response:")
-      //pprint.pprintln(result)
       send(d)
 
     case result: Connected =>
@@ -133,7 +129,6 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
   {
    super.preStart()
    context.system.scheduler.schedule(10 seconds, 10 seconds){ //TODO: rewrite to timeout configs
-    //println(s"keep $username alive")
     val d = Pickle.intoBytes[KappaMessage](KeepAlive(username))
       send(d)
     }

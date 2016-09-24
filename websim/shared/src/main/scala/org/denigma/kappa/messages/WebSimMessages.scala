@@ -26,7 +26,7 @@ object WebSimMessages {
       .addConcreteType[AgentState]
       .addConcreteType[TokenState]
       .addConcreteType[Snapshot]
-      //.addConcreteType[UnaryDistances]
+      .addConcreteType[UnaryDistance]
       .addConcreteType[SimulationStatus]
 
   }
@@ -111,7 +111,14 @@ object WebSimMessages {
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[Observable] = boopickle.Default.generatePickler[Observable]
   }
-  case class Observable(time: Double, values: List[Double])  extends WebSimMessage
+  case class Observable(observation_time: Double, observation_values: List[Double])  extends WebSimMessage
+
+  object UnaryDistance {
+    import boopickle.DefaultBasic._
+    implicit val classPickler: Pickler[UnaryDistance] = boopickle.Default.generatePickler[UnaryDistance]
+  }
+  //type distance = {rule_dist : string; time_dist : float; dist : int}
+  case class UnaryDistance(rule_dist: String, time_dist: Double, dist: Int) extends WebSimMessage
 
   object KappaPlot {
     lazy val empty = KappaPlot(Nil, Nil)
@@ -121,7 +128,7 @@ object WebSimMessages {
   case class KappaPlot(legend: List[String], time_series: List[Observable]) extends WebSimMessage {
     //println("LEGEND IS: "+ legend.mkString(" | "))
     //println("kappa plot: "+legend.toList)
-    lazy val timePoints: List[Double] = time_series.foldLeft(List.empty[Double])((acc, o)=> o.time::acc).reverse
+    lazy val timePoints: List[Double] = time_series.foldLeft(List.empty[Double])((acc, o)=> o.observation_time::acc).reverse
 
     //def toCSV =
   }
@@ -158,15 +165,44 @@ object WebSimMessages {
     implicit val classPickler: Pickler[Snapshot] = boopickle.Default.generatePickler[Snapshot]
   }
 
+  /*
+  type snapshot = {
+    snap_file : string;
+    snap_event : int;
+    agents : (int * site_graph) list;
+    tokens : (float * string) list;
+  }
+  */
   case class Snapshot(snap_file: String, snap_event: Int, agents: List[AgentState], tokens: List[TokenState]) extends WebSimMessage
 
   object SimulationStatus {
     lazy val empty = SimulationStatus(0.0,
-      None, None, None, None, None, None, None, is_running = false, None , Nil, None, Nil, Nil//, Nil
+      None, None, None, None, None, None, None, is_running = false, None , Nil, None, Nil, Nil, Nil
     )
     import boopickle.Default._
     implicit val classPickler: Pickler[SimulationStatus] = boopickle.Default.generatePickler[SimulationStatus]
   }
+
+  /* OCAML class is:
+    type simulator_state =
+    { mutable is_running : bool
+    ; mutable run_finalize : bool
+    ; counter : Counter.t
+    ; log_buffer : Buffer.t
+    ; log_form : Format.formatter
+    ; mutable plot : ApiTypes_j.plot
+    ; mutable distances : ApiTypes_j.distances
+    ; mutable snapshots : ApiTypes_j.snapshot list
+    ; mutable flux_maps : ApiTypes_j.flux_map list
+    ; mutable files : ApiTypes_j.file_line list
+    ; mutable error_messages : ApiTypes_j.errors
+    ; contact_map : Primitives.contact_map
+    ; env : Environment.t
+    ; mutable domain : Connected_component.Env.t
+    ; mutable graph : Rule_interpreter.t
+    ; mutable state : State_interpreter.t
+    }
+   */
   case class SimulationStatus(
                                time: Double,
                                time_percentage: Option[Double],
@@ -181,6 +217,7 @@ object WebSimMessages {
                                log_messages: List[String],
                                plot: Option[KappaPlot],
                                //snapshots: List[Snapshot],
+                               distances: List[UnaryDistance],
                                flux_maps: List[FluxMap],
                                files: List[String]
                              )  extends WebSimMessage

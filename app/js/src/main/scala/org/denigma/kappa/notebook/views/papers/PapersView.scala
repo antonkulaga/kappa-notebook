@@ -8,6 +8,7 @@ import org.denigma.controls.papers._
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.actions.Commands
+import org.denigma.kappa.notebook.circuits.PaperCircuit
 import org.denigma.kappa.notebook.parsers.{AST, PaperSelection}
 import org.denigma.kappa.notebook.views.annotations.CommentInserter
 import org.denigma.kappa.notebook.views.common.FileTabHeaders
@@ -29,22 +30,18 @@ import scala.util.{Failure, Success}
   * @param kappaCursor is used to suggest insertions of comments
   */
 class PapersView(val elem: Element,
-                 val connector: WebSocketTransport,
+                 val paperCircuit: PaperCircuit,
                  val kappaCursor: Var[KappaCursor]
                 ) extends BindableView
   with CollectionMapView with CommentInserter {
-
-  val paperFiles: Var[Map[String, KappaBinaryFile]] = Var(Map.empty[String, KappaBinaryFile])
 
   val paperSelections: Var[List[PaperSelection]] = Var(Nil)
 
   val currentSelection = paperSelections.map(s => s.headOption)
 
-  val paperURI: Var[String] = Var("")
+  val paperURI: Var[String] = paperCircuit.paperURI
 
-  val paperLoader: WebSocketPaperLoader = WebSocketPaperLoader(connector, paperFiles)
-
-  val items: Var[Map[String, Paper]] = paperLoader.loadedPapers
+  val items: Var[Map[String, Paper]] = paperCircuit.papers
 
   val empty = items.map(its=>its.isEmpty)
 
@@ -56,74 +53,33 @@ class PapersView(val elem: Element,
 
   val headers = itemViews.map(its=> its.values.map(_.id).toList) // TODO: fix to normal list
 
-  paperURI.foreach{
-    case paper if paper!="" =>
-      //println("LOAD :"+loc.paper)
-      paperLoader.getPaper(paper, 10 seconds).onComplete{
-        case Success(pp) => paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(pp.name, pp)
-        case Failure(th)=> dom.console.error(s"Cannot load paper ${paper}: "+th)
-      }
-    case _ => //do nothing
-  }
+  val goTo = paperCircuit.intoOutoingPort[Go.ToSource, Animate](Go.ToSource.empty, true){  v=> Animate(v, true) }
 
 
   val toSource = Var(Events.createMouseEvent())
   toSource.onChange{
     ev => currentSelection.now match {
-      case Some(s) => input() =  Animate(Go.ToSource(AST.IRI(codeFile.now), lineNumber.now, lineNumber.now), true)
+      case Some(s) => goTo() =  Go.ToSource(AST.IRI(codeFile.now), lineNumber.now, lineNumber.now)
       case None =>
     }
   }
 
   val selectionOpt: Var[Option[Selection]] = Var(None)
 
-  lazy val input = connector.input
+  paperCircuit.paperSelectionOpt.onChange{ case Some(Go.ToPaperSelection(selection, exc)) =>
+    itemViews.now.values.foreach(p => p.selections() = Set.empty) //TODO: fix this ugly cleaning workaround
+    itemViews.now.get(paperURI.now) match {
+      case Some(v) =>
+        v.selections() = if(exc) Set(selection) else v.selections.now + selection
+        additionalComment() = ""
+        v.scrollTo(selection, 5, 300 millis) //scrolls to loaded paper
 
-  //subscribption on some events/commands
-  input.onChange {
-
-    case Go.ToFile(b: KappaBinaryFile) if b.fileType == FileType.pdf && b.isEmpty =>
-      println("GO TO EMPTY PAPER IS DETECTED")
-      paperURI() = b.path
-
-    case Go.ToFile(b: KappaBinaryFile) if b.fileType == FileType.pdf =>
-      println("GO TO PAPER IS DETECTED")
-      paperLoader.paperFiles() = paperLoader.paperFiles.now.updated(b.path, b)
-
-    case Go.ToPaper(loc, _)=>
-      println(s"go to paper ${loc}")
-      paperURI() = loc //just switches to another paper
-
-    case Go.ToPaperSelection(selection, exc) =>
-      println("GO TO PAPER LOCATION")
-      paperURI.Internal.value = selection.label //TODO: fix this ugly workaround
-
-      paperLoader.getPaper(selection.label, 12 seconds).onComplete{
-        case Success(paper) =>
-          paperLoader.loadedPapers() = paperLoader.loadedPapers.now.updated(paper.name, paper)
-          itemViews.now.values.foreach(p => p.selections() = Set.empty) //TODO: fix this ugly cleaning workaround
-          itemViews.now.get(paperURI.now) match {
-            case Some(v) =>
-              v.selections() = if(exc) Set(selection) else v.selections.now + selection
-              additionalComment() = ""
-              v.scrollTo(selection, 5, 300 millis) //scrolls to loaded paper
-
-            case None =>  dom.console.error(s"Paper URI for ${selection.label} does not exist")
-
-          }
-        case Failure(th)=> dom.console.error(s"Cannot load paper ${selection.label}: "+th)
-      }
-
-    case  Commands.CloseFile(path) =>
-      if(items.now.contains(path)) {
-      items() = items.now - path
-    } else {
-      //dom.console.error(s"cannot find ${path}")
+      case None =>  dom.console.error(s"Paper URI for ${selection.label} does not exist")
     }
 
-    case other => //do nothing
-
+    case None => itemViews.now.values.foreach(p => p.selections() = Set.empty) //TODO: fix this ugly cleaning workaround
   }
+
 
   lazy val domSelections: Var[Map[Item, (Map[Int, List[TextLayerSelection]])]] = Var(Map.empty[Item, (Map[Int, List[TextLayerSelection]])])
 
@@ -185,7 +141,7 @@ class PapersView(val elem: Element,
   }
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new FileTabHeaders(el, headers, input, paperURI)(FileTabHeaders.path2name).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new FileTabHeaders(el, headers, paperCircuit.input, paperURI)(FileTabHeaders.path2name).withBinder(new GeneralBinder(_)))
 
   override def updateView(view: PublicationView, key: Key, old: Paper, current: Paper): Unit = {
     view.paper() = current

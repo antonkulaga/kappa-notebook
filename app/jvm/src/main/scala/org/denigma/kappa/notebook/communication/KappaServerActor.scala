@@ -33,8 +33,6 @@ class KappaServerActor extends Actor with ActorLogging {
 
     //starts simulation on the server and streams the results to the sender
     case RunAtServer(username, serverName, lm: LaunchModel, userRef, interval) if servers.contains(serverName)=>
-      log.info(s"running model ${lm.runName} with files ${lm.fileNames} at server ${serverName}")
-
       val sink: Sink[server.flows.Runnable[server.flows.SimulationContactResult], Any] = Sink.foreach {
         case (Left( (token, res: SimulationStatus, connectionMap)), model) =>
           val result = SimulationResult(res, token, Some(model))
@@ -43,7 +41,7 @@ class KappaServerActor extends Actor with ActorLogging {
 
         case (Right(errors), model) =>
           val mess = SyntaxErrors(errors, model.files, onExecution = true)
-          log.info(s"errors while running the model ${model.files.map(_._1)} at server ${serverName}:\n${errors}")
+          //log.info(s"errors while running the model ${model.files.map(_._1)} at server ${serverName}:\n${errors}")
           userRef ! ServerResponse(serverName, mess )
       }
       val server = servers(serverName)
@@ -59,7 +57,6 @@ class KappaServerActor extends Actor with ActorLogging {
 
         case Right(errors) =>
           val mess = SyntaxErrors(errors, p.files, onExecution = false)
-          //println("syntax errors "+mess)
           userRef ! ServerResponse(serverName, mess )
       }
       val server = servers(serverName)

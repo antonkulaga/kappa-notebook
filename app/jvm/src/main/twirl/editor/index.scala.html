@@ -1,8 +1,7 @@
 @(width: String = "three wide")
 <section class="ui column @width page segment tab" data-view="KappaEditor" id="KappaEditor">
     @commons.html.header("Editor")
-  <div class="attached wide tab noscroll column segment">
-    @errors.html.syntax_errors()
+  <div class="attached wide tab column segment">
     <div class="ui top attached small tabular menu" data-view="headers">
       <div data-template="true" class="item" data-event-click="select" data-class-active-if="active">
         <span  data-bind="caption"></span>
@@ -12,5 +11,25 @@
       </div>
     </div>
     @editor.html.code()
+    <div class="attached wide tab column segment" data-show-if="isEmpty">
+      <div class="ui positive message"> Welcome to Kappa Notebook software!
+      </div>
+      <div class="ui positive message"> Open or create a kappa file at the project tab to get started! README.ka files are opened by default when project is started.
+      </div>
+      <div class="ui info message">
+        <div class="ui header">Core user interface features:</div>
+        <div class="ui bulleted list">
+          <div class="item">You can move between different tabs by scrolling or clicking on items of the top menu</div>
+          <div class="item">You can move tabs by drag & droping items in the top menu</div>
+          <div class="item">It is often convenient to work in a "split screen mode": keep the editor in one tab and drag & drop the tab you are currently working to the right or left from it</div>
+          <div class="item">To see visualization of the rule just put a cursor on corresponding line of code and look into visualization tab</div>
+          <div class="item">To make a clickable link write a comment <code>#^ <http://somelink.com></code> </div>
+          <div class="item">To make a link to a place in the paper - open the paper in the Papers tab, select the text and insert the generated comment  by "Insert comment button" or by copy-pasting</div>
+          <div class="item">To make a link to the source file use #^ :source filename.ka ; :line 10</div>
+          <div class="item">To make a link to the youtube video use #^ :video <http://youtube.com/video_address></div>
+        </div>
+      </div>
+    </div>
+    @errors.html.syntax_errors()
   </div>
 </section>

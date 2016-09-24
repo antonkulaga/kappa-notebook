@@ -37,8 +37,7 @@ trait WebSimFlows extends CirceSupport{
       HttpRequest(uri = data, method = HttpMethods.GET)
   }
 
-  protected val parseModelFlow: Flow[LaunchModel, HttpRequest, NotUsed] = Flow[LaunchModel].map{
-    case m =>
+  protected val parseModelFlow: Flow[LaunchModel, HttpRequest, NotUsed] = Flow[LaunchModel].map{ m =>
       val data = Uri(s"$base/parse").withQuery(Uri.Query(Map("code"->m.fullCode)))
       HttpRequest(uri = data, method = HttpMethods.GET)
   }
@@ -46,8 +45,7 @@ trait WebSimFlows extends CirceSupport{
   /**
     * Flow where you provide Running configurations to get Model with request in return
     */
-  protected val runModelRequestFlow: Flow[LaunchModel, HttpRequest, NotUsed] = Flow[LaunchModel].map{
-    case model =>
+  protected val runModelRequestFlow: Flow[LaunchModel, HttpRequest, NotUsed] = Flow[LaunchModel].map{ model =>
       val json = model.parameters.asJson.noSpaces
       //debug(json)
       val data = HttpEntity(ContentTypes.`application/json`, json)
@@ -55,10 +53,19 @@ trait WebSimFlows extends CirceSupport{
   }
 
   protected val simulationStatusRequestFlow: Flow[Token, HttpRequest, NotUsed] =
-    Flow[Token].map{  case token =>  HttpRequest(uri = s"$base/process/$token", method = HttpMethods.GET) }
+    Flow[Token].map{  token =>  HttpRequest(uri = s"$base/process/$token", method = HttpMethods.GET) }
 
-  val stopRequestFlow: Flow[Token, HttpRequest, NotUsed] = Flow[Token].map{
-    case token =>  HttpRequest(uri = s"$base/process/$token", method = HttpMethods.DELETE)
+  protected def command(name: String) = Flow[Token].map{ token =>
+    HttpRequest(uri = s"$base/process/$token/$name", method = HttpMethods.GET)
+  }
+  ///perturbate|/pause|/continue
+  val perturbateFlow: Flow[Token, HttpRequest, NotUsed] = command("pause")
+  val pauseRequestFlow: Flow[Token, HttpRequest, NotUsed] = command("pause")
+  val continueFlow: Flow[Token, HttpRequest, NotUsed] = command("continue")
+
+
+  val stopRequestFlow: Flow[Token, HttpRequest, NotUsed] = Flow[Token].map{ token =>
+    HttpRequest(uri = s"$base/process/$token", method = HttpMethods.DELETE)
   }
 
 }

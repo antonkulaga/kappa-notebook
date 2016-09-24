@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.papers
 
 import org.denigma.controls.papers._
 import org.denigma.kappa.messages.FileRequests.LoadFileSync
-import org.denigma.kappa.messages.{FileRequests, KappaBinaryFile}
+import org.denigma.kappa.messages.{FileRequests, FilesUpdate, KappaBinaryFile, KappaProject}
 import org.denigma.kappa.notebook.WebSocketTransport
 import org.denigma.pdf.PDFJS
 import org.denigma.pdf.extensions._
@@ -14,16 +14,20 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js.typedarray.ArrayBuffer
+import rx.Ctx.Owner.Unsafe.Unsafe
+import org.denigma.binding.extensions._
+import rx.Rx.Dynamic
 
 case class WebSocketPaperLoader(subscriber: WebSocketTransport,
-                                paperFiles: Var[Map[String, KappaBinaryFile]],
+                                paperFileMap: Rx[Map[String, KappaBinaryFile]],
                                 loadedPapers: Var[Map[String, Paper]] = Var(Map.empty[String, Paper]))
   extends PaperLoader {
+
 
   override def getPaper(path: String, timeout: FiniteDuration = 25 seconds): Future[Paper] =
   {
     if(loadedPapers.now.contains(path)) Future.successful(loadedPapers.now(path)) else
-      paperFiles.now.get(path) match {
+      paperFileMap.now.get(path) match {
         case Some(f) if f.isEmpty => send(path)(timeout)
         case Some(f) =>
           val data: ArrayBuffer = subscriber.bytes2message(f.content)
@@ -39,7 +43,8 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport,
   protected def send(path: String)(implicit timeout: FiniteDuration): Future[Paper] = {
     val tosend: LoadFileSync = FileRequests.LoadFileSync(path)
     val result: Future[ArrayBuffer] = subscriber.ask(tosend, timeout){
-      case KappaBinaryFile(p, bytes, _, _) if p.contains(path)=>
+      case b @  KappaBinaryFile(p, bytes, _, _) if p.contains(path)=>
+        subscriber.input() = FilesUpdate.updatedFiles(b) //send update to project files
         subscriber.bytes2message(bytes)
     }
     result.flatMap{ data =>

@@ -83,7 +83,6 @@ class ContactMapView(val elem: Element,  val input: Var[KappaMessage], val activ
   input.onChange{
 
     case KappaMessage.ServerResponse(server, ServerMessages.ParseResult(cmap))=>
-      println("assigning contact map!")
       contactMap() = cmap
 
     //case KappaMessage.ServerResponse(ServerMessages.LaunchModel) =>

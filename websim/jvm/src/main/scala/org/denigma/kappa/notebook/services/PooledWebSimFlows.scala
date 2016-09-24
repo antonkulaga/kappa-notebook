@@ -198,8 +198,7 @@ trait PooledWebSimFlows extends WebSimFlows {
       case (token, result)=> token -> result
   }
 
-  def simulationStream(updateInterval: FiniteDuration, parallelism: Int) =  Flow[Token].flatMapMerge(parallelism, {
-    case token =>
+  def simulationStream(updateInterval: FiniteDuration, parallelism: Int) =  Flow[Token].flatMapMerge(parallelism, { token =>
       val source = Source.tick(0 millis, updateInterval, token)
       source.via( simulationStatusFlow )
         .upTo{
@@ -229,8 +228,9 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   lazy val syncSimulationResultStream: Flow[LaunchModel, Runnable[SimulationContactResult], NotUsed] = simulationResultStream(300 millis, 1)
 
+  /*
   val stopFlow: Flow[Token, (Token, SimulationStatus), NotUsed] = stopRequestFlow.inputZipWith(timePool.via(unmarshalFlow[SimulationStatus]).sync){
     case (token, result)=> token -> result
   }
-
+  */
 }

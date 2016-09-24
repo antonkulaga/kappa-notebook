@@ -5,7 +5,7 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionSeqView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.{Go, KappaMessage, Move}
-import org.denigma.kappa.notebook.actions.Animations
+import org.denigma.kappa.notebook.actions.AnimationsCircuit
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, HTMLElement}
 import rx.Ctx.Owner.Unsafe.Unsafe

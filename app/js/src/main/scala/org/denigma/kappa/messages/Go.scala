@@ -13,6 +13,7 @@ object Go {
 
   object ToSource {
     implicit val sourcePickler: Pickler[ToSource] = boopickle.Default.generatePickler[ToSource]
+    lazy val empty = ToSource(AST.IRI(""), 0 , 0)
   }
 
   case class ToSource(path: AST.IRI, begin: Int = 0, end: Int = 0) extends UIMessage

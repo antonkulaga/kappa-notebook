@@ -12,6 +12,8 @@ object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions
 
 	val bindingControls = "0.0.22"
 
+	val semanticControls = bindingControls
+
 	val betterFiles = "2.16.0"
 
 	val javaTime = "0.2.0"
@@ -89,6 +91,8 @@ trait SharedVersions
 	val pprint: String ="0.4.2"
 
 	val roshttp = "1.1.0"
+
+	val banana = "0.8.3-SNAP1"
 
 }
 

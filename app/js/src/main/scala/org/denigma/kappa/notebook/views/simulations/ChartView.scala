@@ -56,7 +56,7 @@ class ChartView(val elem: Element,
  val items: Rx[List[Var[KappaSeries]]] = Rx{
    val p = plot()
    val leg = legendList()
-   leg.map { case (tlt, i, style) => Var(KappaSeries(tlt, p.time_series.map(o => Point(o.time, o.values(i))), style))}
+   leg.map { case (tlt, i, style) => Var(KappaSeries(tlt, p.time_series.map(o => Point(o.observation_time, o.observation_values(i))), style))}
  }
 
  override def max(series: Series)(fun: Point => Double): Point = if(series.points.nonEmpty) series.points.maxBy(fun) else Point(0.0, 0.0)
@@ -93,7 +93,7 @@ class ChartView(val elem: Element,
     val head = p.legend.foldLeft("time"){ case (acc, e) => acc + "," +e} + "\n"
     val body =  p.time_series.foldLeft(""){
       case (acc, s) =>
-        acc + s.time + s.values.foldLeft(""){
+        acc + s.observation_time+ s.observation_values.foldLeft(""){
           case (a, ss) => a +"," + ss
         } + "\n"
       }.reverse

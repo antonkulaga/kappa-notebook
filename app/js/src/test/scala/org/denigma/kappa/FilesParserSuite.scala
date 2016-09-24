@@ -15,7 +15,7 @@ class  FilesParserSuite extends WordSpec with Matchers with Inside  {
       }
       val wrongLine = ":in_source"
       inside(parser.source.parse(wrongLine)){
-        case f: Parsed.Failure =>
+        case f: Parsed.Failure[_, _] =>
       }
       val linePrefixed = ":in_source :DNA_REPAIR/figure.jpg"
       inside(parser.source.parse(linePrefixed))
@@ -45,7 +45,7 @@ class  FilesParserSuite extends WordSpec with Matchers with Inside  {
 
       val ln0 =" :image :dna_repair_tutorial/plasmid.png"
       inside(parser.image.parse(ln0)) {
-        case Parsed.Success(Image(":dna_repair_tutorial/plasmid.png", _ ,_), _) =>
+        case Parsed.Success(Image("dna_repair_tutorial/plasmid.png", _ ,_), _) =>
 
       }
 

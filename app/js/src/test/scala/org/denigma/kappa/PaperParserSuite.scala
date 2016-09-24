@@ -13,8 +13,8 @@ class PaperParserSuite extends WordSpec with Matchers with Inside  {
     lazy val page = ":page"
     val parser = new PaperParser
     inside(parser.IRI.parse(hello)) { case Parsed.Success(_, 19) =>}
-    inside(parser.IRI.parse("http helloworld")) { case f: Parsed.Failure =>}
-    inside(parser.IRIREF.parse(paper)) { case f: Parsed.Failure =>}
+    inside(parser.IRI.parse("http helloworld")) { case f: Parsed.Failure[_,_] =>}
+    inside(parser.IRIREF.parse(paper)) { case f: Parsed.Failure[_,_] =>}
     inside(parser.IRI.parse(paper)) { case Parsed.Success(_, 6)=>}
     inside(parser.IRI.parse(page)) { case Parsed.Success(_, 5)=>}
 
@@ -35,15 +35,15 @@ class PaperParserSuite extends WordSpec with Matchers with Inside  {
     }
 
     inside(parser.page.parse("on_page 20")){
-      case f: Parsed.Failure=>
+      case f: Parsed.Failure[_,_]=>
     }
 
     inside(parser.page.parse(":from_token 20")){
-      case f: Parsed.Failure=>
+      case f: Parsed.Failure[_,_]=>
     }
 
     inside(parser.page.parse(":page hello")){
-      case f: Parsed.Failure=>
+      case f: Parsed.Failure[_,_]=>
     }
 
     inside(parser.from_chunk.parse(":from_chunk 20")){
@@ -64,7 +64,7 @@ class PaperParserSuite extends WordSpec with Matchers with Inside  {
     }
 
     inside(parser.to_token.parse(":to_token hello")){
-      case f: Parsed.Failure=>
+      case f: Parsed.Failure[_,_]=>
     }
   }
 

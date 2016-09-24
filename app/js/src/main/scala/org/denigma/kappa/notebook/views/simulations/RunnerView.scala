@@ -4,6 +4,7 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views._
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.SourcesFileSelector
+import org.denigma.kappa.notebook.circuits.SimulationsCircuit
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
@@ -11,8 +12,7 @@ import rx._
 
 class RunnerView(val elem: Element,
                  val tab: Var[String],
-                 val configurations: Rx[Map[String, SourcesFileSelector]],
-                 val runner: Var[(LaunchModel, String)]
+                 val circuit: SimulationsCircuit
                  ) extends BindableView//FixedCollectionSeqView
 {
   self=>
@@ -42,8 +42,9 @@ class RunnerView(val elem: Element,
 
   protected def launch() = {
     val params = LaunchModel(Nil, nb_plot = self.nbPlot.now, max_events = self.maxEvents.now, max_time = self.maxTime.now)
-    println("PARAMS TO RUN = "+(params, ""))
-    runner() = (params, "")
+    //println("PARAMS TO RUN = "+(params, ""))
+    circuit.run.Internal.value = params
+    circuit.run.propagate()
   }
 
   val run = Var(org.denigma.binding.binders.Events.createMouseEvent)

@@ -60,7 +60,7 @@ class CurrentProjectCircuit(input: Var[KappaMessage],
   def saveAll() = {
     val toSave = unsaved.now.values.toList
     if(toSave.nonEmpty) {
-      input() = FileRequests.Save(toSave, rewrite = true)
+      output() = FileRequests.Save(toSave, rewrite = true)
     }
   }
 

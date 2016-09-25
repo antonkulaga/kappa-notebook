@@ -37,18 +37,17 @@ object Animate {
 
 case class Animate(message: KappaMessage, annotation: Boolean) extends UIMessage
 
-case class RunConfiguration(//project: KappaProject,
-                            //selector: SourcesFileSelector,
-                            files: List[KappaSourceFile],
+case class RunConfiguration(files: List[KappaSourceFile],
                             parameters: RunParameters,
                             projectName: String,
                             configurationName: String = "default",
                             serverConnectionOpt: Option[ServerConnection] = None
                            ) extends UIMessage
 {
-  //lazy val files  = selector.apply(project)
 
-  lazy val fullCode = files.foldLeft(""){case (acc, e) => acc + e}
+  lazy val fileMap = files.map(f=>f.path->f).toMap
+
+  lazy val fullCode = files.foldLeft(""){case (acc, e) => acc + (if(e.content.endsWith("\n")) e.content else e.content + "\n")}
 
   lazy val names = files.map(f=>f.name)
 

@@ -35,7 +35,7 @@ class KappaCodeTab(elem: Element,
   input.onChange(onInputChange)
 
   errors.onChange{ ers=>
-    //dom.console.error(s"CodeTab $name ERRORS: "+ers.toList.mkString("\n"))
+    //dom.console.error(s"CodeTab $name ERRORS: "+ers.mkString("\n"))
     val found: List[LintFound] = ers.map{e=> e:LintFound}
     def gts(text: String, options: LintOptions, cm: Editor): js.Array[LintFound] = {
       found.toJSArray

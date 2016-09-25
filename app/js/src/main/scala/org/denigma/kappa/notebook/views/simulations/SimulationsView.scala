@@ -49,7 +49,7 @@ class SimulationsView(val elem: Element,
       val (token, initial) = key
       el.id =  makeId(key) //bad practice
       val view = new SimulationRunView(el, token, initial, tab, Var(value)).withBinder(new CodeBinder(_))
-      tab() = "#"+token
+      tab() = makeId(key)
       view
   })
 
@@ -73,6 +73,7 @@ class SimulationsHeaders(val elem: Element, val items: Rx[List[(Int, Option[Laun
   override def newItemView(item: Item): ItemView= constructItemView(item){
     case (el, _) =>
       val (token, initial) = item
+      el.id = "#" + token.toString
       new SimulationTabItemView(el, token, initial, input,  selected)(getCaption).withBinder(new GeneralBinder(_))
   }
 }

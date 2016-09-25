@@ -34,10 +34,6 @@ class LaunchParametersView(val elem: Element,
 
   var time: Rx[Double] = simulation.map(sim=>sim.time)
 
-  val console: Rx[String] = simulation.map(sim=>sim.log_messages.foldLeft(""){
-    case (acc, e) => acc + "\n" + e
-  })
-
   val implicitSignature = Var(true)
 
   protected val maxTime = simulation.map(sim=>sim.max_time)
@@ -45,9 +41,8 @@ class LaunchParametersView(val elem: Element,
   protected val maxEvents =simulation.map(sim=>sim.max_events)
 
   val saveConcat: Var[MouseEvent] = Var(Events.createMouseEvent())
-
   saveConcat.triggerLater{
-    saveAs(selected.now+".ka", console.now)
+    saveAs(selected.now+".ka", code.now)
   }
 
 

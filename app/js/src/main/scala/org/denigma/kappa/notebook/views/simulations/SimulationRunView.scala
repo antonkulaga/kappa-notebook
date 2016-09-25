@@ -6,6 +6,7 @@ import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages.{FluxMap, KappaPlot, SimulationStatus}
 import org.denigma.kappa.notebook.views.common._
 import org.denigma.kappa.notebook.views.simulations.fluxes.FluxesView
+import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
@@ -24,6 +25,9 @@ class SimulationRunView(val elem: Element,
   val initialCode = simulation.map(sim=>sim.code.orElse(params.map(_.fullCode)).getOrElse("### NODE CODE AVALIABLE ###"))
 
   val plot: Rx[KappaPlot] = simulation.map{s=>
+    println("UNARY DISTANCES =")
+    println(s.distances)
+    //just to check unary distances
     s.plot.getOrElse(KappaPlot.empty)
   }
 

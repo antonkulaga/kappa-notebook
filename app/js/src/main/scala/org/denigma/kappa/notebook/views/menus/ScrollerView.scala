@@ -90,7 +90,6 @@ class ScrollerView(val elem: Element,
   }
 
   protected def popStateHandler(ppe: PopStateEvent): Unit = {
-    println("POP STATE HANDLER = "+ppe)
     ppe.state match {
       case value if js.isUndefined(value) => dom.console.error("scroll to undefined id")
       case null => dom.console.info("scroll to null")

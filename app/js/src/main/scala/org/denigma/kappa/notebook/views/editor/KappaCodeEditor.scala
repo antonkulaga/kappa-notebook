@@ -37,7 +37,6 @@ class KappaCodeEditor(val elem: Element,
     val sel = selected.now
     super.onRemove(item)
     if(sel == item && items.now.nonEmpty) {
-      //println("headers = "+headers.now)
       selected() = headers.now.last
     }
   }
@@ -52,7 +51,7 @@ class KappaCodeEditor(val elem: Element,
 
   override def newItemView(key: String, value: KappaSourceFile): KappaCodeTab = this.constructItemView(key) {
     case (el, _) =>
-      val itemErrors =  errorsCircuit.errorsInFiles.map(f=>f.collect{ case (file, er) if file.path == key => er})
+      val itemErrors =  errorsCircuit.groupedErrors.map(gp => gp.getOrElse(key, List.empty[WebSimError]))
       val view: ItemView = new KappaCodeTab(el,
         Var(value),
         selected,

@@ -12,7 +12,7 @@ class MainStyles extends Standalone with MediaQueries
 {
   import dsl._
 
-  lazy val rowMaxHeight = 95 vh
+  lazy val rowMaxHeight = 96 vh
   lazy val gridMaxHeight = 89 vh
 
   "html"-(

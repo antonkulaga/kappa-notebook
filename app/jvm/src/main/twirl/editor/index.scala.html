@@ -11,6 +11,7 @@
       </div>
     </div>
     @editor.html.code()
+    @errors.html.syntax_errors()
     <div class="attached wide tab column segment" data-show-if="isEmpty">
       <div class="ui positive message"> Welcome to Kappa Notebook software!
       </div>
@@ -30,6 +31,5 @@
         </div>
       </div>
     </div>
-    @errors.html.syntax_errors()
   </div>
 </section>

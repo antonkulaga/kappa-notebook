@@ -9,7 +9,8 @@ import org.denigma.kappa.notebook.views.comments.CommentsWatcher
 import org.denigma.kappa.notebook.views.editor.{EditorUpdates, EmptyCursor, KappaCursor}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-
+import scala.concurrent.duration._
+import scala.scalajs.js
 /**
   * Created by antonkulaga on 9/15/16.
   */
@@ -40,6 +41,11 @@ class KappaEditorCircuit(input: Var[KappaMessage],
     case ProjectResponses.LoadedProject(proj) =>
       val files = proj.sourceMap.collectFirst{ case (path, f) if f.name.toLowerCase.contains("readme") => Map( (path, f))}.getOrElse(Map.empty[String, KappaSourceFile])
       items() = files
+      js.timers.setTimeout(300 millis){
+        //check for syntax errors after loading
+        val toParse =  ParseModel(runConfiguration.now.tuples)
+        output() = ServerCommand(currentServer.now, toParse)
+      }
 
     /*
     case Commands.OpenFile(f: KappaSourceFile)  if !hasFile(f.path)=>
@@ -50,11 +56,6 @@ class KappaEditorCircuit(input: Var[KappaMessage],
 
     case CloseFile(path) if items.now.contains(path)=>
       items() = items.now - path
-
-    case f: FilesUpdate if f.nonEmpty=>
-      println("SENDING FILES TO PARSE")
-      val toParse =  ParseModel(runConfiguration.now.tuples)
-      output() = ServerCommand(currentServer.now, toParse)
 
     case other => //do nothing
   }

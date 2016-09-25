@@ -15,7 +15,7 @@ class SyntaxErrorsView(val elem: Element, circuit: ErrorsCircuit) extends Collec
   override type Item = (KappaSourceFile, WebSimError)
   override type ItemView =  WebSimErrorView
 
-  val items = circuit.errorsInFiles
+  val items: Rx[List[Item]] = circuit.filesWithErrors
 
   val hasErrors = items.map(f=>f.nonEmpty)
 

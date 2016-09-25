@@ -50,10 +50,15 @@ trait TabGridsStyles extends MainStyles {
     )
 
   ".page" -(
-    overflowY.hidden important,
+    //overflowY.hidden important,
     overflowX.hidden important,
+    onTiny -( minHeight(65 vh) important),
+    onLittle -( minHeight(67 vh) important),
+    onSmall -( minHeight(69 vh) important),
+    onMedium -( minHeight(71 vh)important),
+    onLarge -( minHeight(73 vh) important)
     //overflowX.scroll,
-    minHeight(80.0 vh) important
+    //minHeight(80.0 vh) important
     //height(100.0 %%)
     )
 
@@ -105,6 +110,10 @@ trait TabGridsStyles extends MainStyles {
 
   "#ProjectsPanel" -(
     minWidth(345 px) important,
+    overflowY.auto important
+    )
+
+  "#KappaEditor" -(
     overflowY.auto important
     )
 

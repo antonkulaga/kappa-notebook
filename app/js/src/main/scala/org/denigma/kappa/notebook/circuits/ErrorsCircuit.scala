@@ -7,6 +7,7 @@ import org.denigma.kappa.messages._
 import org.scalajs.dom
 import rx.{Rx, Var}
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
 
 /**
   * Created by antonkulaga on 9/22/16.
@@ -19,35 +20,23 @@ class ErrorsCircuit(input: Var[KappaMessage], output: Var[KappaMessage], runConf
 
   val syntaxErrors = Var(SyntaxErrors.empty)
 
-  protected def pathes= runConfiguration.now.pathes
+  val errorsByFiles: Rx[List[(String, WebSimError)]] = syntaxErrors.map(s=>s.errorsByFiles())
 
+  val groupedErrors: Rx[Map[String, List[WebSimError]]] =  errorsByFiles.map(er=>er.groupBy{case (path, _) => path}.mapValues(l=>l.map{case (f, e)=>e}))
 
-  val errorsInFiles: Rx[List[(KappaSourceFile, WebSimError)]] = {
-    syntaxErrors.map{ ers => ers.errorsByFiles().collect{
-      case (filepath, er) if {
-        println(s"SYNTAX ERROR: ${filepath}")
-        val exists = pathes.contains(filepath)
-        exists
+  val filesWithErrors = errorsByFiles.map{ ers=>
+    val mp = runConfiguration.now.fileMap
+    ers.collect{
+      case (path, error) if{
+        val exp = mp.contains(path)
+        if(!exp) dom.console.error(s"error with $path was not found in run configuration, error is: ${error}")
+        exp
       } =>
-        if(filepath==""){
-          val message = "error is out of bounds!"
-          dom.console.error(message)
-          dom.console.log("all errors "+ers.errors.mkString("\n"))
-          dom.console.log("all filenames " + ers.files.map(kv=>kv._1).mkString(" | "))
-        }
-        if(!pathes.contains(filepath)) dom.console.error(s"error refers to the $filepath that was not found, message: ${er.message}")
-        val fl: (KappaSourceFile, WebSimError) = runConfiguration.now.files.collectFirst{
-          case i if i.path == filepath => i -> er
-        }.get
-        fl
-      //if(!items.now.exists(kv=>kv._2.name == filename)) dom.console.error(s"error refers to the $filename that was not found, message: ${er.message}")
-      //items.now.collect{ case (str, file) if file.name == filename => file -> er }
-      }
+        mp(path) -> error
     }
+
+
   }
-
-  val groupedErrors =  errorsInFiles.map(ers=>ers.groupBy(kv=>kv._1).mapValues(v=>v.map(_._2)))
-
   def errorCode(error: WebSimError): String = {
     val code = runConfiguration.now.fullCode
     val (chFrom ,chTo) = (error.range.from_position.chr, error.range.to_position.chr)

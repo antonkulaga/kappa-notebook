@@ -56,6 +56,11 @@ class SimulationsCircuit(input: Var[KappaMessage],
     output() = ServerCommand(serverConnections.now.currentServer, toRun.launchModel)
   }
 
+  runConfiguration.onChange { conf =>
+    val toParse = ParseModel(runConfiguration.now.tuples)
+    output() = ServerCommand(serverConnections.now.currentServer, toParse)
+  }
+
 
   protected def onInputMessage(message: KappaMessage): Unit = message match {
 

@@ -80,7 +80,7 @@ class SettingsView(val elem: Element, circuit: SettingsCircuit) extends Bindable
   rulesGraphParams.foreach{ params =>
     println("send params = ")
     pprint.pprintln(params)
-    circuit.output() = Commands.SetLayoutParameters("rules", params)
+    circuit.input() = Commands.SetLayoutParameters("rules", params)
   }
 
   val fluxGraphRepulsion = Var(30)

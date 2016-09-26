@@ -25,22 +25,22 @@ class SimulationRunView(val elem: Element,
   val initialCode = simulation.map(sim=>sim.code.orElse(params.map(_.fullCode)).getOrElse("### NODE CODE AVALIABLE ###"))
 
   val plot: Rx[KappaPlot] = simulation.map{s=>
-    println("UNARY DISTANCES =")
-    println(s.distances)
-    //just to check unary distances
+    //println("UNARY DISTANCES =")
+    //println(s.distances)
     s.plot.getOrElse(KappaPlot.empty)
   }
 
   //val percentage = simulation.map(s=>s.percentage)
 
-  val maxOpt = simulation.map(s=>s.max)
+  //val maxOpt = simulation.map(s=>s.max)
 
   lazy val fluxMap: Dynamic[Map[String, FluxMap]] = simulation.map(s=>s.flux_maps.map(fl=>fl.flux_name ->fl).toMap)
 
   override lazy val injector = defaultInjector
     .register("Plot") {
       case (el, _) =>
-        new ChartView(el, Var(id), plot, maxOpt, tab).withBinder(new CodeBinder(_))
+        //new ChartView(el, Var(id), plot, maxOpt, tab).withBinder(new CodeBinder(_))
+        new ChartView(el, Var(id), plot, tab).withBinder(new CodeBinder(_))
     }
     .register("Parameters") {
       case (el, _) =>

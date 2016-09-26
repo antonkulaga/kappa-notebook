@@ -65,17 +65,15 @@ class WebSocketTransport(val protocol: String, val host: String, val channel: St
 
   type Input = KappaMessage
 
-
   override val connected = Var(false)
 
-  input.triggerLater{
-    onInput(input.now)
-  }
+  input.onChange(onInput)
 
-  protected def onInput(inp: Input) = inp match {
+  protected def onInput(inp: Input): Unit = inp match {
     case Connected(uname, ch, list, servers) if uname==username /*&& ch == channel*/ =>
       println(s"connection of user $username to $channel established")
       connected() = true
+
     case Disconnected(uname, ch, list) if uname==username /* && ch == channel */ =>
       println(s"user $username diconnected from $channel")
       connected() = false
@@ -84,6 +82,7 @@ class WebSocketTransport(val protocol: String, val host: String, val channel: St
   }
 
   override def send(message: Output): Unit = if(connected.now) {
+    dom.console.log("MESSAGE: "+message.getClass.getName)
     val mes = bytes2message(pickle(message))
     send(mes)
   } else {

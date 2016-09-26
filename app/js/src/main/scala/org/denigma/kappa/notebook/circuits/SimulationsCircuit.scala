@@ -44,11 +44,17 @@ class SimulationsCircuit(input: Var[KappaMessage],
   }
 
   val run: Var[RunParameters] = Var(LaunchModel.empty)
-  val runConfiguration: Rx[RunConfiguration] = Rx {
+
+  val files2Run: Rx[List[KappaSourceFile]] = Rx {
     val proj = currentProject()
     val cur = sourceFileSelector()
-    val files: List[KappaSourceFile] = cur(proj)
-    RunConfiguration(files, run(), projectName(), configurationName.now, serverConnections.now.currentConnection)
+    cur(proj)
+  }
+
+  val tuples2Run: Rx[List[(String, String)]] = files2Run.map(files => files.map(f=>f.path->f.content))
+
+  val runConfiguration: Rx[RunConfiguration] = Rx {
+    RunConfiguration(files2Run(), run(), projectName.now, configurationName.now, serverConnections.now.currentConnection)
   }
 
   run.onChange{ params =>
@@ -56,10 +62,7 @@ class SimulationsCircuit(input: Var[KappaMessage],
     output() = ServerCommand(serverConnections.now.currentServer, toRun.launchModel)
   }
 
-  runConfiguration.onChange { conf =>
-    val toParse = ParseModel(runConfiguration.now.tuples)
-    output() = ServerCommand(serverConnections.now.currentServer, toParse)
-  }
+  tuples2Run.onChange { values=>  output() = ServerCommand(serverConnections.now.currentServer, ParseModel(values)) }
 
 
   protected def onInputMessage(message: KappaMessage): Unit = message match {

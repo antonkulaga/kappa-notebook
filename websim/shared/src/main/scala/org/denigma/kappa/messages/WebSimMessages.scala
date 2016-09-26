@@ -128,9 +128,10 @@ object WebSimMessages {
   case class KappaPlot(legend: List[String], time_series: List[Observable]) extends WebSimMessage {
     //println("LEGEND IS: "+ legend.mkString(" | "))
     //println("kappa plot: "+legend.toList)
+
+    println("==========TIMESERIES========\n"+time_series.map(o=>"TIME "+o.observation_time+ "VALUES: "+o.observation_values.mkString(" ")).mkString("\n"))
     lazy val timePoints: List[Double] = time_series.foldLeft(List.empty[Double])((acc, o)=> o.observation_time::acc).reverse
 
-    //def toCSV =
   }
 
   object FluxMap {

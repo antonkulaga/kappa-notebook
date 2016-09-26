@@ -32,7 +32,6 @@ class KappaCodeEditor(val elem: Element,
 
   override type ItemView = KappaCodeTab
 
-
   override def onRemove(item: Item):Unit = {
     val sel = selected.now
     super.onRemove(item)

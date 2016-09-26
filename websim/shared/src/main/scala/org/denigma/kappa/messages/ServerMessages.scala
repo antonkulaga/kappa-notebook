@@ -109,13 +109,14 @@ object ServerMessages {
   trait FileContainer {
     def files: List[(String, String)]
 
+    protected def withLineEnd(str: String) = if(str.endsWith("\n")) str else str + "\n"
+
     lazy val fileLines: scala.List[(String, Array[String])] = files.map{
-      case (key, value) => key -> value.split("\n", -1)
+      case (key, value) => key -> withLineEnd(value).split("\n", -1)
     }
 
     lazy val fullCode: String = files.foldLeft("") {
-      case (acc, (name, content)) if content.endsWith("\n") => acc + content
-      case (acc, (name, content)) => acc + content + "\n"
+      case (acc, (name, content)) => acc + withLineEnd(content)
     }
 
     lazy val fileSizes: scala.List[((Int, Int), String)] = fileLines.foldLeft(List.empty[((Int, Int), String)]) {

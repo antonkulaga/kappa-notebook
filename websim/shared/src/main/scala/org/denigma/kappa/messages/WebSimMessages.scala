@@ -126,11 +126,14 @@ object WebSimMessages {
     implicit val classPickler: Pickler[KappaPlot] = boopickle.Default.generatePickler[KappaPlot]
   }
   case class KappaPlot(legend: List[String], time_series: List[Observable]) extends WebSimMessage {
+
+    lazy val observables = time_series.reverse //in ASC position
+
     //println("LEGEND IS: "+ legend.mkString(" | "))
     //println("kappa plot: "+legend.toList)
 
-    println("==========TIMESERIES========\n"+time_series.map(o=>"TIME "+o.observation_time+ "VALUES: "+o.observation_values.mkString(" ")).mkString("\n"))
-    lazy val timePoints: List[Double] = time_series.foldLeft(List.empty[Double])((acc, o)=> o.observation_time::acc).reverse
+    //println("==========TIMESERIES========\n"+time_series.map(o=>"TIME "+o.observation_time+ "VALUES: "+o.observation_values.mkString(" ")).mkString("\n"))
+    lazy val timePoints: List[Double] = observables.foldLeft(List.empty[Double])((acc, o)=> o.observation_time::acc).reverse
 
   }
 

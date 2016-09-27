@@ -137,7 +137,7 @@ class ChartView(val elem: Element,
 
   lazy val items: Rx[SortedMap[String, PlotSeries]] = plot.map{p=>
     val leg = legendList.now
-    val tuples = leg.map { case (tlt, i, style) => tlt -> KappaSeries(tlt, p.time_series.map(o => Point(o.observation_time, o.observation_values(i))), style) }
+    val tuples = leg.map { case (tlt, i, style) => tlt -> KappaSeries(tlt, p.observables.map(o => Point(o.observation_time, o.observation_values(i))), style) }
     SortedMap(tuples:_*)
   }
 
@@ -181,12 +181,9 @@ class ChartView(val elem: Element,
   saveCSV.triggerLater{
     val p = plot.now
     val head = p.legend.foldLeft("time"){ case (acc, e) => acc + "," +e} + "\n"
-    val body =  p.time_series.foldLeft(""){
-      case (acc, s) =>
-        acc + s.observation_time+ s.observation_values.foldLeft(""){
-          case (a, ss) => a +"," + ss
-        } + "\n"
-    }.reverse
+    val body =  p.observables.foldLeft(""){
+      case (acc, s) =>  acc + s.observation_time+ s.observation_values.foldLeft(""){ case (a, ss) => a +"," + ss} + "\n"
+    }
     val txt = head + body
     saveAs(title.now+".csv", txt)
   }

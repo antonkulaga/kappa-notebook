@@ -96,7 +96,7 @@ class KappaParser extends CommentLinksParser
       Rule(name, left, right, c1, c2opt) //TODO: fix coefficents
   }
 
-  val observable = P(optSpaces ~ "%obs:" ~ optSpaces ~ label ~spaces ~ rulePart).map{
+  val observable = P(optSpaces ~ "%obs:" ~ optSpaces ~ "|".?  ~ optSpaces ~ label ~ spaces ~ rulePart  ~ optSpaces ~ "|".?  ~ optSpaces).map{
     case (lb, pat) =>  ObservablePattern(lb, pat)
   }
 

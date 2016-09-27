@@ -49,7 +49,7 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     case message: UIMessage => //TODO: check if it is safe
       interfaceIO() = message
       */
-    case serverMessage => toServer() = serverMessage
+    serverMessage => toServer() = serverMessage
   }
 
   lazy val settings = new SettingsCircuit(input, output)
@@ -80,11 +80,6 @@ class NotebookView(val elem: Element, username: String) extends BindableView
 
   override def bindView() = {
     super.bindView()
-    connector.onOpen.triggerLater{
-      println("websocket opened")
-      val toLoad = ProjectRequests.Load(KappaProject.default)
-      connector.output() = toLoad //ask to load default project
-    }
     settings.activate()
     animations.activate()
     notebookCircuit.activate()
@@ -92,6 +87,11 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     editorCircuit.activate()
     errorsCircuit.activate()
     papersCircuit.activate()
+    connector.onOpen.triggerLater{
+      dom.console.log("websocket opened")
+      val toLoad = ProjectRequests.Load(KappaProject.default)
+      connector.output() = toLoad //ask to load default project
+    }
     connector.open()
   }
 

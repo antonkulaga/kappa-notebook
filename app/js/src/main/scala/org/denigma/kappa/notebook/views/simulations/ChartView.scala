@@ -125,8 +125,8 @@ class ChartView(val elem: Element,
                 val title: Rx[String],
                 val plot: Rx[KappaPlot],
                 val selected: Var[String],
-                val scaleX: Var[FlexibleLinearScale] = Var(FlexibleLinearScale("Time", 0.0, 10, 2, ChartView.defaultWidth)),
-                val scaleY: Var[FlexibleLinearScale] = Var(FlexibleLinearScale("Concentration", 0.0, 10, 2, ChartView.defaultHeight, inverted = true))
+                val scaleX: Var[FlexibleLinearScale] = Var(FlexibleLinearScale("Time / Events", 0.0, 10, 2, ChartView.defaultWidth)),
+                val scaleY: Var[FlexibleLinearScale] = Var(FlexibleLinearScale("Molecules", 0.0, 10, 2, ChartView.defaultHeight, inverted = true))
                ) extends FlexibleLinesPlot{
 
   lazy val legend = plot.map(p=>p.legend)
@@ -152,6 +152,8 @@ class ChartView(val elem: Element,
         scaleX() = sX.stretched(x, stretchMult = st, shrinkMult = sh)
         scaleY() = sY.stretched(y,  stretchMult = st, shrinkMult = sh)
       }
+      println("=======ticks===========")
+      println(scaleX.now.ticks.mkString(" | "))
   }
 
   val viewBox: Dynamic[String] = Rx{
@@ -189,8 +191,8 @@ class ChartView(val elem: Element,
   }
 
   override lazy val injector = defaultInjector
-    .register("ox"){case (el, args) => new AxisView(el, scaleX, chartStyles.map(_.scaleX)).withBinder(new GeneralBinder(_))}
-    .register("oy"){case (el, args) => new AxisView(el, scaleY, chartStyles.map(_.scaleY)).withBinder(new GeneralBinder(_))}
+    .register("ox"){case (el, args) => new FlexibleAxisView(el, scaleX, chartStyles.map(_.scaleX)).withBinder(new GeneralBinder(_))}
+    .register("oy"){case (el, args) => new FlexibleAxisView(el, scaleY, chartStyles.map(_.scaleY)).withBinder(new GeneralBinder(_))}
     .register("legend"){case (el, args) => new PlotLegendView(el, items).withBinder(new GeneralBinder(_))}
 
   override def newItemView(key: String, value: PlotSeries): PlotSeriesView = this.constructItemView(key){

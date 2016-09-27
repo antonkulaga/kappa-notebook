@@ -18,12 +18,12 @@ case class FlexibleLinearScale(title: String, start: Double, end: Double, stepSi
   private lazy val currentLengh = Math.abs(start - end)
 
   if(stepSize > Math.max(currentLengh, Math.round(currentLengh))) {
-    dom.console.error(s"stepSize is larger then currentLength(${currentLengh})")
+    dom.console.error(s"stepSize(${stepSize}) is larger then currentLength(${currentLengh})")
   }
 
   override def points(current: Double, end: Double, dots: List[Double] = List.empty): List[Double]  = {
     val tick = step(current)
-    if (current<end) points(truncateAt(tick, precision), end, current::dots) else (truncateAt(end, precision)::dots).reverse
+    if (current<end) points(truncateAt(tick, precision), end, current::dots) else dots.reverse
   }
 
   private def betterStep(st: Double): Double = if (st > 1) Math.round(st) else st
@@ -36,16 +36,20 @@ case class FlexibleLinearScale(title: String, start: Double, end: Double, stepSi
     * @return
     */
 
-  def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): FlexibleLinearScale = if(max > end) {
+  def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): FlexibleLinearScale =
+  if(max > end) {
     val newEnd = max * stretchMult
-    val st = Math.abs(newEnd - start) / (ticks.length - 2)
+    val st = betterStep(Math.abs(newEnd - start) / ticks.length)
     //just a hack to make it look nicer
-    this.copy(end = newEnd, stepSize = betterStep(st))
-  } else if( shrinkMult > 0 && Math.abs(max - start) > 0.0 && end > max * shrinkMult){
-    val newEnd = max
-    val st = Math.abs(newEnd - start) / (ticks.length - 2)
-    this.copy(end = newEnd, stepSize = betterStep(st))
-  } else this //does not change anything
+    this.copy(end = newEnd, stepSize = st)
+  }
+  else {
+    if (shrinkMult > 0 && Math.abs(max - start) > 0.0 && end > max * shrinkMult) {
+      val newEnd = end * stretchMult
+      val st = betterStep(Math.abs(newEnd - start) / ticks.length)
+      this.copy(end = newEnd, stepSize = st)
+    } else this //does not change anything
+  }
 
 
 }

@@ -14,7 +14,7 @@ class NotebookCircuit(input: Var[KappaMessage], output: Var[KappaMessage]) exten
 
   val selectedProject: Var[KappaProject] = Var(KappaProject.default)
 
-  selectedProject.onChange{ proj => output() = ProjectRequests.Load(proj) }
+  selectedProject.onChange{ proj => if(!proj.loaded) output() = ProjectRequests.Load(proj) }
 
   val allProjects = Var(SortedMap.empty[String, KappaProject])
 

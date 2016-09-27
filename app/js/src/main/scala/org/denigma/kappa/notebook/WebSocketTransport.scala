@@ -3,6 +3,7 @@ package org.denigma.kappa.notebook
 import java.nio.ByteBuffer
 
 import boopickle.DefaultBasic._
+
 import scalajs.concurrent.JSExecutionContext.Implicits.queue
 import org.denigma.controls.sockets._
 import org.scalajs.dom
@@ -10,6 +11,7 @@ import org.scalajs.dom.raw.WebSocket
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.{Rx, Var}
 import org.denigma.binding.extensions._
+import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.{Connected, Disconnected, EmptyKappaMessage, KappaMessage}
 import rx.Rx.Dynamic
 import rx.opmacros.Utils.Id
@@ -79,6 +81,17 @@ class WebSocketTransport(val protocol: String, val host: String, val channel: St
       connected() = false
 
     case _=> //do nothing
+  }
+
+  protected def log(kappaMessage: KappaMessage) = kappaMessage match {
+
+    case ServerCommand(server, message) => dom.console.log(s"MESSAGE: ServerCommand($server, ${message.getClass.getName})")
+
+    case ServerResponse(server, message) => dom.console.log(s"MESSAGE: ServerResponse($server, ${message.getClass.getName})")
+
+
+    case  message =>
+      dom.console.log("MESSAGE: "+message.getClass.getName)
   }
 
   override def send(message: Output): Unit = if(connected.now) {

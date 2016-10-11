@@ -1,6 +1,10 @@
 package org.denigma.kappa.notebook
 
+import java.util.zip.Deflater
+
 import better.files._
+
+import scala.io.Codec
 object extensions extends SharedExtensions{
 
   implicit class FileExt(val file: File) {
@@ -22,6 +26,10 @@ object extensions extends SharedExtensions{
     }
 
     def resolveChild(path: String, subPath: String, mustExist: Boolean): Option[File] = resolveChild(path, mustExist).flatMap(r => r.resolveChild(subPath, mustExist))
+
+    def compress() = {
+      file.zip(Deflater.BEST_COMPRESSION)(Codec.UTF8)
+    }
 
   }
 

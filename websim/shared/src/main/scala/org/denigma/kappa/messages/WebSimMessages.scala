@@ -26,6 +26,7 @@ object WebSimMessages {
       .addConcreteType[AgentState]
       .addConcreteType[TokenState]
       .addConcreteType[Snapshot]
+      .addConcreteType[FileLine]
       .addConcreteType[UnaryDistance]
       .addConcreteType[SimulationStatus]
 
@@ -37,7 +38,7 @@ object WebSimMessages {
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[Version] = boopickle.Default.generatePickler[Version]
   }
-  case class Version(build: String, version: String ) extends WebSimMessage
+  case class Version(version_build: String, version_id: String ) extends WebSimMessage
 
   object Location {
     import boopickle.DefaultBasic._
@@ -76,6 +77,7 @@ object WebSimMessages {
   }
 
   case class WebSimSide(site_name: String, site_links: List[(Int, Int)], site_states: List[String]) extends WebSimMessage
+
 
   object ContactMap {
     import boopickle.DefaultBasic._
@@ -170,6 +172,15 @@ object WebSimMessages {
   }
 
   /*
+
+  type site_node = {
+    node_quantity: float option;
+    node_name: string;
+    node_sites: site Ag_util.ocaml_array
+  }
+
+  type site_graph = site_node Ag_util.ocaml_array
+
   type snapshot = {
     snap_file : string;
     snap_event : int;
@@ -177,13 +188,21 @@ object WebSimMessages {
     tokens : (float * string) list;
   }
   */
-  case class Snapshot(snap_file: String, snap_event: Int, agents: List[AgentState], tokens: List[TokenState]) extends WebSimMessage
+
+
+  case class Snapshot(snap_file: String, snap_event: Int, agents: List[(Int, List[WebSimNode])]/*, tokens: List[TokenState]*/) extends WebSimMessage
+
+  object FileLine {
+    import boopickle.DefaultBasic._
+    implicit val classPickler: Pickler[FileLine] = boopickle.Default.generatePickler[FileLine]
+  }
+  case class FileLine(file_name: String, line: String) extends WebSimMessage
 
   object SimulationStatus {
     lazy val empty = SimulationStatus(0.0,
-      None, None, None, None, None, None, None, is_running = false, None , Nil, None, Nil, Nil, Nil
+      None, 0, None, None, None, None, None, is_running = false, None , Nil, None, Nil, Nil, Nil, Nil
     )
-    import boopickle.Default._
+    import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[SimulationStatus] = boopickle.Default.generatePickler[SimulationStatus]
   }
 
@@ -210,7 +229,7 @@ object WebSimMessages {
   case class SimulationStatus(
                                time: Double,
                                time_percentage: Option[Double],
-                               event: Option[Int],
+                               event: Int,
                                event_percentage: Option[Double],
                                tracked_events: Option[Int],
                                nb_plot: Option[Int],
@@ -220,7 +239,7 @@ object WebSimMessages {
                                code: Option[String],
                                log_messages: List[String],
                                plot: Option[KappaPlot],
-                               //snapshots: List[Snapshot],
+                               snapshots: List[Snapshot],
                                distances: List[UnaryDistance],
                                flux_maps: List[FluxMap],
                                files: List[String]

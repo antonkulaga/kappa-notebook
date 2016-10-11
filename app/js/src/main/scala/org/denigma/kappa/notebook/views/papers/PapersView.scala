@@ -9,10 +9,11 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.actions.Commands
 import org.denigma.kappa.notebook.circuits.PaperCircuit
-import org.denigma.kappa.notebook.parsers.{AST, PaperSelection}
+import org.denigma.kappa.notebook.parsers.PaperSelection
 import org.denigma.kappa.notebook.views.annotations.CommentInserter
 import org.denigma.kappa.notebook.views.common.FileTabHeaders
 import org.denigma.kappa.notebook.views.editor.KappaCursor
+import org.denigma.kappa.parsers.AST
 import org.scalajs.dom
 import org.scalajs.dom.raw._
 import rx.Ctx.Owner.Unsafe.Unsafe

@@ -1,23 +1,28 @@
-object Versions extends WebJarsVersions with ScalaJSVersions with SharedVersions with OtherJVM
+object Versions extends WebJarsVersions
+	with ScalaJSVersions
+	with SharedVersions
+	with Binding
+	with OtherJVM
 {
-	var sourcecode = "0.1.2"
 
 	val scala = "2.11.8"
 
 	val kappaNotebook = "0.0.15"
 
+	val kappaModel = "0.0.1"
+
 	val websim = "0.0.15"
+
+
+}
+
+trait Binding {
 
 	val binding = "0.8.15"
 
 	val bindingControls = "0.0.22"
 
 	val semanticControls = bindingControls
-
-	val betterFiles = "2.16.0"
-
-	val javaTime = "0.2.0"
-
 }
 
 trait OtherJVM {
@@ -32,23 +37,23 @@ trait OtherJVM {
 
 	val retry = "0.2.1"
 
-	val macroParadise = "2.1.0"
-
 	val logback = "1.1.7"
 
-	val akka = "2.4.10"
+	val akka = "2.4.11"
 
-	val circeHttp = "1.10.0"
+	val circeHttp = "1.10.1"
 
 	val libSBOLj = "2.1.0"
 
 	val breeze = "0.12"
 
-	val ficus: String = "1.2.6"
+	val ficus: String = "1.3.0"
 
 	val paxtools = "4.3.1"
 
 	val scalaJSscripts = "1.0.0"
+
+	val betterFiles = "2.16.0"
 
 }
 
@@ -72,6 +77,8 @@ trait ScalaJSVersions {
 trait SharedVersions
 {
 
+	var sourcecode = "0.1.2"
+
 	val annotator = "0.0.5"
 
 	val circe = "0.5.2"
@@ -93,6 +100,12 @@ trait SharedVersions
 	val roshttp = "1.1.0"
 
 	val banana = "0.8.3-SNAP1"
+
+	val javaTime = "0.2.0"
+
+	val simulacrum = "0.9.0"
+
+	val paradise = "2.1.0"
 
 }
 

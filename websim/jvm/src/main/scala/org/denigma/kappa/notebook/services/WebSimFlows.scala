@@ -56,10 +56,10 @@ trait WebSimFlows extends CirceSupport{
     Flow[Token].map{  token =>  HttpRequest(uri = s"$base/process/$token", method = HttpMethods.GET) }
 
   protected def command(name: String) = Flow[Token].map{ token =>
-    HttpRequest(uri = s"$base/process/$token/$name", method = HttpMethods.GET)
+    HttpRequest(uri = s"$base/process/$token/$name", method = HttpMethods.POST)
   }
   ///perturbate|/pause|/continue
-  val perturbateFlow: Flow[Token, HttpRequest, NotUsed] = command("pause")
+  val perturbateFlow: Flow[Token, HttpRequest, NotUsed] = command("perturbate")
   val pauseRequestFlow: Flow[Token, HttpRequest, NotUsed] = command("pause")
   val continueFlow: Flow[Token, HttpRequest, NotUsed] = command("continue")
 

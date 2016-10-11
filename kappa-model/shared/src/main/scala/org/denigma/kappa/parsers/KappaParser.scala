@@ -1,6 +1,6 @@
-package org.denigma.kappa.notebook.parsers
+package org.denigma.kappa.parsers
+
 import fastparse.all._
-import org.denigma.kappa.messages.WebSimMessages.Observable
 
 /**
   * Created by antonkulaga on 24/03/16.

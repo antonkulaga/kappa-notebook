@@ -2,7 +2,8 @@ package org.denigma.kappa
 
 import fastparse.core.Parsed
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.notebook.parsers.{CommentLinksParser, KappaParser, RDFParser}
+import org.denigma.kappa.notebook.parsers.RDFParser
+import org.denigma.kappa.parsers.RDFParser
 import org.scalatest.{Inside, Matchers, WordSpec}
 
 class RDFParserSuite extends WordSpec with Matchers with Inside  {

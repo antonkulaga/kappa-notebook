@@ -3,7 +3,8 @@ package org.denigma.kappa.notebook.parsers
 import fastparse.all._
 import org.denigma.controls.papers.TextLayerSelection
 import org.denigma.controls.papers.TextLayerSelection.SimpleTextLayerSelection
-import org.denigma.kappa.notebook.parsers.AST.IRI
+import org.denigma.kappa.parsers.{AST, ExtRDFParser}
+import org.denigma.kappa.parsers.AST.IRI
 
 
 

@@ -1,6 +1,5 @@
-package org.denigma.kappa.notebook.parsers
+package org.denigma.kappa.parsers
 
-import fastparse.all
 import fastparse.all._
 //https://www.w3.org/TR/trig/
 

@@ -1,7 +1,5 @@
-package org.denigma.kappa.notebook.parsers
-
+package org.denigma.kappa.parsers
 import boopickle.DefaultBasic._
-
 /**
   * Created by antonkulaga on 8/28/16.
   */

@@ -2,7 +2,7 @@ package org.denigma.kappa.messages
 
 import boopickle.CompositePickler
 import boopickle.DefaultBasic._
-import org.denigma.kappa.notebook.parsers.AST
+import org.denigma.kappa.parsers.AST
 
 import scala.collection.immutable._
 

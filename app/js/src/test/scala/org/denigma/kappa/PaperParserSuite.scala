@@ -1,7 +1,8 @@
 package org.denigma.kappa
 
 import fastparse.core.Parsed
-import org.denigma.kappa.notebook.parsers.{AST, PaperParser, PaperSelection}
+import org.denigma.kappa.notebook.parsers.{PaperParser, PaperSelection}
+import org.denigma.kappa.parsers.AST
 import org.scalatest.{Inside, Matchers, WordSpec}
 
 class PaperParserSuite extends WordSpec with Matchers with Inside  {

@@ -3,6 +3,7 @@ package org.denigma.kappa.notebook.services
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.stream._
 import akka.stream.scaladsl._
 import org.denigma.kappa.messages.ServerMessages.{LaunchModel, ServerConnection}
@@ -10,6 +11,7 @@ import org.denigma.kappa.messages.WebSimMessages._
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{FiniteDuration, _}
+import scala.util.Try
 
 /**
   * Main class to connect to WebSim server
@@ -100,24 +102,24 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
   /*
   Stops the simulations
    */
-  def stop(token: Token): Future[SimulationStatus] = {
+  def stop(token: Token) = {
     val source: Source[Token, NotUsed] = Source.single(token)
-    source.via(flows.simulationStatusFlow).map(_._2) runWith Sink.head
+    source via flows.stopRequestFlow.via(flows.timePool).map(_._2) runWith Sink.head
   }
 
   def pause(token: Token) = {
     val source: Source[Token, NotUsed] = Source.single(token)
-    source.via(flows.pauseRequestFlow).map(_._2) runWith Sink.head
+    source.via(flows.pauseRequestFlow).via(flows.timePool).map(_._2) runWith Sink.head
   }
 
   def continue(token: Token) = {
     val source: Source[Token, NotUsed] = Source.single(token)
-    source.via(flows.pauseRequestFlow).map(_._2) runWith Sink.head
+    source.via(flows.continueFlow).via(flows.timePool).map(_._2) runWith Sink.head
   }
 
   def pertubations(token: Token) = {
     val source: Source[Token, NotUsed] = Source.single(token)
-    source.via(flows.perturbateFlow).map(_._2) runWith Sink.head
+    source.via(flows.perturbateFlow).via(flows.timePool).map(_._2) runWith Sink.head
   }
 
   /**
@@ -159,6 +161,18 @@ class WebSimClient(connectionParameters: ServerConnection)(implicit val system: 
     val withFlow: Source[flows.Runnable[flows.SimulationContactResult], NotUsed] = source.via(flows.simulationResultStream(updateInterval, parallelism))
     withFlow.runWith(sink)
   }
+
+  /**
+    * Gets Simulation status by Simulation ID
+    * @param token ID of simulation
+    * @param updateInterval how often to update status
+    * @param parallelism
+    * @return SimulationResult
+    */
+  def simulationStatusByToken(token: Token,  updateInterval: FiniteDuration = 400 millis, parallelism: Int = 1) =
+  Source.single(token)
+    .via(flows.simulationStream(updateInterval, parallelism))
+    .map(_._2).runWith(Sink.head)
 
   /**
     * Gets Simulation result by Simulation ID

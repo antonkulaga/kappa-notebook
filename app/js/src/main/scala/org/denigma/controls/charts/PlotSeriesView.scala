@@ -13,11 +13,13 @@ class PlotSeriesView(elem: Element, val series: Var[PlotSeries],
                      threshold:Point = Point(1,1),
                      closed: Boolean = false)
   extends SeriesView(elem, series, transform, threshold, closed ) {
-
 }
 
-
-
+/**
+  * View to display legend information
+  * @param elem html element to bind to
+  * @param items sortedmap of plot data series
+  */
 class PlotLegendView(val elem: Element, val items: rx.Rx[SortedMap[String, PlotSeries]]) extends CollectionSortedMapView with BindableView{
 
   type Key = String

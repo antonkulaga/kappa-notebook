@@ -1,8 +1,9 @@
 package org.denigma.kappa
 
 import fastparse.core.Parsed
-import org.denigma.kappa.notebook.parsers.{AST, CommentLinksParser, FilesParser, KappaParser}
+import org.denigma.kappa.notebook.parsers.{CommentLinksParser, FilesParser, KappaParser}
 import org.denigma.kappa.notebook.views.figures.{Image, Video}
+import org.denigma.kappa.parsers.AST
 import org.scalatest.{Inside, Matchers, WordSpec}
 
 class  FilesParserSuite extends WordSpec with Matchers with Inside  {

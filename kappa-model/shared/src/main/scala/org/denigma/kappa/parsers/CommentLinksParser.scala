@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.parsers
+package org.denigma.kappa.parsers
 
 import fastparse.all._
 

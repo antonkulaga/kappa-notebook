@@ -6,15 +6,71 @@ import rx.Var
 import scala.collection.immutable.List
 //import rx.Ctx.Owner.voodoo
 import rx.Ctx.Owner.Unsafe.Unsafe
-/**
-  * Created by antonkulaga on 9/26/16.
-  */
+/*
+case class LinearScaleFixedSteps(title: String, start: Double, end: Double, stepSize: Double, length: Double,
+                            optimalSteps: Double,
+                            stepSizeFactor: Double = 2,
+                            inverted: Boolean = false,
+                            precision:Int = 3)
+  extends FlexibleLinearScale{
 
 
-case class FlexibleLinearScale(title: String, start: Double, end: Double, stepSize: Double, length: Double, inverted: Boolean = false, precision:Int = 3)
-  extends WithLinearScale with WithFlexibleScale[FlexibleLinearScale]
+  protected def rescale(newEnd: Double, newStepSize: Double) = {
+    val newScale = this.copy(end = newEnd, stepSize = newStepSize)
+    if(newScale.ticks.length >
+  }
+
+  def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): FlexibleLinearScale =
+    if(max > end) {
+      val newEnd = max * stretchMult
+      val st = betterStep(Math.abs(newEnd - start) / ticks.length)
+      //just a hack to make it look nicer
+      this.copy(end = newEnd, stepSize = st)
+    }
+    else {
+      if (shrinkMult > 0 && Math.abs(max - start) > 0.0 && end > max * shrinkMult) {
+        val newEnd = end * stretchMult
+        val st = betterStep(Math.abs(newEnd - start) / ticks.length)
+        this.copy(end = newEnd, stepSize = st)
+      } else this //does not change anything
+    }
+}
+*/
+
+case class SimpleFlexibleLinearScale(title: String,
+                                     start: Double,
+                                     end: Double,
+                                     stepSize: Double,
+                                     length: Double,
+                                     inverted: Boolean = false,
+                                     precision: Int = 3,
+                                     maxStepsNumber: Int = 20 //if the number of steps is larger than max, then rescale
+                                    ) extends FlexibleLinearScale
 {
 
+  def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): FlexibleLinearScale =
+    if(max > end) {
+      val newEnd = max * stretchMult
+      val st = smoothedStep(Math.abs(newEnd - start) / Math.min(ticks.length, maxStepsNumber))
+      //just a hack to make it look nicer
+      this.copy(end = newEnd, stepSize = st)
+    }
+    else {
+      if (shrinkMult > 0 && Math.abs(max - start) > 0.0 && end > max * shrinkMult) {
+        val newEnd = max * stretchMult //TODO: check if it usable
+        val st = smoothedStep(Math.abs(newEnd - start) / Math.min(ticks.length, maxStepsNumber))
+        this.copy(end = newEnd, stepSize = st)
+      }
+      else this //does not change anything
+    }
+}
+
+trait FlexibleLinearScale
+  extends WithLinearScale with WithFlexibleScale[FlexibleLinearScale]
+{
+  def precision: Int
+
+//(title: String, start: Double, end: Double, stepSize: Double, length: Double, inverted: Boolean = false, precision:Int = 3
   private lazy val currentLengh = Math.abs(start - end)
 
   if(stepSize > Math.max(currentLengh, Math.round(currentLengh))) {
@@ -26,7 +82,7 @@ case class FlexibleLinearScale(title: String, start: Double, end: Double, stepSi
     if (current<end) points(truncateAt(tick, precision), end, current::dots) else dots.reverse
   }
 
-  private def betterStep(st: Double): Double = if (st > 1) Math.round(st) else st
+  protected def smoothedStep(st: Double): Double = if (st > 1) Math.round(st) else st
 
   /**
     *
@@ -36,21 +92,7 @@ case class FlexibleLinearScale(title: String, start: Double, end: Double, stepSi
     * @return
     */
 
-  def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): FlexibleLinearScale =
-  if(max > end) {
-    val newEnd = max * stretchMult
-    val st = betterStep(Math.abs(newEnd - start) / ticks.length)
-    //just a hack to make it look nicer
-    this.copy(end = newEnd, stepSize = st)
-  }
-  else {
-    if (shrinkMult > 0 && Math.abs(max - start) > 0.0 && end > max * shrinkMult) {
-      val newEnd = end * stretchMult
-      val st = betterStep(Math.abs(newEnd - start) / ticks.length)
-      this.copy(end = newEnd, stepSize = st)
-    } else this //does not change anything
-  }
-
+  def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): FlexibleLinearScale
 
 }
 

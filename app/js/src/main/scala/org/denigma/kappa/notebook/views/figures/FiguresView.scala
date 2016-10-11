@@ -6,10 +6,10 @@ import org.denigma.binding.views.{BindableView, CollectionMapView}
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.actions.Commands
-import org.denigma.kappa.notebook.parsers.AST
 import org.denigma.kappa.notebook.views.annotations.CommentInserter
 import org.denigma.kappa.notebook.views.common.{FileTabHeaders, TabItem}
 import org.denigma.kappa.notebook.views.editor.KappaCursor
+import org.denigma.kappa.parsers.AST
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._

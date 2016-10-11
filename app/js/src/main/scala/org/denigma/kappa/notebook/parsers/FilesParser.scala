@@ -2,6 +2,7 @@ package org.denigma.kappa.notebook.parsers
 
 import fastparse.all._
 import org.denigma.kappa.notebook.views.figures.{Image, Video}
+import org.denigma.kappa.parsers.{AST, ExtRDFParser}
 
 class FilesParser extends ExtRDFParser{
   lazy val lineNum = P(optSpaces ~PNAME_NS ~ ("on_line" | "line") ~ spaces ~ integer)

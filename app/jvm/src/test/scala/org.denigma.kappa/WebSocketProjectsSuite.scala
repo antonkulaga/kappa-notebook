@@ -15,6 +15,7 @@ import org.denigma.kappa.notebook.communication.WebSocketManager
 import org.denigma.kappa.notebook.pages.WebSockets
 
 import scala.List
+import org.denigma.kappa.notebook.extensions._
 import scala.collection.immutable._
 
 class WebSocketProjectsSuite extends BasicWebSocketSuite {
@@ -90,7 +91,7 @@ class WebSocketProjectsSuite extends BasicWebSocketSuite {
           val downloadRight: ByteBuffer = Pickle.intoBytes[KappaMessage](ProjectRequests.Download("big"))
           val dat: Array[Byte] = checkMessage(wsClient, downloadRight) {
             case FileResponses.Downloaded("big", data) =>
-              val zp = fl.zip().byteArray
+              val zp = fl.compress().byteArray
               data.sameElements(zp) shouldEqual true
               //data shouldEqual zp
               data

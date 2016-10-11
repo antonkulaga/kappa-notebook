@@ -1,10 +1,8 @@
-package org.denigma.kappa.notebook.parsers
+package org.denigma.kappa.parsers
 
-import org.denigma.kappa.model.{Change, KappaModel}
 import org.denigma.kappa.model.KappaModel._
-import rx.Rx
 
-import scala.Predef.{Map, Set}
+import scala.Predef.Set
 import scala.collection.immutable._
 
 object ParsedLine {

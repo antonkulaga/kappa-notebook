@@ -3,6 +3,7 @@ package org.denigma.kappa.notebook
 import java.io.{File => JFile}
 import java.nio.ByteBuffer
 import java.nio.file.Path
+import java.util.zip.Deflater
 
 import akka.event.LoggingAdapter
 import better.files.File.OpenOptions
@@ -15,6 +16,8 @@ import scala.Seq
 import scala.collection.immutable._
 import scala.util.{Failure, Success, Try}
 import org.denigma.kappa.notebook.extensions._
+
+import scala.io.Codec
 
 object FileNotInside {
   val FILE_NOT_INSIDE = "NOT_INSIDE"
@@ -84,8 +87,9 @@ class FileManager(val root: File, log: LoggingAdapter) {
     }.toSeq:_*)
   }
 
-  def loadZiped(folderName: String): Option[Downloaded] =  root.resolveChild(folderName, true) map {
-    folder => FileResponses.Downloaded(folderName, folder.zip().byteArray)
+  def loadZiped(folderName: String): Option[Downloaded] =  root.resolveChild(folderName, mustExist = true) map {
+    folder =>
+      FileResponses.Downloaded(folderName, folder.compress().byteArray)
   }
 
   def uploadZiped(upload: ZipUpload): Option[UploadStatus] =  root.resolveChild(upload.zip.path) flatMap {

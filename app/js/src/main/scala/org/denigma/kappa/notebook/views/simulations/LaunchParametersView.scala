@@ -28,7 +28,7 @@ class LaunchParametersView(val elem: Element,
 
   val active: Rx[Boolean] = selected.map(s=>s=="parameters")
 
-  val events: Rx[Int] = simulation.map(sim=>sim.event.getOrElse(0))
+  val event: Rx[Int] = simulation.map(sim=>sim.event)
 
   val points: Rx[Int] = simulation.map(sim=>sim.nb_plot.getOrElse(0))
 
@@ -36,9 +36,11 @@ class LaunchParametersView(val elem: Element,
 
   val implicitSignature = Var(true)
 
-  protected val maxTime = simulation.map(sim=>sim.max_time)
+  val maxTime = simulation.map(sim=>sim.max_time)
 
-  protected val maxEvents =simulation.map(sim=>sim.max_events)
+  val maxEvents =simulation.map(sim=>sim.max_events)
+
+  val percentage = simulation.map(sim=>sim.percentage)
 
   val saveConcat: Var[MouseEvent] = Var(Events.createMouseEvent())
   saveConcat.triggerLater{

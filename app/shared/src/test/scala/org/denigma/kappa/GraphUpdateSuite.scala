@@ -6,7 +6,8 @@ package org.denigma.kappa
 import fastparse.core.Parsed
 import fastparse.core.Parsed.Success
 import org.denigma.kappa.model.KappaModel
-import org.denigma.kappa.notebook.parsers.{CommentLinksParser, GraphUpdate, KappaParser, ParsedLine}
+import org.denigma.kappa.notebook.parsers.{GraphUpdate, KappaParser}
+import org.denigma.kappa.parsers.{GraphUpdate, KappaParser, ParsedLine}
 import org.scalatest.{Inside, Matchers, WordSpec}
 
 import scala.collection.immutable._

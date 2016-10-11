@@ -24,6 +24,11 @@ import org.threeten.bp._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
+/**
+  * The most important view of kappa-notebook, initialize almost all the logic and subviews
+  * @param elem
+  * @param username
+  */
 class NotebookView(val elem: Element, username: String) extends BindableView
 {
   self =>

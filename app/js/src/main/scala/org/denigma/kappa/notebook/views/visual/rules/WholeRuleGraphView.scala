@@ -7,8 +7,8 @@ import org.denigma.kappa.model.{Change, KappaModel}
 import org.denigma.kappa.notebook.actions.Commands
 import org.denigma.kappa.notebook.graph._
 import org.denigma.kappa.notebook.graph.layouts._
-import org.denigma.kappa.notebook.parsers.GraphUpdateInfo
 import org.denigma.kappa.notebook.views.visual.ShowParameters
+import org.denigma.kappa.parsers.GraphUpdateInfo
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
@@ -18,6 +18,15 @@ import scala.Predef.{Map, Set}
 import scala.collection.immutable._
 import scala.{List, Vector}
 
+/**
+  * View for rules visualizations
+  * @param elem html element to bind to
+  * @param update GraphUpdateInfo provide nice information about differences between left and right sides
+  * @param showState
+  * @param containerName name of the element to draw 3D to
+  * @param visualSettings some display settings
+  * @param input input is used to subscribe to UI and incoming websocket events
+  */
 class WholeRuleGraphView(val elem: Element,
                          val update: Rx[GraphUpdateInfo],
                          val showState: Rx[ShowParameters.ShowParameters],

@@ -4,9 +4,9 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaMessage
-import org.denigma.kappa.notebook.parsers.{GraphUpdate, ParsedLine}
 import org.denigma.kappa.notebook.views.visual.ShowParameters.ShowParameters
 import org.denigma.kappa.notebook.views.visual.rules._
+import org.denigma.kappa.parsers.{GraphUpdate, ParsedLine}
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.svg.SVG
 import rx.Ctx.Owner.Unsafe.Unsafe

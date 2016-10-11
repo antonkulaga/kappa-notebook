@@ -125,8 +125,8 @@ class ChartView(val elem: Element,
                 val title: Rx[String],
                 val plot: Rx[KappaPlot],
                 val selected: Var[String],
-                val scaleX: Var[FlexibleLinearScale] = Var(FlexibleLinearScale("Time / Events", 0.0, 10, 2, ChartView.defaultWidth)),
-                val scaleY: Var[FlexibleLinearScale] = Var(FlexibleLinearScale("Molecules", 0.0, 10, 2, ChartView.defaultHeight, inverted = true))
+                val scaleX: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Time / Events", 0.0, 10, 2, ChartView.defaultWidth)),
+                val scaleY: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Molecules", 0.0, 10, 2, ChartView.defaultHeight, inverted = true))
                ) extends FlexibleLinesPlot{
 
   lazy val legend = plot.map(p=>p.legend)
@@ -152,12 +152,12 @@ class ChartView(val elem: Element,
         scaleX() = sX.stretched(x, stretchMult = st, shrinkMult = sh)
         scaleY() = sY.stretched(y,  stretchMult = st, shrinkMult = sh)
       }
-      println("=======ticks===========")
-      println(scaleX.now.ticks.mkString(" | "))
+      //println("=======ticks===========")
+      //println(scaleX.now.ticks.mkString(" | "))
   }
 
   val viewBox: Dynamic[String] = Rx{
-    s"${0} ${0} ${width()  } ${height() }"
+    s"${0} ${0} ${width() - paddingX() * 2  } ${height() - paddingY() * 2 }"
   }
 
   val halfWidth = Rx{ width() / 2.0 }

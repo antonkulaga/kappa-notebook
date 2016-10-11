@@ -22,14 +22,10 @@ class FlexibleAxisView(val elem: Element, scale: Rx[Scale], style: Rx[LineStyles
   override type ItemView = FlexibleTickView
 
   val title = scale.map(_.title)
-  //val start: rx.Rx[Double] = scale.map(_.start)
-  //val end: rx.Rx[Double] = scale.map(_.end)
 
   val startCoord = scale.map(_.startCoord)
   val endCoord = scale.map(_.endCoord)
-  val length = Rx{scale().length}
-  //val ticks: Dynamic[List[Double]] = scale.map(_.ticks)
-  //val inverted = scale.map(_.inverted)
+  val length = scale.map(_.length)
 
   val strokeWidth = style.map(_.strokeWidth)
   val strokeColor = style.map(_.strokeColor)

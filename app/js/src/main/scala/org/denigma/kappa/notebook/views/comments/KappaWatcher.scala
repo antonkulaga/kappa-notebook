@@ -3,13 +3,12 @@ package org.denigma.kappa.notebook.views.comments
 import org.denigma.binding.extensions._
 import org.denigma.codemirror.Editor
 import org.denigma.kappa.notebook.extensions._
-import org.denigma.kappa.notebook.parsers.{KappaParser, ParsedLine}
 import org.denigma.kappa.notebook.views.editor.{EditorUpdates, EmptyCursor, KappaCursor, KappaEditorCursor}
+import org.denigma.kappa.parsers.{KappaParser, ParsedLine}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
 import scala.concurrent.duration._
-
 import scalatags.JsDom.all._
 
 /**

@@ -1,0 +1,9 @@
+%agent: DNA(up, down)
+
+'connect' DNA(down), DNA(up) -> DNA(down!1), DNA(up!1) @ 0.01 (0)
+
+%obs: 'free' |DNA(up,down)|
+%obs: 'connected' |DNA(down!1), DNA(up!1)|
+
+%init: 1000 DNA(up, down)
+%mod: [E] > 399 do $STOP "foo_snapshot"

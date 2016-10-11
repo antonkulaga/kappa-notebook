@@ -2,8 +2,9 @@ package org.denigma.kappa.messages
 
 import boopickle.Pickler
 import boopickle.DefaultBasic._
-import org.denigma.kappa.notebook.parsers.{AST, PaperSelection}
+import org.denigma.kappa.notebook.parsers.PaperSelection
 import org.denigma.kappa.notebook.views.figures.Figure
+import org.denigma.kappa.parsers.AST
 
 object Go {
   object ToTab {

@@ -1,4 +1,5 @@
 package org.denigma.kappa.model
+
 import scala.collection.immutable._
 
 object KappaModel {
@@ -23,10 +24,22 @@ object KappaModel {
     }
   }
 
+  /**
+    *
+    * @param _agents real agents
+    * @param virtualAgents virtual agents, like ?_ or !_
+    */
   case class Pattern private(_agents: List[Agent], virtualAgents: Set[Agent]) extends KappaElement
   {
 
     lazy val agents = _agents ++ virtualAgents
+
+
+    def matches(pattern: Pattern) = {
+      pattern.agents.collect{
+        case ags =>
+      }
+    }
 
     protected lazy val outgoingTuples: List[(String, String, Int)] = agents.flatMap{ ag => ag.outgoingLinks }
 

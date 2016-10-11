@@ -12,7 +12,7 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook.services._
 
 import scala.collection.immutable.Seq
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util._
 import WebSimMessages._
@@ -83,7 +83,7 @@ class WebSimSuite extends BasicKappaSuite {
       server.launch(wrongParams).pipeTo(probeToken.ref)
       probeToken.expectMsgPF(duration * 2) {
         case (Right(msg), model) =>
-          print("launching wrong model works well")
+          println("launching wrong model works well")
       }
 
       val params = LaunchModel(List("abc"->model), Some(1000), max_events = Some(10000))
@@ -98,7 +98,7 @@ class WebSimSuite extends BasicKappaSuite {
       }
     }
 
-  "run simulation, get first result and " in {
+  "run simulation, get first result and stop" in {
     val probeToken = TestProbe()
     val model = abc
     val params = LaunchModel(List("abc"->model), Some(1000), max_events = Some(1000000))
@@ -130,7 +130,7 @@ class WebSimSuite extends BasicKappaSuite {
 
     val probeToken = TestProbe()
     val model = abc
-    val params = LaunchModel(List("abc"->model), Some(1000), max_events = Some(1000000))
+    val params = LaunchModel(List("abc"->model), Some(1000), max_events = Some(100000000))
     val tokenFut: Future[server.flows.Runnable[server.flows.TokenContactResult]] = server.launch(params).pipeTo(probeToken.ref)
     val token = probeToken.expectMsgPF(duration * 2) {
        case (Left((t: Int, result)), m) => t
@@ -152,9 +152,13 @@ class WebSimSuite extends BasicKappaSuite {
     //val del= source.via(flows.stopFlow)
     val delSink = TestSink.probe[Try[HttpResponse]]
     val del = flows.stopRequestFlow.via(flows.timePool).map(_._1)
+
+    Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual true
     Source.single[Int](tok).via(del).runWith(delSink).request(1).expectNextPF {
       case res =>
     }
+    Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual false
+
   }
 
   "run streamed" in {
@@ -187,6 +191,42 @@ class WebSimSuite extends BasicKappaSuite {
        //Token, SimulationStatus, ContactMap
      }
    }
+
+
+   "stop simulation" in {
+     val params = LaunchModel(List("abc"-> abcFlow), Some(1000), max_events = Some(10000000))
+     val Left((token, _))= Await.result(server.launch(params), 500 millis)._1
+     Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual true
+     Await.result(server.stop(token), 1 second)
+     Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual false
+   }
+
+
+  "pause/continue simulation" in {
+    //TODO: make complete
+    val params = LaunchModel(List("abc"-> abcFlow), Some(1000), max_events = Some(10000000))
+    val Left((token, _))= Await.result(server.launch(params), 500 millis)._1
+    Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual true
+    Await.result(server.pause(token), 1 second)
+    Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual false
+    Await.result(server.continue(token), 1 second)
+    eventually{  Await.result(server.simulationStatusByToken(token), 400 millis).is_running }
+    Await.result(server.stop(token), 1 second)
+    Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual false
+  }
+
+  "write snapshots" in {
+    val probe = TestProbe()
+    val params = LaunchModel(List("snap400.ka"-> snap400), Some(400), max_events = Some(400))
+
+    server.run(params).map(_._1).pipeTo(probe.ref)
+
+    probe.expectMsgPF(3 seconds) {
+      case Left((token: Int, sim: SimulationStatus, mp)) if sim.snapshots.nonEmpty && sim.snapshots.head.snap_file == "foo_snapshot" =>
+        println("SNAPSHOTS ARE: \n" + sim.snapshots)
+      //Token, SimulationStatus, ContactMap
+    }
+  }
  }
 
  protected override def afterAll() = {

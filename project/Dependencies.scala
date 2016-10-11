@@ -102,7 +102,9 @@ object Dependencies {
 
 		"com.lihaoyi" %% "sourcecode" % Versions.sourcecode,
 
-		"io.github.soc" %%% "scala-java-time" % "2.0.0-M3"
+		"io.github.soc" %%% "scala-java-time" % "2.0.0-M3",
+
+			"com.github.mpilquist" %% "simulacrum" % Versions.simulacrum
 
 	))
 

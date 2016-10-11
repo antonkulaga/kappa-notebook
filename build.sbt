@@ -35,8 +35,29 @@ lazy val commonSettings = Seq(
   resolvers += Resolver.jcenterRepo,
   unmanagedClasspath in Compile <++= unmanagedResources in Compile,
   libraryDependencies ++= Dependencies.commonShared.value ++ Dependencies.testing.value,
-  updateOptions := updateOptions.value.withCachedResolution(true) //to speed up dependency resolution
+  updateOptions := updateOptions.value.withCachedResolution(true), //to speed up dependency resolution
+  addCompilerPlugin("org.scalamacros" % "paradise" % Versions.paradise cross CrossVersion.full)
 )
+
+lazy val kappaModel = crossProject
+  .crossType(CrossType.Full)
+  .in(file("kappa-model")) //websim api
+  .settings(commonSettings ++ publishSettings: _*)
+  .settings(
+    name := "kappa-model",
+    version := Versions.kappaModel
+  ).disablePlugins(RevolverPlugin)
+  .jsConfigure(p=>p.enablePlugins(ScalaJSWeb))
+  .jsSettings(
+    persistLauncher in Compile := true,
+    persistLauncher in Test := false
+  )
+  .jvmSettings(
+    (emitSourceMaps in fullOptJS) := true
+  )
+
+lazy val kappaModelJS = kappaModel.js
+lazy val kappaModelJVM = kappaModel.jvm
 
 lazy val websim = crossProject
   .crossType(CrossType.Full)
@@ -46,6 +67,7 @@ lazy val websim = crossProject
     name := "websim",
     version := Versions.websim
   ).disablePlugins(RevolverPlugin)
+  .dependsOn(kappaModel % "test->test;compile->compile")
   .jsConfigure(p=>p.enablePlugins(ScalaJSWeb))
   .jsSettings(
     persistLauncher in Compile := true,
@@ -67,7 +89,7 @@ lazy val app = crossProject
     name := "kappa-notebook",
     version := Versions.kappaNotebook,
     libraryDependencies ++= Dependencies.appShared.value
-  ).dependsOn(websim % "test->test;compile->compile" )
+  ).dependsOn(kappaModel, websim % "test->test;compile->compile" )
   .disablePlugins(RevolverPlugin)
   .jsSettings(
     libraryDependencies ++= Dependencies.sjsLibs.value,

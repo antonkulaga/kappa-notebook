@@ -3,8 +3,9 @@ package org.denigma.kappa.notebook.views.comments
 import fastparse.all._
 import org.denigma.codemirror.Editor
 import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.parsers.{AST, FilesParser}
+import org.denigma.kappa.notebook.parsers.FilesParser
 import org.denigma.kappa.notebook.views.figures.Figure
+import org.denigma.kappa.parsers.AST
 import org.scalajs.dom.raw.MouseEvent
 import rx.Var
 

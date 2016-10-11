@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.views.comments
 
 import fastparse.core.Parsed
 import org.denigma.codemirror.Editor
-import org.denigma.kappa.notebook.parsers.CommentLinksParser
+import org.denigma.kappa.parsers.CommentLinksParser
 import org.scalajs.dom.html.Anchor
 
 import scalatags.JsDom.all._

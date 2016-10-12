@@ -39,7 +39,7 @@ class WebSimNodeJS(val node_name: String, val node_sites: js.Array[WebSimSideJS]
 }
 
 object WebSimSideJS {
-  implicit def fromWebSimSide(site: WebSimMessages.WebSimSide): WebSimSideJS = {
+  implicit def fromWebSimSide(site: WebSimMessages.WebSimSite): WebSimSideJS = {
     val links = js.Array(site.site_links.map{
       case (from, to)=> js.Array(from, to)
     }:_*)

@@ -1,7 +1,11 @@
 package org.denigma.kappa.messages
 
 import boopickle.CompositePickler
+import org.denigma.kappa.model.KappaModel
+import org.denigma.kappa.model.KappaModel.{KappaSnapshot, Pattern, Site}
 
+import scala.List
+import scala.Predef.Set
 import scala.collection.immutable._
 
 object WebSimMessages {
@@ -16,7 +20,7 @@ object WebSimMessages {
       .addConcreteType[WebSimError]
       .addConcreteType[Location]
       .addConcreteType[WebSimNode]
-      .addConcreteType[WebSimSide]
+      .addConcreteType[WebSimSite]
       .addConcreteType[ParseCode]
       .addConcreteType[ContactMap]
       .addConcreteType[Observable]
@@ -67,16 +71,43 @@ object WebSimMessages {
   object WebSimNode {
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[WebSimNode] = boopickle.Default.generatePickler[WebSimNode]
+
+    implicit def fromAgent(agent: KappaModel.Agent): WebSimNode ={
+      val agentSites = agent.sites.map(site=>site: WebSimSite).toList
+      WebSimNode(agent.name, agentSites)
+    }
+
+
   }
 
-  case class WebSimNode(node_name: String, node_sites: List[WebSimSide]) extends WebSimMessage
+  case class WebSimNode(node_name: String, node_sites: List[WebSimSite]) extends WebSimMessage
+  {
+    lazy val toAgent: KappaModel.Agent = {
+      val sites = node_sites.map(s=>s.toSite).toSet
+      KappaModel.Agent(node_name, sites)
+    }
+  }
 
-  object WebSimSide {
+  object WebSimSite {
     import boopickle.DefaultBasic._
-    implicit val classPickler: Pickler[WebSimSide] = boopickle.Default.generatePickler[WebSimSide]
+    implicit val classPickler: Pickler[WebSimSite] = boopickle.Default.generatePickler[WebSimSite]
+
+
+    implicit def fromSite(site: Site): WebSimSite = {
+      val links = site.links.map(l => (0, Integer.parseInt(l))).toList
+      val states = site.states.map(s=>s.name).toList
+      WebSimSite(site.name, links, states)
+    }
   }
 
-  case class WebSimSide(site_name: String, site_links: List[(Int, Int)], site_states: List[String]) extends WebSimMessage
+  case class WebSimSite(site_name: String, site_links: List[(Int, Int)], site_states: List[String]) extends WebSimMessage
+  {
+    lazy val toSite =  {
+      val linkNames = site_links.map(l=>l._2.toString).toSet
+      val states = site_states.map(s=>KappaModel.State(s)).toSet
+      KappaModel.Site(site_name, states, linkNames)
+    }
+  }
 
 
   object ContactMap {
@@ -191,6 +222,12 @@ object WebSimMessages {
 
 
   case class Snapshot(snap_file: String, snap_event: Int, agents: List[(Int, List[WebSimNode])]/*, tokens: List[TokenState]*/) extends WebSimMessage
+  {
+    lazy val toKappaSnapshot = {
+      val patterns = agents.map{ case (q, list) => (Pattern(list.zipWithIndex.map{ case (ag, i)=> ag.toAgent.copy(position = i)}) ,q) }.toMap
+      KappaSnapshot(snap_file, snap_event, patterns)
+    }
+  }
 
   object FileLine {
     import boopickle.DefaultBasic._

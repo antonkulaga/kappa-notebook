@@ -24,6 +24,13 @@ object KappaModel {
     }
   }
 
+  case class KappaSnapshot(name: String, event: Int, patterns: Map[Pattern, Int]) extends KappaNamedElement
+  {
+    def embeddingsOf(pattern: Pattern) = patterns.filter{
+      case (pat, q) => pattern.embedsInto(pat)
+    }
+  }
+
   /**
     *
     * @param _agents real agents
@@ -31,6 +38,19 @@ object KappaModel {
     */
   case class Pattern private(_agents: List[Agent], virtualAgents: Set[Agent]) extends KappaElement
   {
+
+    //NOTE: IS BUGGY, I USE IT ONLY FOR SIMPLE SNAPSHOTS MATCHING
+    def embedsInto(pat: Pattern) = {
+      pat.agents.sliding(agents.length, 1).exists{ ags =>
+        ags.length == agents.length && agents.zip(ags).forall{ case (a, b) => a.embedsInto(b)}
+      }
+    }
+
+    def embedsCount(pat: Pattern) = {
+      pat.agents.sliding(agents.length, 1).count{ ags =>
+        agents.zip(ags).forall{ case (a, b) => a.embedsInto(b)}
+      }
+    }
 
     lazy val agents = _agents ++ virtualAgents
 
@@ -163,6 +183,12 @@ object KappaModel {
 
   case class Agent(name: String, sites: Set[Site] = Set.empty, position: Int = -1) extends KappaNamedElement
   {
+
+    /**
+      * @param otherAgent
+      * @return
+      */
+    def embedsInto(otherAgent: Agent): Boolean = name == otherAgent.name && sites.subsetOf(otherAgent.sites)
 
     lazy val siteNames: Set[String] = sites.map(s=>s.name)
 

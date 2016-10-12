@@ -89,6 +89,8 @@ trait SharedVersions
 
 	val scalaTest = "3.0.0"
 
+	val scalaCheck = "1.13.2"
+
 	val fastparse = "0.4.1"
 
 	val quicklens = "1.4.7"

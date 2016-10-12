@@ -1,7 +1,6 @@
 package org.denigma.kappa
 
 import fastparse.core.Parsed
-import org.denigma.kappa.notebook.parsers.KappaParser
 import org.denigma.kappa.parsers.{CommentLinksParser, KappaParser}
 import org.scalatest.{Inside, Matchers, WordSpec}
 

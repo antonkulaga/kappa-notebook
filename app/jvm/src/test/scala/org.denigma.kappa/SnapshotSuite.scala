@@ -224,7 +224,7 @@ class WebSimSuite extends BasicKappaSuite {
 
       probe.expectMsgPF(3 seconds) {
         case Left((token: Int, sim: SimulationStatus, mp)) if sim.snapshots.nonEmpty && sim.snapshots.head.snap_file == "foo_snapshot" =>
-          println("SNAPSHOTS ARE: \n" + sim.snapshots)
+          //println("SNAPSHOTS ARE: \n" + sim.snapshots)
         //Token, SimulationStatus, ContactMap
       }
     }

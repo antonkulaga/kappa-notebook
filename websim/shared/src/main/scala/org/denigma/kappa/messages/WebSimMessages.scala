@@ -5,7 +5,7 @@ import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.{KappaSnapshot, Pattern, Site}
 
 import scala.List
-import scala.Predef.Set
+import scala.Predef.{Map, Set}
 import scala.collection.immutable._
 
 object WebSimMessages {
@@ -82,9 +82,16 @@ object WebSimMessages {
 
   case class WebSimNode(node_name: String, node_sites: List[WebSimSite]) extends WebSimMessage
   {
-    lazy val toAgent: KappaModel.Agent = {
-      val sites = node_sites.map(s=>s.toSite).toSet
-      KappaModel.Agent(node_name, sites)
+
+    /**
+      * Due to differences in link representation in WebSim and KappaModel we have to keep the correspondence
+      * @param agentPosition
+      * @param linkMap
+      * @return
+      */
+    def toAgent(agentPosition: Int, linkMap: Map[((Int, Int), (Int, Int)), String]): KappaModel.Agent = {
+      val sites = node_sites.zipWithIndex.map{ case (site, index) => site.toSite((agentPosition, index), linkMap) }.toSet
+      KappaModel.Agent(node_name, sites, agentPosition)
     }
   }
 
@@ -100,12 +107,23 @@ object WebSimMessages {
     }
   }
 
+  /**
+    *
+    * @param site_name name of site
+    * @param site_links List of [(agent_index, site_index)]
+    * @param site_states list of site states
+    */
   case class WebSimSite(site_name: String, site_links: List[(Int, Int)], site_states: List[String]) extends WebSimMessage
   {
-    lazy val toSite =  {
-      val linkNames = site_links.map(l=>l._2.toString).toSet
-      val states = site_states.map(s=>KappaModel.State(s)).toSet
-      KappaModel.Site(site_name, states, linkNames)
+    def toSite(myPosition: (Int, Int), linkMap: Map[((Int, Int), (Int, Int)), String]): KappaModel.Site =  {
+      val states = site_states.map(s => KappaModel.State(s)).toSet
+      if(site_links.isEmpty) KappaModel.Site(site_name, states) else {
+        val links = site_links.map{ to =>
+          val pos = (myPosition, to)
+          linkMap.getOrElse(pos, linkMap(pos.swap)) //WARNING: UNSAFE
+        }.toSet
+        KappaModel.Site(site_name, states, links)
+      }
     }
   }
 
@@ -223,10 +241,40 @@ object WebSimMessages {
 
   case class Snapshot(snap_file: String, snap_event: Int, agents: List[(Int, List[WebSimNode])]/*, tokens: List[TokenState]*/) extends WebSimMessage
   {
+
+    private def nodes2Pattern(nodes: List[WebSimNode]): Pattern = {
+      val indexed = nodes.zipWithIndex
+      val links: List[((Int, Int), (Int, Int))] = for{
+        (node, ni) <- indexed
+        (site, si) <- node.node_sites.zipWithIndex
+        (toAgent, toSite) <- site.site_links
+      } yield ((ni, si), (toAgent, toSite))
+
+      val (_, linkMap: Map[((Int, Int), (Int, Int)), String]) = links.foldLeft((1, Map.empty[((Int, Int), (Int, Int)), String])){
+        case ((index, mp), key) =>
+          if(mp.contains(key) || mp.contains(key.swap)) (index, mp) else (index + 1, mp.updated(key, index.toString))
+      } //due to differences in link formats we have to do this crazy conversion
+      val result = Pattern(indexed.map{ case (node, index) => node.toAgent(index, linkMap)})
+      result
+    }
+
     lazy val toKappaSnapshot = {
-      val patterns = agents.map{ case (q, list) => (Pattern(list.zipWithIndex.map{ case (ag, i)=> ag.toAgent.copy(position = i)}) ,q) }.toMap
+      val patterns = agents.map{ case (q, list) => (nodes2Pattern(list), q)}.toMap
       KappaSnapshot(snap_file, snap_event, patterns)
     }
+    /*
+        lazy val toDebugKappaSnapshot = {
+          val patterns = agents.map{ case (q, list) =>
+            pprint.pprintln("===ORIGIN===")
+            pprint.pprintln(list)
+            val pat = nodes2Pattern(list)
+            pprint.pprintln("===RESULT===")
+            pprint.pprintln(pat)
+            (pat, q)
+          }.toMap
+          KappaSnapshot(snap_file, snap_event, patterns)
+        }
+      */
   }
 
   object FileLine {

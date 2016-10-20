@@ -17,10 +17,12 @@ class FileView(elem: Element,
                file: Var[KappaFile],
                val saveRequest: Var[FileRequests.Save],
                val removeRequest: Var[FileRequests.Remove],
-               openFile: Var[KappaFile]) extends SimpleFileView(elem, file){
+               openFile: Var[KappaFile],
+               goToFile: Var[KappaFile]
+              ) extends SimpleFileView(elem, file){
 
 
-  val isSource: Rx[Boolean] = fileType.map(f=>f==FileType.source)
+  val isSource: Rx[Boolean] = fileType.map(f => f==FileType.source)
   /*
   val isImage: Rx[Boolean] = fileType.map(f=>f==FileType.image)
   val isVideo: Rx[Boolean] = fileType.map(f=>f==FileType.video)
@@ -50,7 +52,7 @@ class FileView(elem: Element,
 
   val gotoClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   gotoClick.triggerLater{
-    if(!editable.now) openFile() = file.now
+    if(!editable.now) goToFile() = file.now
   }
 
   val downloadClick: Var[MouseEvent] = Var(Events.createMouseEvent())
@@ -63,7 +65,7 @@ class FileView(elem: Element,
   fileClick.onChange(fileClickHandler)
 
   protected def fileClickHandler(event: MouseEvent) = {
-    if(!editable.now) openFile() = file.now
+    if(!editable.now)openFile() = file.now
   }
 
 

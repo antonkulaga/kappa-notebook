@@ -16,7 +16,12 @@ import scala.collection.immutable._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.util.{Failure, Success}
 
-
+/**
+  * The view responsible for rendering current project files
+  * @param elem HTML element to bind to
+  * @param circuit (viewmodel)
+  * @param uploadId id that is used for file uploading
+  */
 class CurrentProjectView(val elem: Element,
                          val circuit: CurrentProjectCircuit,
                          val uploadId: String
@@ -29,7 +34,14 @@ class CurrentProjectView(val elem: Element,
   val openFile = circuit.intoIncomingPort[KappaFile, KappaMessage](KappaSourceFile.empty, skipFirst = true){
     f=>
       val message = Go.ToFile(f)
-      println(s"to file name ${f.path}")
+      //println(s"to file name ${f.path}")
+      message
+  }
+
+  val goToFile = circuit.intoIncomingPort[KappaFile, KappaMessage](KappaSourceFile.empty, skipFirst = true){
+    f=>
+      val message = Go.ToFile(f)
+      //println(s"to file name ${f.path}")
       Animate(message, false)
   }
 
@@ -94,7 +106,7 @@ class CurrentProjectView(val elem: Element,
 
   override def newItemView(key: String, value: KappaFile): FileView = this.constructItemView(key){
     case (el, _) =>
-      new FileView(el, Var(value), saveRequest, removeRequest, openFile).withBinder(v => new GeneralBinder(v))
+      new FileView(el, Var(value), saveRequest, removeRequest, openFile, goToFile).withBinder(v => new GeneralBinder(v))
   }
 
   val save = Var(Events.createMouseEvent())

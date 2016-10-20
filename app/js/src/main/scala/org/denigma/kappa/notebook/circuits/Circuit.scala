@@ -11,8 +11,8 @@ trait AutoActive {
 
 /**
   * A class that can receive and send input/output messages to Websocket and to other components
-  * @param input
-  * @param output
+  * @param input input messages Rx
+  * @param output is used to send messages to the server
   */
 abstract class Circuit[From, To](val input: Var[From], val output: Var[To]) {
 
@@ -54,8 +54,7 @@ abstract class Circuit[From, To](val input: Var[From], val output: Var[To]) {
   def incomingPortFrom[From2 <: From](value: From2, skipFirst: Boolean = true) = incomingPort(Var(value), skipFirst)
 
   /**
-    * Su
-    * @param value
+    * @param value Var
     * @param skipFirst
     * @tparam To2
     * @return
@@ -64,6 +63,7 @@ abstract class Circuit[From, To](val input: Var[From], val output: Var[To]) {
     if(skipFirst) value.onChange(v=> output() = v) else value.foreach(v=> output() = v)
     value
   }
+
   def outgoingPortFrom[To2 <: To](value: To2, skipFirst: Boolean = true) = outgoingPort(Var(value), skipFirst)
 
 }

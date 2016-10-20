@@ -19,11 +19,13 @@
         <svg class="lines" data-bind-x="left" data-bind-y="top">
             <svg data-template="true">
                 <svg width="400" height="110">
-                    <rect width="300" height="100" style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)" />
+                    <rect width="300" height="100" style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)" >
+
+                    </rect>
                 </svg>
             </svg>
         </svg>
     </svg>
-    <div class="ui horizontal label">Filter by pattern: </div><input data-bind="pattern">
+    <div class="ui horizontal label">Filter by pattern: </div><input data-bind="patternString">
     <button class="ui tiny button" data-event-click="saveSnapshot">Save snapshot</button>
 </section>

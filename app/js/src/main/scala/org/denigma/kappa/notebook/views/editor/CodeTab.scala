@@ -21,6 +21,14 @@ import scala.concurrent.duration._
 import scala.scalajs.js
 
 
+/**
+  * View for the tab with the code
+  * @param elem element to bind to
+  * @param source file with the source code
+  * @param selected selected tab
+  * @param editorUpdates is used to subscribe to editors updates
+  * @param kappaCursor monitors where the text curcor is and allows to move it
+  */
 class CodeTab(val elem: Element,
               val source: Var[KappaSourceFile],
               val selected: Var[String],

@@ -46,9 +46,8 @@ class SimulationRunView(val elem: Element,
 
   val snapshots: Rx[List[KappaSnapshot]] = simulation.map{ s =>
     val kappaSnapshots = s.snapshots.map(snap=>snap.toKappaSnapshot)
-    dom.console.log("SNAPSHOTS ARE:")
-    println(s.snapshots)
     println("KAPPA SNAPSHOTS ARE:")
+    println(kappaSnapshots)
     kappaSnapshots
   }
 

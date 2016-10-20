@@ -14,11 +14,17 @@ import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
 import scala.scalajs.js.typedarray.Uint8Array
 
+/**
+  * Circuit that is responsible for CurrentProject view logic
+  * @param input input messages Rx
+  * @param output is used to send messages to the server
+  * @param currentProject
+  */
 class CurrentProjectCircuit(input: Var[KappaMessage],
                             output: Var[KappaMessage],
                             val currentProject: Var[KappaProject]) extends Circuit(input, output){
 
-  val unsaved: Rx[Map[String, KappaFile]] = currentProject.map(p=>p.folder.allFiles.filterNot(f=>f.saved).map(f=> f.path -> f).toMap)
+  val unsaved: Rx[Map[String, KappaFile]] = currentProject.map(p => p.folder.allFiles.filterNot(f => f.saved).map(f => f.path -> f).toMap)
 
   protected def inProject(str: String) = str.startsWith(currentProject.now.name)|| str.startsWith("/"+currentProject.now.name)
 
@@ -63,7 +69,6 @@ class CurrentProjectCircuit(input: Var[KappaMessage],
       output() = FileRequests.Save(toSave, rewrite = true)
     }
   }
-
 
   protected def saveBinaryAs(filename: String, data: Array[Byte]) = {
     //println(s"binary for $filename")

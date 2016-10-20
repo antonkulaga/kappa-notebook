@@ -14,8 +14,12 @@ import rx._
 
 import scala.collection.immutable._
 
-
-
+/**
+  * View for kappa editor
+  * @param elem Element to bind to
+  * @param editorCircuit circuit to deal with code editing messages
+  * @param errorsCircuit circuit to deal with errors
+  */
 class KappaCodeEditor(val elem: Element,
                       val editorCircuit: KappaEditorCircuit,
                       val errorsCircuit: ErrorsCircuit
@@ -25,7 +29,9 @@ class KappaCodeEditor(val elem: Element,
   type Key = String
   type Value = KappaSourceFile
   val headers = editorCircuit.openOrder
+
   val items = editorCircuit.items
+
   val isEmpty = items.map(its=>its.isEmpty)
 
   val selected: Var[String] = Var("")

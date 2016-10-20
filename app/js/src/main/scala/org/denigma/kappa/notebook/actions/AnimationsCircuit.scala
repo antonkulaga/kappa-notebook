@@ -13,17 +13,17 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 /**
   * This Circuit is responsible for Animations
   * TODO: make containers compartible with UIMessage
-  * @param input
-  * @param output
-  * @param annotationMode
+  * @param input receives message from UI and websocket
+  * @param output sends messages to the websocket
+  * @param annotationMode settings for the annotation mode (either move annotation to the right or go to annotation)
   */
 class AnimationsCircuit(input: Var[KappaMessage], output: Var[KappaMessage],
                         currentProject: Rx[KappaProject],
-                        annotationMode: Rx[AnnotationMode.AnnotationMode]) extends Circuit(input, output){
+                        annotationMode: Rx[AnnotationMode.AnnotationMode])
+  extends Circuit(input, output){
 
   protected def tabByFileType(fileType: FileType) = fileType match {
-    case FileType.pdf =>
-      Some(MainTabs.Papers)
+    case FileType.pdf => Some(MainTabs.Papers)
     case FileType.video | FileType.image => Some(MainTabs.Figures)
     case FileType.source => Some(MainTabs.Editor)
     case other =>

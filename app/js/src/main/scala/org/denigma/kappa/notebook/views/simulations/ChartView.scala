@@ -115,7 +115,7 @@ class ChartView(val elem: Element,
 object ChartView {
 
 
-  protected def defaultWidth: Double = 1000
+  protected def defaultWidth: Double = 850
 
   protected def defaultHeight: Double = 1000
 }

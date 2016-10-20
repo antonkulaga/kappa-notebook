@@ -74,7 +74,7 @@ trait FlexibleLinearScale
   private lazy val currentLengh = Math.abs(start - end)
 
   if(stepSize > Math.max(currentLengh, Math.round(currentLengh))) {
-    dom.console.error(s"stepSize(${stepSize}) is larger then currentLength(${currentLengh})")
+    dom.console.error(s"stepSize(${stepSize}) is larger than the currentLength(${currentLengh})")
   }
 
   override def points(current: Double, end: Double, dots: List[Double] = List.empty): List[Double]  = {
@@ -96,11 +96,16 @@ trait FlexibleLinearScale
 
 }
 
+/**
+  * Trait for the scale that can stretch itself
+  * @tparam T
+  */
 trait WithFlexibleScale[T <: Scale] {
   self=>
 
   def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): T
 }
+
 
 trait FlexibleLinesPlot extends NewLinesPlot {
   val flexible = Var(true)
@@ -117,10 +122,6 @@ trait FlexibleLinesPlot extends NewLinesPlot {
   }
 
   def onMaxChange(value: Point): Unit
-
-
-
-
 
   override def subscribeUpdates() = {
     super.subscribeUpdates()

@@ -26,17 +26,21 @@ import scala.concurrent.duration._
 /**
   * Snapshot view, used to display the snapshots distributions
   */
-class SnapView(val elem: Element, val item: Var[KappaModel.KappaSnapshot], val selected: Var[String]) extends BindableView with TabItem{
+class SnapView(val elem: Element, val item: Var[KappaModel.KappaSnapshot], val selected: Var[String]) extends BindableView {
 
   val fileName = item.map(i=>i.name)
 
   val event = item.map(i=>i.event)
 
+  val active = Rx{
+    selected() == fileName()
+  }
+
   val patternString = Var("")
 
-  lazy val parser = new KappaParser()
+  val parser = new KappaParser()
 
-  val pattern = patternString.mapAfterLastChange[Pattern](400 millis, Pattern.empty){ str => parser.rulePart.parse(str) match {
+  val filterPattern: Var[Pattern] = patternString.mapAfterLastChange[Pattern](400 millis, Pattern.empty){ str => parser.rulePart.parse(str) match {
       case Parsed.Success(pat, _) => pat
       case Parsed.Failure(_, _, extra) => Pattern.empty
     }
@@ -51,12 +55,10 @@ class SnapView(val elem: Element, val item: Var[KappaModel.KappaSnapshot], val s
     saveAs(fileName.now+".csv", txt)
   }
 
-  val distribution = pattern
-
   override lazy val injector = defaultInjector
-    .register("Plot") {
+    .register("BarPlot") {
       case (el, _) =>
-        new BarPlot(el, item, pattern, Var(false)).withBinder(new GeneralBinder(_))
+        new BarPlot(el, item, filterPattern, Var(false)).withBinder(new GeneralBinder(_))
     }
 
 }
@@ -72,24 +74,29 @@ object BarPlot {
 /**
   * Bar plot for snapshots
   * @param elem Element
-  * @param title title
   * @param snapshot snapshot
-  * @param filterPattern
-  * @param byLength
-  * @param plotWidth
-  * @param plotHeight
+  * @param filterPattern pattern that is used to filter or group snapshots by some pattern
+  * @param byLength if we should group by length
   */
-class BarPlot(val elem: Element, val title: Rx[String],
+class BarPlot(val elem: Element,
               val snapshot: Rx[KappaSnapshot],
               val filterPattern: Rx[Pattern],
-              val byLength: Rx[Boolean],
-              val plotWidth: Rx[Double] = Var(BarPlot.defaultWidth),
-              val plotHeight: Rx[Double] = Var(BarPlot.defaultHeight)
+              val byLength: Rx[Boolean]
                ) extends CollectionSortedSetView with Plot {
 
   type Item = Bar
 
   type ItemView = BarView
+
+  lazy val paddingX = Var(50.0)
+
+  lazy val paddingY = Var(50.0)
+
+  lazy val viewBox: Dynamic[String] = Rx{
+    s"${0} ${0} ${width() - paddingX() * 2  } ${height() - paddingY() * 2 }"
+  }
+
+  val halfWidth = Rx{ width() / 2.0 }
 
   implicit val ordering = new Ordering[Bar]{
     override def compare(x: Item, y: Item): Int = (x, y) match {
@@ -104,7 +111,6 @@ class BarPlot(val elem: Element, val title: Rx[String],
       }
     }
   }
-
 
   val patterns: Rx[Map[Pattern, Int]] = Rx{
     val snap = snapshot()
@@ -123,28 +129,24 @@ class BarPlot(val elem: Element, val title: Rx[String],
     SortedSet(resultIterator.toList:_*)
   }
 
-  val scaleX: Rx[Scale] = Rx{
+  lazy val scaleX: Rx[Scale] = Rx{
     val pats = patterns()
     val len = pats.size
-    val w = plotWidth()
+    val w = BarPlot.defaultWidth
     val byLen = byLength()
     val step = Math.round(w / len)
     val title = if(byLen) "sizes" else "patterns"
     LinearScale(title, 0, len, step, w)
   }
 
-  val scaleY: Rx[Scale] =  Rx{
+  lazy val scaleY: Rx[Scale] =  Rx{
     val pats = patterns()
     val len = pats.values.max
-    val h = plotHeight()
+    val h = BarPlot.defaultHeight
     val step = Math.round(h / len)
     LinearScale("pattern lengths", 0, len, step, h)
   }
 
-
-  val paddingX = Var(50.0)
-
-  val paddingY = Var(50.0)
 
   override def newItemView(item: Bar): BarView = this.constructItemView(item){
     case (el, _) => item match {
@@ -174,15 +176,16 @@ trait Bar{
   def data: Data
   def quantity: Double
   def name: String
-
 }
 
 class PatternGroupBarView(val elem: Element, val item: PatternGroupBar) extends BarView {
   
 }
+
 class PatternBarView(val elem: Element, val item: PatternBar) extends BarView {
 
 }
+
 trait BarView extends BindableView{
 
   def item: Bar

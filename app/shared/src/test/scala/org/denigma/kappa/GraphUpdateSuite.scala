@@ -61,7 +61,6 @@ class GraphUpdateSuite extends WordSpec with Matchers with Inside  {
       update.updateInfo.addedAgents.isEmpty shouldEqual true
       update.updateInfo.removedAgents shouldEqual Set(tetRLeft)
       update.updateInfo.updatedAgents shouldEqual Set((pTetLeft, pTetRight))
-
     }
 
 

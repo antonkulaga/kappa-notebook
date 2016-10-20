@@ -11,6 +11,12 @@ import better.files.File
 import org.denigma.kappa.notebook.communication.WebSocketManager
 import org.denigma.kappa.notebook.pages._
 
+/**
+  * Class that defines routing of kappa notebook
+  * @param files base folder of projects
+  * @param fm implicit materializer for akka-streams
+  * @param system implicit actor system (used by streams)
+  */
 class Router(files: File)(implicit fm: Materializer, system: ActorSystem) extends Directives {
 
   implicit def ctx = system.dispatcher

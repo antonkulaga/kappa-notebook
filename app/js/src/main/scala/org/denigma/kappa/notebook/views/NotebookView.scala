@@ -26,8 +26,8 @@ import rx._
 
 /**
   * The most important view of kappa-notebook, initialize almost all the logic and subviews
-  * @param elem
-  * @param username
+  * @param elem HTML element to bind to
+  * @param username name of the user
   */
 class NotebookView(val elem: Element, username: String) extends BindableView
 {
@@ -57,6 +57,8 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     serverMessage => toServer() = serverMessage
   }
 
+  // CIRCUITS INITIALIZATIONS //
+
   lazy val settings = new SettingsCircuit(input, output)
 
   lazy val currentServer = settings.websimConnections.now.currentServer
@@ -83,8 +85,14 @@ class NotebookView(val elem: Element, username: String) extends BindableView
 
   val serverActive = Var(false)
 
+
   override def bindView() = {
     super.bindView()
+    activateCircuits()
+    activateWebSocket()
+  }
+
+  protected def activateCircuits() = {
     settings.activate()
     animations.activate()
     notebookCircuit.activate()
@@ -92,6 +100,9 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     editorCircuit.activate()
     errorsCircuit.activate()
     papersCircuit.activate()
+  }
+
+  protected def activateWebSocket() = {
     connector.onOpen.triggerLater{
       dom.console.log("websocket opened")
       val toLoad = ProjectRequests.Load(KappaProject.default)
@@ -116,6 +127,9 @@ class NotebookView(val elem: Element, username: String) extends BindableView
     menu() = menu.now :+ (title, el)
   }
 
+  /**
+    * Registration of child views
+    */
   override lazy val injector = defaultInjector
     .register("MainMenuView") {
       case (el, args) =>

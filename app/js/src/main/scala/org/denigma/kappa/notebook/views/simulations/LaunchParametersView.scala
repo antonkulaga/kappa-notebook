@@ -28,7 +28,7 @@ class LaunchParametersView(val elem: Element,
 
   val active: Rx[Boolean] = selected.map(s=>s=="parameters")
 
-  val event: Rx[Int] = simulation.map(sim=>sim.event)
+  val events: Rx[Int] = simulation.map(sim=>sim.event)
 
   val points: Rx[Int] = simulation.map(sim=>sim.nb_plot.getOrElse(0))
 

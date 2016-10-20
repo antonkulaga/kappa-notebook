@@ -48,6 +48,11 @@ class FileView(elem: Element,
 
   }
 
+  val gotoClick: Var[MouseEvent] = Var(Events.createMouseEvent())
+  gotoClick.triggerLater{
+    if(!editable.now) openFile() = file.now
+  }
+
   val downloadClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   downloadClick.triggerLater{
     val url: String = "http://"+dom.window.location.host +"/files/" + path.now

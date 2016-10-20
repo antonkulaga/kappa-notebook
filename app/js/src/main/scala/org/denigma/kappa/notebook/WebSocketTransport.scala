@@ -95,7 +95,7 @@ class WebSocketTransport(val protocol: String, val host: String, val channel: St
   }
 
   override def send(message: Output): Unit = if(connected.now) {
-    dom.console.log("MESSAGE: "+message.getClass.getName)
+    //dom.console.log("MESSAGE: "+message.getClass.getName)
     val mes = bytes2message(pickle(message))
     send(mes)
   } else {

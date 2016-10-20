@@ -1,17 +1,17 @@
 package org.denigma.kappa.notebook.views.editor
 
 import org.denigma.binding.binders.GeneralBinder
-import org.denigma.binding.extensions._
-import org.denigma.binding.views.{BindableView, CollectionMapView, CollectionSeqView}
+import org.denigma.binding.views.CollectionMapView
 import org.denigma.controls.code.CodeBinder
 import org.denigma.kappa.messages.KappaSourceFile
 import org.denigma.kappa.messages.WebSimMessages.WebSimError
 import org.denigma.kappa.notebook.circuits.{ErrorsCircuit, KappaEditorCircuit}
-import org.denigma.kappa.notebook.views.common.{FileTabHeaders, ServerConnections, TabHeaders}
+import org.denigma.kappa.notebook.views.common.{FileTabHeaders, TabHeaders}
 import org.denigma.kappa.notebook.views.errors.SyntaxErrorsView
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
+
 import scala.collection.immutable._
 
 

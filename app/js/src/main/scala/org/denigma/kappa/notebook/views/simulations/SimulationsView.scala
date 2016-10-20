@@ -48,7 +48,7 @@ class SimulationsView(val elem: Element,
     case (el, mp) =>
       val (token, initial) = key
       el.id =  makeId(key) //bad practice
-      val view = new SimulationRunView(el, token, initial, tab, Var(value)).withBinder(new CodeBinder(_))
+      val view = new SimulationRunView(el, token, initial, Var(value), simulationCircuit.input, tab).withBinder(new CodeBinder(_))
       tab() = makeId(key)
       view
   })

@@ -1,0 +1,29 @@
+@()
+<section data-template="true" class="ui bottom attached active tab segment" data-class-active-if="active">
+    <table>
+        <tr>
+            <td>
+                Name
+            </td>
+            <td data-bind="fileName">
+            </td>
+            <td>
+                Event
+            </td>
+            <td data-bind="event">
+            </td>
+        </tr>
+    </table>
+    <svg data-view="BarPlot" class="plot" xmlns:svg="http://www.w3.org/2000/svg" width="100%" data-bind-viewBox="viewBox" preserveAspectRatio = "xMinYMin meet">
+        <text class="title" data-bind-y="paddingY" font-size="18pt" data-bind-x="halfWidth" data-bind="title"></text>
+        <svg class="lines" data-bind-x="left" data-bind-y="top">
+            <svg data-template="true">
+                <svg width="400" height="110">
+                    <rect width="300" height="100" style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)" />
+                </svg>
+            </svg>
+        </svg>
+    </svg>
+    <div class="ui horizontal label">Filter by pattern: </div><input data-bind="pattern">
+    <button class="ui tiny button" data-event-click="saveSnapshot">Save snapshot</button>
+</section>

@@ -7,7 +7,7 @@ object Versions extends WebJarsVersions
 
 	val scala = "2.11.8"
 
-	val kappaNotebook = "0.0.15"
+	val kappaNotebook = "0.0.16"
 
 	val kappaModel = "0.0.1"
 
@@ -29,7 +29,7 @@ trait OtherJVM {
 
 	val bcrypt = "2.4"
 
-	val ammonite = "0.7.7"
+	val ammonite = "0.7.8"
 
 	val apacheCodec = "1.10"
 
@@ -81,7 +81,7 @@ trait SharedVersions
 
 	val annotator = "0.0.5"
 
-	val circe = "0.5.2"
+	val circe = "0.5.4"
 
 	val scalaTags = "0.6.0"
 
@@ -89,15 +89,15 @@ trait SharedVersions
 
 	val scalaTest = "3.0.0"
 
-	val scalaCheck = "1.13.2"
+	val scalaCheck = "1.13.3"
 
 	val fastparse = "0.4.1"
 
-	val quicklens = "1.4.7"
+	val quicklens = "1.4.8"
 
 	val booPickle = "1.2.4"
 
-	val pprint: String ="0.4.2"
+	val pprint: String ="0.4.3"
 
 	val roshttp = "1.1.0"
 

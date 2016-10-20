@@ -49,8 +49,16 @@ object KappaModel {
     * @param _agents real agents
     * @param virtualAgents virtual agents, like ?_ or !_
     */
-  case class Pattern private(_agents: List[Agent], virtualAgents: Set[Agent]) extends KappaElement
+  case class Pattern private(_agents: List[Agent], virtualAgents: Set[Agent]) extends KappaElement with WithKappaCode
   {
+
+
+    def isEmpty = agents.isEmpty
+
+    lazy val toKappaCode = _agents.foldLeft(""){
+      case ("", ag) => ag.toKappaCode
+      case (acc, ag) => acc + ", " + ag.toKappaCode
+    }
 
     /*
     def head = agents.head
@@ -156,41 +164,24 @@ object KappaModel {
         )
     }.flatMap(v=>v).toSet
 
-
-    /*
-    protected lazy val linkTuples: List[((Agent, Site, String), Int)] = agents.zipWithIndex.flatMap{
-      case (a, i) => a.outgoingLinks.map(v=>(v, i))
-    }
-
-    protected lazy val pairLinkTuples: List[((Agent, Site, String), Int)] = linkTuples.filter{
-      case ((_, _, "_") , _) | ((_, _, "?"), _) => false
-      case _ => true
-    }
-
-
-    //lazy val allLinks: List[Link] = pairLinks ++ wildcardLinks ++ questionLinks
-
-    lazy val pairLinksIndexed: List[(Link, (Int, Int))] = pairLinkTuples.groupBy{ case ((_, _, l), _) => l}.collect{
-      case (label, ((a1, s1, _), i1)::((a2, s2, _), i2)::Nil) => (KappaModel.Link(a1, a2, s1, s2, label), (i1, i2))
-    }.toList
-
-    lazy val wildcardLinks = linkTuples.collect{ case ((a, s, "_"), _) => KappaModel.Link(a, Agent.wildcard, s, Site.wildcard, "_")}
-    lazy val questionLinks = linkTuples.collect{ case ((a, s, "?"), _) => KappaModel.Link(a, Agent.questionable, s, Site.question, "?")}
-
-
-    private def sameAgent(one: Agent, two: Agent): Boolean = {
-      one.name==two.name && one.siteNames == two.siteNames
-    }
-
-    def sameAgents(pat: Pattern): List[(Agent, Agent)] = agents.zip(pat.agents).takeWhile(ab=>sameAgent(ab._1, ab._2))
-    */
-
     def sameAgents(pat: Pattern) = agents.zip(pat.agents).takeWhile{ case (a, b) => a.sameAs(b)}
 
   }
 
-  case class Rule(name: String, left: Pattern, right: Pattern, forward: Either[String, Double], backward: Option[Either[String, Double]] = None) extends KappaNamedElement
+  case class Rule(name: String, left: Pattern, right: Pattern, forward: Either[String, Double], backward: Option[Either[String, Double]] = None)
+    extends KappaNamedElement with WithKappaCode
   {
+
+    private lazy val mainPart = s"${if(name.isEmpty) "" else s"'$name'"} "+ left.toKappaCode + right.toKappaCode
+
+    lazy val toKappaCode = {
+      val left = s"${if(name.isEmpty) "" else s"'$name'"} "
+      val kOn = forward.fold(s=> s"'${s}'", _.toString )
+      backward match {
+        case Some(kOff) => left +" <-> " + right.toKappaCode +" @ " + kOn + ", " + kOff.fold(s=> s"'${s}'", _.toString )
+        case None => left + " -> " + right.toKappaCode + " @ " + kOn
+      }
+    }
 
     lazy val same: List[(Agent, Agent)] = left.sameAgents(right)
 
@@ -220,9 +211,8 @@ object KappaModel {
     }
 
     lazy val removedLinks: Set[(String, Int, String, Int)] = left.links.diff(unchangedLinks)
+
     lazy val addedLinks: Set[(String, Int, String, Int)] = right.links.diff(unchangedLinks)
-
-
 
   }
 
@@ -233,6 +223,11 @@ object KappaModel {
     def name: String
   }
 
+  trait WithKappaCode extends KappaElement
+  {
+    def toKappaCode: String
+  }
+
   case class State(name: String) extends KappaNamedElement
 
   object Site {
@@ -240,10 +235,12 @@ object KappaModel {
     lazy val question = Site("?")
   }
 
-  case class Site(name: String, states: Set[State] = Set.empty, links: Set[String] = Set.empty) extends KappaNamedElement {
+  case class Site(name: String, states: Set[State] = Set.empty, links: Set[String] = Set.empty) extends KappaNamedElement with WithKappaCode{
     def ~(state: State): Site = {
       copy(states = states + state)
     }
+
+    lazy val toKappaCode = s"$name" + states.foldLeft(""){ case (acc, e) => acc + "~" + e.name} + links.foldLeft(""){ case (acc, e) => acc + "!" + e} //note check validity
 
   }
   object Agent {
@@ -265,9 +262,12 @@ object KappaModel {
 
   }
 
-  case class Agent(name: String, sites: Set[Site] = Set.empty, position: Int = -1) extends KappaNamedElement
+  case class Agent(name: String, sites: Set[Site] = Set.empty, position: Int = -1) extends KappaNamedElement with WithKappaCode
   {
 
+    private lazy val sitesCode = sites.foldLeft(""){ case (acc, s) => acc + s.toKappaCode}
+
+    lazy val toKappaCode = s"$name($sitesCode)"
 
 
     /**
@@ -333,7 +333,9 @@ object KappaModel {
   case class ObservablePattern(name: String, pattern: Pattern) extends KappaNamedElement
 
 
-  case class InitCondition(number: Either[String, Double], pattern: Pattern) extends KappaElement
+  case class InitCondition(number: Either[String, Double], pattern: Pattern) extends KappaElement with WithKappaCode {
+    lazy val toKappaCode = "%init: "+pattern.toKappaCode
+  }
 
 }
 

@@ -1,4 +1,4 @@
-package org.denigma.kappa.notebook.graph.drawing
+package org.denigma.controls.drawing
 
 import org.scalajs.dom.raw.SVGRect
 

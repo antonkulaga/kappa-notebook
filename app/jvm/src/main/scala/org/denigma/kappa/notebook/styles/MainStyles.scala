@@ -13,7 +13,7 @@ class MainStyles extends Standalone with MediaQueries
   import dsl._
 
   lazy val rowMaxHeight = 96 vh
-  lazy val gridMaxHeight = 89 vh
+  lazy val gridMaxHeight = 90 vh
 
   "html"-(
     onTiny -fontSize(8 pt),

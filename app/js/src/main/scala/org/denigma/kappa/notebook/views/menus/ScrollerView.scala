@@ -16,6 +16,13 @@ import rx._
 import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
 
+/**
+  * The view devoted to scrolling tabs of the main menu
+  * @param elem
+  * @param scrollPanel panel for which to display scrool
+  * @param input to subscribe and/or send input messages
+  * @param menuMap main menu of kappa notebook
+  */
 class ScrollerView(val elem: Element,
                    scrollPanel: Element,
                    input: Rx[KappaMessage],

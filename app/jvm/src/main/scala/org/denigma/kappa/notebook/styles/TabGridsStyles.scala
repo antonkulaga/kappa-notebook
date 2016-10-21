@@ -25,9 +25,12 @@ trait TabGridsStyles extends MainStyles {
     )
 
   ".paper.grid" -(
-    minHeight(55.0 vh) important,
-    maxHeight(68 vh) important,
-    overflowY.hidden
+    onTiny -( minHeight(47 vh) important, maxHeight(57 vh) important),
+    onLittle -( minHeight(49 vh) important, maxHeight(59 vh) important),
+    onSmall -( minHeight(51 vh) important, maxHeight(60 vh) important),
+    onMedium -( minHeight(53 vh)important, maxHeight(62 vh) important),
+    onLarge -( minHeight(55 vh) important, maxHeight(64 vh) important),
+    overflowY.hidden important
     //overflowY.auto important
     )
 

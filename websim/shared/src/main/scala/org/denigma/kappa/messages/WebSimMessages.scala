@@ -285,7 +285,7 @@ object WebSimMessages {
 
   object SimulationStatus {
     lazy val empty = SimulationStatus(0.0,
-      None, 0, None, None, None, None, None, is_running = false, None , Nil, None, Nil, Nil, Nil, Nil
+      None, 0, None, None, None, None, None, is_running = false, None , Nil, None, Nil, None, Nil, Nil
     )
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[SimulationStatus] = boopickle.Default.generatePickler[SimulationStatus]
@@ -325,7 +325,7 @@ object WebSimMessages {
                                log_messages: List[String],
                                plot: Option[KappaPlot],
                                snapshots: List[Snapshot],
-                               distances: List[UnaryDistance],
+                               distances: Option[List[UnaryDistance]],
                                flux_maps: List[FluxMap],
                                files: List[String]
                              )  extends WebSimMessage

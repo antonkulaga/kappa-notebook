@@ -1,5 +1,8 @@
-package org.denigma.kappa.notebook.graph.drawing
+package org.denigma.controls.drawing
 
+/**
+  * Gathers SVG tags and properties together to avoid naming conflicts with HTML tags
+  */
 object SvgBundle {
   import scalatags.JsDom._
   import scalatags._

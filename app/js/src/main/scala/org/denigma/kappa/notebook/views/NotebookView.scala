@@ -7,7 +7,7 @@ import org.denigma.kappa.messages._
 import org.denigma.kappa.notebook._
 import org.denigma.kappa.notebook.actions.AnimationsCircuit
 import org.denigma.kappa.notebook.circuits._
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
+import org.denigma.controls.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook.views.comments.KappaWatcher
 import org.denigma.kappa.notebook.views.editor._
 import org.denigma.kappa.notebook.views.figures.FiguresView

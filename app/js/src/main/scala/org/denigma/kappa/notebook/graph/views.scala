@@ -2,11 +2,11 @@ package org.denigma.kappa.notebook.graph
 
 
 import org.denigma.binding.extensions._
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
+import org.denigma.controls.drawing.{KappaPainter, Rectangle}
+import org.denigma.controls.drawing.SvgBundle.all._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all.attrs._
-import org.denigma.kappa.notebook.graph.drawing.{KappaPainter, Rectangle}
+import org.denigma.controls.drawing.SvgBundle.all.attrs._
 import org.denigma.threejs.Object3D
 import org.denigma.threejs.extras.HtmlSprite
 import org.scalajs.dom.svg.{LinearGradient, SVG}

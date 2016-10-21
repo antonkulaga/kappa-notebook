@@ -13,6 +13,10 @@ object MyStyles extends MainStyles
 {
   import dsl._
 
+  "#body" -(
+    overflowY.hidden important
+    )
+
   "#WholeGraph" -(
     onTiny -minHeight(400 px),
     onLittle -minHeight(425 px),

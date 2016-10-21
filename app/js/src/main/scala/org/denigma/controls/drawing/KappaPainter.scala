@@ -1,13 +1,17 @@
-package org.denigma.kappa.notebook.graph.drawing
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
+package org.denigma.controls.drawing
+
+import org.denigma.controls.drawing.SvgBundle.all._
 import rx._
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all.attrs._
-import org.denigma.threejs.{Side => _}
+import org.denigma.controls.drawing.SvgBundle.all.attrs._
 import org.scalajs.dom.raw.{SVGElement, SVGLocatable}
 import org.scalajs.dom.svg.SVG
 
 import scalatags.JsDom
 import scalatags.JsDom.TypedTag
+
+/**
+  * Draws SVG labels
+  */
 trait KappaPainter {
 
   def s: SVG

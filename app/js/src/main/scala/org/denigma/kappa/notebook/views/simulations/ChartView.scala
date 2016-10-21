@@ -115,7 +115,7 @@ class ChartView(val elem: Element,
 object ChartView {
 
 
-  protected def defaultWidth: Double = 850
+  protected def defaultWidth: Double = 1000
 
   protected def defaultHeight: Double = 1000
 }
@@ -157,7 +157,7 @@ class ChartView(val elem: Element,
   }
 
   val viewBox: Dynamic[String] = Rx{
-    s"${0} ${0} ${width() - paddingX() * 2  } ${height() - paddingY() * 2 }"
+    s"${0} ${0} ${width() + paddingX() * 2  } ${height() + paddingY() * 2 }"
   }
 
   val halfWidth = Rx{ width() / 2.0 }

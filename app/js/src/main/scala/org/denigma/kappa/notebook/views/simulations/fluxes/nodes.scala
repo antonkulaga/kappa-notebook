@@ -2,13 +2,13 @@ package org.denigma.kappa.notebook.views.simulations.fluxes
 
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.BindableView
+import org.denigma.controls.drawing.{KappaPainter, Rectangle}
 import org.denigma.kappa.notebook.graph._
-import org.denigma.kappa.notebook.graph.drawing.{KappaPainter, Rectangle}
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
+import org.denigma.controls.drawing.SvgBundle.all._
 import org.denigma.kappa.notebook.graph.layouts._
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all.attrs._
+import org.denigma.controls.drawing.SvgBundle.all.attrs._
 import org.denigma.threejs.extras.HtmlSprite
 import org.scalajs.dom
 import org.scalajs.dom.raw.{ClientRect, Element, HTMLElement}

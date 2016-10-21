@@ -14,8 +14,8 @@ import scalatags.JsDom.TypedTag
 case class Gradient(name: String, change: Change, tag: TypedTag[LinearGradient])
 
 object Gradients {
-  import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
-  import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all.attrs._
+  import org.denigma.controls.drawing.SvgBundle.all._
+  import org.denigma.controls.drawing.SvgBundle.all.attrs._
 
   def blueGradient(gradientName: String): TypedTag[LinearGradient] =
     linearGradient(x1 := 0, x2 := 0, y1 := 0, y2 := "1", scalatags.JsDom.all.id := gradientName,

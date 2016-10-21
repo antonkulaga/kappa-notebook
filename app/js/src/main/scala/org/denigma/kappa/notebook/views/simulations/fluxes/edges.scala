@@ -3,8 +3,8 @@ package org.denigma.kappa.notebook.views.simulations.fluxes
 import org.denigma.kappa.notebook.graph._
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all._
-import org.denigma.kappa.notebook.graph.drawing.SvgBundle.all.attrs._
+import org.denigma.controls.drawing.SvgBundle.all._
+import org.denigma.controls.drawing.SvgBundle.all.attrs._
 import org.scalajs.dom.svg.SVG
 
 

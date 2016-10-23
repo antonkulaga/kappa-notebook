@@ -2,6 +2,10 @@ package org.denigma.kappa.model
 
 import scala.collection.immutable._
 
+
+/**
+  * Contains most of the classes that are used to represent Kappa enteties
+  */
 object KappaModel {
 
   trait KappaElement
@@ -70,7 +74,7 @@ object KappaModel {
       pat.agents.indices.exists{ i => embedAgentInto(0, i, pat, Set.empty[(Int, Int)]) }
     }
 
-    protected def embedAgentInto(currentNum: Int, targetNum: Int, targetPattern: Pattern, previous: Set[(Int, Int)]): Boolean = {
+    def embedAgentInto(currentNum: Int, targetNum: Int, targetPattern: Pattern, previous: Set[(Int, Int)]): Boolean = {
       require(targetPattern.agents.size > targetNum, s"index out of bounds inside $targetPattern")
       require(agents.size> currentNum, s"index out of bounds inside $this")
       val currentAgent = agents(currentNum)
@@ -79,11 +83,14 @@ object KappaModel {
         case true if currentAgent.outgoingLinks.isEmpty => true
         case false => false
         case true =>
+          currentAgent.outgoingLinks.forall{
+            case (_, s, _) =>
+          /*
           currentAgent.siteNames.forall{
-            s =>
+            s =>*/
               val prev = previous.+((currentNum, targetNum))
               if(!linkMap.contains( (currentNum, s))){
-                pprint.pprintln(s"cannot find CURRENT link for ${(currentNum, s)} in:")
+                pprint.pprintln(s"cannot find CURRENT(${currentNum}) link for ${(currentNum, s)} in:")
                 pprint.pprintln(linkMap)
                 pprint.pprintln("AGENTS ARE:")
                 pprint.pprintln(agents)
@@ -93,6 +100,7 @@ object KappaModel {
                 pprint.pprintln(links)
                 pprint.pprintln(currentAgent)
               }
+
               val (curOut, curSite): (Int, String) = linkMap( (currentNum, s) )
               if(!targetPattern.linkMap.contains( (targetNum, s))){
                 pprint.pprintln(s"cannot find TURGET link for ${(targetNum, s)} in:")
@@ -149,7 +157,9 @@ object KappaModel {
       case (link, site, agNum) => link
     }
 
-    lazy val linkMap = links.map{ case (siteFrom, fromNum, siteTo, toNum) => (fromNum, siteFrom) -> (toNum, siteTo) }.toMap
+    lazy val linkMap = links.map{
+      case (siteFrom, fromNum, siteTo, toNum) => (fromNum, siteFrom) -> (toNum, siteTo)
+    }.toMap
 
 
     /**
@@ -159,8 +169,9 @@ object KappaModel {
       case (Agent.wildcard.name, ls) => ls.map{ case (_, siteFrom, fromNum) =>(siteFrom, fromNum, Agent.wildcard.name, Agent.wildcard.position)}.toSet
       case (Agent.questionable.name, ls) => ls.map{ case (_, siteFrom, fromNum) =>(siteFrom, fromNum, Agent.questionable.name, Agent.questionable.position)}.toSet
       case (link, (_, siteFrom, fromNum)::(_, siteTo, toNum)::Nil) =>
-        Set((siteFrom, fromNum, siteTo, toNum)
-          ,(siteTo, toNum,siteFrom, fromNum) //temporaly fix
+        Set(
+          (siteFrom, fromNum, siteTo, toNum),
+          (siteTo, toNum, siteFrom, fromNum) //temporaly fix
         )
     }.flatMap(v=>v).toSet
 
@@ -265,7 +276,10 @@ object KappaModel {
   case class Agent(name: String, sites: Set[Site] = Set.empty, position: Int = -1) extends KappaNamedElement with WithKappaCode
   {
 
-    private lazy val sitesCode = sites.foldLeft(""){ case (acc, s) => acc + s.toKappaCode}
+    private lazy val sitesCode = sites.foldLeft(""){
+      case ("", s) => s.toKappaCode
+      case (acc, s) => acc + ", " + s.toKappaCode
+    }
 
     lazy val toKappaCode = s"$name($sitesCode)"
 
@@ -334,7 +348,7 @@ object KappaModel {
 
 
   case class InitCondition(number: Either[String, Double], pattern: Pattern) extends KappaElement with WithKappaCode {
-    lazy val toKappaCode = "%init: "+pattern.toKappaCode
+    lazy val toKappaCode = "%init: "+ number.fold(str=>"'"+str+"'", d=> d.toString)+" "+pattern.toKappaCode
   }
 
 }

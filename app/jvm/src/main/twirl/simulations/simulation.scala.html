@@ -1,5 +1,9 @@
 @()
 <section data-template="true" class="ui bottom attached active tab segment" data-class-active-if="active">
+  <div class="ui negative message"  data-show-if="hasDeadlock">
+    <p data-bind="deadlockString">
+    </p>
+  </div>
   <div class="ui top attached pointing menu">
     <a class="pointed item" data-set-tab-on-click="plot" data-class-active-if="Plot.active">Plot</a>
     <a class="pointed item" data-set-tab-on-click="console" data-class-active-if="Console.active">Console</a>

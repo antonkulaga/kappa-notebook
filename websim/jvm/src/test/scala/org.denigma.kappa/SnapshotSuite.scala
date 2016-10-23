@@ -17,9 +17,11 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util._
 import WebSimMessages._
+import fastparse.core.Parsed
 import org.denigma.kappa.messages.ServerMessages.{LaunchModel, ServerConnection}
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.{KappaSnapshot, Pattern}
+import org.denigma.kappa.parsers.KappaParser
 import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
 
@@ -139,10 +141,38 @@ class SnapshotSuite extends BasicKappaSuite {
       //snap.patterns.foreach(p=> pprint.pprintln(p))
       //pprint.pprintln("NUMBER OF SNAP PATTERNS = "+snap.patterns.size)
       val dna2Embeds = snap.embeddingsOf(dna2)
+
       sumPatterns(dna2Embeds) shouldEqual dna2Num
       val d3 = sumPatterns(snap.embeddingsOf(dna3))
       d3 shouldEqual dna3Num
-    }
+  }
+
+  "work out of kappa file" in {
+    val parser = new KappaParser()
+
+    val ( Parsed.Success(KappaModel.InitCondition(Right(829), dna1), _),
+      Parsed.Success(KappaModel.InitCondition(Right(70), dna2), _),
+      Parsed.Success(KappaModel.InitCondition(Right(9), dna3), _) ,
+      Parsed.Success(KappaModel.InitCondition(Right(1), dna4), _) ) =
+    (
+      parser.init.parse("%init: 829 DNA(up, down)"),
+      parser.init.parse("%init: 70 DNA(up!1, down), DNA(up, down!1)"), //dna2
+      parser.init.parse("%init: 9 DNA(up, down!1), DNA(up!1, down!2), DNA(up!2, down)"),
+      parser.init.parse("%init: 1 DNA(up, down!1), DNA(up!1, down!2), DNA(up!3, down), DNA(up!2, down!3)")
+    )
+    val snap = KappaSnapshot("test", 100, Map(
+      (dna1, 829), (dna2, 70), (dna3, 9), (dna4, 1)
+    ))
+    val Parsed.Success(pat1, _) = parser.rulePart.parse("DNA(up!1, down), DNA(up, down!1)")
+    pat1.embedsInto(dna1) shouldEqual false
+    pat1.embedsInto(dna2) shouldEqual true
+    snap.embeddingsOf(pat1).size shouldEqual 3
+    val Parsed.Success(pat2, _) = parser.rulePart.parse("DNA(up!2, down), DNA(up, down!2)")
+    snap.embeddingsOf(pat2).size shouldEqual 3
+
+    val Parsed.Success(pat3, _) = parser.rulePart.parse("DNA(up, down!1), DNA(up!1, down!2), DNA(up!2, down)")
+    snap.embeddingsOf(pat3).size shouldEqual 2
+  }
 
   }
 

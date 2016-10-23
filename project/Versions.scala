@@ -105,7 +105,7 @@ trait SharedVersions
 
 	val javaTime = "0.2.0"
 
-	val simulacrum = "0.9.0"
+	val simulacrum = "0.10.0"
 
 	val paradise = "2.1.0"
 

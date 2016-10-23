@@ -12,6 +12,14 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 
+/**
+  * Circuit that handles simulations-related events
+  * @param input input messages Rx
+  * @param output is used to send messages to the server
+  * @param currentProject current loaded project
+  * @param serverConnections
+  * @param configurationName
+  */
 class SimulationsCircuit(input: Var[KappaMessage],
                          output: Var[KappaMessage],
                          currentProject: Rx[KappaProject],
@@ -59,6 +67,7 @@ class SimulationsCircuit(input: Var[KappaMessage],
 
   run.onChange{ params =>
     val toRun = runConfiguration.now
+    //println("========CODE TO RUN====================\n"+toRun.fullCode)
     output() = ServerCommand(serverConnections.now.currentServer, toRun.launchModel)
   }
 

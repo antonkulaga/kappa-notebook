@@ -36,7 +36,10 @@ class SnapshotsView(val elem: Element,
     }
   }
 
-  val items = snapshots.map(snaps => SortedMap.apply(snaps.map(s=> ((s.name, s.event) , s)):_*))
+  val items = snapshots.map{
+    snaps =>
+      SortedMap.apply(snaps.map(s=> ((s.name, s.event) , s)):_*)
+  }
 
   val active: Rx[Boolean] = selected.map(s=>s=="snapshots")
 

@@ -19,6 +19,12 @@ import rx._
 
 import scala.collection.immutable._
 
+/**
+  * View for all simulations
+  * @param elem HTML element to bind to
+  * @param simulationCircuit circuit that handles simulation events
+  * @param errorsCircuit circuit that handles error-related events
+  */
 class SimulationsView(val elem: Element,
                       val simulationCircuit: SimulationsCircuit,
                       val errorsCircuit: ErrorsCircuit
@@ -78,6 +84,15 @@ class SimulationsHeaders(val elem: Element, val items: Rx[List[(Int, Option[Laun
   }
 }
 
+/**
+  * View for a tab with simulation
+  * @param elem
+  * @param token
+  * @param initial
+  * @param input
+  * @param selected
+  * @param getCaption
+  */
 class SimulationTabItemView(val elem: Element,
                             token: Int, initial: Option[LaunchModel],
                             val input: Var[KappaMessage], val selected: Var[String] )(implicit getCaption: (Int, Option[LaunchModel]) => String) extends BindableView {

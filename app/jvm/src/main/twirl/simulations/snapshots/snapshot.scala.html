@@ -1,29 +1,49 @@
 @()
 <section data-template="true" class="ui bottom attached active tab segment" data-class-active-if="active">
-    <table>
-        <tr>
-            <td>
-                Name
-            </td>
-            <td data-bind="fileName">
-            </td>
-            <td>
-                Event
-            </td>
-            <td data-bind="event">
-            </td>
-        </tr>
-    </table>
+    <div class="ui form">
+        <div class="fields">
+            <div class="field">
+                <label>File name</label>
+                <span data-bind="fileName"></span>
+            </div>
+            <div class="field">
+                <label>Event</label>
+                <span data-bind="event"></span>
+            </div>
+            <div class="field">
+                <div class="ui checkbox">
+                    <input type="checkbox" name="byLength" data-bind="byLength">
+                    <label>Group by length</label>
+                </div>
+                </div>
+            <div class="field">
+                <div class="ui right labeled input">
+                    <input type="text" placeholder="Filter by pattern.." data-bind="patternString">
+                    <div class="ui basic label" data-bind="filterIcon"></div>
+                </div>
+            </div>
+        </div>
+    </div>
     <svg data-view="BarPlot" class="plot" xmlns:svg="http://www.w3.org/2000/svg" width="100%" data-bind-viewBox="viewBox" preserveAspectRatio = "xMinYMin meet">
-        <text class="title" data-bind-y="paddingY" font-size="18pt" data-bind-x="halfWidth" data-bind="title"></text>
+        <text font-size="22pt" y = "26" alignment-baseline="central" data-bind="label" style="margin: 10px"></text>
         <svg class="lines" data-bind-x="left" data-bind-y="top">
             <svg data-template="true">
-                <rect data-bind-x="x" data-bind-width="width" data-bind-height="height"  style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)">
-
+                <rect
+                data-bind-x="x" data-bind-y="y"
+                data-event-mouseenter="onMouseEnter" data-event-mouseexit="onMouseExit"
+                data-bind-width="width" data-bind-height="height"
+                style="fill:gold;stroke-width:3;stroke:rgb(0,0,0)"
+                >
+                    <text data-bind="quantity"></text>
                 </rect>
             </svg>
         </svg>
+        @simulations.plots.html.scaleY()
+        @simulations.plots.html.scaleX()
     </svg>
-    <div class="ui horizontal label">Filter by pattern: </div><input data-bind="patternString">
-    <button class="ui tiny button" data-event-click="saveSnapshot">Save snapshot</button>
+    <div class="ui buttons">
+        <button data-event-click="saveKappaSnapshot" class="ui blue button">Save as kappa init</button>
+        <div class="or"></div>
+        <button data-event-click="saveCSVSnapshot" class="ui green button">Save as CSV</button>
+    </div>
 </section>

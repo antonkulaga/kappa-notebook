@@ -27,7 +27,6 @@ import scala.util.{Failure, Success}
 /**
   * This class manages papers
   * @param elem Element to which view is bound to
-  * @param connector class that provides websocket connection and input/output vars to subscribe to
   * @param kappaCursor is used to suggest insertions of comments
   */
 class PapersView(val elem: Element,

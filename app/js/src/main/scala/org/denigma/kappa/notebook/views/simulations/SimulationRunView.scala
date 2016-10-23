@@ -1,23 +1,27 @@
 package org.denigma.kappa.notebook.views.simulations
 
-import org.denigma.binding.binders.Events
 import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
+import org.denigma.kappa.messages.KappaMessage
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages.{FluxMap, KappaPlot, SimulationStatus}
+import org.denigma.kappa.model.KappaModel.KappaSnapshot
 import org.denigma.kappa.notebook.views.common._
 import org.denigma.kappa.notebook.views.simulations.fluxes.FluxesView
-import org.scalajs.dom
-import org.scalajs.dom._
+import org.denigma.kappa.notebook.views.simulations.snapshots.SnapshotsView
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
-import rx.Rx.Dynamic
 import rx._
-import org.denigma.binding.extensions._
-import org.denigma.kappa.messages.{KappaMessage}
-import org.denigma.kappa.model.KappaModel.KappaSnapshot
-import org.denigma.kappa.notebook.views.simulations.snapshots.SnapshotsView
 
+/**
+  * The view for each Simulation Run (contains subviews with plots, fluxes, console, snapshots, etc)
+  * @param elem
+  * @param token
+  * @param params
+  * @param simulation
+  * @param input
+  * @param selected
+  */
 class SimulationRunView(val elem: Element,
                         val token: Int,
                         val params: Option[LaunchModel],
@@ -36,18 +40,20 @@ class SimulationRunView(val elem: Element,
     s.plot.getOrElse(KappaPlot.empty)
   }
 
-  //val percentage = simulation.map(s=>s.percentage)
+  val logMessages =  simulation.map(s=>s.log_messages)
 
-  //val maxOpt = simulation.map(s=>s.max)
+  val deadlocks: Rx[List[String]] = logMessages.map{ messages => messages.filter{ m => m.contains("deadlock was reached")}}
 
-  lazy val fluxMap:Rx[Map[String, FluxMap]] = simulation.map(s=>s.flux_maps.map(fl=>fl.flux_name ->fl).toMap)
+  val hasDeadlock: Rx[Boolean] = deadlocks.map(d=>d.nonEmpty)
+
+  val deadlockString: Rx[String] = deadlocks.map{ d => d.foldLeft(""){ case (acc, e) => acc + e +"\n"}}
+
+  lazy val fluxMap: Rx[Map[String, FluxMap]] = simulation.map(s=>s.flux_maps.map(fl=>fl.flux_name ->fl).toMap)
 
   val hasFluxes = fluxMap.map(fl=>fl.nonEmpty)
 
   val snapshots: Rx[List[KappaSnapshot]] = simulation.map{ s =>
     val kappaSnapshots = s.snapshots.map(snap=>snap.toKappaSnapshot)
-    println("KAPPA SNAPSHOTS ARE:")
-    println(kappaSnapshots)
     kappaSnapshots
   }
 
@@ -56,7 +62,7 @@ class SimulationRunView(val elem: Element,
   override lazy val injector = defaultInjector
     .register("Plot") {
       case (el, _) =>
-        new ChartView(el, Var(id), plot, tab).withBinder(new CodeBinder(_))
+        new SimulationPlotView(el, Var(id), plot, tab).withBinder(new CodeBinder(_))
     }
     .register("Parameters") {
       case (el, _) =>
@@ -64,7 +70,7 @@ class SimulationRunView(val elem: Element,
     }
     .register("Console") {
       case (el, _) =>
-        new ConsoleView(el, simulation.map(s=>s.log_messages), tab).withBinder(new CodeBinder(_))
+        new ConsoleView(el, logMessages, tab).withBinder(new CodeBinder(_))
     }
     .register("Fluxes") {
       case (el, _) =>

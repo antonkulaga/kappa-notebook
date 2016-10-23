@@ -6,13 +6,9 @@ import org.scalajs.dom.raw.Element
 import rx._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
-
 import scala.collection.immutable.SortedMap
 
 
-/**
-  * Created by antonkulaga on 9/27/16.
-  */
 class FlexibleAxisView(val elem: Element, scale: Rx[Scale], style: Rx[LineStyles])
   extends BindableView with CollectionSortedMapView
 {

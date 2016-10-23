@@ -10,6 +10,12 @@ import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
 
+/**
+  * Runner view (displayed on Create button)
+  * @param elem element to bind to
+  * @param tab tab name
+  * @param circuit circuit that handles simulations-related events
+  */
 class RunnerView(val elem: Element,
                  val tab: Var[String],
                  val circuit: SimulationsCircuit
@@ -18,8 +24,6 @@ class RunnerView(val elem: Element,
   self=>
 
   val active: Dynamic[Boolean] = tab.map(v=>v=="runner")
-
-  tab.onChange{ value => println("TAB CHANGED TO "+value) }
 
   protected def optInt(n: Int): Option[Int] = if(n > 0.0) Some(n) else None
 
@@ -34,7 +38,6 @@ class RunnerView(val elem: Element,
   val implicitSignature = Var(true)
 
 
-  // val gluttony: Var[Boolean] = Var(false)
 
   protected val maxTime = time.map(t => if(t > 0) Some(t) else None)
   protected val maxEvents = events.map(ev=> if(ev> 0) Some(ev) else None)

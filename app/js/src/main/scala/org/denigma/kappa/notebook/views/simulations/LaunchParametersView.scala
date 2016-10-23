@@ -13,6 +13,14 @@ import rx._
 
 import scala.collection.immutable.Seq
 
+/**
+  * View that shows initial run parameters and concatenated code of simulation that was started
+  * @param elem
+  * @param simulation
+  * @param code
+  * @param params
+  * @param selected
+  */
 class LaunchParametersView(val elem: Element,
                            val simulation: Rx[SimulationStatus],
                            val code: Rx[String],

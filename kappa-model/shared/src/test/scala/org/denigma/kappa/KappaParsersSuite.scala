@@ -214,9 +214,9 @@ class KappaParsersSuite extends WordSpec with Matchers with Inside  {
       rule.same.head._2 shouldEqual dnaRight1
       rule.same.tail.head._1 shouldEqual lacILeft
       rule.same.tail.head._2 shouldEqual lacIRight
-      rule.left.links shouldEqual Set( ("upstream", 0, "downstream", 2) )
-      rule.right.links shouldEqual Set( ("upstream", 0, "downstream", 2), ("dna", 1, "binding", 2 ))
-      rule.unchangedLinks shouldEqual Set( ("upstream", 0, "downstream", 2) )
+      rule.left.links shouldEqual Set( ("upstream", 0, "downstream", 2), ("downstream", 2,"upstream",0) )
+      rule.right.links shouldEqual Set( ("upstream", 0, "downstream", 2), ("downstream", 2,"upstream",0), ("dna", 1, "binding", 2 ), ("binding", 2, "dna", 1 ))
+      rule.unchangedLinks shouldEqual Set( ("upstream", 0, "downstream", 2), ("downstream", 2, "upstream", 0) )
       rule.removedLinks.size shouldEqual 0
       rule.addedLinks.size shouldEqual 1
     }

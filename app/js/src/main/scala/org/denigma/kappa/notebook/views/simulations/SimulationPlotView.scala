@@ -1,7 +1,7 @@
 package org.denigma.kappa.notebook.views.simulations
 
 import org.denigma.binding.binders.{Events, GeneralBinder}
-import org.denigma.controls.charts.{LinearScale, _}
+import org.denigma.controls.charts._
 import org.denigma.kappa.messages.KappaSeries
 import org.denigma.kappa.messages.WebSimMessages.KappaPlot
 import org.scalajs.dom
@@ -112,7 +112,7 @@ class ChartView(val elem: Element,
 
 }
 */
-object ChartView {
+object SimulationPlotView {
 
 
   protected def defaultWidth: Double = 1000
@@ -121,12 +121,12 @@ object ChartView {
 }
 
 
-class ChartView(val elem: Element,
-                val title: Rx[String],
-                val plot: Rx[KappaPlot],
-                val selected: Var[String],
-                val scaleX: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Time / Events", 0.0, 10, 2, ChartView.defaultWidth)),
-                val scaleY: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Molecules", 0.0, 10, 2, ChartView.defaultHeight, inverted = true))
+class SimulationPlotView(val elem: Element,
+                         val title: Rx[String],
+                         val plot: Rx[KappaPlot],
+                         val selected: Var[String],
+                         val scaleX: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Time / Events", 0.0, 10, 2, SimulationPlotView.defaultWidth)),
+                         val scaleY: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Molecules", 0.0, 10, 2, SimulationPlotView.defaultHeight, inverted = true))
                ) extends FlexibleLinesPlot{
 
   lazy val legend = plot.map(p=>p.legend)

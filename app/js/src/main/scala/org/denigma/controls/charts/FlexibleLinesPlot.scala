@@ -94,7 +94,7 @@ trait FlexibleLinearScale
 
   def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): FlexibleLinearScale
 
-  override def coord(value: Double): Double = if(inverted) inverse(value) * scale else (value - start) * scale //TODO: move this fix to the parent
+  def coord(value: Double, invert: Boolean): Double = if(invert) inverse(value) * scale else (value - start) * scale //TODO: move this fix to the parent
 
 }
 

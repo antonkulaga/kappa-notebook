@@ -19,7 +19,7 @@ object BarPlot {
 
     protected def defaultWidth: Double = 1000
 
-    protected def defaultHeight: Double = 500
+    protected def defaultHeight: Double = 800
 
 }
 
@@ -125,9 +125,9 @@ class BarPlot(val elem: Element,
         val i = its.indexOf(bar)
         val x = scX.coord(i)
         //println("X = "+x)
-        val y = scY.coord(bar.quantity)
-        val height: Double = scY.inverse(y)
-        val width = scX.stepSize * scX.scale
+        val y = scY.coord(bar.quantity, true)
+        val height: Double =  scY.coord(bar.quantity, false)
+        val width = scX.coord(i, false)
         Rectangle(x, y, width, height)
     }
     result

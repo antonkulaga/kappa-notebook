@@ -14,7 +14,7 @@ case class PatternGroupBar(data: Map[Pattern, Int]) extends Bar {
 case class PatternBar(data: Pattern, quantity: Double) extends Bar {
   type Data = Pattern
 
-  def name = data.toKappaCode
+  def name = s"$quantity ${data.toKappaCode}"
 
 }
 

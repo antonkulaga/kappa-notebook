@@ -1,10 +1,13 @@
 package org.denigma.kappa.notebook.communication
 
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem}
+import akka.actor._
+import akka.pattern.pipe
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import org.denigma.kappa.messages.KappaMessage.{ServerCommand, ServerResponse}
 import org.denigma.kappa.messages.ServerMessages._
+import org.denigma.kappa.messages.{Done, SimulationCommands}
+import org.denigma.kappa.messages.SimulationCommands.SimulationCommand
 import org.denigma.kappa.messages.WebSimMessages._
 import org.denigma.kappa.notebook.services.WebSimClient
 
@@ -61,12 +64,40 @@ class KappaServerActor extends Actor with ActorLogging {
       }
       val server = servers(serverName)
       server.parse(ParseCode(p.code), sink)
+
+    //checks kappa model for errors and returns either ContactMap or syntax errors
+    case r @ RunAtServer(username, serverName, p: SimulationCommands.PauseSimulation, userRef, interval) if servers.contains(serverName)=>
+      val server = servers(serverName)
+      server.pause(p.token)
+
+    case r @ RunAtServer(username, serverName, p: SimulationCommands.StopSimulation, userRef, interval) if servers.contains(serverName)=>
+      val server = servers(serverName)
+      server.stop(p.token)
+
+
+    case r @ RunAtServer(username, serverName, p: SimulationCommands.CloseSimulation, userRef, interval) if servers.contains(serverName)=>
+      val server = servers(serverName)
+      server.stop(p.token)
+
+
+
+    case r @ RunAtServer(username, serverName, p: SimulationCommands.ContinueSimulation, userRef, interval) if servers.contains(serverName)=>
+      val server = servers(serverName)
+      server.continue(p.token)
+      //userRef ! Done(r, username)
+
+
   }
 
   protected def otherCases: PartialFunction[ServerMessage, Unit] = {
-    case  launch @ RunAtServer(username, serverName, message, userRef, interval) =>
-      system.log.error("DOES NOT EXIST: " + launch)
-      userRef ! KappaServerErrors(List(s"Server $serverName does not respond"))
+    case  command @ RunAtServer(username, serverName, message, userRef, interval) =>
+      val allServersMessage: String = servers.keys.foldLeft("["){
+        case ("[", s) => s"[ $s"
+        case (acc, s) =>acc + ", " + s
+      } + " ]"
+      val mess = s"SERVER ${serverName} DOES NOT EXIST: " + s"(ALL SERVERS ARE: $allServersMessage)\n INITIAL MESSAGE IS: ${command}"
+      system.log.error(mess)
+      userRef ! KappaServerErrors(List(mess))
 
     case other => this.log.error(s"some other message $other")
   }

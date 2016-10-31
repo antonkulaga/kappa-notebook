@@ -80,14 +80,14 @@ class WebSimSuite extends BasicKappaSuite {
         .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
         .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
 
-      val wrongParams = LaunchModel(List("abc" -> wrongModel), Some(1000), max_events = Some(1000000))
+      val wrongParams = LaunchModel(List("abc" -> wrongModel), 0.1, max_events = Some(1000000))
       server.launch(wrongParams).pipeTo(probeToken.ref)
       probeToken.expectMsgPF(duration * 2) {
         case (Right(msg), model) =>
           println("launching wrong model works well")
       }
 
-      val params = LaunchModel(List("abc"->model), Some(1000), max_events = Some(10000))
+      val params = LaunchModel(List("abc"->model), 0.1, max_events = Some(10000))
       server.launch(params).pipeTo(probeToken.ref)
 
       probeToken.expectMsgPF(duration * 2) {
@@ -102,7 +102,7 @@ class WebSimSuite extends BasicKappaSuite {
     "run simulation, get first result and stop" in {
       val probeToken = TestProbe()
       val model = abc
-      val params = LaunchModel(List("abc"->model), Some(1000), max_events = Some(1000000))
+      val params = LaunchModel(List("abc"->model), 0.1, max_events = Some(1000000))
       val tokenFut = server.launch(params).pipeTo(probeToken.ref)
       val token = probeToken.expectMsgPF(duration * 2) {  case (Left((t: Int, mp: ContactMap)), mod) => t  }
       val source =  Source.single(token)
@@ -131,7 +131,7 @@ class WebSimSuite extends BasicKappaSuite {
 
       val probeToken = TestProbe()
       val model = abc
-      val params = LaunchModel(List("abc"->model), Some(1000), max_events = Some(100000000))
+      val params = LaunchModel(List("abc"->model), 0.1, max_events = Some(100000000))
       val tokenFut: Future[server.flows.Runnable[server.flows.TokenContactResult]] = server.launch(params).pipeTo(probeToken.ref)
       val token = probeToken.expectMsgPF(duration * 2) {
         case (Left((t: Int, result)), m) => t
@@ -164,7 +164,7 @@ class WebSimSuite extends BasicKappaSuite {
 
     "run streamed" in {
       val tokenSink = TestSink.probe[flows.Runnable[flows.TokenContactResult]]
-      val params = LaunchModel(List("abc"->abc), Some(100), max_events = Some(5000))
+      val params = LaunchModel(List("abc"->abc), 0.1, max_events = Some(5000))
       val launcher: Probe[flows.Runnable[flows.TokenContactResult]] = Source.single(params).via(flows.runModelFlow).runWith(tokenSink)
       val (token, model) = launcher.request(1).expectNextPF{
         case (Left((t: Int, cm)), mod) =>  t -> mod
@@ -183,7 +183,7 @@ class WebSimSuite extends BasicKappaSuite {
     "run simulation and get results" in {
 
       val probe = TestProbe()
-      val params = LaunchModel(List("abc"->abcFlow), Some(1000), max_events = Some(1000))
+      val params = LaunchModel(List("abc"->abcFlow), 0.1, max_events = Some(1000))
 
       server.run(params).map(_._1).pipeTo(probe.ref)
 
@@ -195,7 +195,7 @@ class WebSimSuite extends BasicKappaSuite {
 
 
     "stop simulation" in {
-      val params = LaunchModel(List("abc"-> abcFlow), Some(1000), max_events = Some(10000000))
+      val params = LaunchModel(List("abc"-> abcFlow), 0.1, max_events = Some(10000000))
       val Left((token, _))= Await.result(server.launch(params), 500 millis)._1
       Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual true
       Await.result(server.stop(token), 1 second)
@@ -205,7 +205,7 @@ class WebSimSuite extends BasicKappaSuite {
 
     "pause/continue simulation" in {
       //TODO: make complete
-      val params = LaunchModel(List("abc"-> abcFlow), Some(1000), max_events = Some(10000000))
+      val params = LaunchModel(List("abc"-> abcFlow), 0.1, max_events = Some(10000000))
       val Left((token, _))= Await.result(server.launch(params), 500 millis)._1
       Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual true
       Await.result(server.pause(token), 1 second)
@@ -218,7 +218,7 @@ class WebSimSuite extends BasicKappaSuite {
 
     "write snapshots" in {
       val probe = TestProbe()
-      val params = LaunchModel(List("snap400.ka"-> snap400), Some(400), max_events = Some(400))
+      val params = LaunchModel(List("snap400.ka"-> snap400), 0.1, max_events = Some(400))
 
       server.run(params).map(_._1).pipeTo(probe.ref)
 

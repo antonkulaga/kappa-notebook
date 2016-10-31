@@ -141,7 +141,7 @@ class PapersView(val elem: Element,
   }
 
   override lazy val injector = defaultInjector
-    .register("headers")((el, args) => new FileTabHeaders(el, headers, paperCircuit.input, paperURI)(FileTabHeaders.path2name).withBinder(new GeneralBinder(_)))
+    .register("headers")((el, args) => new FileTabHeaders(el, headers, paperCircuit.input, paperURI)(FileTabHeaders.prettyPath2Name(30)).withBinder(new GeneralBinder(_)))
 
   override def updateView(view: PublicationView, key: Key, old: Paper, current: Paper): Unit = {
     view.paper() = current

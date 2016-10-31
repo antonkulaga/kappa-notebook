@@ -1,9 +1,10 @@
 package org.denigma.kappa.notebook.views.simulations
 
+import org.denigma.binding.binders.Events
 import org.denigma.binding.views.BindableView
 import org.denigma.controls.code.CodeBinder
-import org.denigma.kappa.messages.KappaMessage
-import org.denigma.kappa.messages.ServerMessages.LaunchModel
+import org.denigma.kappa.messages.{KappaMessage, SimulationCommands}
+import org.denigma.kappa.messages.ServerMessages.{LaunchModel}
 import org.denigma.kappa.messages.WebSimMessages.{FluxMap, KappaPlot, SimulationStatus}
 import org.denigma.kappa.model.KappaModel.KappaSnapshot
 import org.denigma.kappa.notebook.views.common._
@@ -11,6 +12,9 @@ import org.denigma.kappa.notebook.views.simulations.fluxes.FluxesView
 import org.denigma.kappa.notebook.views.simulations.snapshots.SnapshotsView
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
+import rx.Rx.Dynamic
+import org.denigma.binding.extensions._
+import org.denigma.kappa.messages.KappaMessage.ServerCommand
 import rx._
 
 /**
@@ -34,15 +38,39 @@ class SimulationRunView(val elem: Element,
 
   val tab: Var[String] = Var("plot")
 
-  val initialCode = simulation.map(sim=>sim.code.orElse(params.map(_.fullCode)).getOrElse("### NODE CODE AVALIABLE ###"))
+  val initialCode = simulation.map(sim=>/*sim.code.orElse(params.map(_.fullCode)*/ sim.code)//.getOrElse("### NODE CODE AVALIABLE ###"))
 
   val plot: Rx[KappaPlot] = simulation.map{s=>
     s.plot.getOrElse(KappaPlot.empty)
   }
 
+  val currentEvent = simulation.map(s=>s.event)
+
   val logMessages =  simulation.map(s=>s.log_messages)
 
   val deadlocks: Rx[List[String]] = logMessages.map{ messages => messages.filter{ m => m.contains("deadlock was reached")}}
+
+  val percentage: Rx[Double] = simulation.map(s=>s.percentage)
+
+  val percentageString = percentage.map(p=>s"$p%")
+
+  val isRunning = simulation.map{ s => s.is_running}
+
+  val stopClick = Var(Events.createMouseEvent())
+  stopClick.onChange{ ev =>
+    input() = ServerCommand(ServerCommand.defaultServer, SimulationCommands.StopSimulation(token)) //TODO: fix this terrible code
+  }
+
+
+  //val succeeded = percentage.map(p => p >= 100)
+
+  //val stopped = simulation.map{ s => s.stillRunning }
+
+  val statusString = simulation.map{ s =>
+    if(s.percentage >= 100.0) "succeeded" else
+    if(s.stopped) "stopped"
+    else "running"
+  }
 
   val hasDeadlock: Rx[Boolean] = deadlocks.map(d=>d.nonEmpty)
 

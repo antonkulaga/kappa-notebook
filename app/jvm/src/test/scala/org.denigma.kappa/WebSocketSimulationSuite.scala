@@ -19,6 +19,9 @@ import org.denigma.kappa.notebook.pages.WebSockets
 
 import scala.collection.immutable._
 
+/**
+  * Tests running simulatins by sending messages via websocket and getting responses
+  */
 class WebSocketSimulationSuite extends BasicWebSocketSuite {
 
   val filePath: String = config.as[Option[String]]("app.files").getOrElse("files/")
@@ -43,7 +46,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
         check {
           // check response for WS Upgrade headers
           isWebSocketUpgrade shouldEqual true
-          val params = RunModel(abc, Some(1000), max_events = Some(10000))
+          val params = RunModel(abc, 0.1, max_events = Some(10000))
           println("SERVER NAME = "+serverName)
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(serverName, LaunchModel.fromRunModel(abc, params)))
           wsClient.sendMessage(pack(d))
@@ -82,7 +85,7 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
           val model = abc
             .replace("A(x),B(x)", "A(x&*&**),*(B(&**&x)")
             .replace("A(x!_,c),C(x1~u)", "zafzafA(x!_,c),azfC(x1~u)") //note: right now sees only one error
-          val params = RunModel(model, Some(1000), max_events = Some(10000))
+          val params = RunModel(model, 0.1, max_events = Some(10000))
           val d: ByteBuffer = Pickle.intoBytes[KappaMessage](ServerCommand(serverName, LaunchModel.fromRunModel(abc, params)))
           wsClient.sendMessage(pack(d))
 

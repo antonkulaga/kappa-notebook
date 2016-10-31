@@ -1,14 +1,52 @@
 @()
 <section data-template="true" class="ui bottom attached active tab segment" data-class-active-if="active">
-  <div class="ui negative message"  data-show-if="hasDeadlock">
-    <p data-bind="deadlockString">
-    </p>
-  </div>
+  <section class="ui top attached blue stack segment">
+
+    <div class="ui form">
+      <div class="fields">
+        <div class="field">
+          <label>Tracked events: </label>
+        </div>
+        <div class="field">
+          <span data-bind="currentEvent"></span>
+        </div>
+        <div class="field">
+          <progress data-bind-value="percentage" max="100" value="0"></progress>
+        </div>
+        <div class="field">
+          <span data-bind="percentageString"></span>
+        </div>
+        <div class="field"  data-show-if="isRunning">
+          <div class="ui icon buttons">
+            <button class="ui negative button" data-show-if="isRunning" data-event-click="stopClick"><i class="stop icon"></i></button>
+          </div>
+        </div>
+        <div class="field">
+          <span data-bind="statusString"></span>
+        </div>
+      </div>
+    </div>
+
+
+    <!--
+    <div class="ui inverted progress success" data-class-success-if="succeeded">
+      <div class="bar">
+
+        <div class="progress"></div>
+      </div>
+      <div class="label">Success</div>
+    </div>
+    -->
+    <div class="ui negative message"  data-show-if="hasDeadlock">
+      <p data-bind="deadlockString">
+      </p>
+    </div>
+  </section>
   <div class="ui top attached pointing menu">
     <a class="pointed item" data-set-tab-on-click="plot" data-class-active-if="Plot.active">Plot</a>
     <a class="pointed item" data-set-tab-on-click="console" data-class-active-if="Console.active">Console</a>
     <a class="pointed item" data-set-tab-on-click="parameters" data-class-active-if="Parameters.active">Parameters</a>
-    <a class="pointed item" data-set-tab-on-click="fluxes" data-class-active-if="Fluxes.active" data-show-if="hasFluxes">Fluxes</a>
+    <a class="pointed item" data-set-tab-on-click="fluxes" data-class-active-if="Fluxes.active">Fluxes</a>
     <a class="pointed item" data-set-tab-on-click="snapshots" data-class-active-if="Snapshots.active"  data-show-if="hasSnapshots">Snapshots</a>
   </div>
   @simulations.plots.html.plot()

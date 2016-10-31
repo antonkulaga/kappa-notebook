@@ -106,6 +106,18 @@ class UserActor(val username: String, servers: ActorRef, val fileManager: FileMa
     case ServerCommand(server, p: ServerMessages.ParseModel) =>
       val toServer = RunAtServer(username, server, p, self, 100 millis)
       servers ! toServer
+
+    case ServerCommand(server, p: SimulationCommands.CloseSimulation) =>
+      val toServer =  RunAtServer(username, server, p, self, 100 millis)
+      servers ! toServer
+
+    case ServerCommand(server, p: SimulationCommands.PauseSimulation) =>
+      val toServer =  RunAtServer(username, server, p, self, 100 millis)
+      servers ! toServer
+
+    case ServerCommand(server, p: SimulationCommands.StopSimulation) =>
+      val toServer =  RunAtServer(username, server, p, self, 100 millis)
+      servers ! toServer
   }
 
 

@@ -51,12 +51,12 @@ class LintOptions(val async: Boolean) extends js.Object
 object LintFound {
   implicit def fromWebSimError(error: WebSimError): LintFound = {
     val from = new PositionLike {
-      override val line: Int = error.range.from_position.line
-      override val ch: Int = error.range.from_position.chr
+      override val line: Int = error.range.map(r=>r.from_position.line).getOrElse(-1)
+      override val ch: Int = error.range.map(r=>r.from_position.chr).getOrElse(-1)
     }
     val to =  new PositionLike {
-      override val line: Int = error.range.to_position.line
-      override val ch: Int = error.range.to_position.chr
+      override val line: Int = error.range.map(r=>r.to_position.line).getOrElse(-1)
+      override val ch: Int = error.range.map(r=>r.to_position.chr).getOrElse(-1)
     }
     new LintFound(from, to, error.severity, error.message)
   }

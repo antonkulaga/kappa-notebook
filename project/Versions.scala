@@ -77,7 +77,7 @@ trait ScalaJSVersions {
 trait SharedVersions
 {
 
-	var sourcecode = "0.1.2"
+	var sourcecode = "0.1.3"
 
 	val annotator = "0.0.5"
 
@@ -91,7 +91,7 @@ trait SharedVersions
 
 	val scalaCheck = "1.13.3"
 
-	val fastparse = "0.4.1"
+	val fastparse = "0.4.2"
 
 	val quicklens = "1.4.8"
 

@@ -19,6 +19,7 @@ object ServerMessages {
       .addConcreteType[LaunchModel]
       .addConcreteType[ConnectedServers]
       .addConcreteType[ServerConnection]
+      .join(SimulationCommands.SimulationCommand.classPickler)
   }
 
   trait ServerMessage
@@ -63,18 +64,22 @@ object ServerMessages {
     def isEmpty = errors.isEmpty
 
     def errorsByFiles(): List[(String, WebSimError)] = {
-      this.errors.map { er =>
-          (fileLocation(er.range.from_position), fileLocation(er.range.to_position))
+      this.errors.map { er => er.range match {
+        case Some(range) =>
+          (fileLocation(range.from_position), fileLocation(range.to_position))
           match {
             case (Some((f, from)), Some((_, to))) =>
-              val newRange = er.range.copy(from_position = from, to_position = to)
+              val newRange = range.copy(from_position = from, to_position = to)
               //println("ERROR WEBSIM FILE IS " + er.range.file)
-              f -> er.copy(range = newRange)
+              f -> er.copy(range = Some(newRange))
             //er.copy(range = er.range.copy(from = from, to = to))
             case _ =>
               println("cannot find file for the range +" + er.range)
               "" -> er
           }
+        case None => "" -> er
+
+        }
       }
     }
   }
@@ -88,24 +93,37 @@ object ServerMessages {
   object LaunchModel {
     implicit val classPickler: Pickler[LaunchModel] = boopickle.Default.generatePickler[LaunchModel]
 
-    def fromRunModel(file: String, model: RunModel) = LaunchModel(List(file->model.code), max_events = model.max_events, max_time = model.max_time, nb_plot = model.nb_plot)
+    def fromRunModel(file: String, model: RunModel) = LaunchModel(
+      List(file -> model.code), max_events = model.max_events, max_time = model.max_time, plot_period = model.plot_period
+    )
 
-    lazy val empty = LaunchModel(Nil, None, None, None )
+    lazy val empty = LaunchModel(Nil, 0.0, None, None )
   }
 
   case class LaunchModel( files: List[(String, String)],
-                         nb_plot: Option[Int] = Some(1000),
-                         max_events: Option[Int],
-                         max_time: Option[Double] = None,
-                         runName: String = "") extends ServerMessage with FileContainer with RunParameters
+                          plot_period: Double = 0.1,
+                          max_events: Option[Int],
+                          max_time: Option[Double] = None,
+                          runName: String = "", runCount: Int = 1) extends ServerMessage with FileContainer with RunParameters
   {
 
-    lazy val parameters = RunModel(fullCode, nb_plot, max_events, max_time)
+    lazy val parameters = RunModel(fullCode, plot_period, max_events, max_time)
 
     lazy val fileNames = files.map(_._1)
 
+    def updated(runParameters: RunParameters) = if(runParameters==this) {
+      println(s"running ${runCount} time")
+      this.copy(runCount = this.runCount + 1)
+    } else {
+      copy(plot_period = runParameters.plot_period, max_events = runParameters.max_events, max_time = runParameters.max_time)
+    }
+
   }
 
+
+  /**
+    * Is used for classes like Launch model that can contains many concatenated files with the code
+    */
   trait FileContainer {
     def files: List[(String, String)]
 
@@ -165,6 +183,7 @@ object ServerMessages {
   object ParseResult {
     implicit val classPickler: Pickler[ParseResult] = boopickle.Default.generatePickler[ParseResult]
   }
+
   case class ParseResult(contactMap: ContactMap) extends ServerMessage
 
 }

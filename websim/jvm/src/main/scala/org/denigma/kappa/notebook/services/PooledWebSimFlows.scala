@@ -71,12 +71,14 @@ trait PooledWebSimFlows extends WebSimFlows {
       case (Success(resp), message) =>
         val fut = Unmarshal(resp).to[T]
         fut.map[Either[T, U]](Left(_)).recoverWith{
-          case exception => onfailure(resp, exception).map[Either[T, U]](Right(_))
+          case exception =>
+            onfailure(resp, exception).map[Either[T, U]](Right(_))
+              .recoverWith{ case th=> wrongUnmarshal(th, resp) }
         }
       case (Failure(exception), time) => Future.failed(exception)
     }
 
-  protected def wrongUnmarshal(th: Throwable,resp: HttpResponse) = {
+  protected def wrongUnmarshal(th: Throwable, resp: HttpResponse) = {
     system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
     system.log.error("THE ERROR is:"+th)
     Unmarshal(resp).to[String].onComplete{

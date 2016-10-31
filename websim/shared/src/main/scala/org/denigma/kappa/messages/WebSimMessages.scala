@@ -44,6 +44,12 @@ object WebSimMessages {
   }
   case class Version(version_build: String, version_id: String ) extends WebSimMessage
 
+  /*
+  [{"severity":"error","message":"invalid use of character &","range":{"file":"","from_position":{"chr":236,"line":9},"to_position":{"chr":236,"line":9}}}]),HttpProtocol(HTTP/1.1))==
+
+   */
+
+
   object Location {
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[Location] = boopickle.Default.generatePickler[Location]
@@ -63,9 +69,16 @@ object WebSimMessages {
     implicit val classPickler: Pickler[WebSimError] = boopickle.Default.generatePickler[WebSimError]
   }
 
-  case class WebSimError(severity: String, message: String, range: WebSimRange) extends WebSimMessage
+  case class WebSimError(severity: String, message: String, range: Option[WebSimRange] = None) extends WebSimMessage
   {
-    lazy val fullMessage = s"[$severity] $message :${range.from_position.line}:${range.from_position.chr}-${range.to_position.line}:${range.to_position.chr}"
+    lazy val fullMessage = s"[$severity] $message $rangeString"
+    lazy val rangeString: String = range match {
+      case Some(rangeValue) => s" :"+rangeValue.from_position.line+":" +
+        rangeValue.from_position.chr + "-" +
+        rangeValue.to_position.line + ":" +
+        rangeValue.to_position.chr
+      case None => ""
+     }
   }
 
   object WebSimNode {
@@ -148,14 +161,15 @@ object WebSimMessages {
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[RunModel] = boopickle.Default.generatePickler[RunModel]
 
-    lazy val empty = RunModel("", None, None, None)
+    lazy val empty = RunModel("", 0.1, None, None)
   }
-  case class RunModel(code: String, nb_plot: Option[Int] = Some(250), max_events: Option[Int], max_time: Option[Double] = None) extends WebSimMessage with RunParameters
+  case class RunModel(code: String,  plot_period: Double = 0.1, max_events: Option[Int], max_time: Option[Double] = None, runCount: Int = 1) extends WebSimMessage with RunParameters
 
   trait RunParameters {
-    def nb_plot: Option[Int]
+    def plot_period: Double
     def max_events: Option[Int]
     def max_time: Option[Double]
+    def runCount: Int
   }
 
   object Observable {
@@ -281,60 +295,64 @@ object WebSimMessages {
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[FileLine] = boopickle.Default.generatePickler[FileLine]
   }
+
   case class FileLine(file_name: String, line: String) extends WebSimMessage
 
   object SimulationStatus {
     lazy val empty = SimulationStatus(0.0,
-      None, 0, None, None, None, None, None, is_running = false, None , Nil, None, Nil, None, Nil, Nil
+      None, 0, Some(0), None, None, None, is_running = false, Nil, None, Nil, None, Nil, Nil
     )
     import boopickle.DefaultBasic._
     implicit val classPickler: Pickler[SimulationStatus] = boopickle.Default.generatePickler[SimulationStatus]
   }
 
-  /* OCAML class is:
-    type simulator_state =
-    { mutable is_running : bool
-    ; mutable run_finalize : bool
-    ; counter : Counter.t
-    ; log_buffer : Buffer.t
-    ; log_form : Format.formatter
-    ; mutable plot : ApiTypes_j.plot
-    ; mutable distances : ApiTypes_j.distances
-    ; mutable snapshots : ApiTypes_j.snapshot list
-    ; mutable flux_maps : ApiTypes_j.flux_map list
-    ; mutable files : ApiTypes_j.file_line list
-    ; mutable error_messages : ApiTypes_j.errors
-    ; contact_map : Primitives.contact_map
-    ; env : Environment.t
-    ; mutable domain : Connected_component.Env.t
-    ; mutable graph : Rule_interpreter.t
-    ; mutable state : State_interpreter.t
-    }
-   */
+
+  /**
+    * type state = { plot : plot nullable;
+               distances : distances nullable;
+               time : float;
+               time_percentage : int nullable;
+               event : int;
+               event_percentage : int nullable;
+               tracked_events : int nullable;
+               log_messages : string list;
+               snapshots : snapshot list;
+               flux_maps : flux_map list;
+               files : file_line list;
+               is_running : bool
+             }
+    */
   case class SimulationStatus(
                                time: Double,
                                time_percentage: Option[Double],
                                event: Int,
                                event_percentage: Option[Double],
                                tracked_events: Option[Int],
-                               nb_plot: Option[Int],
+                               //plot_period: Double,
                                max_time: Option[Double],
                                max_events: Option[Int],
                                is_running: Boolean,
-                               code: Option[String],
                                log_messages: List[String],
                                plot: Option[KappaPlot],
                                snapshots: List[Snapshot],
                                distances: Option[List[UnaryDistance]],
                                flux_maps: List[FluxMap],
-                               files: List[String]
+                               files: List[FileLine]
                              )  extends WebSimMessage
   {
-    def notFinished: Boolean = percentage < 100.0 && is_running//.getOrElse(true)
 
-    lazy val percentage: Double = event_percentage.orElse(time_percentage).get //throw if neither events not time are set
+    lazy val code = files.foldLeft(""){ case (acc, fl) => acc + "\n" + fl.line}
 
-    lazy val runParameters: RunModel = RunModel(code.getOrElse(""), nb_plot, max_events, max_time)
+    lazy val stillRunning: Boolean = percentage < 100.0 && is_running//.getOrElse(true)
+
+    lazy val percentage: Double = {
+      val per = event_percentage.orElse(time_percentage).getOrElse(0.0)
+      per
+    } //throw if neither events not time are set
+
+    lazy val stopped = !is_running && percentage < 100.0
+
+    //lazy val runParameters: RunModel = RunModel(code, plot_period, max_events, max_time)
 
     lazy val max: Option[Double] = max_time.orElse(max_events.map(e=>e:Double))
   }

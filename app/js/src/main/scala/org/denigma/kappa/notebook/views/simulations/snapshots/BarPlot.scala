@@ -5,12 +5,14 @@ import org.denigma.binding.views._
 import org.denigma.controls.charts._
 import org.denigma.controls.drawing.Rectangle
 import org.denigma.kappa.model.KappaModel.{KappaSnapshot, Pattern}
+import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx.{Rx, Var}
 
 import scala.collection.immutable.Iterable
+import scala.util.{Failure, Try}
 
 /**
   * Created by antonkulaga on 10/21/16.
@@ -122,9 +124,36 @@ class BarPlot(val elem: Element,
     val scY = scaleY()
     val its = items()
     val result: Bar => Rectangle = {bar =>
+
+      Try{
         val i = its.indexOf(bar)
         val x = scX.coord(i)
-        //println("X = "+x)
+        val y = scY.coord(bar.quantity, true)
+        val height: Double =  scY.coord(bar.quantity, false)
+        val width = scX.coord(i, false)
+        Rectangle(x, y, width, height)
+      } match {
+        case Failure(th) =>
+          val i = its.indexOf(bar)
+          val x = scX.coord(i)
+          val y = scY.coord(bar.quantity, true)
+          val height: Double =  scY.coord(bar.quantity, false)
+          val width = scX.coord(i, false)
+          dom.console.error(s"POSITION FAILURE $th ")
+          dom.console.error(
+            s"""
+               |FOR:
+               | val i(${i.toString}) = its.indexOf(bar)
+               |        val x(${x.toString}) = scX.coord(i)
+               |        val y(${y.toString}) = scY.coord(bar.quantity, true)
+               |        val height(${height.toString}): Double =  scY.coord(bar.quantity, false)
+               |        val width(${width.toString}) = scX.coord(i, false)
+             """.stripMargin)
+        case _ =>
+      }
+
+        val i = its.indexOf(bar)
+        val x = scX.coord(i)
         val y = scY.coord(bar.quantity, true)
         val height: Double =  scY.coord(bar.quantity, false)
         val width = scX.coord(i, false)

@@ -7,6 +7,10 @@ object KappaMessage{
 
   object ServerCommand {
     implicit val classPickler: Pickler[ServerCommand] = boopickle.Default.generatePickler[ServerCommand]
+
+    lazy val defaultServer = ""
+
+    def onDefaultServer(message: ServerMessage) = ServerCommand(defaultServer, message)
   }
 
   case class ServerCommand(server: String, serverMessage: ServerMessage) extends KappaMessage

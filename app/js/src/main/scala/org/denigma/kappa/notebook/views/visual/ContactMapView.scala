@@ -32,7 +32,6 @@ object WebSimNodeJS {
   }
 }
 
-@JSName("Node")
 @ScalaJSDefined
 class WebSimNodeJS(val node_name: String, val node_sites: js.Array[WebSimSideJS]) extends js.Object{
 

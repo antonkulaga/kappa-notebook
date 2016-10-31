@@ -31,13 +31,20 @@ class SnapView(val elem: Element, val item: Var[KappaModel.KappaSnapshot], val s
 
   val parser = new KappaParser()
 
-  val filterPattern: Var[Pattern] = patternString.mapAfterLastChange[Pattern](800 millis, Pattern.empty){ str => parser.rulePart.parse(str) match {
-      case Parsed.Success(pat, _) => pat
-      case Parsed.Failure(_, _, extra) => Pattern.empty
+  val filterPattern: Var[Pattern] = patternString.mapAfterLastChange[Pattern](800 millis, Pattern.empty){ str => parser.rulePart.parse(str.trim) match {
+      case Parsed.Success(pat, _) =>
+        println("PARSED AS "+pat)
+        pat
+
+      case Parsed.Failure(_, _, extra) =>
+        println("CANNOT PARSE BECAUSE: "+ extra)
+        Pattern.empty
     }
   }
 
   val byLength = Var(false)
+  val spans = Var(1)
+
 
   /*
   val filterCaption = byLength.map{
@@ -69,7 +76,7 @@ class SnapView(val elem: Element, val item: Var[KappaModel.KappaSnapshot], val s
 
   val saveKappaSnapshot: Var[MouseEvent] = Var(Events.createMouseEvent())
   saveKappaSnapshot.triggerLater{
-    println("KA CLICK")
+    //println("KA CLICK")
     val txt = item.now.patterns.foldLeft(""){
       case (acc, (p , q)) => acc + KappaModel.InitCondition(Right(q), p).toKappaCode + "\n"
     }
@@ -78,7 +85,7 @@ class SnapView(val elem: Element, val item: Var[KappaModel.KappaSnapshot], val s
 
   val saveCSVSnapshot: Var[MouseEvent] = Var(Events.createMouseEvent())
   saveCSVSnapshot.triggerLater{
-    println("TSV CLICK")
+    //println("TSV CLICK")
     val txt = item.now.patterns.foldLeft(""){
       case (acc, (p , q)) => acc + p.toKappaCode + "\t"+q + "\n"
     }

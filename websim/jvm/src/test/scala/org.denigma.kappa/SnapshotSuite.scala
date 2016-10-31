@@ -1,32 +1,23 @@
 package org.denigma.kappa
 
-import org.scalacheck.Gen
-import akka.NotUsed
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpResponse
 import akka.pattern.pipe
-import akka.stream.scaladsl.{Sink, Source}
-import akka.stream.testkit.TestSubscriber.Probe
-import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestProbe
-import org.denigma.kappa.messages._
-import org.denigma.kappa.notebook.services._
-
-import scala.collection.immutable.Seq
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
-import scala.util._
-import WebSimMessages._
 import fastparse.core.Parsed
 import org.denigma.kappa.messages.ServerMessages.{LaunchModel, ServerConnection}
+import org.denigma.kappa.messages.WebSimMessages._
+import org.denigma.kappa.messages._
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.{KappaSnapshot, Pattern}
+import org.denigma.kappa.notebook.services._
 import org.denigma.kappa.parsers.KappaParser
 import org.scalacheck.Gen
-import org.scalacheck.Prop.forAll
+
+import scala.concurrent.duration._
+import scala.util._
 
 /**
-  * Created by antonkulaga on 10/11/16.
+  * Snapshot Suite to test snapshots
   */
 class SnapshotSuite extends BasicKappaSuite {
 
@@ -114,7 +105,7 @@ class SnapshotSuite extends BasicKappaSuite {
 
     "be received from websim" in {
       val probe = TestProbe()
-      val params = LaunchModel(List("snap400.ka"-> snap400), Some(400), max_events = Some(400))
+      val params = LaunchModel(List("snap400.ka"-> snap400), plot_period = 0.1, max_events = Some(400))
 
       server.run(params).map(_._1).pipeTo(probe.ref)
 

@@ -6,6 +6,7 @@ import org.denigma.binding.commons.Uploader
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{BindableView, CollectionMapView, CollectionSeqView, CollectionSortedSetView}
 import org.denigma.controls.code.CodeBinder
+import org.denigma.kappa.messages.KappaMessage.ServerCommand
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages.SimulationStatus
 import org.denigma.kappa.messages._
@@ -110,6 +111,6 @@ class SimulationTabItemView(val elem: Element,
   closeClick.onChange{
     ev=>
       dom.console.log(s"close $token")
-      input() = Commands.CloseSimulation(token, initial)
+      input() = ServerCommand.onDefaultServer(SimulationCommands.CloseSimulation(token, initial))
   }
 }

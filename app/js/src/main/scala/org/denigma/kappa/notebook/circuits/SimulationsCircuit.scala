@@ -39,6 +39,10 @@ class SimulationsCircuit(input: Var[KappaMessage],
 
   simulationResults.updates.onChange(updateOpened)
 
+  protected def sendServerCommand(serverMessage: ServerMessage) = {
+    output() = ServerCommand(serverConnections.now.currentServer, serverMessage)
+  }
+
   protected def updateOpened(upd: MapUpdate[Token, SimulationStatus]) = {
     openOrder() = openOrder.now.filterNot(o=>upd.removed.contains(o)) ++ upd.added.keysIterator.toList
   }
@@ -51,7 +55,6 @@ class SimulationsCircuit(input: Var[KappaMessage],
     mp.getOrElse(name, DefaultSourceSelector)
   }
 
-  val run: Var[RunParameters] = Var(LaunchModel.empty)
 
   val files2Run: Rx[List[KappaSourceFile]] = Rx {
     val proj = currentProject()
@@ -61,17 +64,31 @@ class SimulationsCircuit(input: Var[KappaMessage],
 
   val tuples2Run: Rx[List[(String, String)]] = files2Run.map(files => files.map(f=>f.path->f.content))
 
+  protected val run: Var[LaunchModel] = Var(LaunchModel.empty)
+
   val runConfiguration: Rx[RunConfiguration] = Rx {
     RunConfiguration(files2Run(), run(), projectName.now, configurationName.now, serverConnections.now.currentConnection)
   }
 
+  def launch(params: RunParameters) = {
+    run() = run.now.updated(params)
+    val launch = runConfiguration.now.launchModel
+    //println("LAUNCH = " + launch)
+    output() = ServerCommand(serverConnections.now.currentServer, launch)
+  }
+
+  /*
   run.onChange{ params =>
     val toRun = runConfiguration.now
     //println("========CODE TO RUN====================\n"+toRun.fullCode)
-    output() = ServerCommand(serverConnections.now.currentServer, toRun.launchModel)
+    val launch = toRun.launchModel
+    //output.Internal.value = ServerCommand(serverConnections.now.currentServer, launch)
+    //output.propagate()
+    output() = ServerCommand(serverConnections.now.currentServer, launch)
   }
+  */
 
-  tuples2Run.onChange { values=>  output() = ServerCommand(serverConnections.now.currentServer, ParseModel(values)) }
+  tuples2Run.onChange { values=> sendServerCommand(ParseModel(values)) }
 
 
   protected def onInputMessage(message: KappaMessage): Unit = message match {
@@ -80,17 +97,36 @@ class SimulationsCircuit(input: Var[KappaMessage],
       simulationResults() = simulationResults.now.updated((token, params), status)
     //require(items.now.exists{ case (key, value) => value==status}, "status should be added to items")
 
-    case Commands.CloseSimulation(token, opt) =>
+    case ServerCommand(default, sv) if default == ServerCommand.defaultServer => onServerInputMessage(sv)
+
+    case other => //do nothing
+  }
+
+  protected def onServerInputMessage(message: ServerMessage): Unit = message match {
+
+    case  com @ SimulationCommands.CloseSimulation(token, opt) =>
       simulationResults.now.keys.collectFirst{
         case (t, l)  if t == token && l == opt=> (t, l)
       } match {
         case Some(key) =>
-          println(s"closing simulations ${token}")
+          sendServerCommand(com)
           simulationResults() = simulationResults.now - key
+          println(s"closing simulations ${token}")
+
         case None => dom.console.error(s"simulation with token ${token} cannot be closed because it was not found")
       }
 
-    case other => //do nothing
+    case stop: SimulationCommands.StopSimulation =>
+      sendServerCommand(stop)
+
+    case pause: SimulationCommands.PauseSimulation =>
+      sendServerCommand(pause)
+
+    case continue: SimulationCommands.ContinueSimulation =>
+      sendServerCommand(continue)
+
+    case other => dom.console.error("unexpected server command in simulation circuit: "+ other)
+
   }
 
 }

@@ -10,6 +10,11 @@ import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
 
+/**
+  * A view to show syntax erorrs
+  * @param elem
+  * @param circuit
+  */
 class SyntaxErrorsView(val elem: Element, circuit: ErrorsCircuit) extends CollectionSeqView {
 
   override type Item = (KappaSourceFile, WebSimError)
@@ -33,11 +38,11 @@ class WebSimErrorView(val elem: Element, input: Var[KappaMessage], file: KappaSo
   val tooltip = Var(textUnderError)
 
   val fileName = Var(file.name)
-  val fromLine = Var(error.range.from_position.line + 1)
-  val fromChar = Var(error.range.from_position.chr)
+  val fromLine: Var[String] = Var[String](error.range.map(r=>(r.from_position.line + 1).toString).getOrElse(""))
+  val fromChar = Var(error.range.map(r=>r.from_position.chr.toString).getOrElse(""))
 
-  val toLine = Var(error.range.from_position.line + 1)
-  val toChar = Var(error.range.from_position.chr)
+  val toLine: Var[String] = Var(error.range.map(r=>(r.from_position.line + 1).toString).getOrElse(""))
+  val toChar: Var[String] = Var(error.range.map(r=>r.from_position.chr.toString).getOrElse(""))
 
   val message = Var(error.message)
   val severity = Var(error.severity)

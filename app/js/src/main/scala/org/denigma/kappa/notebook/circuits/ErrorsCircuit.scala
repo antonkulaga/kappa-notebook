@@ -39,9 +39,14 @@ class ErrorsCircuit(input: Var[KappaMessage], output: Var[KappaMessage], runConf
   }
   def errorCode(error: WebSimError): String = {
     val code = runConfiguration.now.fullCode
-    val (chFrom ,chTo) = (error.range.from_position.chr, error.range.to_position.chr)
-    code.substring(chFrom, chTo)
-  }
+    error.range match {
+      case Some(range) =>
+        val (chFrom ,chTo) = (range.from_position.chr, range.to_position.chr)
+        code.substring(chFrom, chTo)
+
+      case None =>code
+    }
+    }
 
 
   override protected def onInputMessage(message: KappaMessage): Unit = message match {

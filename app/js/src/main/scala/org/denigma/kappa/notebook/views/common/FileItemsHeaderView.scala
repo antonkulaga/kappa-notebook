@@ -20,6 +20,11 @@ object FileTabHeaders {
     case ind if ind == path.length -1 => path
     case ind => path.substring(ind+1)
   }
+
+  def prettyPath2Name(max: Int)(path: String) = path2name(path) match {
+    case n1 if n1.length > max => n1.substring(max)+".."
+    case n2 => n2
+  }
 }
 
 class FileTabHeaders(val elem: Element, val items: Rx[List[String]], val input: Var[KappaMessage], val selected: Var[String])

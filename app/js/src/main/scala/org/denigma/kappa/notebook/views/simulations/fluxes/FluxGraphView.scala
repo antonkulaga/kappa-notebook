@@ -13,7 +13,15 @@ import rx._
 import scala.Vector
 import scala.collection.immutable._
 
-
+/**
+  * Graph for all fluxes
+  * @param elem
+  * @param items
+  * @param nodeVisual
+  * @param edgeVisual
+  * @param canvas
+  * @param containerClass
+  */
 class FluxGraphView(val elem: Element,
                     items: Rx[SortedSet[RuleFlux]],
                     nodeVisual: KappaNodeVisualSettings,

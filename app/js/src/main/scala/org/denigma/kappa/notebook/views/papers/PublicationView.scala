@@ -52,7 +52,6 @@ class PublicationView(val elem: Element,
     */
   protected def initScroller(): JQueryScrollbar = {
     //val params = new mCustomScrollbarParams(theme = "rounded-dots-dark", axis = "y", advanced = new mCustomScrollbarAdvancedParams(true), mouseWheel = new MouseWheel(true))
-
     val callbacks = ScrollbarCallbacks.setWhileScrolling(updatePages).setOnScroll(updatePages)
     val params = mCustomScrollbarParams
       .theme("rounded-dots-dark")
@@ -74,6 +73,12 @@ class PublicationView(val elem: Element,
     }
   }
 
+  /**
+    * Scroll to the specific place in paper
+    * @param selection
+    * @param retry
+    * @param timeout
+    */
   def scrollTo(selection: PaperSelection, retry: Int = 5, timeout: FiniteDuration = 800 millis): Unit = {
       itemViews.now.get(selection.page) match {
         case Some(v) =>
@@ -82,7 +87,7 @@ class PublicationView(val elem: Element,
               v.getSpans(selection).collectFirst{case e: HTMLElement =>e} match {
                 case Some(e) =>
                   updatePages()
-                  scalajs.js.timers.setTimeout(150 millis) {
+                  scalajs.js.timers.setTimeout(200 millis) {
                     scroller.scrollTo(e)
                   }
                 case None =>
@@ -107,10 +112,16 @@ class PublicationView(val elem: Element,
   }
 
 
+  /**
+    * if the tab with publications is selected (active)
+    */
   lazy val active: rx.Rx[Boolean] = selected.map{
     value => value == paper.now.name
   }
 
+  /*
+  HTML element where all pages of the paper will be loaded to
+   */
   override  val paperContainer = elem.children.collectFirst{
     case e: HTMLElement if e.classList.contains("paper-container")=> e
   }.getOrElse(elem)
@@ -140,19 +151,25 @@ class PublicationView(val elem: Element,
   }
 
 
-  protected def seqRender(num: Int, p: Paper, retries: Int = 0): Unit = if(num < p.numPages){
-    p.loadPage(num).onComplete{
+  /**
+    * Reqursive function that renders pages of the Paper
+    * @param paper paper to render
+    * @param num number of the page to render
+    * @param retries how many retries to do in case of failure
+    */
+  protected def seqRender(paper: Paper, num: Int, retries: Int = 0): Unit = if(num <= paper.numPages){
+    paper.loadPage(num).onComplete{
       case Success(page) =>
         this.items() = items.now.updated(page.num, page)
         import scala.concurrent.duration._
-        scalajs.js.timers.setTimeout(100 millis){
+        scalajs.js.timers.setTimeout(300 millis){
           this.itemViews.now.get(page.num) match {
             case Some(v) =>
               v.renderedPage.onComplete{
                 case Success(result) =>
-                  seqRender(num + 1, p, 0)
+                  seqRender(paper, num + 1, 0)
                 case Failure(th) => dom.console.error(s"failed to load ${num} with error: $th")
-                  seqRender(num + 1, p, 0)
+                  seqRender(paper, num + 1, 0)
               }
             case None =>
               dom.console.error("page view for the $num was not added!")
@@ -160,16 +177,19 @@ class PublicationView(val elem: Element,
         }
 
       case Failure(th) =>
-        dom.console.error(s"cannot load page $num in paper ${p.name} with exception ${th}")
-        if(retries < 3) seqRender(num, p, retries +1)
+        dom.console.error(s"cannot load page $num in paper ${paper.name} with exception ${th}")
+        if(retries < 3) seqRender(paper, num, retries +1)
     }
   }
 
+  /**
+    * Function that subscribed view updated to the items and selections
+    */
   override def subscribeUpdates() = {
     super.subscribeUpdates()
     paper.foreach{
       case EmptyPaper => //do nothing
-      case p: PaperPDF => seqRender(1, p)
+      case p: PaperPDF => seqRender(p, 1)
     }
     selections.updates.onChange{
       upd =>

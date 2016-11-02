@@ -20,7 +20,7 @@ import WebSimMessages._
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import pprint.PPrint
 
-
+//just a message where we keep time when it was received
 trait PoolMessage
 {
   def time: LocalDateTime
@@ -36,7 +36,9 @@ case class ModelPoolMessage(runParams: RunModel,
   extends PoolMessage
 
 
-
+/**
+  * Contains akka-streams flows with connection pools to WebSim
+  */
 trait PooledWebSimFlows extends WebSimFlows {
 
   type TryResponse = (Try[HttpResponse], PoolMessage)

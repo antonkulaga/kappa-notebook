@@ -38,7 +38,7 @@ class SimulationRunView(val elem: Element,
 
   val tab: Var[String] = Var("plot")
 
-  val initialCode = simulation.map(sim=>/*sim.code.orElse(params.map(_.fullCode)*/ sim.code)//.getOrElse("### NODE CODE AVALIABLE ###"))
+  val initialCode = simulation.map(sim=>/*sim.code.orElse(params.map(_.fullCode)*/ params.map(_.fullCode).getOrElse(sim.code))//.getOrElse("### NODE CODE AVALIABLE ###"))
 
   val plot: Rx[KappaPlot] = simulation.map{s=>
     s.plot.getOrElse(KappaPlot.empty)

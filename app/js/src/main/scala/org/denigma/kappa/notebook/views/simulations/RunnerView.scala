@@ -33,8 +33,6 @@ class RunnerView(val elem: Element,
 
   var time: Var[Double] = Var(0.0)
 
-  //val points: Var[Int] = Var(250)
-
   val implicitSignature = Var(true)
 
   protected val maxTime = time.map(t => if(t > 0) Some(t) else None)
@@ -42,9 +40,14 @@ class RunnerView(val elem: Element,
   //protected val plotPeriod = points.map(p=> if(p>0) Some(p) else None)
   val plotPeriod = Var(0.1)
 
-  protected def launch() = {
-    val params = LaunchModel(Nil, plot_period = self.plotPeriod.now, max_events = self.maxEvents.now, max_time = self.maxTime.now)
-    circuit.launch(params)
+  val runCount = Var(0)
+
+  protected def launch(): Unit = {
+    val params = LaunchModel(Nil, plot_period = self.plotPeriod.now, max_events = self.maxEvents.now, max_time = self.maxTime.now, runCount = runCount.now)
+    if(circuit.run.now == params){
+      runCount() = runCount.now + 1
+      launch()
+    } else circuit.launch(params)
   }
 
   val run = Var(org.denigma.binding.binders.Events.createMouseEvent)

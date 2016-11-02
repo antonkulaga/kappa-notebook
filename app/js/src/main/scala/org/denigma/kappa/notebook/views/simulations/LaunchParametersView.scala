@@ -38,7 +38,7 @@ class LaunchParametersView(val elem: Element,
 
   val events: Rx[Int] = simulation.map(sim=>sim.event)
 
-  val points: Rx[Int] = simulation.map(sim=>sim.plot.size)
+  val points: Rx[Int] = simulation.map(sim=>sim.plot.map(p=>p.timePoints.size).getOrElse(0))
 
   //val plot_period: Rx[Double] = simulation.map(sim=>sim.plot_period)
 

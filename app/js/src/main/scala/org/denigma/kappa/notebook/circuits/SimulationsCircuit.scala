@@ -64,10 +64,10 @@ class SimulationsCircuit(input: Var[KappaMessage],
 
   val tuples2Run: Rx[List[(String, String)]] = files2Run.map(files => files.map(f=>f.path->f.content))
 
-  protected val run: Var[LaunchModel] = Var(LaunchModel.empty)
+  val run: Var[LaunchModel] = Var(LaunchModel.empty)
 
   val runConfiguration: Rx[RunConfiguration] = Rx {
-    RunConfiguration(files2Run(), run(), projectName.now, configurationName.now, serverConnections.now.currentConnection)
+    RunConfiguration(files2Run(), run(), projectName.now, configurationName(), serverConnections().currentConnection)
   }
 
   def launch(params: RunParameters) = {

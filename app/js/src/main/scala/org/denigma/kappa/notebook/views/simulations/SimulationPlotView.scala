@@ -125,7 +125,7 @@ class SimulationPlotView(val elem: Element,
                          val title: Rx[String],
                          val plot: Rx[KappaPlot],
                          val selected: Var[String],
-                         val scaleX: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Time / Events", 0.0, 10, 2, SimulationPlotView.defaultWidth)),
+                         val scaleX: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Time", 0.0, 10, 2, SimulationPlotView.defaultWidth)),
                          val scaleY: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Molecules", 0.0, 10, 2, SimulationPlotView.defaultHeight, inverted = true))
                ) extends FlexibleLinesPlot{
 

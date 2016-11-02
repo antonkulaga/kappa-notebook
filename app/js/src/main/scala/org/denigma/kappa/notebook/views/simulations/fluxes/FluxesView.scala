@@ -8,11 +8,17 @@ import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
+import org.denigma.binding.extensions._
+import org.scalajs.dom
 
 import scala.collection.immutable.SortedSet
 
 
 class FluxesView(val elem: Element, val items: Rx[Map[String, FluxMap]], tab: Rx[String]) extends CollectionMapView{
+
+  items.foreach{fl =>
+    dom.console.log("FLUXES ARE = " + fl)
+  }
 
   lazy val active: Rx[Boolean] = tab.map(s=>s=="fluxes")
 

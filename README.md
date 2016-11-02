@@ -48,9 +48,17 @@ The API is mostly akka-streams oriented. [Here](/app/jvm/src/main/scala/org/deni
 
 Running prebuilt binary
 -----------------------
+Get the latest release from https://github.com/antonkulaga/kappa-notebook/releases,
 
-Get a latest zip from https://github.com/antonkulaga/kappa-notebook/releases, unpack it and run `bin/kappa-notebook-root`.
+Run WebSim.native, if it started you should be able to open http://localhost:8080/v1/version
+Unpack zip with kappa-notebook.
+If you want to run some example projects then git clone them as _files_ folder from kappa-models repository:
+```bash
+git clone https://github.com/antonkulaga/kappa-models files
+```
+Then run `bin/kappa-notebook-root`.
 That will start notebook on http://localhost:1234
+Open http://localhost:1234 and enjoy!
 
 Building from source and running examples
 -----------------------------------------

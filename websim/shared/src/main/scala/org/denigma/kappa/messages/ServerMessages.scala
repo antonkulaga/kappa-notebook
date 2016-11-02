@@ -106,16 +106,17 @@ object ServerMessages {
                           max_time: Option[Double] = None,
                           runName: String = "", runCount: Int = 1) extends ServerMessage with FileContainer with RunParameters
   {
+    self=>
 
     lazy val parameters = RunModel(fullCode, plot_period, max_events, max_time)
 
     lazy val fileNames = files.map(_._1)
 
     def updated(runParameters: RunParameters) = if(runParameters==this) {
-      println(s"running ${runCount} time")
-      this.copy(runCount = this.runCount + 1)
+      //println(s"running ${runCount} time")
+      self.copy(runCount = self.runCount + 1)
     } else {
-      copy(plot_period = runParameters.plot_period, max_events = runParameters.max_events, max_time = runParameters.max_time)
+      copy(plot_period = runParameters.plot_period, max_events = runParameters.max_events, max_time = runParameters.max_time, runCount = runParameters.runCount)
     }
 
   }

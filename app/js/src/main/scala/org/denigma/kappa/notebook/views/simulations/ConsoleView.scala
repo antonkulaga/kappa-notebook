@@ -8,7 +8,7 @@ import rx._
 
 
 /**
-  * Created by antonkulaga on 12/31/15.
+  * View to show WebSim console output
   */
 class ConsoleView(val elem: Element, val log: Rx[List[String]], val selected: Var[String]) extends BindableView
 {

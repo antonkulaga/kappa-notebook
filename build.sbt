@@ -103,7 +103,7 @@ lazy val app = crossProject
     mainClass in Compile := Some("org.denigma.kappa.notebook.Main"),
     libraryDependencies ++= Dependencies.compilers.value ++ Dependencies.otherJvm.value,
     pipelineStages in Assets := Seq(scalaJSPipeline, gzip),
-    compile in Compile <<= (compile in Compile) dependsOn scalaJSPipeline.map(f => f(Seq.empty)),
+    compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline.map(f => f(Seq.empty))).value,
     (emitSourceMaps in fullOptJS) := true,
     isDevMode in scalaJSPipeline := { sys.env.get("APP_MODE") match {
         case Some(str) if str.toLowerCase.startsWith("prod") =>

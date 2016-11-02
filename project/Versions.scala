@@ -7,11 +7,11 @@ object Versions extends WebJarsVersions
 
 	val scala = "2.11.8"
 
-	val kappaNotebook = "0.0.16"
+	val kappaNotebook = "0.0.17"
 
-	val kappaModel = "0.0.1"
+	val kappaModel = "0.0.2"
 
-	val websim = "0.0.15"
+	val websim = "0.0.17"
 
 
 }
@@ -89,7 +89,7 @@ trait SharedVersions
 
 	val scalaTest = "3.0.0"
 
-	val scalaCheck = "1.13.3"
+	val scalaCheck = "1.13.4"
 
 	val fastparse = "0.4.2"
 

@@ -51,6 +51,14 @@ class SimulationsView(val elem: Element,
 
   def makeId(item: Key): String = "#"+item._1
 
+  override protected def subscribeUpdates() = {
+    super.subscribeUpdates()
+    headers.now.lastOption match {
+      case Some(value) => tab() = makeId(value)
+      case None => tab() = "runner"
+    }
+  }
+
   override def newItemView(key: Key, value: Value): SimulationRunView = this.constructItemView(key)( {
     case (el, mp) =>
       val (token, initial) = key
@@ -96,7 +104,8 @@ class SimulationsHeaders(val elem: Element, val items: Rx[List[(Int, Option[Laun
   */
 class SimulationTabItemView(val elem: Element,
                             token: Int, initial: Option[LaunchModel],
-                            val input: Var[KappaMessage], val selected: Var[String] )(implicit getCaption: (Int, Option[LaunchModel]) => String) extends BindableView {
+                            val input: Var[KappaMessage], val selected: Var[String])
+                           (implicit getCaption: (Int, Option[LaunchModel]) => String) extends BindableView {
 
   val caption: Var[String] = Var(getCaption(token, initial))
 

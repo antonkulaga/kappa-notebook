@@ -17,7 +17,9 @@ object KappaChart {
   }
 }
 
-
+/**
+  * @param series of kappa data
+  */
 case class KappaChart(series: List[KappaSeries])
 {
   def isEmpty: Boolean = series.isEmpty

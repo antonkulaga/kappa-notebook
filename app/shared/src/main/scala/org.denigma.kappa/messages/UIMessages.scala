@@ -55,6 +55,6 @@ case class RunConfiguration(files: List[KappaSourceFile],
 
   lazy val tuples = files.map(f=>f.path -> f.content)
 
-  lazy val launchModel: LaunchModel = LaunchModel(tuples, parameters.plot_period, parameters.max_events, parameters.max_time, configurationName)
+  lazy val launchModel: LaunchModel = LaunchModel(tuples, parameters.plot_period, parameters.max_events, parameters.max_time, configurationName, runCount = parameters.runCount)
 
 }

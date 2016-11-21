@@ -1,4 +1,5 @@
 package org.denigma.controls.charts
+
 import org.denigma.binding.extensions._
 import org.scalajs.dom
 import rx.Var
@@ -6,36 +7,7 @@ import rx.Var
 import scala.collection.immutable.List
 //import rx.Ctx.Owner.voodoo
 import rx.Ctx.Owner.Unsafe.Unsafe
-/*
-case class LinearScaleFixedSteps(title: String, start: Double, end: Double, stepSize: Double, length: Double,
-                            optimalSteps: Double,
-                            stepSizeFactor: Double = 2,
-                            inverted: Boolean = false,
-                            precision:Int = 3)
-  extends FlexibleLinearScale{
 
-
-  protected def rescale(newEnd: Double, newStepSize: Double) = {
-    val newScale = this.copy(end = newEnd, stepSize = newStepSize)
-    if(newScale.ticks.length >
-  }
-
-  def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): FlexibleLinearScale =
-    if(max > end) {
-      val newEnd = max * stretchMult
-      val st = betterStep(Math.abs(newEnd - start) / ticks.length)
-      //just a hack to make it look nicer
-      this.copy(end = newEnd, stepSize = st)
-    }
-    else {
-      if (shrinkMult > 0 && Math.abs(max - start) > 0.0 && end > max * shrinkMult) {
-        val newEnd = end * stretchMult
-        val st = betterStep(Math.abs(newEnd - start) / ticks.length)
-        this.copy(end = newEnd, stepSize = st)
-      } else this //does not change anything
-    }
-}
-*/
 
 case class SimpleFlexibleLinearScale(title: String,
                                      start: Double,
@@ -108,7 +80,7 @@ trait WithFlexibleScale[T <: Scale] {
   def stretched(max: Double, stretchMult: Double = 1.1, shrinkMult: Double = -1): T
 }
 
-
+/*
 trait FlexibleLinesPlot extends NewLinesPlot {
   val flexible = Var(true)
   val shrinkMult = Var(1.05)
@@ -130,3 +102,4 @@ trait FlexibleLinesPlot extends NewLinesPlot {
     max.foreach{onMaxChange}
   }
 }
+*/

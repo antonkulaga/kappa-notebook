@@ -33,7 +33,7 @@ lazy val commonSettings = Seq(
   parallelExecution in Test := false,
   resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"), //for scala-js-binding
   resolvers += Resolver.jcenterRepo,
-  unmanagedClasspath in Compile <++= unmanagedResources in Compile,
+  unmanagedClasspath in Compile ++= (unmanagedResources in Compile).value,
   libraryDependencies ++= Dependencies.commonShared.value ++ Dependencies.testing.value,
   updateOptions := updateOptions.value.withCachedResolution(true), //to speed up dependency resolution
   addCompilerPlugin("org.scalamacros" % "paradise" % Versions.paradise cross CrossVersion.full)
@@ -93,6 +93,7 @@ lazy val app = crossProject
   .disablePlugins(RevolverPlugin)
   .jsSettings(
     libraryDependencies ++= Dependencies.sjsLibs.value,
+    libraryDependencies += "org.denigma" %%% "pdf-js-facade" % Versions.pdfJSFacade,
     persistLauncher in Compile := true,
     emitSourceMaps in fullOptJS := true,
     persistLauncher in Test := false,
@@ -130,7 +131,8 @@ lazy val root = Project("root",file("."),settings = commonSettings)
     name := "kappa-notebook-root",
     version := Versions.kappaNotebook,
     mainClass in Compile := (mainClass in appJVM in Compile).value,
-    (managedClasspath in Runtime) += (packageBin in appJVM in Assets).value,
+	//(fullClasspath in Runtime) += (packageBin in appJVM in Assets).value,
+	(managedClasspath in Runtime) += (packageBin in appJVM in Assets).value,
     maintainer := "Anton Kulaga <antonkulaga@gmail.com>",
     packageSummary := "kappa-notebook",
     packageDescription := """Kappa notebook runs kappa from the browser""",

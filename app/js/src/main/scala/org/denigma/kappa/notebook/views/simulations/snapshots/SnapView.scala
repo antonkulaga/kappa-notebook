@@ -6,7 +6,8 @@ import org.denigma.binding.extensions._
 import org.denigma.binding.views._
 import org.denigma.kappa.model.KappaModel
 import org.denigma.kappa.model.KappaModel.Pattern
-import org.denigma.kappa.notebook.extensions._
+import org.denigma.binding.extensions._
+
 import org.denigma.kappa.parsers.KappaParser
 import org.scalajs.dom.raw.{Element, MouseEvent}
 import rx.Ctx.Owner.Unsafe.Unsafe

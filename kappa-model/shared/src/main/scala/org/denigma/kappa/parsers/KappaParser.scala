@@ -1,6 +1,8 @@
 package org.denigma.kappa.parsers
 
 import fastparse.all._
+import fastparse.core.Parser
+import org.denigma.kappa.model.KappaModel
 
 /**
   * Created by antonkulaga on 24/03/16.
@@ -64,20 +66,19 @@ class KappaParser extends CommentLinksParser
 
   val coeffs: P[(Either[String, Double], Option[Either[String, Double]])] = P("@" ~optSpaces ~ labelOrNumber ~ (optSpaces ~ ","~ optSpaces ~labelOrNumber).?)
 
-  val bothDirections = P("<->").map(v=>BothDirections)
+  val bothDirections: P[KappaModel.Direction] = P("<->").map(v=>BothDirections)
 
-  val left2right = P("->").map(v=>Left2Right)
+  val left2right: P[KappaModel.Direction] = P("->").map(v=>Left2Right)
 
-  val right2left = P("<-").map(v=>Right2Left)
+  val right2left: P[KappaModel.Direction] = P("<-").map(v=>Right2Left)
 
   val direction: P[Direction] = P(bothDirections | left2right | right2left)
 
-  val rule = P(optSpaces ~ label.? ~ optSpaces ~  rulePart.? ~ optSpaces ~ direction ~ optSpaces ~ rulePart.? ~ optSpaces  ~ coeffs).map{
+  val rule: P[Rule] = P(optSpaces ~ label.? ~ optSpaces ~  rulePart.? ~ optSpaces ~ direction ~ optSpaces ~ rulePart.? ~ optSpaces  ~ coeffs).map{
 
     case (n, leftOpt, BothDirections, rightOpt, (c1, c2opt)) =>
       val left = leftOpt.getOrElse(Pattern.empty)
       val right = rightOpt.getOrElse(Pattern.empty)
-
       val name = n.getOrElse(left + " "+ "<->" + " "+right)
       Rule(name, left, right, c1, c2opt)
 
@@ -96,11 +97,11 @@ class KappaParser extends CommentLinksParser
       Rule(name, left, right, c1, c2opt) //TODO: fix coefficents
   }
 
-  val observable = P(optSpaces ~ "%obs:" ~ optSpaces ~ "|".?  ~ optSpaces ~ label ~ spaces ~ rulePart  ~ optSpaces ~ "|".?  ~ optSpaces).map{
+  val observable: P[ObservablePattern] = P(optSpaces ~ "%obs:" ~ optSpaces ~ "|".?  ~ optSpaces ~ label ~ spaces ~ rulePart  ~ optSpaces ~ "|".?  ~ optSpaces).map{
     case (lb, pat) =>  ObservablePattern(lb, pat)
   }
 
-  val init = P(optSpaces ~ "%init:" ~ optSpaces ~ labelOrNumber ~spaces ~ "(".? ~ rulePart ~ ")".?).map{
+  val init: P[InitCondition] = P(optSpaces ~ "%init:" ~ optSpaces ~ labelOrNumber ~spaces ~ "(".? ~ rulePart ~ ")".?).map{
     case (lb, pat) =>  InitCondition(lb, pat)
   }
 

@@ -1,5 +1,5 @@
 package org.denigma.controls.charts
-
+/*
 import org.denigma.binding.binders.GeneralBinder
 import org.denigma.binding.views.{BindableView, CollectionSeqView, CollectionSortedMapView}
 import org.scalajs.dom.raw.Element
@@ -43,3 +43,4 @@ class FlexibleAxisView(val elem: Element, scale: Rx[Scale], style: Rx[LineStyles
 }
 
 class FlexibleTickView( elem: Element, val tick: Var[Tick], tickLength: Rx[Double], styles: Rx[LineStyles]) extends TickView(elem, tick, tickLength, styles)
+*/

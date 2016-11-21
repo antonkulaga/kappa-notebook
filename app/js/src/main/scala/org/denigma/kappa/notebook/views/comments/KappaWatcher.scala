@@ -2,6 +2,7 @@ package org.denigma.kappa.notebook.views.comments
 
 import org.denigma.binding.extensions._
 import org.denigma.codemirror.Editor
+import org.denigma.kappa.model.KappaModel.{Agent, InitCondition, ObservablePattern}
 import org.denigma.kappa.notebook.extensions._
 import org.denigma.kappa.notebook.views.editor.{EditorUpdates, EmptyCursor, KappaCursor, KappaEditorCursor}
 import org.denigma.kappa.parsers.{KappaParser, ParsedLine}
@@ -10,7 +11,9 @@ import rx._
 
 import scala.concurrent.duration._
 import scalatags.JsDom.all._
-
+import fastparse.all._
+import fastparse.core.Parser
+import org.denigma.kappa.model.KappaModel
 /**
   * Used by vizualizations - extracts kappa rules/agents/obs/etc. from chosen and neibouring lines
   * @param cursor
@@ -22,13 +25,13 @@ class KappaWatcher(cursor: Var[KappaCursor], updates: Var[EditorUpdates])  {
 
   protected val kappaParser = new KappaParser
 
-  protected val agentParser = kappaParser.agentDecl
+  protected def agentParser: P[Agent] = kappaParser.agentDecl
 
-  protected val ruleParser = kappaParser.rule
+  protected def ruleParser: P[KappaModel.Rule] = kappaParser.rule
 
-  protected val obsParser = kappaParser.observable
+  protected def obsParser: P[ObservablePattern] = kappaParser.observable
 
-  protected val initParser = kappaParser.init
+  protected def initParser: P[InitCondition] = kappaParser.init
 
   lazy val cursorChanges = cursor.zip
   cursorChanges.onChange{

@@ -28,7 +28,7 @@ object Dependencies {
 
 		"de.heikoseeberger" %% "akka-http-circe" % Versions.circeHttp,
 
-		"com.typesafe.akka" %% "akka-http-testkit" % Versions.akka % Test,
+		"com.typesafe.akka" %% "akka-http-testkit" % Versions.httpTestkit % Test,
 
 		"com.typesafe.akka" %% "akka-stream-testkit" % Versions.akka % Test
 
@@ -48,7 +48,9 @@ object Dependencies {
 
 		"org.singlespaced" %%% "scalajs-d3" % Versions.d3jsFacade,
 
-		"org.querki" %%% "querki-jsext" % Versions.jsext
+		"org.querki" %%% "querki-jsext" % Versions.jsext,
+
+		"org.denigma" %%% "binding-controls" % Versions.bindingControls
 	))
 
 	//dependencies on javascript libs
@@ -80,7 +82,7 @@ object Dependencies {
 
 		"org.denigma" %%% "semantic-controls" % Versions.semanticControls,
 
-		"org.denigma" %%% "annotator" % Versions.annotator,
+		//"org.denigma" %%% "annotator" % Versions.annotator,
 
 		"fr.hmil" %%% "roshttp" % Versions.roshttp
 	))
@@ -96,17 +98,21 @@ object Dependencies {
 
 		"com.softwaremill.quicklens" %%% "quicklens" % Versions.quicklens,
 
+		"com.lihaoyi" %%% "fastparse-utils" % Versions.fastparse,
+
 		"com.lihaoyi" %%% "fastparse" % Versions.fastparse,
+
+		"com.lihaoyi" %%% "cssparse" % Versions.fastparse,
 
 		"me.chrons" %%% "boopickle" % Versions.booPickle,
 
 		"com.lihaoyi" %%% "pprint" % Versions.pprint,
 
-		"com.lihaoyi" %% "sourcecode" % Versions.sourcecode,
+		"com.lihaoyi" %%% "sourcecode" % Versions.sourcecode,
 
-		"io.github.soc" %%% "scala-java-time" % "2.0.0-M3",
+		"io.github.soc" %%% "scala-java-time" % Versions.scalaJavaTime,
 
-		"com.github.mpilquist" %% "simulacrum" % Versions.simulacrum
+		"com.github.mpilquist" %%% "simulacrum" % Versions.simulacrum
 
 	))
 

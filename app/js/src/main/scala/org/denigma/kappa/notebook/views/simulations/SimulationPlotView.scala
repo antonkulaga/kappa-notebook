@@ -10,6 +10,7 @@ import org.scalajs.dom.raw.{Element, SVGElement}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
+import org.denigma.binding.extensions._
 
 import scala.collection.immutable._
 
@@ -121,13 +122,22 @@ object SimulationPlotView {
 }
 
 
+/**
+  * Plot for the simulation
+  * @param elem
+  * @param title
+  * @param plot
+  * @param selected
+  * @param scaleX
+  * @param scaleY
+  */
 class SimulationPlotView(val elem: Element,
                          val title: Rx[String],
                          val plot: Rx[KappaPlot],
                          val selected: Var[String],
                          val scaleX: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Time", 0.0, 10, 2, SimulationPlotView.defaultWidth)),
                          val scaleY: Var[FlexibleLinearScale] = Var(SimpleFlexibleLinearScale("Molecules", 0.0, 10, 2, SimulationPlotView.defaultHeight, inverted = true))
-               ) extends FlexibleLinesPlot{
+               ) extends FlexiblePlot {
 
   lazy val legend = plot.map(p=>p.legend)
 
@@ -135,13 +145,11 @@ class SimulationPlotView(val elem: Element,
     l.zipWithIndex.map{ case (tlt, i) => (tlt, i, KappaSeries.randomLineStyle())}
   }
 
-  lazy val items: Rx[SortedMap[String, PlotSeries]] = plot.map{p=>
+  lazy val items: Rx[SortedMap[String, KappaSeries]] = plot.map{p=>
     val leg = legendList.now
     val tuples = leg.map { case (tlt, i, style) => tlt -> KappaSeries(tlt, p.observables.map(o => Point(o.observation_time, o.observation_values(i))), style) }
     SortedMap(tuples:_*)
   }
-
-  val active: rx.Rx[Boolean] = selected.map(value => value == "plot")
 
   def onMaxChange(value: Point): Unit = value match {
     case Point(x, y) =>
@@ -149,12 +157,15 @@ class SimulationPlotView(val elem: Element,
         val (sX, sY) = (scaleX.now, scaleY.now)
         val sh = shrinkMult.now
         val st = stretchMult.now
-        scaleX() = sX.stretched(x, stretchMult = st, shrinkMult = sh)
-        scaleY() = sY.stretched(y,  stretchMult = st, shrinkMult = sh)
+        val updScaleX = sX.stretched(x, stretchMult = st, shrinkMult = sh)
+        scaleX.set(updScaleX)
+        val updScaleY = sY.stretched(y,  stretchMult = st, shrinkMult = sh)
+        scaleY.set(updScaleY)
+        //println("TICK LEN = "+scaleX.now.ticks.length)
       }
-      //println("=======ticks===========")
-      //println(scaleX.now.ticks.mkString(" | "))
   }
+
+  val active: rx.Rx[Boolean] = selected.map(value => value == "plot")
 
   val viewBox: Dynamic[String] = Rx{
     s"${0} ${0} ${width() + paddingX() * 2  } ${height() + paddingY() * 2 }"
@@ -191,13 +202,15 @@ class SimulationPlotView(val elem: Element,
   }
 
   override lazy val injector = defaultInjector
-    .register("ox"){case (el, args) => new FlexibleAxisView(el, scaleX, chartStyles.map(_.scaleX)).withBinder(new GeneralBinder(_))}
-    .register("oy"){case (el, args) => new FlexibleAxisView(el, scaleY, chartStyles.map(_.scaleY)).withBinder(new GeneralBinder(_))}
-    .register("legend"){case (el, args) => new PlotLegendView(el, items).withBinder(new GeneralBinder(_))}
+    .register("ox"){case (el, args) => new AxisView(el, scaleX, chartStyles.map(_.scaleX)).withBinder(new GeneralBinder(_))}
+    .register("oy"){case (el, args) => new AxisView(el, scaleY, chartStyles.map(_.scaleY)).withBinder(new GeneralBinder(_))}
+    .register("legend"){case (el, args) => new LegendView(el, items).withBinder(new GeneralBinder(_))}
 
-  override def newItemView(key: String, value: PlotSeries): PlotSeriesView = this.constructItemView(key){
+  override def newItemView(key: String, value: Series): SeriesView = this.constructItemView(key){
     case (el, _) =>
-      new PlotSeriesView(el, Var(value), transform).withBinder(v=>new GeneralBinder(v))
+      new SeriesView(el, Var(value), transform).withBinder(v=>new GeneralBinder(v))
   }
 
 }
+
+//class LegendView(val elem: Element, val items: rx.Rx[SortedMap[String, Series]])

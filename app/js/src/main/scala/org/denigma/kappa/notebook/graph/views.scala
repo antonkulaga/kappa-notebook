@@ -2,7 +2,7 @@ package org.denigma.kappa.notebook.graph
 
 
 import org.denigma.binding.extensions._
-import org.denigma.controls.drawing.{KappaPainter, Rectangle}
+import org.denigma.controls.drawing._
 import org.denigma.controls.drawing.SvgBundle.all._
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx._
@@ -13,7 +13,7 @@ import org.scalajs.dom.svg.{LinearGradient, SVG}
 
 import scalatags.JsDom.TypedTag
 
-trait KappaView extends KappaPainter {
+trait KappaView extends BoxPainter {
 
   def label: String
 

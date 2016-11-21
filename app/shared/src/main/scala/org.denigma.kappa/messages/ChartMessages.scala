@@ -1,7 +1,7 @@
 package org.denigma.kappa.messages
 
 
-import org.denigma.controls.charts.{LineStyles, PlotSeries, Point, Series}
+import org.denigma.controls.charts.{LineStyles, Point, Series}
 import org.denigma.kappa.messages.WebSimMessages.KappaPlot
 
 import scala.collection.immutable._
@@ -37,4 +37,4 @@ object KappaSeries {
 }
 
 
-case class KappaSeries(title: String, points: List[Point], style: LineStyles = KappaSeries.randomLineStyle()) extends PlotSeries
+case class KappaSeries(title: String, points: List[Point], style: LineStyles = KappaSeries.randomLineStyle()) extends Series

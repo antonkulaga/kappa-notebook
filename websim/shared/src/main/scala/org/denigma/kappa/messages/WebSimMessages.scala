@@ -163,7 +163,12 @@ object WebSimMessages {
 
     lazy val empty = RunModel("", 0.1, None, None)
   }
-  case class RunModel(code: String,  plot_period: Double = 0.1, max_events: Option[Int], max_time: Option[Double] = None, runCount: Int = 1) extends WebSimMessage with RunParameters
+  case class RunModel(code: String,
+                      plot_period: Double = 0.1,
+                      max_events: Option[Int],
+                      max_time: Option[Double] = None,
+                      seed: Option[Int] = Some(0),
+                      runCount: Int = 1) extends WebSimMessage with RunParameters
 
   trait RunParameters {
     def plot_period: Double
@@ -337,7 +342,8 @@ object WebSimMessages {
                                snapshots: List[Snapshot],
                                distances: Option[List[UnaryDistance]],
                                flux_maps: List[FluxMap],
-                               files: List[FileLine]
+                               files: List[FileLine],
+                               seed: Option[Int] = None
                              )  extends WebSimMessage
   {
 

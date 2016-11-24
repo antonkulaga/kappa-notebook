@@ -1,23 +1,57 @@
 package org.denigma.kappa.notebook.services
 
 import akka.NotUsed
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpRequest, _}
+import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
+import akka.stream.Materializer
 import akka.stream.scaladsl._
 import de.heikoseeberger.akkahttpcirce.CirceSupport
+import io.circe.{Decoder, Json}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import org.denigma.kappa.messages.WebSimMessages._
 import pprint.PPrint
 
+import akka.http.scaladsl.marshalling.{ Marshaller, ToEntityMarshaller }
+import akka.http.scaladsl.model.MediaTypes.`application/json`
+import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
+import akka.util.ByteString
+import io.circe.{ Decoder, Encoder, Json, Printer, jawn }
+import scala.concurrent.{ExecutionContext, Future}
+
 /**
   * Basic idea of the API is that we create a flow for each type of request to websim API, then those flows are applied to http pool
   */
-trait WebSimFlows extends CirceSupport{
+trait WebSimFlows extends CirceSupport
+{
 
+
+  implicit def debugTupleDecoder[A: Decoder]: Decoder[(Json, A)] =
+    Decoder[Json].flatMap(json => Decoder[A].map(a => (json, a)))
 
   protected def debug[T: PPrint](something: T) = {
     pprint.pprintln(something)
+  }
+
+  def unmarshalResponse[Output](resp: HttpResponse)
+                                        (implicit um:  FromEntityUnmarshaller[Output],
+                                         ec: ExecutionContext,
+                                         mat: Materializer,
+                                         system: ActorSystem, decoder: Decoder[Output]): Future[Output] = {
+    val json: Future[Json] = Unmarshal(resp).to[Json]
+    json.flatMap{
+      js =>
+        js.as[Output] match {
+          case Left(failure) =>
+            val f = failure.copy(failure.message + "\n ORIGINAL JSON:\n"+js)
+            Future.failed(f)
+
+          case Right(result) =>
+            Future.successful(result)
+        }
+    }
   }
 
   type Token = Int

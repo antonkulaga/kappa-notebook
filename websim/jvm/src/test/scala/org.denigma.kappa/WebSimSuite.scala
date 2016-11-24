@@ -143,22 +143,24 @@ class WebSimSuite extends BasicKappaSuite {
         t
     }
 
+
     val testRun = TestSink.probe[Array[Int]]
     val ps: Array[Int] = Source.single(Unit).via(server.flows.running).runWith(testRun).request(1).expectNext()
-    ps.contains(tok) shouldEqual(true)
+    ps.contains(tok) shouldEqual true
+    println("PS TOKENS: "+ps.toList)
 
     val respSink = TestSink.probe[HttpResponse]
 
     //val del= source.via(flows.stopFlow)
     val delSink = TestSink.probe[Try[HttpResponse]]
     val del = flows.stopRequestFlow.via(flows.timePool).map(_._1)
-
+    /*
     Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual true
     Source.single[Int](tok).via(del).runWith(delSink).request(1).expectNextPF {
       case res =>
     }
     Await.result(server.simulationStatusByToken(token), 400 millis).is_running shouldEqual false
-
+    */
   }
 
   "run streamed" in {
@@ -227,7 +229,7 @@ class WebSimSuite extends BasicKappaSuite {
       //Token, SimulationStatus, ContactMap
     }
   }
- }
+  }
 
  protected override def afterAll() = {
    Http().shutdownAllConnectionPools().onComplete{ _ =>

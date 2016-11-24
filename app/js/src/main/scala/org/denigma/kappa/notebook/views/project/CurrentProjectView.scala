@@ -1,5 +1,7 @@
 package org.denigma.kappa.notebook.views.project
 
+import java.nio.ByteBuffer
+
 import org.denigma.binding.binders.{Events, GeneralBinder}
 import org.denigma.binding.extensions._
 import org.denigma.binding.views.{CollectionMapView, CollectionSortedSetView}
@@ -14,6 +16,7 @@ import rx._
 
 import scala.collection.immutable._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.scalajs.js.typedarray.{ArrayBuffer, Int8Array, TypedArray}
 import scala.util.{Failure, Success}
 
 /**
@@ -126,6 +129,11 @@ class CurrentProjectView(val elem: Element,
     super.subscribeUpdates()
     uploadInput.addEventListener[Event](Events.change, filesHandler _)
   }
+
+  protected def convertBuffer(buf: ArrayBuffer) = {
+    ByteBuffer.wrap(new Int8Array(buf).toArray)
+  }
+
   protected def filesHandler(event: org.scalajs.dom.Event) = {
     val name = fileName.now
     dom.console.info("FILE UPLOAD WORKS!")
@@ -134,6 +142,18 @@ class CurrentProjectView(val elem: Element,
 
 
     files.foreach{ f =>
+
+      /*
+      f.readAsArrayBuffer.onComplete{
+        case Failure(th) => dom.console.error("file upload failed with: "+th)
+        case Success(result) =>
+          //val mess = DataMessage(f.name, result)
+          //println(s"uploading ${f.name} to ${projectName.now}")
+          val fl = KappaBinaryFile(projectName.now+"/"+f.name, convertBuffer(result))
+          saveRequest() = FileRequests.Save(List(fl), rewrite = true, getSaved = true)
+      }
+      */
+
       f.readAsByteBuffer.onComplete{
           case Failure(th) => dom.console.error("file upload failed with: "+th)
           case Success(result) =>
@@ -142,6 +162,7 @@ class CurrentProjectView(val elem: Element,
             val fl = KappaBinaryFile(projectName.now+"/"+f.name, result)
             saveRequest() = FileRequests.Save(List(fl), rewrite = true, getSaved = true)
         }
+
     }
     //val toUplod = FileRequests.UploadBinary()
     //val k = KappaFile("", name, "", saved = false)

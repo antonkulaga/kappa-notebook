@@ -13,10 +13,11 @@ import io.circe.generic.auto._
 import org.denigma.kappa.messages._
 
 import scala.concurrent.duration.{FiniteDuration, _}
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.util._
 import akka.http.extensions._
 import WebSimMessages._
+import io.circe.{Decoder, Json}
 import org.denigma.kappa.messages.ServerMessages.LaunchModel
 import pprint.PPrint
 
@@ -67,11 +68,41 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   val running: Flow[Any, Array[Int], NotUsed] = runningRequestFlow.via(timePool).via(unmarshalFlow[Array[Int]].sync)
 
+  /*
+    def safeUnmarshalFlow[T, U](onfailure: (HttpResponse, Throwable) => Future[U])
+                               (implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[Either[T,U]], NotUsed] =
+      Flow[TryResponse].map{
+        case (Success(resp), message) =>
+          val fut = Unmarshal(resp).to[T]
+          fut.map[Either[T, U]](Left(_)).recoverWith{
+            case exception =>
+              onfailure(resp, exception).map[Either[T, U]](Right(_))
+                .recoverWith{ case th=> wrongUnmarshal(th, resp) }
+          }
+        case (Failure(exception), time) => Future.failed(exception)
+      }
+
+    protected def wrongUnmarshal(th: Throwable, resp: HttpResponse) = {
+      system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
+      system.log.error("THE ERROR is:"+th)
+      Unmarshal(resp).to[Json].onComplete{
+        case Success(json)=>
+          system.log.error("POSSIBLE JSON for marshal value is:\n"+json)
+        case _=>
+          Unmarshal(resp).to[String].onComplete{
+            case Success(str)=>
+              system.log.error("POSSIBLE String/JSON for marshal value is:\n"+str)
+            case _=>
+          }
+      }
+      Future.failed(th)
+    }
+  */
   def safeUnmarshalFlow[T, U](onfailure: (HttpResponse, Throwable) => Future[U])
-                             (implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[Either[T,U]], NotUsed] =
+                             (implicit um: Unmarshaller[HttpResponse, T], decoder: Decoder[T]): Flow[TryResponse, Future[Either[T,U]], NotUsed] =
     Flow[TryResponse].map{
       case (Success(resp), message) =>
-        val fut = Unmarshal(resp).to[T]
+        val fut = unmarshalResponse[T](resp) //Unmarshal(resp).to[T]
         fut.map[Either[T, U]](Left(_)).recoverWith{
           case exception =>
             onfailure(resp, exception).map[Either[T, U]](Right(_))
@@ -83,34 +114,39 @@ trait PooledWebSimFlows extends WebSimFlows {
   protected def wrongUnmarshal(th: Throwable, resp: HttpResponse) = {
     system.log.error("==\n WRONG UNMARSHAL FOR:\n "+resp+"==\n")
     system.log.error("THE ERROR is:"+th)
-    Unmarshal(resp).to[String].onComplete{
-      case Success(str)=>
-        system.log.error("POSSIBLE String/JSON for marshal value is:\n"+str)
+    Unmarshal(resp).to[Json].onComplete{
+      case Success(json)=>
+        system.log.error("POSSIBLE JSON for marshal value is:\n"+json)
       case _=>
+        Unmarshal(resp).to[String].onComplete{
+          case Success(str)=>
+            system.log.error("POSSIBLE String/JSON for marshal value is:\n"+str)
+          case _=>
+        }
     }
     Future.failed(th)
   }
 
   protected val safeParseUnmarshalFlow: Flow[TryResponse, Future[ParseResult], NotUsed] = safeUnmarshalFlow[ContactMap, List[WebSimError]]{
     case (resp, time) =>
-      Unmarshal(resp).to[List[WebSimError]].recoverWith{
+      unmarshalResponse[List[WebSimError]](resp)
+      /*
+      Unmarshal.apply(resp).to[List[WebSimError]].recoverWith{
         case th=> wrongUnmarshal(th, resp)
       }
+      */
   }
-
 
   protected val safeTokenUnmarshalFlow: Flow[TryResponse, Future[TokenResult], NotUsed] = safeUnmarshalFlow[Int, List[WebSimError]]{
     case (resp, time) =>
-      Unmarshal(resp).to[List[WebSimError]].recoverWith{
-        case th=> wrongUnmarshal(th, resp)
-      }
+      //Unmarshal(resp).to[List[WebSimError]].recoverWith{ case th=> wrongUnmarshal(th, resp) }
+      unmarshalResponse[List[WebSimError]](resp)
   }
 
-  def unmarshalFlow[T](implicit um: Unmarshaller[HttpResponse, T]): Flow[TryResponse, Future[T], NotUsed] = Flow[TryResponse].map{
+  def unmarshalFlow[T](implicit um: Unmarshaller[HttpResponse, T], decoder: Decoder[T]): Flow[TryResponse, Future[T], NotUsed] = Flow[TryResponse].map{
     case (Success(resp), time) =>
-      Unmarshal(resp).to[T].recoverWith{
-        case th=> wrongUnmarshal(th, resp)
-      }
+      unmarshalResponse[T](resp)
+      //Unmarshal(resp).to[T].recoverWith{ case th=> wrongUnmarshal(th, resp)}
     case (Failure(exception), time) =>
       Future.failed(exception)
   }
@@ -139,7 +175,7 @@ trait PooledWebSimFlows extends WebSimFlows {
     }
 
     val zipToken = ZipWith[Runnable[ContactMap], TokenResult, Runnable[TokenContactResult]] {
-      case ( (mp, model), either ) => either.left.map{ case token=> token-> mp } -> model
+      case ( (mp, model), either ) => either.left.map{ token=> token-> mp } -> model
     }
 
 
@@ -189,9 +225,7 @@ trait PooledWebSimFlows extends WebSimFlows {
 
   protected def unmarshalSimulationStatus() = Flow[TryResponse].map{
       case (Success(resp), time) =>
-        Unmarshal(resp).to[SimulationStatus].recoverWith{
-          case th=> wrongUnmarshal(th, resp)
-        }
+        Unmarshal(resp).to[SimulationStatus].recoverWith{case th=> wrongUnmarshal(th, resp)}
       case (Failure(exception), time) =>
         Future.failed(exception)
     }

@@ -34,7 +34,7 @@ lazy val commonSettings = Seq(
   resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"), //for scala-js-binding
   resolvers += Resolver.jcenterRepo,
   unmanagedClasspath in Compile ++= (unmanagedResources in Compile).value,
-  libraryDependencies ++= Dependencies.commonShared.value ++ Dependencies.testing.value,
+  libraryDependencies ++= Dependencies.commonShared.value ++ Dependencies.serializationShared.value ++ Dependencies.testing.value,
   updateOptions := updateOptions.value.withCachedResolution(true), //to speed up dependency resolution
   addCompilerPlugin("org.scalamacros" % "paradise" % Versions.paradise cross CrossVersion.full)
 )

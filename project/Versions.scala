@@ -39,11 +39,11 @@ trait OtherJVM {
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.13"
+	val akka = "2.4.11"
 
 	val httpTestkit = "2.4.11"
 
-	val circeHttp = "1.10.1"
+	val circeHttp = "1.11.0-M4"//"1.10.1"
 
 	val libSBOLj = "2.1.0"
 

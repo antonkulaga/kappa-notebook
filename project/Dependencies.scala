@@ -28,6 +28,8 @@ object Dependencies {
 
 		"de.heikoseeberger" %% "akka-http-circe" % Versions.circeHttp,
 
+		"io.circe" %%% "circe-jawn" % Versions.circe,
+
 		"com.typesafe.akka" %% "akka-http-testkit" % Versions.httpTestkit % Test,
 
 		"com.typesafe.akka" %% "akka-stream-testkit" % Versions.akka % Test
@@ -87,14 +89,20 @@ object Dependencies {
 		"fr.hmil" %%% "roshttp" % Versions.roshttp
 	))
 
-	//common purpose libs
-	lazy val commonShared: Def.Initialize[Seq[ModuleID]] = Def.setting(Seq(
+	lazy val serializationShared = Def.setting(Seq(
 
 		"io.circe" %%% "circe-core" % Versions.circe,
 
 		"io.circe" %%% "circe-generic" % Versions.circe,
 
 		"io.circe" %%% "circe-parser" % Versions.circe,
+
+
+		"me.chrons" %%% "boopickle" % Versions.booPickle
+	))
+
+	//common purpose libs
+	lazy val commonShared: Def.Initialize[Seq[ModuleID]] = Def.setting(Seq(
 
 		"com.softwaremill.quicklens" %%% "quicklens" % Versions.quicklens,
 
@@ -103,8 +111,6 @@ object Dependencies {
 		"com.lihaoyi" %%% "fastparse" % Versions.fastparse,
 
 		"com.lihaoyi" %%% "cssparse" % Versions.fastparse,
-
-		"me.chrons" %%% "boopickle" % Versions.booPickle,
 
 		"com.lihaoyi" %%% "pprint" % Versions.pprint,
 
@@ -130,7 +136,6 @@ object Dependencies {
 
 	val otherJvm = Def.setting(Seq(
     "com.lihaoyi" %% "ammonite-ops" % Versions.ammonite,
-
 
 		"com.iheart" %% "ficus" % Versions.ficus,
 

@@ -148,6 +148,8 @@ class FileManager(val root: File, log: LoggingAdapter) {
       case b: KappaBinaryFile =>
         parent.resolveChild(b.path) match {
           case Some(child) =>
+            println("writing file: "+child.path)
+            //b.content.flip()
             Try(child.write(b.content.array())(OpenOptions.default))
 
           case None => Failure(FileNotInside(file.path, root.pathAsString))

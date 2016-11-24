@@ -31,11 +31,11 @@ class WebSocketSimulationSuite extends BasicWebSocketSuite {
 
   val transport = new WebSocketManager(system, fileManager)
 
-  val routes = new WebSockets(transport.openChannel).routes
+  protected val routes = new WebSockets(transport.openChannel).routes
 
-  val defaultServers = config.as[List[ServerConnection]]("app.servers")
+  protected val defaultServers = config.as[List[ServerConnection]]("app.servers")
 
-  val serverName = defaultServers.head.server
+  protected val serverName = defaultServers.head.server
 
   "WebSockets" should {
 

@@ -9,6 +9,8 @@ import org.scalajs.dom.raw.Element
 import rx.Ctx.Owner.Unsafe.Unsafe
 import rx.Rx.Dynamic
 import rx._
+import org.denigma.binding.extensions._
+
 
 /**
   * Runner view (displayed on Create button)
@@ -35,10 +37,31 @@ class RunnerView(val elem: Element,
 
   val implicitSignature = Var(true)
 
-  protected val maxTime = time.map(t => if(t > 0) Some(t) else None)
-  protected val maxEvents = events.map(ev=> if(ev> 0) Some(ev) else None)
+  protected val maxTime: Rx[Option[Double]] = time.map(t => if(t > 0) Some(t) else None)
+  protected val maxEvents: Rx[Option[Int]] = events.map(ev=> if(ev> 0) Some(ev) else None)
+
   //protected val plotPeriod = points.map(p=> if(p>0) Some(p) else None)
-  val plotPeriod = Var(0.1)
+
+  val plotPeriod = Var(1.0)
+
+  val timeEvents = Rx{(maxTime(), maxEvents())}
+  protected val divider = 100.0 //period divider
+
+  protected def rp(value: Double): Int = Math.round(value) match {
+    case 0.0 => 1
+    case other => other.toInt
+  }
+
+  timeEvents.onChange{
+    case (Some(t), Some(e)) => if(plotPeriod.now > t) plotPeriod() = t / divider
+    case (Some(t), None) => if(plotPeriod.now > t) plotPeriod() = t / divider
+    case (None, Some(e)) =>
+      val pl = plotPeriod.now
+      val r =rp(e / divider)
+      if(pl> e) plotPeriod() = Math.round( (e / divider) ) else if(pl!=rp(pl)) plotPeriod() = Math.round(pl)
+    case (None, None) =>
+  }
+
 
   val runCount = Var(0)
 

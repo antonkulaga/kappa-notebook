@@ -190,8 +190,8 @@ object KappaBinaryFile {
   }
 
 }
-case class KappaBinaryFile(path: String, content: ByteBuffer, saved: Boolean = false, active: Boolean = true) extends KappaFile {
-  def isEmpty = content.limit == 0
+case class KappaBinaryFile(path: String, content: /*ByteBuffer*/ Array[Byte], saved: Boolean = false, active: Boolean = true) extends KappaFile {
+  def isEmpty = content.length == 0//content.limit == 0
   override def asSaved = this.copy(saved = true)
 
   def moveTo(newPath: String, rename: Boolean = false) = if(rename){

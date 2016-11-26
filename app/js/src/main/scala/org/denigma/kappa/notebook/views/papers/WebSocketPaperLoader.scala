@@ -13,7 +13,7 @@ import scala.collection.immutable._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scala.scalajs.js.typedarray.ArrayBuffer
+import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 import rx.Ctx.Owner.Unsafe.Unsafe
 import org.denigma.binding.extensions._
 import rx.Rx.Dynamic
@@ -30,12 +30,15 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport,
       paperFileMap.now.get(path) match {
         case Some(f) if f.isEmpty => send(path)(timeout)
         case Some(f) =>
-          val data: ArrayBuffer = subscriber.bytes2message(f.content)
-          PDFJS.getDocument(data).toFuture.map{ proxy =>
-            val paper = Paper(path, proxy)
-            //note - we do not update cache to avoid side effects
-            paper
+          bytes2Arr(f.content).flatMap{ data=>
+            //val data: ArrayBuffer = array2(f.content)//subscriber.bytes2message(f.content)
+            PDFJS.getDocument(data).toFuture.map{ proxy =>
+              val paper = Paper(path, proxy)
+              //note - we do not update cache to avoid side effects
+              paper
+            }
           }
+
         case None => send(path)(timeout)
       }
   }
@@ -45,8 +48,9 @@ case class WebSocketPaperLoader(subscriber: WebSocketTransport,
     val result: Future[ArrayBuffer] = subscriber.ask(tosend, timeout){
       case b @  KappaBinaryFile(p, bytes, _, _) if p.contains(path)=>
         subscriber.input() = FilesUpdate.updatedFiles(b) //send update to project files
-        subscriber.bytes2message(bytes)
-    }
+        //subscriber.bytes2message(bytes)
+        bytes2Arr(bytes)
+    }.flatMap(d=>d)
     result.flatMap{ data =>
       PDFJS.getDocument(data).toFuture.map{ proxy =>
         val paper = Paper(path, proxy)

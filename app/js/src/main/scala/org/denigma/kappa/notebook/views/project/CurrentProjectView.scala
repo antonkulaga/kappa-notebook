@@ -16,8 +16,8 @@ import rx._
 
 import scala.collection.immutable._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scala.scalajs.js.typedarray.{ArrayBuffer, Int8Array, TypedArray}
-import scala.util.{Failure, Success}
+import scala.scalajs.js.typedarray.{ArrayBuffer, Int8Array, TypedArray, TypedArrayBuffer}
+import scala.util.{Failure, Success, Try}
 
 /**
   * The view responsible for rendering current project files
@@ -139,30 +139,29 @@ class CurrentProjectView(val elem: Element,
     dom.console.info("FILE UPLOAD WORKS!")
     val files = uploadInput.files.toList
     dom.console.info("FIELS ARE :"+files)
-
-
     files.foreach{ f =>
-
-      /*
       f.readAsArrayBuffer.onComplete{
         case Failure(th) => dom.console.error("file upload failed with: "+th)
         case Success(result) =>
-          //val mess = DataMessage(f.name, result)
-          //println(s"uploading ${f.name} to ${projectName.now}")
-          val fl = KappaBinaryFile(projectName.now+"/"+f.name, convertBuffer(result))
+        Try {
+          val array: Array[Byte] = TypedArrayBuffer.wrap(result).toArrayBuffer
+          val fl = KappaBinaryFile(projectName.now + "/" + f.name, array)
+        } match {
+          case Success(_) => dom.console.log("succeeded")
+          case Failure(th) => dom.console.error("failed = "+th)
+        }
+          val array: Array[Byte] = TypedArrayBuffer.wrap(result).array()
+          val fl = KappaBinaryFile(projectName.now+"/"+f.name, array)
           saveRequest() = FileRequests.Save(List(fl), rewrite = true, getSaved = true)
       }
-      */
-
+      /*
       f.readAsByteBuffer.onComplete{
           case Failure(th) => dom.console.error("file upload failed with: "+th)
           case Success(result) =>
-            //val mess = DataMessage(f.name, result)
-            //println(s"uploading ${f.name} to ${projectName.now}")
             val fl = KappaBinaryFile(projectName.now+"/"+f.name, result)
             saveRequest() = FileRequests.Save(List(fl), rewrite = true, getSaved = true)
         }
-
+        */
     }
     //val toUplod = FileRequests.UploadBinary()
     //val k = KappaFile("", name, "", saved = false)

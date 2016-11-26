@@ -34,6 +34,11 @@ object FileManager {
   val FILE_NOT_INSIDE = "NOT_INSIDE"
 }
 
+/**
+  * Class responsible for main operations with files and fodlers in kappa-notebook
+  * @param root
+  * @param log
+  */
 class FileManager(val root: File, log: LoggingAdapter) {
 
   log.info(s"FileManager is initialized with at ${root.pathAsString} folder")
@@ -97,8 +102,9 @@ class FileManager(val root: File, log: LoggingAdapter) {
     case r =>
       if( r.exists && upload.rewriteIfExist) r.delete()
       val dir = r.createDirectory()
-      val buff: ByteBuffer = upload.zip.content
-      val arr = buff.array()
+      //val buff: ByteBuffer = upload.zip.content
+      //val arr = buff.array()
+      val arr = upload.zip.content
       val tmp = File.newTemporaryFile().write(arr)(better.files.File.OpenOptions.default)
       tmp.unzipTo(dir)
       Some(
@@ -150,7 +156,8 @@ class FileManager(val root: File, log: LoggingAdapter) {
           case Some(child) =>
             println("writing file: "+child.path)
             //b.content.flip()
-            Try(child.write(b.content.array())(OpenOptions.default))
+            val array = b.content
+            Try(child.write(array)(OpenOptions.default))
 
           case None => Failure(FileNotInside(file.path, root.pathAsString))
         }
@@ -208,7 +215,8 @@ class FileManager(val root: File, log: LoggingAdapter) {
         Some(KappaSourceFile(ch.pathAsString, ch.contentAsString, saved = true))
 
       case ch if ch.isRegularFile =>
-        Some(KappaBinaryFile(ch.pathAsString, ByteBuffer.allocate(0),  saved = true))
+        val content = Array[Byte]()//ByteBuffer.allocate(0)
+        Some(KappaBinaryFile(ch.pathAsString, content,  saved = true))
 
       case _ => None
     }
@@ -224,8 +232,7 @@ class FileManager(val root: File, log: LoggingAdapter) {
 
           case ch if ch.isRegularFile =>
             val bytes = ByteBuffer.allocate(0)
-
-            KappaBinaryFile(relativeToParent.relativize(ch).toString, bytes, saved = true)
+            KappaBinaryFile(relativeToParent.relativize(ch).toString, Array[Byte](), saved = true)
 
         }.toSeq
 

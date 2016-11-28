@@ -130,10 +130,6 @@ class CurrentProjectView(val elem: Element,
     uploadInput.addEventListener[Event](Events.change, filesHandler _)
   }
 
-  protected def convertBuffer(buf: ArrayBuffer) = {
-    ByteBuffer.wrap(new Int8Array(buf).toArray)
-  }
-
   protected def filesHandler(event: org.scalajs.dom.Event) = {
     val name = fileName.now
     dom.console.info("FILE UPLOAD WORKS!")
@@ -143,14 +139,7 @@ class CurrentProjectView(val elem: Element,
       f.readAsArrayBuffer.onComplete{
         case Failure(th) => dom.console.error("file upload failed with: "+th)
         case Success(result) =>
-        Try {
-          val array: Array[Byte] = TypedArrayBuffer.wrap(result).toArrayBuffer
-          val fl = KappaBinaryFile(projectName.now + "/" + f.name, array)
-        } match {
-          case Success(_) => dom.console.log("succeeded")
-          case Failure(th) => dom.console.error("failed = "+th)
-        }
-          val array: Array[Byte] = TypedArrayBuffer.wrap(result).array()
+          val array = new Int8Array(result).toArray
           val fl = KappaBinaryFile(projectName.now+"/"+f.name, array)
           saveRequest() = FileRequests.Save(List(fl), rewrite = true, getSaved = true)
       }

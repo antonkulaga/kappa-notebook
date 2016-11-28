@@ -30,7 +30,7 @@ object Dependencies {
 
 		"io.circe" %%% "circe-jawn" % Versions.circe,
 
-		"com.typesafe.akka" %% "akka-http-testkit" % Versions.httpTestkit % Test,
+		"com.typesafe.akka" %% "akka-http-testkit" % Versions.akkaHttp % Test,
 
 		"com.typesafe.akka" %% "akka-stream-testkit" % Versions.akka % Test
 

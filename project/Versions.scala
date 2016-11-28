@@ -33,17 +33,17 @@ trait OtherJVM {
 
 	val apacheCodec = "1.10"
 
-	val akkaHttpExtensions = "0.0.14"
+	val akkaHttpExtensions = "0.0.15"
 
 	val retry = "0.2.1"
 
 	val logback = "1.1.7"
 
-	val akka = "2.4.11"
+	val akka = "2.4.14"
 
-	val httpTestkit = "2.4.11"
+	val akkaHttp = "10.0.0"
 
-	val circeHttp = "1.11.0-M4"//"1.10.1"
+	val circeHttp = "1.11.0"
 
 	val libSBOLj = "2.1.0"
 
@@ -116,7 +116,7 @@ trait SharedVersions
 
 trait WebJarsVersions{
 
-	val jquery =  "2.2.4"//"3.0.0"
+	val jquery =  "3.1.1" //"2.2.4"
 
 	val jquerySVG = "1.5.0"
 
@@ -128,7 +128,7 @@ trait WebJarsVersions{
 
 	val webcomponents = "0.7.12"
 
-	val d3js = "3.5.17"
+	val d3js = "4.2.1"
 
 	val malihuScrollBar: String = "3.1.5"
 

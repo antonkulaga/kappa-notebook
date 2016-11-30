@@ -52,7 +52,10 @@ class FileView(elem: Element,
 
   val gotoClick: Var[MouseEvent] = Var(Events.createMouseEvent())
   gotoClick.triggerLater{
-    if(!editable.now) goToFile() = file.now
+    if(!editable.now) {
+      goToFile() = file.now
+      println(s"goToFile = ${file.now.path} of type ${file.now.getClass.getName}")
+    }
   }
 
   val downloadClick: Var[MouseEvent] = Var(Events.createMouseEvent())

@@ -56,6 +56,7 @@ class KappaCodeEditor(val elem: Element,
 
   override def newItemView(key: String, value: KappaSourceFile): KappaCodeTab = this.constructItemView(key) {
     case (el, _) =>
+      println(s"new file ${value.path}")
       val itemErrors =  errorsCircuit.groupedErrors.map(gp => gp.getOrElse(key, List.empty[WebSimError]))
       val view: ItemView = new KappaCodeTab(el,
         Var(value),

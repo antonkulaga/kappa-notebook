@@ -49,7 +49,7 @@ trait OtherJVM {
 
 	val breeze = "0.12"
 
-	val ficus: String = "1.3.4"
+	val ficus: String = "1.3.5"
 
 	val paxtools = "4.3.1"
 

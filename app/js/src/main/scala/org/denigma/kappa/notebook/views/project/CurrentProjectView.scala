@@ -44,7 +44,7 @@ class CurrentProjectView(val elem: Element,
   val goToFile = circuit.intoIncomingPort[KappaFile, KappaMessage](KappaSourceFile.empty, skipFirst = true){
     f=>
       val message = Go.ToFile(f)
-      //println(s"to file name ${f.path}")
+      println(s"to file name ${f.path}")
       Animate(message, false)
   }
 

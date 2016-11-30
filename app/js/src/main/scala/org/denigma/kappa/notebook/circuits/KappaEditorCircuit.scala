@@ -39,7 +39,11 @@ class KappaEditorCircuit(input: Var[KappaMessage],
   protected def onInputMessage(message: KappaMessage) = message match {
 
     case ProjectResponses.LoadedProject(proj) =>
-      val files = proj.sourceMap.collectFirst{ case (path, f) if f.name.toLowerCase.contains("readme") => Map( (path, f))}.getOrElse(Map.empty[String, KappaSourceFile])
+      val files = proj.sourceMap.collectFirst{
+        case (path, f) if f.name.toLowerCase.contains("readme") =>
+          Map( (path, f))
+      }
+      .getOrElse(Map.empty[String, KappaSourceFile])
       items() = files
       js.timers.setTimeout(300 millis){
         //check for syntax errors after loading
@@ -52,6 +56,7 @@ class KappaEditorCircuit(input: Var[KappaMessage],
       openedFiles() = openedFiles.now :+ Var(f)
     */
     case Go.ToFile(f: KappaSourceFile)  if !items.now.contains(f.path)=>
+      println(s"openning KappaSourceFile ${f.path}")
       items() = items.now.updated(f.path, f)
 
     case CloseFile(path) if items.now.contains(path)=>

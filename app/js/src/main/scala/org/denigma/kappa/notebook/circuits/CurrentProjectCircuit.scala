@@ -18,7 +18,7 @@ import scala.scalajs.js.typedarray.Uint8Array
   * Circuit that is responsible for CurrentProject view logic
   * @param input input messages Rx
   * @param output is used to send messages to the server
-  * @param currentProject
+  * @param currentProject project that is currently loaded
   */
 class CurrentProjectCircuit(input: Var[KappaMessage],
                             output: Var[KappaMessage],

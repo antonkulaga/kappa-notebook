@@ -131,10 +131,21 @@ class FileManager(val root: File, log: LoggingAdapter) {
   }
 
 
+  /**
+    * Loads kappa project
+    * @param project
+    * @param createIfNotExists
+    * @return
+    */
   def loadProject(project: KappaProject, createIfNotExists: Boolean = false) = root.resolveChild(project.name, !createIfNotExists).map{
     path =>
       val p = if (createIfNotExists) path.createDirectory() else path
       val dir = listFolder(p, root)
+      val allBinary = dir.allFiles.forall{
+        case kappa: KappaBinaryFile => true
+        case _ => false
+      }
+      if(allBinary) log.error(s"ALL BINARY FILES in ${project.name}")
       project.copy(folder = dir, saved = p.exists())
   }
 
@@ -201,7 +212,7 @@ class FileManager(val root: File, log: LoggingAdapter) {
   protected def kappaTextFileSelector(ch: File, knownExtensions: Set[String] = Set("ka", "txt", "ttl", "sbol")) = {
     ch.isRegularFile && {
       val p = ch.pathAsString
-      val ext = p.substring(ch.pathAsString.indexOf(".") +1)
+      val ext = p.substring(p.lastIndexOf(".") +1)
       knownExtensions.contains(ext)
     }
   }
